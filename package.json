@@ -1,7 +1,7 @@
 {
-  "name": "@karmaniverous/npm-package-template",
+  "name": "@karmaniverous/dit-env",
   "bin": {
-    "mycli": "bin/mycli/index.js"
+    "mycli": "bin/getenv/index.js"
   },
   "version": "0.5.5",
   "publishConfig": {
@@ -9,14 +9,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/karmaniverous/npm-package-template"
+    "url": "https://github.com/karmaniverous/get-env"
   },
   "author": "Jason G. Williscroft",
   "bugs": {
-    "url": "https://github.com/karmaniverous/npm-package-template/issues"
+    "url": "https://github.com/karmaniverous/get-env/issues"
   },
-  "description": "An ES6 NPM package project template featuring a CLI, test support, automated API docs, release management & more!",
-  "homepage": "https://github.com/karmaniverous/npm-package-template#readme",
+  "description": "Process dotenv files in an arbitrary location & optionally populate environment variables.",
+  "homepage": "https://github.com/karmaniverous/get-env#readme",
   "keywords": [
     "chai",
     "docs",
@@ -82,7 +82,7 @@
     }
   },
   "scripts": {
-    "lint": "eslint lib/**",
+    "lint": "eslint lib/** bin/**",
     "test": "mocha",
     "build": "babel lib -d dist/default/lib --delete-dir-on-start --config-file ./dist/default/.babelrc",
     "doc": "jsdoc2md -c doc/jsdoc.config.json -f lib/**/*.* -t doc/api-template.hbs > doc/3-api.md && concat-md doc --hide-anchor-links > README.md",
