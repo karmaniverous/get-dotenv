@@ -1,7 +1,7 @@
 {
   "name": "@karmaniverous/dit-env",
   "bin": {
-    "mycli": "bin/getenv/index.js"
+    "getdotenv": "bin/getdotenv/index.js"
   },
   "version": "0.5.5",
   "publishConfig": {
@@ -9,14 +9,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/karmaniverous/get-env"
+    "url": "https://github.com/karmaniverous/get-dotenv"
   },
   "author": "Jason G. Williscroft",
   "bugs": {
-    "url": "https://github.com/karmaniverous/get-env/issues"
+    "url": "https://github.com/karmaniverous/get-dotenv/issues"
   },
   "description": "Process dotenv files in an arbitrary location & optionally populate environment variables.",
-  "homepage": "https://github.com/karmaniverous/get-env#readme",
+  "homepage": "https://github.com/karmaniverous/get-dotenv#readme",
   "keywords": [
     "chai",
     "docs",
@@ -33,9 +33,9 @@
   "dependencies": {
     "commander": "^9.4.1",
     "dotenv": "^16.0.3",
-    "lodash": "^4.17.21",
-    "pkg-dir": "^7.0.0",
-    "slash": "^5.0.0"
+    "dotenv-expand": "^10.0.0",
+    "fs-extra": "^11.1.0",
+    "lodash": "^4.17.21"
   },
   "devDependencies": {
     "@babel/cli": "^7.19.3",
