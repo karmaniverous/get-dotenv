@@ -10,8 +10,8 @@ import { foo, PACKAGE_INFO } from '@karmaniverous/npm-package-template`;
 <dt><a href="#getDotenv">getDotenv([options])</a> ⇒ <code>Object</code></dt>
 <dd><p>Asynchronously process dotenv files of the form .env[.<ENV>][.<PRIVATETOKEN>]</p>
 </dd>
-<dt><a href="#getDotenv">getDotenv([options])</a> ⇒ <code>Object</code></dt>
-<dd><p>Synchronously process dotenv files of the form .env[.<ENV>][.&lt;PRIVATEEXT]</p>
+<dt><a href="#getDotenvSync">getDotenvSync([options])</a> ⇒ <code>Object</code></dt>
+<dd><p>Synchronously process dotenv files of the form .env[.<ENV>][.<PRIVATETOKEN>]</p>
 </dd>
 </dl>
 
@@ -35,10 +35,10 @@ Asynchronously process dotenv files of the form .env[.<ENV>][.<PRIVATETOKEN>]
 | --- | --- | --- |
 | [options] | [<code>OptionsType</code>](#OptionsType) | options object |
 
-<a name="getDotenv"></a>
+<a name="getDotenvSync"></a>
 
-## getDotenv([options]) ⇒ <code>Object</code>
-Synchronously process dotenv files of the form .env[.<ENV>][.<PRIVATEEXT]
+## getDotenvSync([options]) ⇒ <code>Object</code>
+Synchronously process dotenv files of the form .env[.<ENV>][.<PRIVATETOKEN>]
 
 **Kind**: global function  
 **Returns**: <code>Object</code> - The combined parsed dotenv object.  
