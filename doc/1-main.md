@@ -9,5 +9,6 @@ Load environment variables with a cascade of environment-aware dotenv files. You
 - Load variables for a specific environment or none.
 - Exclude public or private variables.
 - Extract variables to an object, to `process.env`, or both.
+- Log the result to the console.
 
 The command-line version can pull the environment designator from a number of sources, populate `process.env`, and execute a shell command.

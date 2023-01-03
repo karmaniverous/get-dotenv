@@ -9,6 +9,7 @@ Load environment variables with a cascade of environment-aware dotenv files. You
 - Load variables for a specific environment or none.
 - Exclude public or private variables.
 - Extract variables to an object, to `process.env`, or both.
+- Log the result to the console.
 
 The command-line version can pull the environment designator from a number of sources, populate `process.env`, and execute a shell command.
 
@@ -52,7 +53,7 @@ import { foo, PACKAGE_INFO } from '@karmaniverous/npm-package-template`;
 
 <dl>
 <dt><a href="#getDotenv">getDotenv([options])</a> ⇒ <code>Object</code></dt>
-<dd><p>Asynchronously process dotenv files of the form .env[.<ENV>][.&lt;PRIVATEEXT]</p>
+<dd><p>Asynchronously process dotenv files of the form .env[.<ENV>][.<PRIVATETOKEN>]</p>
 </dd>
 <dt><a href="#getDotenv">getDotenv([options])</a> ⇒ <code>Object</code></dt>
 <dd><p>Synchronously process dotenv files of the form .env[.<ENV>][.&lt;PRIVATEEXT]</p>
@@ -70,7 +71,7 @@ import { foo, PACKAGE_INFO } from '@karmaniverous/npm-package-template`;
 <a name="getDotenv"></a>
 
 ## getDotenv([options]) ⇒ <code>Object</code>
-Asynchronously process dotenv files of the form .env[.<ENV>][.<PRIVATEEXT]
+Asynchronously process dotenv files of the form .env[.<ENV>][.<PRIVATETOKEN>]
 
 **Kind**: global function  
 **Returns**: <code>Object</code> - The combined parsed dotenv object.  
@@ -106,6 +107,7 @@ get-dotenv options type
 | [excludePrivate] | <code>bool</code> | exclude private variables (default: false) |
 | [excludePublic] | <code>bool</code> | exclude public variables (default: false) |
 | [loadProcess] | <code>bool</code> | load dotenv to process.env (default: false) |
+| [log] | <code>bool</code> | log result to console (default: false) |
 | [path] | <code>string</code> | path to target directory |
 | [privateToken] | <code>string</code> | token indicating private variables (default: 'local'). |
 

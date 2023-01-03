@@ -66,15 +66,10 @@ const dotenv = getDotenvSync({
   excludePrivate,
   excludePublic,
   loadProcess: true,
+  log,
   path,
   privateToken,
 });
 
-// Log dotenvs.
-if (log) console.log(dotenv);
-
 // Execute shell command.
-if (command)
-  execSync(command, {
-    stdio: 'inherit',
-  });
+if (command) execSync(command, { env: dotenv, stdio: 'inherit' });
