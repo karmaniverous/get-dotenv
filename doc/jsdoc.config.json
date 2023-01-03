@@ -1,0 +1,6 @@
+{
+  "source": {
+    "excludePattern": "packageInfo",
+    "includePattern": ".+(?<!\\.test)\\.(cjs|js|jsx|mjs)$"
+  }
+}
