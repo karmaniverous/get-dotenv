@@ -1,60 +1,45 @@
-# NPM Package Template
+# get-dotenv
 
-You wrote a sweet piece of code! Releasing it on [NPM](https://www.npmjs.com/)
-seems like the obvious next step. Right?
+Load environment variables with a cascade of environment-aware dotenv files. You can:
 
-_Try it!_ Not as easy to do as you might think. At high quality. From scratch.
+- Load dotenv files synchronously or asynchronously.
+- Specify the directory containing your dotenv files.
+- Specify the token that identifies dotenv files (e.g. '.env').
+- Specify the token that identifies private vatiables (e.g. 'local').
+- Load variables for a specific environment or none.
+- Exclude public or private variables.
+- Extract variables to an object, to `process.env`, or both.
 
-So here's a plug-and-play NPM package template that offers the following
-features:
-
-- Tree-shakable support for the latest ES6 goodies with
-  [`eslint`](https://www.npmjs.com/package/eslint) _uber alles_.
-
-- CJS distributions targeting specific browser support scenarios.
-
-- Command line interfaces for your widget with
-  [`commander`](https://www.npmjs.com/package/commander).
-
-- Automated [`lodash`](https://www.npmjs.com/package/lodash) cherry-picking with
-  [`babel-plugin-lodash`](https://www.npmjs.com/package/babel-plugin-lodash).
-
-- [`mocha`](https://www.npmjs.com/package/mocha) &
-  [`chai`](https://www.npmjs.com/package/chai) for testing, with examples, and a
-  sweet testing console.
-
-- In-code access to
-  [`package.json`](https://github.com/karmaniverous/npm-package-template/blob/main/package.json)
-  data, with no warnings to ignore.
-
-- Code formatting at every save & paste with
-  [`prettier`](https://www.npmjs.com/package/prettier).
-
-- Automated documentation of your API with
-  [`jsdoc-to-markdown`](https://www.npmjs.com/package/jsdoc-to-markdown) and
-  assembly of your README with
-  [`concat-md`](https://www.npmjs.com/package/concat-md).
-
-- One-button release to GitHub & publish to NPM with
-  [`release-it`](https://www.npmjs.com/package/release-it).
-
-**[Click here](https://karmanivero.us/blog/npm-package-template/) for full
-documentation & instructions!**
-
-_If you want to create a React component in an NPM package, use my
-[React Component NPM Package Template](https://github.com/karmaniverous/react-component-npm-package-template)
-instead!_
+The command-line version can pull the environment designator from a number of sources, populate `process.env`, and execute a shell command.
 
 # Command Line Interface
 
 ```text
-Usage: mycli [options]
+Usage: getdotenv [options]
 
-Foos your bar.
+Load environment variables with a cascade of environment-aware
+dotenv files. You can:
+
+* Specify the directory containing your dotenv files.
+* Specify the token that identifies dotenv files (e.g. '.env').
+* Specify the token that identifies private vatiables (e.g. '.local').
+* Specify a default environment, override the default with an
+  environment variable, and override both with a direct setting.
+* Exclude public or private variables.
+* Execute a shell command after loading variables.
 
 Options:
-  -b, --bar <string>  foo what?
-  -h, --help          display help for command
+  -p, --path <string>                path to dotenv directory (default './')
+  -t, --dotenv-token <string>        token indicating a dotenv file (default: '.env')
+  -i, --private-token <string>       token indicating private variables (default: 'local')
+  -d, --defaultEnvironment <string>  default environment
+  -e, --environment <string>         designated environment
+  -v, --variable <string>            environment from variable
+  -r, --exclude-private              exclude private variables (default: false)
+  -u, --exclude-public               exclude public variables (default: false)
+  -c, --command <string>             shell command
+  -l, --log                          log extracted variables (default: false)
+  -h, --help                         display help for command
 ```
 
 # API Documentation
@@ -63,17 +48,66 @@ Options:
 import { foo, PACKAGE_INFO } from '@karmaniverous/npm-package-template`;
 ```
 
-<a name="foo"></a>
+## Functions
 
-## foo(value) ⇒ <code>any</code>
-Returns whatever value is passed.
+<dl>
+<dt><a href="#getDotenv">getDotenv([options])</a> ⇒ <code>Object</code></dt>
+<dd><p>Asynchronously process dotenv files of the form .env[.<ENV>][.&lt;PRIVATEEXT]</p>
+</dd>
+<dt><a href="#getDotenv">getDotenv([options])</a> ⇒ <code>Object</code></dt>
+<dd><p>Synchronously process dotenv files of the form .env[.<ENV>][.&lt;PRIVATEEXT]</p>
+</dd>
+</dl>
+
+## Typedefs
+
+<dl>
+<dt><a href="#OptionsType">OptionsType</a> : <code>Object</code></dt>
+<dd><p>get-dotenv options type</p>
+</dd>
+</dl>
+
+<a name="getDotenv"></a>
+
+## getDotenv([options]) ⇒ <code>Object</code>
+Asynchronously process dotenv files of the form .env[.<ENV>][.<PRIVATEEXT]
 
 **Kind**: global function  
-**Returns**: <code>any</code> - Whatever value it was passed.  
+**Returns**: <code>Object</code> - The combined parsed dotenv object.  
 
 | Param | Type | Description |
 | --- | --- | --- |
-| value | <code>any</code> | Any value. |
+| [options] | [<code>OptionsType</code>](#OptionsType) | options object |
+
+<a name="getDotenv"></a>
+
+## getDotenv([options]) ⇒ <code>Object</code>
+Synchronously process dotenv files of the form .env[.<ENV>][.<PRIVATEEXT]
+
+**Kind**: global function  
+**Returns**: <code>Object</code> - The combined parsed dotenv object.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| [options] | [<code>OptionsType</code>](#OptionsType) | options object |
+
+<a name="OptionsType"></a>
+
+## OptionsType : <code>Object</code>
+get-dotenv options type
+
+**Kind**: global typedef  
+**Properties**
+
+| Name | Type | Description |
+| --- | --- | --- |
+| [dotenvToken] | <code>string</code> | token indicating a dotenv file (default: '.env') |
+| [env] | <code>string</code> | target environment |
+| [excludePrivate] | <code>bool</code> | exclude private variables (default: false) |
+| [excludePublic] | <code>bool</code> | exclude public variables (default: false) |
+| [loadProcess] | <code>bool</code> | load dotenv to process.env (default: false) |
+| [path] | <code>string</code> | path to target directory |
+| [privateToken] | <code>string</code> | token indicating private variables (default: 'local'). |
 
 
 ---

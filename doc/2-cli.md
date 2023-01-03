@@ -1,11 +1,29 @@
 # Command Line Interface
 
 ```text
-Usage: mycli [options]
+Usage: getdotenv [options]
 
-Foos your bar.
+Load environment variables with a cascade of environment-aware
+dotenv files. You can:
+
+* Specify the directory containing your dotenv files.
+* Specify the token that identifies dotenv files (e.g. '.env').
+* Specify the token that identifies private vatiables (e.g. '.local').
+* Specify a default environment, override the default with an
+  environment variable, and override both with a direct setting.
+* Exclude public or private variables.
+* Execute a shell command after loading variables.
 
 Options:
-  -b, --bar <string>  foo what?
-  -h, --help          display help for command
+  -p, --path <string>                path to dotenv directory (default './')
+  -t, --dotenv-token <string>        token indicating a dotenv file (default: '.env')
+  -i, --private-token <string>       token indicating private variables (default: 'local')
+  -d, --defaultEnvironment <string>  default environment
+  -e, --environment <string>         designated environment
+  -v, --variable <string>            environment from variable
+  -r, --exclude-private              exclude private variables (default: false)
+  -u, --exclude-public               exclude public variables (default: false)
+  -c, --command <string>             shell command
+  -l, --log                          log extracted variables (default: false)
+  -h, --help                         display help for command
 ```

@@ -12,7 +12,6 @@
   "editor.tabSize": 2,
   "editor.formatOnPaste": true,
   "editor.defaultFormatter": "esbenp.prettier-vscode",
-  "prettier.proseWrap": "always",
   "editor.accessibilitySupport": "off",
   "javascript.preferences.importModuleSpecifierEnding": "minimal"
 }

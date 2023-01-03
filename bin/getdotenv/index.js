@@ -10,31 +10,36 @@ import { program } from 'commander';
 // CLI description.
 program.name('getdotenv');
 program.description(
-  `Load environment variables with dotenv files from a designated
-directory. Optionally specify a default environment, override the 
-default with an already-populated environment variable, and override 
-both with a direct setting. Optionally execute a shell command after
-loading variables.`
+  `Load environment variables with a cascade of environment-aware 
+dotenv files. You can:
+
+* Specify the directory containing your dotenv files.
+* Specify the token that identifies dotenv files (e.g. '.env').
+* Specify the token that identifies private vatiables (e.g. '.local').
+* Specify a default environment, override the default with an 
+  environment variable, and override both with a direct setting. 
+* Exclude public or private variables.
+* Execute a shell command after loading variables.`
 );
 
 // CLI options.
 program
-  .option('-c, --command <string>', 'shell command (required)')
-  .option('-d, --defaultEnvironment <string>', 'default environment')
+  .option('-p, --path <string>', "path to dotenv directory (default './')")
   .option(
     '-t, --dotenv-token <string>',
     "token indicating a dotenv file (default: '.env')"
   )
-  .option('-e, --environment <string>', 'environment')
-  .option('-r, --exclude-private', 'exclude private variables (default: false)')
-  .option('-u, --exclude-public', 'exclude public variables (default: false)')
-  .option('-l, --log', 'log extracted variables (default: false)')
-  .option('-p, --path <string>', "path to target directory (default './')")
   .option(
     '-i, --private-token <string>',
     "token indicating private variables (default: 'local')"
   )
-  .option('-v, --variable <string>', 'environment from variable');
+  .option('-d, --defaultEnvironment <string>', 'default environment')
+  .option('-e, --environment <string>', 'designated environment')
+  .option('-v, --variable <string>', 'environment from variable')
+  .option('-r, --exclude-private', 'exclude private variables (default: false)')
+  .option('-u, --exclude-public', 'exclude public variables (default: false)')
+  .option('-c, --command <string>', 'shell command')
+  .option('-l, --log', 'log extracted variables (default: false)');
 
 // Parse CLI options from command line.
 program.parse();
