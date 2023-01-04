@@ -12,3 +12,23 @@ Load environment variables with a cascade of environment-aware dotenv files. You
 - Log the result to the console.
 
 The command-line version can pull the environment designator from a number of sources, populate `process.env`, and execute a shell command.
+
+## Installation
+
+```bash
+npm install @karmaniverous/get-dotenv
+```
+
+## Usage
+
+```js
+import { getDotenv, getDotenvSync } from '@karmaniverous/get-dotenv';
+
+// asynchronous
+const dotenv = await getDotenv(options);
+
+// synchronous
+const dotenvSync = await getDotenvSync(options);
+```
+
+See [OptionsType](#optionstype--object) below for configuration options.

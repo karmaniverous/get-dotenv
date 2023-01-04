@@ -1,9 +1,5 @@
 # API Documentation
 
-```js
-import { foo, PACKAGE_INFO } from '@karmaniverous/npm-package-template`;
-```
-
 ## Functions
 
 <dl>

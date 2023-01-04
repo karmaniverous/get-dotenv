@@ -13,7 +13,7 @@ import { program } from 'commander';
 // CLI description.
 program
   .name('getdotenv')
-  .usage('getdotenv [options] [-- [command]]')
+  .usage('[options] [-- [command]]')
   .description(
     [
       `Load environment variables with a cascade of environment-aware`,
@@ -22,12 +22,12 @@ program
       `* Specify the directory containing your dotenv files.`,
       `* Specify the token that identifies dotenv files (e.g. '.env').`,
       `* Specify the token that identifies private vatiables (e.g. '.local').`,
-      `* Specify a default environment, override the default with an `,
+      `* Specify a default environment, override the default with an existing`,
       `  environment variable, and override both with a direct setting.`,
       `* Exclude public or private variables.`,
       `* Execute a shell command after loading variables.`,
       `* Place the shell command inside the invocation to support npm script`,
-      `  arguments.`,
+      `  arguments for other options.`,
     ].join('\n')
   );
 
