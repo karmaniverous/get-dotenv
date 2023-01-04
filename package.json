@@ -48,7 +48,6 @@
     "@types/node": "^18.11.18",
     "chai": "^4.3.7",
     "concat-md": "^0.5.0",
-    "dotenv-cli": "^6.0.0",
     "eslint": "^8.31.0",
     "eslint-config-standard": "^17.0.0",
     "eslint-plugin-mocha": "^10.1.0",
@@ -87,7 +86,7 @@
     "build": "babel lib -d dist/default/lib --delete-dir-on-start --config-file ./dist/default/.babelrc",
     "doc": "jsdoc2md -c doc/jsdoc.config.json -f lib/**/*.* -t doc/api-template.hbs > doc/3-api.md && concat-md doc --hide-anchor-links > README.md",
     "package": "npm run lint && npm run test && npm run build && npm run doc",
-    "release": "npm run package && dotenv -c -- release-it"
+    "release": "npm run package && node ./bin/getdotenv -- release-it"
   },
   "type": "module"
 }
