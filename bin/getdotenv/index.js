@@ -1,26 +1,35 @@
 #!/usr/bin/env node
 
+// Import npm packages.
+import spawn from 'cross-spawn';
+import { parseArgsStringToArgv } from 'string-argv';
+
 // Import package exports.
 import { getDotenvSync } from '@karmaniverous/get-dotenv';
-import { execSync } from 'child_process';
 
 // Create CLI.
 import { program } from 'commander';
 
 // CLI description.
-program.name('getdotenv');
-program.description(
-  `Load environment variables with a cascade of environment-aware 
-dotenv files. You can:
-
-* Specify the directory containing your dotenv files.
-* Specify the token that identifies dotenv files (e.g. '.env').
-* Specify the token that identifies private vatiables (e.g. '.local').
-* Specify a default environment, override the default with an 
-  environment variable, and override both with a direct setting. 
-* Exclude public or private variables.
-* Execute a shell command after loading variables.`
-);
+program
+  .name('getdotenv')
+  .usage('getdotenv [options] [-- [command]]')
+  .description(
+    [
+      `Load environment variables with a cascade of environment-aware`,
+      `dotenv files. You can:`,
+      ``,
+      `* Specify the directory containing your dotenv files.`,
+      `* Specify the token that identifies dotenv files (e.g. '.env').`,
+      `* Specify the token that identifies private vatiables (e.g. '.local').`,
+      `* Specify a default environment, override the default with an `,
+      `  environment variable, and override both with a direct setting.`,
+      `* Exclude public or private variables.`,
+      `* Execute a shell command after loading variables.`,
+      `* Place the shell command inside the invocation to support npm script`,
+      `  arguments.`,
+    ].join('\n')
+  );
 
 // CLI options.
 program
@@ -38,7 +47,7 @@ program
   .option('-v, --variable <string>', 'environment from variable')
   .option('-r, --exclude-private', 'exclude private variables (default: false)')
   .option('-u, --exclude-public', 'exclude public variables (default: false)')
-  .option('-c, --command <string>', 'shell command')
+  .option('-c, --command <string>', 'shell command string')
   .option('-l, --log', 'log extracted variables (default: false)');
 
 // Parse CLI options from command line.
@@ -56,11 +65,13 @@ const {
   variable,
 } = program.opts();
 
+if (command && program.args) program.error('command specified twice');
+
 // Get environment.
 const env = environment ?? process.env[variable] ?? defaultEnvironment;
 
 // Load dotenvs.
-const dotenv = getDotenvSync({
+getDotenvSync({
   dotenvToken,
   env,
   excludePrivate,
@@ -72,4 +83,17 @@ const dotenv = getDotenvSync({
 });
 
 // Execute shell command.
-if (command) execSync(command, { env: dotenv, stdio: 'inherit' });
+if (command || program.args) {
+  const argv = program.args ?? parseArgsStringToArgv(command);
+
+  spawn(argv[0], argv.slice(1), { stdio: 'inherit' }).on(
+    'exit',
+    function (exitCode, signal) {
+      if (typeof exitCode === 'number') {
+        process.exit(exitCode);
+      } else {
+        process.kill(process.pid, signal);
+      }
+    }
+  );
+}
