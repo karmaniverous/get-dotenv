@@ -13,6 +13,14 @@ Load environment variables with a cascade of environment-aware dotenv files. You
 
 The command-line version can pull the environment designator from a number of sources, populate `process.env`, and execute a shell command.
 
+`getdotenv` relies on the excellent [`dotenv`](https://www.npmjs.com/package/dotenv) parser and uses [`dotenv-expand`](https://www.npmjs.com/package/dotenv-expand) for recursive variable expansion.
+
+**So why not just use the very popular [`dotenv-cli`](https://www.npmjs.com/package/dotenv-cli) package to load dotenv file cascades?** A couple of reasons:
+
+- `dotenv-cli` assumes all your `.env` files are located in your root directory. If you have a lot of environments, you probably want to sequester them into their own directory.
+
+- The `dotenv-cli` syntax requires the environment to be set (the `-c` argument) _before_ the shell command is articulated (after the `--`). This doesn't work if you want to write an NPM script that takes the environment as an argument, since in that case it would have to go at the end.
+
 ## Installation
 
 ```bash
