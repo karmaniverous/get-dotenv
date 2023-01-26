@@ -83,8 +83,10 @@ getDotenvSync({
 });
 
 // Execute shell command.
-if (command || program.args) {
-  const argv = program.args ?? parseArgsStringToArgv(command);
+if (command || program.args.length) {
+  const argv = program.args.length
+    ? program.args
+    : parseArgsStringToArgv(command);
 
   spawn(argv[0], argv.slice(1), { stdio: 'inherit' }).on(
     'exit',
