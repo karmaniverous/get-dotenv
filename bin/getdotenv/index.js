@@ -35,7 +35,8 @@ program
 program
   .option(
     '-p, --paths <string>',
-    "delimited paths to dotenv directory (default './')"
+    "delimited paths to dotenv directory (default './')",
+    './'
   )
   .option('-a, --path-delimiter', 'path delimiter (default space)', ' ')
   .option(
