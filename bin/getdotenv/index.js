@@ -34,9 +34,10 @@ program
 // CLI options.
 program
   .option(
-    '-p, --paths <strings...>',
-    "space-delimited paths to dotenv directory (default './')"
+    '-p, --paths <string>',
+    "delimited paths to dotenv directory (default './')"
   )
+  .option('-a, --path-delimiter', 'path delimiter (default space)', ' ')
   .option(
     '-t, --dotenv-token <string>',
     "token indicating a dotenv file (default: '.env')"
@@ -64,6 +65,7 @@ const {
   excludePublic,
   log,
   paths,
+  pathDelimiter,
   privateToken,
   variable,
 } = program.opts();
@@ -81,7 +83,7 @@ getDotenvSync({
   excludePublic,
   loadProcess: true,
   log,
-  paths,
+  paths: paths.split(pathDelimiter),
   privateToken,
 });
 
