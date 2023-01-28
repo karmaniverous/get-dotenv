@@ -18,7 +18,6 @@ dotenv files. You can:
 
 Options:
   -p, --paths <strings...>           space-delimited paths to dotenv directory (default './')
-  -a, --path-delimiter               path delimiter (default space)
   -t, --dotenv-token <string>        token indicating a dotenv file (default: '.env')
   -i, --private-token <string>       token indicating private variables (default: 'local')
   -d, --defaultEnvironment <string>  default environment
