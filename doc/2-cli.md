@@ -6,7 +6,7 @@ Usage: getdotenv [options] [-- [command]]
 Load environment variables with a cascade of environment-aware
 dotenv files. You can:
 
-* Specify the directory containing your dotenv files.
+* Specify the directories containing your dotenv files.
 * Specify the token that identifies dotenv files (e.g. '.env').
 * Specify the token that identifies private vatiables (e.g. '.local').
 * Specify a default environment, override the default with an existing
@@ -17,7 +17,7 @@ dotenv files. You can:
   arguments for other options.
 
 Options:
-  -p, --path <string>                path to dotenv directory (default './')
+  -p, --paths <strings...>           space-delimited paths to dotenv directory (default './')
   -t, --dotenv-token <string>        token indicating a dotenv file (default: '.env')
   -i, --private-token <string>       token indicating private variables (default: 'local')
   -d, --defaultEnvironment <string>  default environment
