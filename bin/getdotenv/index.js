@@ -65,7 +65,7 @@ const {
   variable,
 } = program.opts();
 
-if (command && program.args) program.error('command specified twice');
+if (command && program.args.length) program.error('command specified twice');
 
 // Get environment.
 const env = environment ?? process.env[variable] ?? defaultEnvironment;
