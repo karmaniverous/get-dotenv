@@ -1,0 +1,5 @@
+export default {
+  DYNAMIC_SETTING: ({ APP_SETTING }) => `${APP_SETTING} | ${APP_SETTING}`,
+  DYNAMIC_DOUBLE: ({ DYNAMIC_SETTING }) =>
+    `${DYNAMIC_SETTING} | ${DYNAMIC_SETTING}`,
+};

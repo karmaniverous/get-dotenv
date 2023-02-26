@@ -6,6 +6,7 @@ Load environment variables with a cascade of environment-aware dotenv files. You
 - Specify the directory containing your dotenv files.
 - Specify the token that identifies dotenv files (e.g. '.env').
 - Specify the token that identifies private vatiables (e.g. 'local').
+- Define dynamic variables progressively in terms of other variables and other logic.
 - Load variables for a specific environment or none.
 - Exclude public or private variables.
 - Extract variables to an object, to `process.env`, or both.
@@ -40,6 +41,19 @@ const dotenvSync = await getDotenvSync(options);
 ```
 
 See [OptionsType](#optionstype--object) below for configuration options.
+
+## Dynamic Processing
+
+For the async form only (`getDotenv`, not `getDotenvSync), use the `dynamicPath` option to add a relative path to a module with a default export like this:
+
+```js
+export default {
+  SOME_DYNAMIC_VARIABLE: (dotenv) => someLogic(dotenv),
+  ANOTHER_DYNAMIC_VARIABLE: (dotenv) => someOtherLogic,
+};
+```
+
+Each function takes the current `dotenv` variable package as an argument. These variables will be processed progressively, meaning each successive one will have access to the previous ones. They can also override existing variables.
 
 # Command Line Interface
 
@@ -129,6 +143,7 @@ get-dotenv options type
 | Name | Type | Description |
 | --- | --- | --- |
 | [dotenvToken] | <code>string</code> | token indicating a dotenv file (default: '.env') |
+| [dynamicPath] | <code>string</code> | path to file exporting an object keyed to dynamic variable functions |
 | [env] | <code>string</code> | target environment |
 | [excludePrivate] | <code>bool</code> | exclude private variables (default: false) |
 | [excludePublic] | <code>bool</code> | exclude public variables (default: false) |
