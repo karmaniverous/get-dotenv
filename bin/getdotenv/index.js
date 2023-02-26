@@ -5,7 +5,7 @@ import spawn from 'cross-spawn';
 import { parseArgsStringToArgv } from 'string-argv';
 
 // Import package exports.
-import { getDotenvSync } from '@karmaniverous/get-dotenv';
+import { getDotenv } from '@karmaniverous/get-dotenv';
 
 // Create CLI.
 import { program } from 'commander';
@@ -25,6 +25,8 @@ program
       `* Specify a default environment, override the default with an existing`,
       `  environment variable, and override both with a direct setting.`,
       `* Exclude public or private variables.`,
+      `* Define dynamic variables progressively in terms of other variables and`,
+      `  other logic.`,
       `* Execute a shell command after loading variables.`,
       `* Place the shell command inside the invocation to support npm script`,
       `  arguments for other options.`,
@@ -50,6 +52,7 @@ program
   .option('-v, --variable <string>', 'environment from variable')
   .option('-r, --exclude-private', 'exclude private variables (default: false)')
   .option('-u, --exclude-public', 'exclude public variables (default: false)')
+  .option('-y, --dynamic-path <string>', 'dynamic variables path')
   .option('-c, --command <string>', 'shell command string')
   .option('-l, --log', 'log extracted variables (default: false)');
 
@@ -62,6 +65,7 @@ const {
   environment,
   excludePrivate,
   excludePublic,
+  dynamicPath,
   log,
   paths,
   privateToken,
@@ -74,12 +78,13 @@ if (command && program.args.length) program.error('command specified twice');
 const env = environment ?? process.env[variable] ?? defaultEnvironment;
 
 // Load dotenvs.
-getDotenvSync({
+await getDotenv({
   dotenvToken,
   env,
   excludePrivate,
   excludePublic,
   loadProcess: true,
+  dynamicPath,
   log,
   paths,
   privateToken,

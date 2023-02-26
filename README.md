@@ -69,6 +69,8 @@ dotenv files. You can:
 * Specify a default environment, override the default with an existing
   environment variable, and override both with a direct setting.
 * Exclude public or private variables.
+* Define dynamic variables progressively in terms of other variables and
+  other logic.
 * Execute a shell command after loading variables.
 * Place the shell command inside the invocation to support npm script
   arguments for other options.
@@ -82,6 +84,7 @@ Options:
   -v, --variable <string>            environment from variable
   -r, --exclude-private              exclude private variables (default: false)
   -u, --exclude-public               exclude public variables (default: false)
+  -y, --dynamic-path <string>        dynamic variables path
   -c, --command <string>             shell command string
   -l, --log                          log extracted variables (default: false)
   -h, --help                         display help for command
