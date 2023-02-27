@@ -49,7 +49,8 @@ For the async form only (`getDotenv`, not `getDotenvSync), use the `dynamicPath`
 ```js
 export default {
   SOME_DYNAMIC_VARIABLE: (dotenv) => someLogic(dotenv),
-  ANOTHER_DYNAMIC_VARIABLE: (dotenv) => someOtherLogic,
+  ANOTHER_DYNAMIC_VARIABLE: (dotenv) =>
+    someOtherLogic(dotenv.SOME_DYNAMIC_VARIABLE),
 };
 ```
 
