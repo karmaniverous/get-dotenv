@@ -44,6 +44,8 @@ See [OptionsType](#optionstype--object) below for configuration options.
 
 ## Dynamic Processing
 
+This package supports the full [`dotenv-expand`](https://www.npmjs.com/package/dotenv-expand) syntax.
+
 For the async form only (`getDotenv`, not `getDotenvSync), use the `dynamicPath` option to add a relative path to a module with a default export like this:
 
 ```js

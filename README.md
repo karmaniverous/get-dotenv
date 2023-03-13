@@ -44,6 +44,8 @@ See [OptionsType](#optionstype--object) below for configuration options.
 
 ## Dynamic Processing
 
+This package supports the full [`dotenv-expand`](https://www.npmjs.com/package/dotenv-expand) syntax.
+
 For the async form only (`getDotenv`, not `getDotenvSync), use the `dynamicPath` option to add a relative path to a module with a default export like this:
 
 ```js
@@ -96,7 +98,7 @@ Options:
 ## Functions
 
 <dl>
-<dt><a href="#getDotenv">getDotenv([options])</a> ⇒ <code>Object</code></dt>
+<dt><a href="#getDotenv">getDotenv([options])</a> ⇒ <code>Promise.&lt;object&gt;</code></dt>
 <dd><p>Asynchronously process dotenv files of the form .env[.<ENV>][.<PRIVATE_TOKEN>]</p>
 </dd>
 <dt><a href="#getDotenvSync">getDotenvSync([options])</a> ⇒ <code>Object</code></dt>
@@ -114,11 +116,11 @@ Options:
 
 <a name="getDotenv"></a>
 
-## getDotenv([options]) ⇒ <code>Object</code>
+## getDotenv([options]) ⇒ <code>Promise.&lt;object&gt;</code>
 Asynchronously process dotenv files of the form .env[.<ENV>][.<PRIVATE_TOKEN>]
 
 **Kind**: global function  
-**Returns**: <code>Object</code> - The combined parsed dotenv object.  
+**Returns**: <code>Promise.&lt;object&gt;</code> - The combined parsed dotenv object.  
 
 | Param | Type | Description |
 | --- | --- | --- |
