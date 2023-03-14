@@ -1,5 +1,13 @@
 {
   "ignore": ["**/*.test.cjs", "**/*.test.js", "**/*.test.mjs", "**/*.test.ts"],
   "presets": ["@babel/preset-env"],
-  "plugins": ["@babel/plugin-syntax-import-assertions"]
+  "plugins": [
+    "@babel/plugin-syntax-import-assertions",
+    [
+      "replace-import-extension",
+      {
+        "cjs": ""
+      }
+    ]
+  ]
 }
