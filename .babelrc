@@ -6,7 +6,7 @@
     [
       "replace-import-extension",
       {
-        "cjs": ""
+        "extMapping": { ".cjs": ".js" }
       }
     ]
   ]
