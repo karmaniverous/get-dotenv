@@ -46,17 +46,21 @@ See [OptionsType](#optionstype--object) below for configuration options.
 
 This package supports the full [`dotenv-expand`](https://www.npmjs.com/package/dotenv-expand) syntax.
 
-For the async form only (`getDotenv`, not `getDotenvSync), use the `dynamicPath` option to add a relative path to a module with a default export like this:
+Yse the `dynamicPath` option to add a relative path to a Javascript file with a function expression like this:
 
 ```js
-export default {
+(dotenv) => ({
   SOME_DYNAMIC_VARIABLE: (dotenv) => someLogic(dotenv),
   ANOTHER_DYNAMIC_VARIABLE: (dotenv) =>
     someOtherLogic(dotenv.SOME_DYNAMIC_VARIABLE),
-};
+});
 ```
 
-Each function takes the current `dotenv` variable package as an argument. These variables will be processed progressively, meaning each successive one will have access to the previous ones. They can also override existing variables.
+This function should take the expanded `dotenv` object as an argument and return an object. Each object key will be evaluated progressively.
+
+If the corresponding value is a function, it will be executed with the current state of `dotenv` as its single argument and the result applied back to the `dotenv` object. Otherwise, the value will just be applied back to `dotenv`.
+
+Since keys will be evaluated progressively, each successive key function will have access to any previous ones. These keys can also override existing variables.
 
 # Command Line Interface
 

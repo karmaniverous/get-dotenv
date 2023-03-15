@@ -1,13 +1,4 @@
 {
   "ignore": ["**/*.test.cjs", "**/*.test.js", "**/*.test.mjs", "**/*.test.ts"],
-  "presets": ["@babel/preset-env"],
-  "plugins": [
-    "@babel/plugin-syntax-import-assertions",
-    [
-      "replace-import-extension",
-      {
-        "extMapping": { ".cjs": ".js" }
-      }
-    ]
-  ]
+  "presets": ["@babel/preset-env"]
 }
