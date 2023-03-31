@@ -22,13 +22,14 @@ program
       `* Specify the directories containing your dotenv files.`,
       `* Specify the token that identifies dotenv files (e.g. '.env').`,
       `* Specify the token that identifies private vatiables (e.g. '.local').`,
+      `* Load variables for a specific environment or none.`,
       `* Specify a default environment, override the default with an existing`,
       `  environment variable, and override both with a direct setting.`,
       `* Exclude public or private variables.`,
       `* Define dynamic variables progressively in terms of other variables and`,
       `  other logic.`,
-      `* Execute a shell command after loading variables.`,
-      `* Place the shell command inside the invocation to support npm script`,
+      `* Execute a &&-delimited series of shell commands after loading variables.`,
+      `* Place the shell commands inside the invocation to support npm script`,
       `  arguments for other options.`,
     ].join('\n')
   );
@@ -92,18 +93,10 @@ await getDotenv({
 
 // Execute shell command.
 if (command || program.args.length) {
-  const argv = program.args.length
-    ? program.args
-    : parseArgsStringToArgv(command);
+  const argvs = (command ?? program.args.join(' '))
+    .split('&&')
+    .map((c) => parseArgsStringToArgv(c));
 
-  spawn(argv[0], argv.slice(1), { stdio: 'inherit' }).on(
-    'exit',
-    function (exitCode, signal) {
-      if (typeof exitCode === 'number') {
-        process.exit(exitCode);
-      } else {
-        process.kill(process.pid, signal);
-      }
-    }
-  );
+  for (const argv of argvs)
+    spawn.sync(argv[0], argv.slice(1), { stdio: 'inherit' });
 }
