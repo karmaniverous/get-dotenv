@@ -82,6 +82,7 @@
     }
   },
   "scripts": {
+    "cli": "node ./bin/getdotenv",
     "lint": "eslint lib/** bin/**",
     "test": "mocha",
     "build": "babel lib -d dist/default/lib --delete-dir-on-start --config-file ./dist/default/.babelrc",

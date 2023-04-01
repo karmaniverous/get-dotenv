@@ -26,6 +26,7 @@ program
       `* Specify a default environment, override the default with an existing`,
       `  environment variable, and override both with a direct setting.`,
       `* Exclude public or private variables.`,
+      `* Exclude global & dynamic or environment-specific variables.`,
       `* Define dynamic variables progressively in terms of other variables and`,
       `  other logic.`,
       `* Execute a &&-delimited series of shell commands after loading variables.`,
@@ -51,6 +52,14 @@ program
   .option('-d, --defaultEnvironment <string>', 'default environment')
   .option('-e, --environment <string>', 'designated environment')
   .option('-v, --variable <string>', 'environment from variable')
+  .option(
+    '-n, --exclude-env',
+    'exclude environment-specific variables (default: false)'
+  )
+  .option(
+    '-g, --exclude-global',
+    'exclude global & dynamic variables (default: false)'
+  )
   .option('-r, --exclude-private', 'exclude private variables (default: false)')
   .option('-u, --exclude-public', 'exclude public variables (default: false)')
   .option('-y, --dynamic-path <string>', 'dynamic variables path')
@@ -64,6 +73,8 @@ const {
   defaultEnvironment,
   dotenvToken,
   environment,
+  excludeEnv,
+  excludeGlobal,
   excludePrivate,
   excludePublic,
   dynamicPath,
@@ -82,6 +93,8 @@ const env = environment ?? process.env[variable] ?? defaultEnvironment;
 await getDotenv({
   dotenvToken,
   env,
+  excludeEnv,
+  excludeGlobal,
   excludePrivate,
   excludePublic,
   loadProcess: true,
