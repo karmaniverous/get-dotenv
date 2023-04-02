@@ -86,18 +86,18 @@ dotenv files. You can:
 
 Options:
   -p, --paths <strings...>           space-delimited paths to dotenv directory (default './')
-  -t, --dotenv-token <string>        token indicating a dotenv file (default: '.env')
-  -i, --private-token <string>       token indicating private variables (default: 'local')
-  -d, --defaultEnvironment <string>  default environment
-  -e, --environment <string>         designated environment
-  -v, --variable <string>            environment from variable
+  -y, --dynamic-path <string>        dynamic variables path
+  -d, --defaultEnvironment <string>  default environment (prefix with $ to use environment variable)
+  -e, --environment <string>         designated environment (prefix with $ to use environment variable)
   -n, --exclude-env                  exclude environment-specific variables (default: false)
   -g, --exclude-global               exclude global & dynamic variables (default: false)
   -r, --exclude-private              exclude private variables (default: false)
   -u, --exclude-public               exclude public variables (default: false)
-  -y, --dynamic-path <string>        dynamic variables path
+  -z, --exclude-dynamic              exclude dynamic variables (default: false)
   -c, --command <string>             shell command string
   -l, --log                          log extracted variables (default: false)
+  -t, --dotenv-token <string>        token indicating a dotenv file (default: '.env')
+  -i, --private-token <string>       token indicating private variables (default: 'local')
   -h, --help                         display help for command
 ```
 
@@ -159,6 +159,7 @@ get-dotenv options type
 | [dotenvToken] | <code>string</code> | token indicating a dotenv file (default: '.env') |
 | [dynamicPath] | <code>string</code> | path to file exporting an object keyed to dynamic variable functions |
 | [env] | <code>string</code> | target environment |
+| [excludeDynamic] | <code>bool</code> | exclude dynamic variables (default: false) |
 | [excludeEnv] | <code>bool</code> | exclude environment-specific variables (default: false) |
 | [excludeGlobal] | <code>bool</code> | exclude global & dynamic variables (default: false) |
 | [excludePrivate] | <code>bool</code> | exclude private variables (default: false) |

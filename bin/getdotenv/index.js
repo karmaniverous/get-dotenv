@@ -2,6 +2,7 @@
 
 // Import npm packages.
 import spawn from 'cross-spawn';
+import _ from 'lodash';
 import { parseArgsStringToArgv } from 'string-argv';
 
 // Import package exports.
@@ -9,6 +10,11 @@ import { getDotenv } from '@karmaniverous/get-dotenv';
 
 // Create CLI.
 import { program } from 'commander';
+
+const envMerge = (value) =>
+  !_.isUndefined(value) && value.startsWith('$')
+    ? process.env[value.slice(1)]
+    : value;
 
 // CLI description.
 program
@@ -41,17 +47,17 @@ program
     '-p, --paths <strings...>',
     "space-delimited paths to dotenv directory (default './')"
   )
+  .option('-y, --dynamic-path <string>', 'dynamic variables path')
   .option(
-    '-t, --dotenv-token <string>',
-    "token indicating a dotenv file (default: '.env')"
+    '-d, --defaultEnvironment <string>',
+    'default environment (prefix with $ to use environment variable)',
+    envMerge
   )
   .option(
-    '-i, --private-token <string>',
-    "token indicating private variables (default: 'local')"
+    '-e, --environment <string>',
+    'designated environment (prefix with $ to use environment variable)',
+    envMerge
   )
-  .option('-d, --defaultEnvironment <string>', 'default environment')
-  .option('-e, --environment <string>', 'designated environment')
-  .option('-v, --variable <string>', 'environment from variable')
   .option(
     '-n, --exclude-env',
     'exclude environment-specific variables (default: false)'
@@ -62,9 +68,17 @@ program
   )
   .option('-r, --exclude-private', 'exclude private variables (default: false)')
   .option('-u, --exclude-public', 'exclude public variables (default: false)')
-  .option('-y, --dynamic-path <string>', 'dynamic variables path')
+  .option('-z, --exclude-dynamic', 'exclude dynamic variables (default: false)')
   .option('-c, --command <string>', 'shell command string')
-  .option('-l, --log', 'log extracted variables (default: false)');
+  .option('-l, --log', 'log extracted variables (default: false)')
+  .option(
+    '-t, --dotenv-token <string>',
+    "token indicating a dotenv file (default: '.env')"
+  )
+  .option(
+    '-i, --private-token <string>',
+    "token indicating private variables (default: 'local')"
+  );
 
 // Parse CLI options from command line.
 program.parse();
@@ -81,13 +95,12 @@ const {
   log,
   paths,
   privateToken,
-  variable,
 } = program.opts();
 
 if (command && program.args.length) program.error('command specified twice');
 
 // Get environment.
-const env = environment ?? process.env[variable] ?? defaultEnvironment;
+const env = environment ?? defaultEnvironment;
 
 // Load dotenvs.
 await getDotenv({

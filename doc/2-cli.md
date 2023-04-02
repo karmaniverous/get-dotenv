@@ -22,17 +22,17 @@ dotenv files. You can:
 
 Options:
   -p, --paths <strings...>           space-delimited paths to dotenv directory (default './')
-  -t, --dotenv-token <string>        token indicating a dotenv file (default: '.env')
-  -i, --private-token <string>       token indicating private variables (default: 'local')
-  -d, --defaultEnvironment <string>  default environment
-  -e, --environment <string>         designated environment
-  -v, --variable <string>            environment from variable
+  -y, --dynamic-path <string>        dynamic variables path
+  -d, --defaultEnvironment <string>  default environment (prefix with $ to use environment variable)
+  -e, --environment <string>         designated environment (prefix with $ to use environment variable)
   -n, --exclude-env                  exclude environment-specific variables (default: false)
   -g, --exclude-global               exclude global & dynamic variables (default: false)
   -r, --exclude-private              exclude private variables (default: false)
   -u, --exclude-public               exclude public variables (default: false)
-  -y, --dynamic-path <string>        dynamic variables path
+  -z, --exclude-dynamic              exclude dynamic variables (default: false)
   -c, --command <string>             shell command string
   -l, --log                          log extracted variables (default: false)
+  -t, --dotenv-token <string>        token indicating a dotenv file (default: '.env')
+  -i, --private-token <string>       token indicating private variables (default: 'local')
   -h, --help                         display help for command
 ```
