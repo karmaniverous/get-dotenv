@@ -7,22 +7,23 @@ Load environment variables with a cascade of environment-aware
 dotenv files. You can:
 
 * Specify the directories containing your dotenv files.
-* Specify the token that identifies dotenv files (e.g. '.env').
-* Specify the token that identifies private vatiables (e.g. '.local').
+* Define dynamic variables progressively in terms of other variables and
+  other logic.
+* Specify a consolidated output file path.
 * Load variables for a specific environment or none.
 * Specify a default environment, override the default with an existing
   environment variable, and override both with a direct setting.
-* Exclude public or private variables.
-* Exclude global & dynamic or environment-specific variables.
-* Define dynamic variables progressively in terms of other variables and
-  other logic.
+* Exclude public, private, global, environment-specific, or dynamic variables.
 * Execute a &&-delimited series of shell commands after loading variables.
 * Place the shell commands inside the invocation to support npm script
   arguments for other options.
+* Specify the token that identifies dotenv files (e.g. '.env').
+* Specify the token that identifies private vatiables (e.g. '.local').
 
 Options:
   -p, --paths <strings...>           space-delimited paths to dotenv directory (default './')
   -y, --dynamic-path <string>        dynamic variables path
+  -o, --output-path <string>         consolidated output file
   -d, --defaultEnvironment <string>  default environment (prefix with $ to use environment variable)
   -e, --environment <string>         designated environment (prefix with $ to use environment variable)
   -n, --exclude-env                  exclude environment-specific variables (default: false)

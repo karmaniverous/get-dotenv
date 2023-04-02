@@ -26,18 +26,18 @@ program
       `dotenv files. You can:`,
       ``,
       `* Specify the directories containing your dotenv files.`,
-      `* Specify the token that identifies dotenv files (e.g. '.env').`,
-      `* Specify the token that identifies private vatiables (e.g. '.local').`,
+      `* Define dynamic variables progressively in terms of other variables and`,
+      `  other logic.`,
+      `* Specify a consolidated output file path.`,
       `* Load variables for a specific environment or none.`,
       `* Specify a default environment, override the default with an existing`,
       `  environment variable, and override both with a direct setting.`,
-      `* Exclude public or private variables.`,
-      `* Exclude global & dynamic or environment-specific variables.`,
-      `* Define dynamic variables progressively in terms of other variables and`,
-      `  other logic.`,
+      `* Exclude public, private, global, environment-specific, or dynamic variables.`,
       `* Execute a &&-delimited series of shell commands after loading variables.`,
       `* Place the shell commands inside the invocation to support npm script`,
       `  arguments for other options.`,
+      `* Specify the token that identifies dotenv files (e.g. '.env').`,
+      `* Specify the token that identifies private vatiables (e.g. '.local').`,
     ].join('\n')
   );
 
@@ -48,6 +48,7 @@ program
     "space-delimited paths to dotenv directory (default './')"
   )
   .option('-y, --dynamic-path <string>', 'dynamic variables path')
+  .option('-o, --output-path <string>', 'consolidated output file')
   .option(
     '-d, --defaultEnvironment <string>',
     'default environment (prefix with $ to use environment variable)',
@@ -93,6 +94,7 @@ const {
   excludePublic,
   dynamicPath,
   log,
+  outputPath,
   paths,
   privateToken,
 } = program.opts();
@@ -113,6 +115,7 @@ await getDotenv({
   loadProcess: true,
   dynamicPath,
   log,
+  outputPath,
   paths,
   privateToken,
 });
