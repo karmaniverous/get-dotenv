@@ -48,7 +48,10 @@ program
     "space-delimited paths to dotenv directory (default './')"
   )
   .option('-y, --dynamic-path <string>', 'dynamic variables path')
-  .option('-o, --output-path <string>', 'consolidated output file')
+  .option(
+    '-o, --output-path <string>',
+    'consolidated output file (follows dotenv-expand rules using loaded env vars)'
+  )
   .option(
     '-d, --defaultEnvironment <string>',
     'default environment (prefix with $ to use environment variable)',

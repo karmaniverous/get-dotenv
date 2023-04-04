@@ -23,7 +23,7 @@ dotenv files. You can:
 Options:
   -p, --paths <strings...>           space-delimited paths to dotenv directory (default './')
   -y, --dynamic-path <string>        dynamic variables path
-  -o, --output-path <string>         consolidated output file
+  -o, --output-path <string>         consolidated output file (follows dotenv-expand rules using loaded env vars)
   -d, --defaultEnvironment <string>  default environment (prefix with $ to use environment variable)
   -e, --environment <string>         designated environment (prefix with $ to use environment variable)
   -n, --exclude-env                  exclude environment-specific variables (default: false)

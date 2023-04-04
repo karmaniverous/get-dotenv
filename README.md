@@ -87,7 +87,7 @@ dotenv files. You can:
 Options:
   -p, --paths <strings...>           space-delimited paths to dotenv directory (default './')
   -y, --dynamic-path <string>        dynamic variables path
-  -o, --output-path <string>         consolidated output file
+  -o, --output-path <string>         consolidated output file (follows dotenv-expand rules using loaded env vars)
   -d, --defaultEnvironment <string>  default environment (prefix with $ to use environment variable)
   -e, --environment <string>         designated environment (prefix with $ to use environment variable)
   -n, --exclude-env                  exclude environment-specific variables (default: false)
@@ -167,7 +167,7 @@ get-dotenv options type
 | [excludePublic] | <code>bool</code> | exclude public variables (default: false) |
 | [loadProcess] | <code>bool</code> | load dotenv to process.env (default: false) |
 | [log] | <code>bool</code> | log result to console (default: false) |
-| [outputPath] | <code>string</code> | if populated, writes consolidated .env file to this path |
+| [outputPath] | <code>string</code> | if populated, writes consolidated .env file to this path (follows [dotenv-expand rules](https://github.com/motdotla/dotenv-expand/blob/master/tests/.env)) |
 | [paths] | <code>Array.&lt;string&gt;</code> | array of input directory paths (default ['./']) |
 | [privateToken] | <code>string</code> | token indicating private variables (default: 'local'). |
 
