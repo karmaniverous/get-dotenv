@@ -14,17 +14,10 @@ dotenv files. You can:
 * Specify a default environment, override the default with an existing
   environment variable, and override both with a direct setting.
 * Exclude public, private, global, environment-specific, or dynamic variables.
-* Execute a &&-delimited series of shell commands after loading variables.
+* Execute a &&-delimited series of shell commands after loading variables,
+  optionally ignoring errors.
 * Place the shell commands inside the invocation to support npm script
   arguments for other options.
-* Specify the token that identifies dotenv files (e.g. '.env').
-* Specify the token that identifies private vatiables (e.g. '.local').
-
-Options:
-  -p, --paths <strings...>           space-delimited paths to dotenv directory (default './')
-  -y, --dynamic-path <string>        dynamic variables path
-  -o, --output-path <string>         consolidated output file (follows dotenv-expand rules using loaded env vars)
-  -d, --defaultEnvironment <string>  default environment (prefix with $ to use environment variable)
   -e, --environment <string>         designated environment (prefix with $ to use environment variable)
   -n, --exclude-env                  exclude environment-specific variables (default: false)
   -g, --exclude-global               exclude global & dynamic variables (default: false)
@@ -35,5 +28,6 @@ Options:
   -l, --log                          log extracted variables (default: false)
   -t, --dotenv-token <string>        token indicating a dotenv file (default: '.env')
   -i, --private-token <string>       token indicating private variables (default: 'local')
+  -q, --throw-error                  throw error to shell & terminate sequential process (default: false)
   -h, --help                         display help for command
 ```

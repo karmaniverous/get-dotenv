@@ -33,7 +33,8 @@ program
       `* Specify a default environment, override the default with an existing`,
       `  environment variable, and override both with a direct setting.`,
       `* Exclude public, private, global, environment-specific, or dynamic variables.`,
-      `* Execute a &&-delimited series of shell commands after loading variables.`,
+      `* Execute a &&-delimited series of shell commands after loading variables,`,
+      `  optionally ignoring errors.`,
       `* Place the shell commands inside the invocation to support npm script`,
       `  arguments for other options.`,
       `* Specify the token that identifies dotenv files (e.g. '.env').`,
@@ -82,6 +83,10 @@ program
   .option(
     '-i, --private-token <string>',
     "token indicating private variables (default: 'local')"
+  )
+  .option(
+    '-q, --throw-error',
+    'throw error to shell & terminate sequential process (default: false)'
   );
 
 // Parse CLI options from command line.
@@ -100,6 +105,7 @@ const {
   outputPath,
   paths,
   privateToken,
+  throwError,
 } = program.opts();
 
 if (command && program.args.length) program.error('command specified twice');
@@ -129,6 +135,8 @@ if (command || program.args.length) {
     .split('&&')
     .map((c) => parseArgsStringToArgv(c));
 
-  for (const argv of argvs)
-    spawn.sync(argv[0], argv.slice(1), { stdio: 'inherit' });
+  for (const argv of argvs) {
+    const { error } = spawn.sync(argv[0], argv.slice(1), { stdio: 'inherit' });
+    if (error && throwError) throw error;
+  }
 }
