@@ -85,8 +85,8 @@ program
     "token indicating private variables (default: 'local')"
   )
   .option(
-    '-q, --throw-error',
-    'throw error to shell & terminate sequential process (default: false)'
+    '-q, --quit-on-error',
+    'terminate sequential process on error (default: false)'
   );
 
 // Parse CLI options from command line.
@@ -105,7 +105,7 @@ const {
   outputPath,
   paths,
   privateToken,
-  throwError,
+  quitOnError,
 } = program.opts();
 
 if (command && program.args.length) program.error('command specified twice');
@@ -140,6 +140,6 @@ if (command || program.args.length) {
       stdio: 'inherit',
     });
 
-    if (status && throwError) process.exit(status);
+    if (status && quitOnError) process.exit(status);
   }
 }

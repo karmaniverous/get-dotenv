@@ -28,6 +28,6 @@ dotenv files. You can:
   -l, --log                          log extracted variables (default: false)
   -t, --dotenv-token <string>        token indicating a dotenv file (default: '.env')
   -i, --private-token <string>       token indicating private variables (default: 'local')
-  -q, --throw-error                  throw error to shell & terminate sequential process (default: false)
+  -q, --quit-on-error                terminate sequential process on error (default: false)
   -h, --help                         display help for command
 ```
