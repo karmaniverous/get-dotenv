@@ -136,7 +136,10 @@ if (command || program.args.length) {
     .map((c) => parseArgsStringToArgv(c));
 
   for (const argv of argvs) {
-    const { error } = spawn.sync(argv[0], argv.slice(1), { stdio: 'inherit' });
-    if (error && throwError) throw error;
+    const { error, status } = spawn.sync(argv[0], argv.slice(1), {
+      stdio: 'inherit',
+    });
+    if ((error || status) && throwError)
+      throw error ?? new Error(`exited with code ${status}`);
   }
 }
