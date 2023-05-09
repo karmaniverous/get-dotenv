@@ -140,6 +140,6 @@ if (command || program.args.length) {
       stdio: 'inherit',
     });
 
-    if (status) process.exit(status);
+    if (status && throwError) process.exit(status);
   }
 }
