@@ -139,7 +139,10 @@ if (command || program.args.length) {
     const { error, status } = spawn.sync(argv[0], argv.slice(1), {
       stdio: 'inherit',
     });
-    if ((error || status) && throwError)
-      throw error ?? new Error(`exited with code ${status}`);
+
+    if (throwError) {
+      if (error) throw error;
+      if (status) throw new Error(`exited with code ${status}`);
+    }
   }
 }
