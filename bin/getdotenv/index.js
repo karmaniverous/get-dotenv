@@ -32,6 +32,7 @@ program
       `* Load variables for a specific environment or none.`,
       `* Specify a default environment, override the default with an existing`,
       `  environment variable, and override both with a direct setting.`,
+      `* Drive the current git branch to an environment variable.`,
       `* Exclude public, private, global, environment-specific, or dynamic variables.`,
       `* Execute a &&-delimited series of shell commands after loading variables,`,
       `  optionally ignoring errors.`,
@@ -54,7 +55,12 @@ program
     'consolidated output file (follows dotenv-expand rules using loaded env vars)'
   )
   .option(
-    '-d, --defaultEnvironment <string>',
+    '-b, --git-branch <string>',
+    'environment variable to populate with current git branch',
+    envMerge
+  )
+  .option(
+    '-d, --default-environment <string>',
     'default environment (prefix with $ to use environment variable)',
     envMerge
   )
@@ -95,12 +101,13 @@ const {
   command,
   defaultEnvironment,
   dotenvToken,
+  dynamicPath,
   environment,
   excludeEnv,
   excludeGlobal,
   excludePrivate,
   excludePublic,
-  dynamicPath,
+  gitBranch,
   log,
   outputPath,
   paths,
@@ -121,6 +128,7 @@ await getDotenv({
   excludeGlobal,
   excludePrivate,
   excludePublic,
+  gitBranch,
   loadProcess: true,
   dynamicPath,
   log,
