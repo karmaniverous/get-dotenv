@@ -77,7 +77,7 @@ dotenv files. You can:
 * Load variables for a specific environment or none.
 * Specify a default environment, override the default with an existing
   environment variable, and override both with a direct setting.
-* Drive the current git branch to an environment variable.
+* Derive the default environment from the current git branch
 * Exclude public, private, global, environment-specific, or dynamic variables.
 * Execute a &&-delimited series of shell commands after loading variables,
   optionally ignoring errors.
@@ -90,8 +90,8 @@ Options:
   -p, --paths <strings...>            space-delimited paths to dotenv directory (default './')
   -y, --dynamic-path <string>         dynamic variables path
   -o, --output-path <string>          consolidated output file (follows dotenv-expand rules using loaded env vars)
-  -b, --git-branch <string>           environment variable to populate with current git branch
   -d, --default-environment <string>  default environment (prefix with $ to use environment variable)
+  -b, --branch-to-default             derive default environment from the current git branch (default: false)
   -e, --environment <string>          designated environment (prefix with $ to use environment variable)
   -n, --exclude-env                   exclude environment-specific variables (default: false)
   -g, --exclude-global                exclude global & dynamic variables (default: false)
@@ -169,7 +169,6 @@ get-dotenv options type
 | [excludeGlobal] | <code>bool</code> | exclude global & dynamic variables (default: false) |
 | [excludePrivate] | <code>bool</code> | exclude private variables (default: false) |
 | [excludePublic] | <code>bool</code> | exclude public variables (default: false) |
-| [gitBranch] | <code>string</code> | environment variable to populate with current git branch |
 | [loadProcess] | <code>bool</code> | load dotenv to process.env (default: false) |
 | [log] | <code>bool</code> | log result to console (default: false) |
 | [outputPath] | <code>string</code> | if populated, writes consolidated .env file to this path (follows [dotenv-expand rules](https://github.com/motdotla/dotenv-expand/blob/master/tests/.env)) |

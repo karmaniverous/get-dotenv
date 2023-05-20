@@ -2,6 +2,7 @@
 
 // Import npm packages.
 import spawn from 'cross-spawn';
+import branch from 'git-branch';
 import _ from 'lodash';
 import { parseArgsStringToArgv } from 'string-argv';
 
@@ -32,7 +33,7 @@ program
       `* Load variables for a specific environment or none.`,
       `* Specify a default environment, override the default with an existing`,
       `  environment variable, and override both with a direct setting.`,
-      `* Drive the current git branch to an environment variable.`,
+      `* Derive the default environment from the current git branch`,
       `* Exclude public, private, global, environment-specific, or dynamic variables.`,
       `* Execute a &&-delimited series of shell commands after loading variables,`,
       `  optionally ignoring errors.`,
@@ -55,13 +56,13 @@ program
     'consolidated output file (follows dotenv-expand rules using loaded env vars)'
   )
   .option(
-    '-b, --git-branch <string>',
-    'environment variable to populate with current git branch',
+    '-d, --default-environment <string>',
+    'default environment (prefix with $ to use environment variable)',
     envMerge
   )
   .option(
-    '-d, --default-environment <string>',
-    'default environment (prefix with $ to use environment variable)',
+    '-b, --branch-to-default',
+    'derive default environment from the current git branch (default: false)',
     envMerge
   )
   .option(
@@ -98,6 +99,7 @@ program
 // Parse CLI options from command line.
 program.parse();
 const {
+  branchToDefault,
   command,
   defaultEnvironment,
   dotenvToken,
@@ -107,7 +109,6 @@ const {
   excludeGlobal,
   excludePrivate,
   excludePublic,
-  gitBranch,
   log,
   outputPath,
   paths,
@@ -118,7 +119,10 @@ const {
 if (command && program.args.length) program.error('command specified twice');
 
 // Get environment.
-const env = environment ?? defaultEnvironment;
+const env =
+  environment ??
+  defaultEnvironment ??
+  (branchToDefault ? branch.sync() : undefined);
 
 // Load dotenvs.
 await getDotenv({
@@ -128,7 +132,6 @@ await getDotenv({
   excludeGlobal,
   excludePrivate,
   excludePublic,
-  gitBranch,
   loadProcess: true,
   dynamicPath,
   log,
