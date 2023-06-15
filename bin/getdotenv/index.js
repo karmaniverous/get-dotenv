@@ -2,12 +2,11 @@
 
 // Import npm packages.
 import spawn from 'cross-spawn';
-import branch from 'git-branch';
 import _ from 'lodash';
 import { parseArgsStringToArgv } from 'string-argv';
 
 // Import package exports.
-import { getDotenv } from '@karmaniverous/get-dotenv';
+import { getDotenv, parseBranch } from '@karmaniverous/get-dotenv';
 
 // Create CLI.
 import { program } from 'commander';
@@ -118,11 +117,12 @@ const {
 
 if (command && program.args.length) program.error('command specified twice');
 
+if (branchToDefault) {
+  var { envToken } = parseBranch();
+}
+
 // Get environment.
-const env =
-  environment ??
-  defaultEnvironment ??
-  (branchToDefault ? branch.sync() : undefined);
+const env = environment ?? envToken ?? defaultEnvironment;
 
 // Load dotenvs.
 await getDotenv({
