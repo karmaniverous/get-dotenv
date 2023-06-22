@@ -2,11 +2,11 @@
 
 // Import npm packages.
 import spawn from 'cross-spawn';
-import _ from 'lodash';
 import { parseArgsStringToArgv } from 'string-argv';
 
 // Import package exports.
 import {
+  dotenvExpand,
   getAwsSsoCredentials,
   getDotenv,
   parseBranch,
@@ -14,11 +14,6 @@ import {
 
 // Create CLI.
 import { program } from 'commander';
-
-const envMerge = (value) =>
-  !_.isUndefined(value) && value.startsWith('$')
-    ? process.env[value.slice(1)]
-    : value;
 
 // CLI description.
 program
@@ -62,17 +57,17 @@ program
   .option(
     '-d, --default-environment <string>',
     'default environment (prefix with $ to use environment variable)',
-    envMerge
+    dotenvExpand
   )
   .option(
     '-b, --branch-to-default',
     'derive default environment from the current git branch (default: false)',
-    envMerge
+    dotenvExpand
   )
   .option(
     '-e, --environment <string>',
     'designated environment (prefix with $ to use environment variable)',
-    envMerge
+    dotenvExpand
   )
   .option(
     '-n, --exclude-env',
@@ -101,8 +96,7 @@ program
   )
   .option(
     '-a, --aws-sso-profile <string>',
-    'local AWS SSO profile (follows dotenv-expand rules)',
-    envMerge
+    'local AWS SSO profile (follows dotenv-expand rules)'
   );
 
 // Parse CLI options from command line.
@@ -152,7 +146,7 @@ await getDotenv({
 });
 
 // Get AWS SSO credentials.
-if (awsSsoProfile) getAwsSsoCredentials(awsSsoProfile);
+if (awsSsoProfile) getAwsSsoCredentials(dotenvExpand(awsSsoProfile));
 
 // Execute shell command.
 if (command || program.args.length) {
