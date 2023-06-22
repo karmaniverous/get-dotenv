@@ -6,7 +6,11 @@ import _ from 'lodash';
 import { parseArgsStringToArgv } from 'string-argv';
 
 // Import package exports.
-import { getDotenv, parseBranch } from '@karmaniverous/get-dotenv';
+import {
+  getAwsSsoCredentials,
+  getDotenv,
+  parseBranch,
+} from '@karmaniverous/get-dotenv';
 
 // Create CLI.
 import { program } from 'commander';
@@ -40,6 +44,7 @@ program
       `  arguments for other options.`,
       `* Specify the token that identifies dotenv files (e.g. '.env').`,
       `* Specify the token that identifies private vatiables (e.g. '.local').`,
+      `* Load AWS SSO session credentials from an AWS Toolkit profile.`,
     ].join('\n')
   );
 
@@ -93,11 +98,17 @@ program
   .option(
     '-q, --quit-on-error',
     'terminate sequential process on error (default: false)'
+  )
+  .option(
+    '-a, --aws-sso-profile <string>',
+    'local AWS SSO profile (follows dotenv-expand rules)',
+    envMerge
   );
 
 // Parse CLI options from command line.
 program.parse();
 const {
+  awsSsoProfile,
   branchToDefault,
   command,
   defaultEnvironment,
@@ -139,6 +150,9 @@ await getDotenv({
   paths,
   privateToken,
 });
+
+// Get AWS SSO credentials.
+if (awsSsoProfile) getAwsSsoCredentials(awsSsoProfile);
 
 // Execute shell command.
 if (command || program.args.length) {

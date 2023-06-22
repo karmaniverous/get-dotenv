@@ -85,6 +85,7 @@ dotenv files. You can:
   arguments for other options.
 * Specify the token that identifies dotenv files (e.g. '.env').
 * Specify the token that identifies private vatiables (e.g. '.local').
+* Load AWS SSO session credentials from an AWS Toolkit profile.
 
 Options:
   -p, --paths <strings...>            space-delimited paths to dotenv directory (default './')
@@ -103,6 +104,7 @@ Options:
   -t, --dotenv-token <string>         token indicating a dotenv file (default: '.env')
   -i, --private-token <string>        token indicating private variables (default: 'local')
   -q, --quit-on-error                 terminate sequential process on error (default: false)
+  -a, --aws-sso-profile <string>      local AWS SSO profile (follows dotenv-expand rules)
   -h, --help                          display help for command
 ```
 
