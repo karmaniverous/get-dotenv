@@ -146,7 +146,10 @@ await getDotenv({
 });
 
 // Get AWS SSO credentials.
-if (awsSsoProfile) getAwsSsoCredentials(dotenvExpand(awsSsoProfile));
+if (awsSsoProfile) {
+  const profile = dotenvExpand(awsSsoProfile);
+  if (profile) getAwsSsoCredentials(profile);
+}
 
 // Execute shell command.
 if (command || program.args.length) {
