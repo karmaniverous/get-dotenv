@@ -3,7 +3,7 @@
   "bin": {
     "getdotenv": "bin/getdotenv/index.js"
   },
-  "version": "2.6.4",
+  "version": "2.6.5",
   "publishConfig": {
     "access": "public"
   },
