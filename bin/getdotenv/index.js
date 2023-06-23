@@ -10,7 +10,7 @@ import {
   getAwsSsoCredentials,
   getDotenv,
   parseBranch,
-} from '@karmaniverous/get-dotenv';
+} from '../../lib/index.js';
 
 // Create CLI.
 import { program } from 'commander';
