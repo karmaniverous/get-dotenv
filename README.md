@@ -272,6 +272,7 @@ get-dotenv options type
 | [outputPath] | <code>string</code> | if populated, writes consolidated .env file to this path (follows [dotenv-expand rules](https://github.com/motdotla/dotenv-expand/blob/master/tests/.env)) |
 | [paths] | <code>Array.&lt;string&gt;</code> | array of input directory paths |
 | [privateToken] | <code>string</code> | token indicating private variables |
+| [vars] | <code>object</code> | explicit variables to include |
 
 
 ---
