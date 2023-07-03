@@ -31,7 +31,6 @@ Options:
   -L, --log-off                console log extracted variables OFF (default)
   -x, --suppress-dotenv        suppress dotenv loading (default: false)
   -c, --command <string>       shell command string
-  -s, --shell <string>         execa shell option
   --dotenv-token <string>      token indicating a dotenv file (default: ".env")
   --private-token <string>     token indicating private variables (default: "local")
   -D, --debug                  debug mode

@@ -13,7 +13,7 @@ Load environment variables with a cascade of environment-aware dotenv files. You
 
 `getdotenv` relies on the excellent [`dotenv`](https://www.npmjs.com/package/dotenv) parser and uses [`dotenv-expand`](https://www.npmjs.com/package/dotenv-expand) for recursive variable expansion.
 
-The command-line version populates `process.env` from your dotenv files (you can also specify values inline) and can then execute a shell command within that context. The executing shell is configurable. Any child `getdotenv` instances will inherit as defaults the parent shell's environment and optionally its `getdotenv` settings.
+The command-line version populates `process.env` from your dotenv files (you can also specify values inline) and can then execute a shell command within that context. Any child `getdotenv` instances will inherit as defaults the parent shell's environment and optionally its `getdotenv` settings.
 
 You can always use `getdotenv` directly on the command line, but its REAL power comes into play when you use it as the foundation of your own CLI. This lets you set defaults globally and configure pre- and post-hooks that mutate your `getdotenv` context and do useful things like grab an AWS session from your dev environment and add it to the command execution context.
 
@@ -102,7 +102,6 @@ Options:
   -L, --log-off                console log extracted variables OFF (default)
   -x, --suppress-dotenv        suppress dotenv loading (default: false)
   -c, --command <string>       shell command string
-  -s, --shell <string>         execa shell option
   --dotenv-token <string>      token indicating a dotenv file (default: ".env")
   --private-token <string>     token indicating private variables (default: "local")
   -D, --debug                  debug mode
@@ -216,7 +215,6 @@ GetDotenv CLI Options type
 | [outputPath] | <code>string</code> | if populated, writes consolidated .env file to this path (follows [dotenv-expand rules](https://github.com/motdotla/dotenv-expand/blob/master/tests/.env)) |
 | [paths] | <code>string</code> | space-delimited list of input directory paths |
 | [privateToken] | <code>string</code> | token indicating private variables. |
-| [shell] | <code>string</code> | execa shell option |
 | [suppressDotenv] | <code>bool</code> | suppress dotenv loading |
 
 <a name="GetDotenvPreHookCallback"></a>
