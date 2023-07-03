@@ -79,7 +79,8 @@ Usage: getdotenv [options] [command]
 Base CLI. All options except delimiters follow dotenv-expand rules.
 
 Options:
-  -e, --env <string>            environment name
+  -e, --env <string>            target environment
+  --default-env <string>        default target environment (default: "dev")
   -p, --paths <string>          delimited list of paths to dotenv directory (default: "./")
   --paths-delimiter <string>    regex paths delimiter (default: "\\s+")
   -v, --vars <string>           delimited list KEY=VALUE pairs
@@ -193,6 +194,7 @@ GetDotenv CLI Options type
 | Name | Type | Description |
 | --- | --- | --- |
 | [cliInvocation] | <code>string</code> | cli invocation string (used for cli help) |
+| [defaultEnv] | <code>string</code> | default target environment |
 | [dotenvToken] | <code>string</code> | token indicating a dotenv file |
 | [dynamicPath] | <code>string</code> | path to file exporting an object keyed to dynamic variable functions |
 | [env] | <code>string</code> | target environment |

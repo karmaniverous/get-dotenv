@@ -8,7 +8,8 @@ Usage: getdotenv [options] [command]
 Base CLI. All options except delimiters follow dotenv-expand rules.
 
 Options:
-  -e, --env <string>            environment name
+  -e, --env <string>            target environment
+  --default-env <string>        default target environment (default: "dev")
   -p, --paths <string>          delimited list of paths to dotenv directory (default: "./")
   --paths-delimiter <string>    regex paths delimiter (default: "\\s+")
   -v, --vars <string>           delimited list KEY=VALUE pairs
