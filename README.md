@@ -188,10 +188,11 @@ Generate a CLI for get-dotenv.
 | --- | --- | --- |
 | [options] | <code>object</code> | options object |
 | [options.alias] | <code>string</code> | cli alias (used for cli help) |
+| [options.command] | <code>string</code> | [dotenv-expanded](https://github.com/motdotla/dotenv-expand/blob/master/tests/.env) shell command string |
 | [options.debug] | <code>bool</code> | debug mode |
 | [options.defaultEnv] | <code>string</code> | default target environment |
 | [options.description] | <code>string</code> | cli description (used for cli help) |
-| [options.dotenvToken] | <code>string</code> | token indicating a dotenv file |
+| [options.dotenvToken] | <code>string</code> | [dotenv-expanded](https://github.com/motdotla/dotenv-expand/blob/master/tests/.env) token indicating a dotenv file |
 | [options.dynamicPath] | <code>string</code> | path to file exporting an object keyed to dynamic variable functions |
 | [options.excludeDynamic] | <code>bool</code> | exclude dynamic dotenv variables |
 | [options.excludeEnv] | <code>bool</code> | exclude environment-specific dotenv variables |
@@ -201,13 +202,14 @@ Generate a CLI for get-dotenv.
 | [options.loadProcess] | <code>bool</code> | load variables to process.env |
 | [options.log] | <code>bool</code> | log result to console |
 | [options.logger] | <code>function</code> | logger function |
-| [options.paths] | <code>string</code> | delimited list of input directory paths |
+| [options.outputPath] | <code>string</code> | consolidated output file, [dotenv-expanded](https://github.com/motdotla/dotenv-expand/blob/master/tests/.env) using loaded env vars |
+| [options.paths] | <code>string</code> | [dotenv-expanded](https://github.com/motdotla/dotenv-expand/blob/master/tests/.env) delimited list of input directory paths |
 | [options.pathsDelimiter] | <code>string</code> | paths delimiter string |
 | [options.pathsDelimiterPattern] | <code>string</code> | paths delimiter regex pattern |
 | [config.preHook] | [<code>GetDotenvPreHookCallback</code>](#GetDotenvPreHookCallback) | transforms cli options & executes side effects |
-| [options.privateToken] | <code>string</code> | token indicating private variables |
+| [options.privateToken] | <code>string</code> | [dotenv-expanded](https://github.com/motdotla/dotenv-expand/blob/master/tests/.env) token indicating private variables |
 | [config.postHook] | [<code>GetDotenvPostHookCallback</code>](#GetDotenvPostHookCallback) | executes side effects within getdotenv context |
-| [options.vars] | <code>string</code> | delimited list of explicit environment variable key-value pairs |
+| [options.vars] | <code>string</code> | [dotenv-expanded](https://github.com/motdotla/dotenv-expand/blob/master/tests/.env) delimited list of explicit environment variable key-value pairs |
 | [options.varsAssignor] | <code>string</code> | variable key-value assignor string |
 | [options.varsAssignorPattern] | <code>string</code> | variable key-value assignor regex pattern |
 | [options.varsDelimiter] | <code>string</code> | variable key-value pair delimiter string |
