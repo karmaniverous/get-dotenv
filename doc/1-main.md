@@ -6,10 +6,14 @@ Load environment variables with a cascade of environment-aware dotenv files. You
 - Load variables for a specific environment or none.
 - Define dynamic variables progressively in terms of other variables and other logic.
 - Exclude public, private, global, environment-specific, or dynamic variables.
+- Specify explicit variables to include.
 - Extract the resulting variables to an object, `process.env`, a dotenv file, or a logger, in any combination.
+- Execute a shell command within the resulting environment. You can even nest additional `getdotenv` calls!
 - Specify the directories containing your dotenv files.
 - Specify the filename token that identifies dotenv files (e.g. '.env').
 - Specify the filename extension that identifies private variables (e.g. 'local').
+- Set defaults for all options in a [`getdotenv.config.json`](./getdotenv.config.json) file in your project root directory.
+- Generate a custom `getdotenv`-based CLI for use in your own projects.
 
 `getdotenv` relies on the excellent [`dotenv`](https://www.npmjs.com/package/dotenv) parser and uses [`dotenv-expand`](https://www.npmjs.com/package/dotenv-expand) for recursive variable expansion.
 
@@ -63,7 +67,6 @@ Since keys will be evaluated progressively, each successive key function will ha
 
 Implementation always runs a little behind documentation. These topics & improvements are coming soon:
 
-- Rationalize the package's JSDOC to improve the API documentation below.
 - An example of dotenv-based environment config.
 - Integrating `getdotenv` into your npm scripts.
 - Creating a `getdotenv`-based CLI.

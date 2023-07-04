@@ -12,7 +12,11 @@
   "ignorePatterns": ["/dist/**/*.*", "*.json"],
   "parser": "@babel/eslint-parser",
   "parserOptions": {
+    "babelOptions": {
+      "plugins": ["@babel/plugin-syntax-import-assertions"]
+    },
     "ecmaVersion": "latest",
+    "requireConfigFile": false,
     "sourceType": "module"
   },
   "plugins": ["mocha", "promise"]
