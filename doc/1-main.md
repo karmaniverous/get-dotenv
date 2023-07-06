@@ -7,7 +7,7 @@ Load environment variables with a cascade of environment-aware dotenv files. You
 - Define dynamic variables progressively in terms of other variables and other logic.
 - Exclude public, private, global, environment-specific, or dynamic variables.
 - Specify explicit variables to include.
-- Extract the resulting variables to an object, `process.env`, a dotenv file, or a logger, in any combination.
+- Extract the resulting variables to an object, `process.env`, a dotenv file, or a logger object, in any combination.
 - Execute a shell command within the resulting environment. You can even nest additional `getdotenv` calls!
 - Specify the directories containing your dotenv files.
 - Specify the filename token that identifies dotenv files (e.g. '.env').
