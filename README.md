@@ -225,6 +225,7 @@ get-dotenv options type
 
 | Name | Type | Description |
 | --- | --- | --- |
+| [defaultEnv] | <code>string</code> | default target environment |
 | [dotenvToken] | <code>string</code> | token indicating a dotenv file |
 | [dynamicPath] | <code>string</code> | path to file exporting an object keyed to dynamic variable functions |
 | [env] | <code>string</code> | target environment |
