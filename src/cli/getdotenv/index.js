@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 // lib imports
-import { getDotenvCli } from '../../lib/getDotenvCli.js';
+import { getDotenvCli } from '../../getDotenvCli.js';
 
 const cli = getDotenvCli();
 

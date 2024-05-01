@@ -1,3 +1,8 @@
-node_modules/
+.nyc_output/
+.rollup.cache/
+.tsbuildinfo
 *.local
-!test/*.local
+coverage/
+dist/
+esm/
+node_modules/

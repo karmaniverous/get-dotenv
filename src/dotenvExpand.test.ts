@@ -3,7 +3,7 @@
 // mocha imports
 import { expect } from 'chai';
 
-import { dotenvExpand } from './dotenvExpand.js';
+import { dotenvExpand } from './dotenvExpand';
 
 describe('dotenvExpand', function () {
   it('expands variables', function () {

@@ -5,7 +5,7 @@ import { should as chaiShould } from 'chai';
 chaiShould();
 
 // subject imports
-import { readDotenv, readDotenvSync } from './readDotenv.js';
+import { readDotenv, readDotenvSync } from './readDotenv';
 
 describe('readDotEnv', function () {
   describe('asynchronously', function () {

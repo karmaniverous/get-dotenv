@@ -7,7 +7,7 @@ import { nanoid } from 'nanoid';
 // lib imports
 import { dotenvExpandAll } from './dotenvExpand.js';
 import { getdotenvDefaultOptions } from './options.js';
-import { readDotenv, readDotenvSync } from './readDotenv.js';
+import { readDotenv, readDotenvSync } from './readDotenv';
 
 const pruneVars = (getdotenvDefaultOptions, options) =>
   pickBy(
@@ -15,7 +15,7 @@ const pruneVars = (getdotenvDefaultOptions, options) =>
       ...(getdotenvDefaultOptions.vars ?? {}),
       ...(options.vars ?? {}),
     },
-    (v) => v?.length
+    (v) => v?.length,
   );
 
 /**
@@ -92,12 +92,12 @@ export const getDotenv = async (options = {}) => {
         : readDotenv(
             path.resolve(
               p,
-              `${dotenvToken}.${env ?? defaultEnv}.${privateToken}`
-            )
+              `${dotenvToken}.${env ?? defaultEnv}.${privateToken}`,
+            ),
           );
 
     [e, publicGlobal, publicEnv, privateGlobal, privateEnv] = await Promise.all(
-      [e, publicGlobal, publicEnv, privateGlobal, privateEnv]
+      [e, publicGlobal, publicEnv, privateGlobal, privateEnv],
     );
 
     return {
@@ -123,7 +123,7 @@ export const getDotenv = async (options = {}) => {
   // Process dynamic variables.
   if (dynamicPath && !excludeDynamic && (await fs.exists(dynamicPath))) {
     const dynamic = new Function(
-      `return ${(await fs.readFile(dynamicPath)).toString()}`
+      `return ${(await fs.readFile(dynamicPath)).toString()}`,
     )()(dotenv);
     Object.keys(dynamic).forEach((key) => {
       Object.assign(dotenv, {
@@ -148,7 +148,7 @@ export const getDotenv = async (options = {}) => {
           value.includes('\n') ? `"${value}"` : value
         }\n`;
       }, ''),
-      { encoding: 'utf-8' }
+      { encoding: 'utf-8' },
     );
   }
 
@@ -202,7 +202,7 @@ export const getDotenvSync = (options = {}) => {
       excludePublic || excludeEnv
         ? {}
         : readDotenvSync(
-            path.resolve(p, `${dotenvToken}.${env ?? defaultEnv}`)
+            path.resolve(p, `${dotenvToken}.${env ?? defaultEnv}`),
           );
     let privateGlobal =
       excludePrivate || excludeGlobal
@@ -214,8 +214,8 @@ export const getDotenvSync = (options = {}) => {
         : readDotenvSync(
             path.resolve(
               p,
-              `${dotenvToken}.${env ?? defaultEnv}.${privateToken}`
-            )
+              `${dotenvToken}.${env ?? defaultEnv}.${privateToken}`,
+            ),
           );
 
     return {
@@ -241,7 +241,7 @@ export const getDotenvSync = (options = {}) => {
   // Process dynamic variables.
   if (dynamicPath && !excludeDynamic && fs.existsSync(dynamicPath)) {
     const dynamic = new Function(
-      `return ${fs.readFileSync(dynamicPath).toString()}`
+      `return ${fs.readFileSync(dynamicPath).toString()}`,
     )()(dotenv);
     Object.keys(dynamic).forEach((key) => {
       Object.assign(dotenv, {
@@ -266,7 +266,7 @@ export const getDotenvSync = (options = {}) => {
           value.includes('\n') ? `"${value}"` : value
         }\n`;
       }, ''),
-      { encoding: 'utf-8' }
+      { encoding: 'utf-8' },
     );
   }
 
