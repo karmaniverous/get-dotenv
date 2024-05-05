@@ -10,10 +10,10 @@ Load environment variables with a cascade of environment-aware dotenv files. You
 - Private files (e.g. `.env.local`, `env.dev.local`, `env.test.local`) are protected by `.gitignore`.
 - Global files (e.g. `.env`, `env.local`) apply to all environments.
 - Env files (e.g. `.env.dev`, `.env.dev.local`, `.env.test`, `.env.test.local`) apply to a specific environment.
-- Dynamic files (`.env.js`) export logic that dynamically & progressively generates new variables or overrides current ones `.env.dev`, `.env.local`.
+- Dynamic files (`.env.js`) export logic that dynamically & progressively generates new variables or overrides current ones.
 
-✅ Dynamically specify which variables to load by type
-.
+✅ Dynamically specify which variables to load by type.
+
 ✅ Explicitly add variables to the loaded set.
 
 ✅ Extract the resulting variables to an object, `process.env`, a dotenv file, or a logger object, in any combination.
