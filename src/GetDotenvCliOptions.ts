@@ -93,9 +93,11 @@ const defaultGetDotenvCliOptionsGlobalPath = resolve(
  * @defaultValue `{}`
  */
 export const defaultGetDotenvCliOptionsGlobal = {
+  dotenvToken: '.env',
   loadProcess: true,
-  paths: './ ./env',
+  paths: './',
   pathsDelimiter: ' ',
+  privateToken: 'local',
   vars: '',
   varsAssignor: '=',
   varsDelimiter: ' ',

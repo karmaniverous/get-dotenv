@@ -2,6 +2,7 @@ import fs from 'fs-extra';
 import _ from 'lodash';
 import { nanoid } from 'nanoid';
 import path from 'path';
+import url from 'url';
 
 import { dotenvExpandAll } from './dotenvExpand';
 import {
@@ -12,7 +13,7 @@ import {
   mergeGetDotenvOptions,
   type ProcessEnv,
 } from './GetDotenvOptions';
-import { readDotenv, readDotenvSync } from './readDotenv';
+import { readDotenv } from './readDotenv';
 
 /**
  * Asynchronously process dotenv files of the form `.env[.<ENV>][.<PRIVATE_TOKEN>]`
@@ -20,7 +21,9 @@ import { readDotenv, readDotenvSync } from './readDotenv';
  * @param options - `GetDotenvOptions` object
  * @returns The combined parsed dotenv object.
  */
-export const getDotenv = async (options: GetDotenvOptions = {}) => {
+export const getDotenv = async (
+  options: GetDotenvOptions = {},
+): Promise<ProcessEnv> => {
   // Apply defaults.
   const {
     defaultEnv,
@@ -112,7 +115,9 @@ export const getDotenv = async (options: GetDotenvOptions = {}) => {
 
     if (await fs.exists(absDynamicPath)) {
       try {
-        const dynamic = (await import(absDynamicPath)) as GetDotenvDynamic;
+        const { default: dynamic } = (await import(
+          url.pathToFileURL(absDynamicPath).toString()
+        )) as { default: GetDotenvDynamic };
 
         for (const key in dynamic)
           Object.assign(dotenv, {
@@ -135,132 +140,6 @@ export const getDotenv = async (options: GetDotenvOptions = {}) => {
     delete dotenv[outputKey];
 
     await fs.writeFile(
-      outputPath,
-      Object.keys(dotenv).reduce((contents, key) => {
-        const value = dotenv[key] ?? '';
-        return `${contents}${key}=${
-          value.includes('\n') ? `"${value}"` : value
-        }\n`;
-      }, ''),
-      { encoding: 'utf-8' },
-    );
-  }
-
-  // Log result.
-  if (log) logger.log(dotenv);
-
-  // Load process.env.
-  if (loadProcess) Object.assign(process.env, dotenv);
-
-  return dotenv;
-};
-
-/**
- * Synchronously process dotenv files of the form `.env[.<ENV>][.<PRIVATE_TOKEN>]`
- *
- * @param options - `GetDotenvOptions` object
- * @returns The combined parsed dotenv object.
- */
-export const getDotenvSync = (options: GetDotenvOptions = {}) => {
-  // Apply defaults.
-  const {
-    defaultEnv,
-    dotenvToken = '.env',
-    dynamicPath,
-    env,
-    excludeDynamic = false,
-    excludeEnv = false,
-    excludeGlobal = false,
-    excludePrivate = false,
-    excludePublic = false,
-    loadProcess = false,
-    log = false,
-    logger = console,
-    outputPath,
-    paths = [],
-    privateToken = 'local',
-    vars = {},
-  } = mergeGetDotenvOptions(options, getDotenvDefaultOptions);
-
-  // Read .env files.
-  const loaded = paths.length
-    ? paths.reduce<ProcessEnv>((e, p) => {
-        const publicGlobal =
-          excludePublic || excludeGlobal
-            ? {}
-            : readDotenvSync(path.resolve(p, dotenvToken));
-
-        const publicEnv =
-          excludePublic || excludeEnv || (!env && !defaultEnv)
-            ? {}
-            : readDotenvSync(
-                path.resolve(p, `${dotenvToken}.${env ?? defaultEnv ?? ''}`),
-              );
-
-        const privateGlobal =
-          excludePrivate || excludeGlobal
-            ? {}
-            : readDotenvSync(path.resolve(p, `${dotenvToken}.${privateToken}`));
-
-        const privateEnv =
-          excludePrivate || excludeEnv || (!env && !defaultEnv)
-            ? {}
-            : readDotenvSync(
-                path.resolve(
-                  p,
-                  `${dotenvToken}.${env ?? defaultEnv ?? ''}.${privateToken}`,
-                ),
-              );
-
-        return {
-          ...e,
-          ...publicGlobal,
-          ...publicEnv,
-          ...privateGlobal,
-          ...privateEnv,
-        };
-      }, {})
-    : {};
-
-  const outputKey = nanoid();
-
-  const dotenv = dotenvExpandAll(
-    {
-      ...loaded,
-      ...vars,
-      ...(outputPath ? { [outputKey]: outputPath } : {}),
-    },
-    { progressive: true },
-  );
-
-  // Process dynamic variables.
-  if (dynamicPath && !excludeDynamic) {
-    const absDynamicPath = path.resolve(dynamicPath);
-
-    if (fs.existsSync(absDynamicPath))
-      import(dynamicPath)
-        .then((dynamic: GetDotenvDynamic) => {
-          for (const key in dynamic)
-            Object.assign(dotenv, {
-              [key]: _.isFunction(dynamic[key])
-                ? (dynamic[key] as GetDotenvDynamicFunction)(dotenv)
-                : dynamic[key],
-            });
-        })
-        .catch(() => {
-          throw new Error(`Unable to import dynamic file: ${dynamicPath}`);
-        });
-  }
-
-  // Write output file.
-  if (outputPath) {
-    const outputPath = dotenv[outputKey];
-    if (!outputPath) throw new Error('Output path not found.');
-
-    // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
-    delete dotenv[outputKey];
-
-    fs.writeFileSync(
       outputPath,
       Object.keys(dotenv).reduce((contents, key) => {
         const value = dotenv[key] ?? '';

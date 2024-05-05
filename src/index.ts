@@ -1,6 +1,6 @@
 export { dotenvExpand, dotenvExpandAll } from './dotenvExpand';
 export { generateGetDotenvCli } from './generateGetDotenvCli';
-export { getDotenv, getDotenvSync } from './getDotenv';
+export { getDotenv } from './getDotenv';
 export type {
   GetDotenvDynamic,
   GetDotenvOptions,
