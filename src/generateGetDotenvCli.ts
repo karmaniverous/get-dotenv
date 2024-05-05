@@ -3,7 +3,7 @@ import { execaCommand } from 'execa';
 import _ from 'lodash';
 import Os from 'os';
 
-import { dotenvExpand } from './dotenvExpand';
+import { dotenvExpandFromProcessEnv } from './dotenvExpand';
 import { getDotenv } from './getDotenv';
 import {
   defaultGetDotenvCliOptionsGlobal,
@@ -64,11 +64,6 @@ interface GetDotenvCliGenerateOptions extends Omit<GetDotenvCliOptions, 'env'> {
 }
 
 /**
- * `dotenvExpand` function reduced to initial argument (applies default to `ref` argument).
- */
-const dotenvExpandDefault = (value: string | undefined) => dotenvExpand(value);
-
-/**
  * Generate a Commander CLI Command for get-dotenv.
  */
 export const generateGetDotenvCli = ({
@@ -120,7 +115,7 @@ export const generateGetDotenvCli = ({
     .option(
       '-e, --env <string>',
       `target environment (dotenv-expanded)`,
-      dotenvExpandDefault,
+      dotenvExpandFromProcessEnv,
       env,
     )
     .option(
@@ -131,17 +126,17 @@ export const generateGetDotenvCli = ({
       ]
         .map((v) => v.join(varsAssignor))
         .join(varsDelimiter)}`,
-      dotenvExpandDefault,
+      dotenvExpandFromProcessEnv,
     )
     .option(
       '-c, --command <string>',
       'shell command string (dotenv-expanded)',
-      dotenvExpandDefault,
+      dotenvExpandFromProcessEnv,
     )
     .option(
       '-o, --output-path <string>',
       'consolidated output file  (dotenv-expanded)',
-      dotenvExpandDefault,
+      dotenvExpandFromProcessEnv,
       outputPath,
     )
     .addOption(
@@ -279,25 +274,25 @@ export const generateGetDotenvCli = ({
     .option(
       '--default-env <string>',
       'default target environment',
-      dotenvExpandDefault,
+      dotenvExpandFromProcessEnv,
       defaultEnv,
     )
     .option(
       '--dotenv-token <string>',
       'dotenv-expanded token indicating a dotenv file',
-      dotenvExpandDefault,
+      dotenvExpandFromProcessEnv,
       dotenvToken,
     )
     .option(
       '--dynamic-path <string>',
       'dynamic variables path',
-      dotenvExpandDefault,
+      dotenvExpandFromProcessEnv,
       dynamicPath,
     )
     .option(
       '--paths <string>',
       'dotenv-expanded delimited list of paths to dotenv directory',
-      dotenvExpandDefault,
+      dotenvExpandFromProcessEnv,
       paths,
     )
     .option(
@@ -313,7 +308,7 @@ export const generateGetDotenvCli = ({
     .option(
       '--private-token <string>',
       'dotenv-expanded token indicating private variables',
-      dotenvExpandDefault,
+      dotenvExpandFromProcessEnv,
       privateToken,
     )
     .option('--vars-delimiter <string>', 'vars delimiter string', varsDelimiter)

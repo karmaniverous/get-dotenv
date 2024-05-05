@@ -96,3 +96,15 @@ export const dotenvExpandAll = (
     });
     return acc;
   }, {});
+
+/**
+ * Recursively expands environment variables in a string using `process.env` as
+ * the expansion reference. Variables may be presented with optional default as
+ * `$VAR[:default]` or `${VAR[:default]}`. Unknown variables will expand to an
+ * empty string.
+ *
+ * @param value - The string to expand.
+ * @returns The expanded string.
+ */
+export const dotenvExpandFromProcessEnv = (value: string | undefined) =>
+  dotenvExpand(value, process.env);

@@ -75,7 +75,6 @@
   ],
   "homepage": "https://github.com/karmaniverous/get-dotenv#readme",
   "keywords": [
-    "async-programming",
     "cli",
     "configuration",
     "developer-tools",
@@ -85,11 +84,7 @@
     "environment-variables",
     "json",
     "nodejs",
-    "programming",
-    "software-development",
-    "sync-programming",
-    "typescript",
-    "yaml"
+    "typescript"
   ],
   "license": "BSD-3-Clause",
   "main": "./lib/index.js",
