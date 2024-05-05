@@ -1,3 +1,5 @@
+import { ProcessEnv } from './GetDotenvOptions';
+
 // like String.prototype.search but returns the last index
 const searchLast = (str: string, rgx: RegExp) => {
   const matches = Array.from(str.matchAll(rgx));
@@ -11,8 +13,6 @@ const replaceMatch = (
 ) => {
   const [group, key, defaultValue] = match;
 
-  console.log({ group, key, defaultValue });
-
   const replacement = value.replace(
     group,
     ref[key] ?? (defaultValue as string | undefined) ?? '',
@@ -22,9 +22,9 @@ const replaceMatch = (
 };
 
 const interpolate = (
-  value: string | undefined,
-  ref: Record<string, string | undefined>,
-): string | undefined => {
+  value = '',
+  ref: Record<string, string | undefined> = {},
+): string => {
   // if value is falsy, return it as is
   if (!value) return value;
 
@@ -51,18 +51,43 @@ const interpolate = (
   return value;
 };
 
+/**
+ * Recursively expands environment variables in a string. Variables may be
+ * presented with optional default as `$VAR[:default]` or `${VAR[:default]}`.
+ * Unknown variables will expand to an empty string.
+ *
+ * @param value - The string to expand.
+ * @param ref - The reference object to use for variable expansion.
+ * @returns The expanded string.
+ */
 export const dotenvExpand = (
   value: string | undefined,
-  ref: Record<string, string | undefined> = process.env,
+  ref: ProcessEnv = process.env,
 ) => {
   const result = interpolate(value, ref);
   return result ? result.replace(/\\\$/g, '$') : undefined;
 };
 
+/**
+ * Recursively expands environment variables in the values of a JSON object.
+ * Variables may be presented with optional default as `$VAR[:default]` or
+ * `${VAR[:default]}`. Unknown variables will expand to an empty string.
+ *
+ * @param value - The string to expand.
+ * @param ref - The reference object to use for variable expansion.
+ * @param progressive - Whether to progressively add expanded values to the
+ * set of reference keys.
+ * @returns The value object with expanded string values.
+ */
 export const dotenvExpandAll = (
-  values: Record<string, string | undefined> = {},
-  ref: Record<string, string | undefined> = process.env,
-  progressive = false,
+  values: ProcessEnv = {},
+  {
+    ref = process.env,
+    progressive = false,
+  }: {
+    ref?: ProcessEnv;
+    progressive?: boolean;
+  } = {},
 ) =>
   Object.keys(values).reduce<Record<string, string | undefined>>((acc, key) => {
     acc[key] = dotenvExpand(values[key], {
