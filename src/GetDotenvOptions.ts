@@ -22,6 +22,11 @@ export type Logger = Record<string, (...args: unknown[]) => void>;
  */
 export interface GetDotenvOptions {
   /**
+   * log internals to logger
+   */
+  debug?: boolean;
+
+  /**
    * default target environment (used if `env` is not provided)
    */
   defaultEnv?: string;

@@ -1,7 +1,6 @@
 import { Command, Option } from '@commander-js/extra-typings';
 import { execaCommand } from 'execa';
 import _ from 'lodash';
-import Os from 'os';
 
 import { dotenvExpandFromProcessEnv } from './dotenvExpand';
 import { getDotenv } from './getDotenv';
@@ -16,9 +15,6 @@ import {
   Logger,
   type ProcessEnv,
 } from './GetDotenvOptions';
-
-// Discover platform.
-const platform = Os.platform();
 
 /**
  * GetDotenv CLI Pre-hook Callback function type. Mutates inbound options &
@@ -61,6 +57,13 @@ interface GetDotenvCliGenerateOptions extends Omit<GetDotenvCliOptions, 'env'> {
    * commands.
    */
   postHook?: GetDotenvCliPostHookCallback;
+}
+
+/**
+ * Commander Commmand extended with GetDotEnvOptions.
+ */
+interface GetDotenvCommand extends Command {
+  getDotenvOptions: GetDotenvOptions;
 }
 
 /**
@@ -335,12 +338,23 @@ export const generateGetDotenvCli = ({
         .enablePositionalOptions()
         .passThroughOptions()
         .action(async (options, command: Command) => {
-          const { args } = command;
-          if (args.length)
-            await execaCommand(args.join(platform === 'win32' ? '\\ ' : ' '), {
+          const {
+            args,
+            getDotenvOptions: { debug },
+          } = command.parent as GetDotenvCommand;
+
+          if (args.length) {
+            if (debug) logger.log('\n*** raw shell args ***\n', args);
+
+            const shellCommand = args.join(' ');
+
+            if (debug) logger.log('\n*** shell command ***\n', shellCommand);
+
+            await execaCommand(shellCommand, {
               stdio: 'inherit',
               shell: true,
             });
+          }
         }),
       { isDefault: true },
     )
@@ -480,17 +494,17 @@ export const generateGetDotenvCli = ({
       if (postHook) await postHook(dotenv);
 
       // Execute shell command.
-      if (command)
-        await execaCommand(
-          platform === 'win32' ? command.replace(/ /g, '\\ ') : command,
-          {
-            env: {
-              ...process.env,
-              getDotenvOptions: JSON.stringify(getDotenvOptions),
-            },
-            shell: true,
-            stdio: 'inherit',
+      if (command) {
+        if (cliOptions.debug) logger.log('\n*** shell command ***\n', command);
+
+        await execaCommand(command, {
+          env: {
+            ...process.env,
+            getDotenvOptions: JSON.stringify(getDotenvOptions),
           },
-        );
+          shell: true,
+          stdio: 'inherit',
+        });
+      }
     });
 };
