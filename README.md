@@ -28,8 +28,6 @@ Load environment variables with a cascade of environment-aware dotenv files. You
 
 `getdotenv` relies on the excellent [`dotenv`](https://www.npmjs.com/package/dotenv) parser and somewhat improves on [`dotenv-expand`](https://www.npmjs.com/package/dotenv-expand) for recursive variable expansion.
 
-The command-line version populates `process.env` from your dotenv files (you can also specify values inline) and can then execute a shell command within that context. Any child `getdotenv` instances will inherit as defaults the parent shell's environment and optionally its `getdotenv` settings.
-
 You can always use `getdotenv` directly on the command line, but its REAL power comes into play when you use it as the foundation of your own CLI. This lets you set defaults globally and configure pre- and post-hooks that mutate your `getdotenv` context and do useful things like grab an AWS session from your dev environment and add it to the command execution context.
 
 When you plug your own [`commander`](https://www.npmjs.com/package/commander) CLI commands into the `getdotenv` base, they will execute within all of the environmental context created above!
