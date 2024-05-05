@@ -1,83 +1,87 @@
-// npm imports
-import { Command, Option } from 'commander';
+import { Command, Option } from '@commander-js/extra-typings';
 import { execaCommand } from 'execa';
+import _ from 'lodash';
 import Os from 'os';
 
-// lib imports
-import { dotenvExpand } from './dotenvExpand.js';
-import { getDotenv } from './getDotenv.js';
+import { dotenvExpand } from './dotenvExpand';
+import { getDotenv } from './getDotenv';
 import {
-  cli2getdotenvOptions,
-  cliDefaultOptionsGlobal,
-  cliDefaultOptionsLocal,
-} from './options.js';
+  defaultGetDotenvCliOptionsGlobal,
+  defaultGetDotenvCliOptionsLocal,
+  type GetDotenvCliOptions,
+} from './GetDotenvCliOptions';
+import {
+  getDotenvCliOptions2Options,
+  type GetDotenvOptions,
+  Logger,
+  type ProcessEnv,
+} from './GetDotenvOptions';
 
 // Discover platform.
 const platform = Os.platform();
 
 /**
- * GetDotenv CLI Pre-hook Callback type. Transforms inbound options & executes side effects.
- *
- * @async
- * @callback GetDotenvPreHookCallback
- * @param {GetDotenvCliOptions} options - inbound GetDotenv CLI Options object
- * @returns {GetDotenvCliOptions} transformed GetDotenv CLI Options object (undefined return value is ignored)
+ * GetDotenv CLI Pre-hook Callback function type. Mutates inbound options &
+ * executes side effects within the `getDotenv` context.
  */
+type GetDotenvCliPreHookCallback = (
+  options: GetDotenvCliOptions,
+) => Promise<void>;
 
 /**
- * GetDotenv CLI Post-hook Callback type. Executes side effects within getdotenv context.
- *
- * @async
- * @callback GetDotenvPostHookCallback
- * @param {object} dotenv - dotenv object
+ * GetDotenv CLI Post-hook Callback function type. Executes side effects within
+ * the `getDotenv` context.
  */
+type GetDotenvCliPostHookCallback = (dotenv: ProcessEnv) => Promise<void>;
 
 /**
- * Generate a CLI for get-dotenv.
- *
- * @function getDotenvCli
- * @param {object} [options] - options object
- * @param {string} [options.alias] - cli alias (used for cli help)
- * @param {string} [options.command] - {@link https://github.com/motdotla/dotenv-expand/blob/master/tests/.env dotenv-expanded} shell command string
- * @param {bool} [options.debug] - debug mode
- * @param {string} [options.defaultEnv] - default target environment
- * @param {string} [options.description] - cli description (used for cli help)
- * @param {string} [options.dotenvToken] - {@link https://github.com/motdotla/dotenv-expand/blob/master/tests/.env dotenv-expanded} token indicating a dotenv file
- * @param {string} [options.dynamicPath] - path to file exporting an object keyed to dynamic variable functions
- * @param {bool} [options.excludeDynamic] - exclude dynamic dotenv variables
- * @param {bool} [options.excludeEnv] - exclude environment-specific dotenv variables
- * @param {bool} [options.excludeGlobal] - exclude global dotenv variables
- * @param {bool} [options.excludePrivate] - exclude private dotenv variables
- * @param {bool} [options.excludePublic] - exclude public dotenv variables
- * @param {bool} [options.loadProcess] - load variables to process.env
- * @param {bool} [options.log] - log result to console
- * @param {function} [options.logger] - logger function
- * @param {string} [options.outputPath] - consolidated output file, {@link https://github.com/motdotla/dotenv-expand/blob/master/tests/.env dotenv-expanded} using loaded env vars
- * @param {string} [options.paths] - {@link https://github.com/motdotla/dotenv-expand/blob/master/tests/.env dotenv-expanded} delimited list of input directory paths
- * @param {string} [options.pathsDelimiter] - paths delimiter string
- * @param {string} [options.pathsDelimiterPattern] - paths delimiter regex pattern
- * @param {GetDotenvPreHookCallback} [config.preHook] - transforms cli options & executes side effects
- * @param {string} [options.privateToken] - {@link https://github.com/motdotla/dotenv-expand/blob/master/tests/.env dotenv-expanded} token indicating private variables
- * @param {GetDotenvPostHookCallback} [config.postHook] - executes side effects within getdotenv context
- * @param {string} [options.vars] - {@link https://github.com/motdotla/dotenv-expand/blob/master/tests/.env dotenv-expanded} delimited list of explicit environment variable key-value pairs
- * @param {string} [options.varsAssignor] - variable key-value assignor string
- * @param {string} [options.varsAssignorPattern] - variable key-value assignor regex pattern
- * @param {string} [options.varsDelimiter] - variable key-value pair delimiter string
- * @param {string} [options.varsDelimiterPattern] - variable key-value pair delimiter regex pattern
- * @returns {object} The CLI command.
+ * `generateGetDotenvCli` options. Defines local instance of the GetDotenv CLI and
+ * sets defaults that can be overridden by local `getdotenv.config.json` in
+ * projects that import the CLI.
  */
-export const getDotenvCli = ({
-  logger = console,
+interface GetDotenvCliGenerateOptions extends Omit<GetDotenvCliOptions, 'env'> {
+  /**
+   * Cli alias. Should align with the `bin` property in `package.json`.
+   */
+  alias?: string;
+
+  /**
+   * Cli description (appears in CLI help).
+   */
+  description?: string;
+
+  /**
+   * Mutates inbound options & executes side effects within the `getDotenv`
+   * context before executing CLI commands.
+   */
+  preHook?: GetDotenvCliPreHookCallback;
+
+  /**
+   * Executes side effects within the `getDotenv` context after executing CLI
+   * commands.
+   */
+  postHook?: GetDotenvCliPostHookCallback;
+}
+
+/**
+ * `dotenvExpand` function reduced to initial argument (applies default to `ref` argument).
+ */
+const dotenvExpandDefault = (value: string | undefined) => dotenvExpand(value);
+
+/**
+ * Generate a Commander CLI Command for get-dotenv.
+ */
+export const generateGetDotenvCli = ({
+  logger = console as unknown as Logger,
   preHook,
   postHook,
   ...cliOptionsCustom
-} = {}) => {
+}: GetDotenvCliGenerateOptions = {}) => {
   const {
-    alias,
-    command,
+    alias = 'getdotenv',
     debug,
     defaultEnv,
-    description,
+    description = 'Base CLI.',
     dotenvToken,
     dynamicPath,
     env,
@@ -98,230 +102,235 @@ export const getDotenvCli = ({
     varsDelimiter,
     varsDelimiterPattern,
   } = {
-    ...cliDefaultOptionsGlobal,
-    ...cliOptionsCustom,
-    ...cliDefaultOptionsLocal,
+    ...defaultGetDotenvCliOptionsGlobal,
+    ...(cliOptionsCustom as GetDotenvCliOptions),
+    ...defaultGetDotenvCliOptionsLocal,
   };
 
   const excludeAll =
-    excludeDynamic &&
-    ((excludeEnv && excludeGlobal) || (excludePrivate && excludePublic));
+    !!excludeDynamic &&
+    ((!!excludeEnv && !!excludeGlobal) ||
+      (!!excludePrivate && !!excludePublic));
 
   return new Command()
     .name(alias)
     .description(description)
     .enablePositionalOptions()
     .passThroughOptions()
-    .option('-e, --env <string>', 'target environment', dotenvExpand, env)
+    .option(
+      '-e, --env <string>',
+      `target environment (dotenv-expanded)`,
+      dotenvExpandDefault,
+      env,
+    )
     .option(
       '-v, --vars <string>',
-      `dotenv-expanded delimited key-value pairs: ${[
+      `extra variables expressed as delimited key-value pairs (dotenv-expanded): ${[
         ['KEY1', 'VAL1'],
         ['KEY2', 'VAL2'],
       ]
         .map((v) => v.join(varsAssignor))
         .join(varsDelimiter)}`,
-      dotenvExpand
+      dotenvExpandDefault,
     )
     .option(
       '-c, --command <string>',
-      'dotenv-expanded shell command string',
-      dotenvExpand,
-      command
+      'shell command string (dotenv-expanded)',
+      dotenvExpandDefault,
     )
     .option(
       '-o, --output-path <string>',
-      'consolidated output file, follows dotenv-expand rules using loaded env vars',
-      dotenvExpand,
-      outputPath
+      'consolidated output file  (dotenv-expanded)',
+      dotenvExpandDefault,
+      outputPath,
     )
     .addOption(
       new Option(
         '-p, --load-process',
-        `load variables to process.env ON${loadProcess ? ' (default)' : ''}`
-      ).conflicts('loadProcessOff')
+        `load variables to process.env ON${loadProcess ? ' (default)' : ''}`,
+      ).conflicts('loadProcessOff'),
     )
     .addOption(
       new Option(
         '-P, --load-process-off',
-        `load variables to process.env OFF${!loadProcess ? ' (default)' : ''}`
-      ).conflicts('loadProcess')
+        `load variables to process.env OFF${!loadProcess ? ' (default)' : ''}`,
+      ).conflicts('loadProcess'),
     )
     .addOption(
       new Option(
         '-a, --exclude-all',
         `exclude all dotenv variables from loading ON${
           excludeAll ? ' (default)' : ''
-        }`
-      ).conflicts('excludeAllOff')
+        }`,
+      ).conflicts('excludeAllOff'),
     )
     .addOption(
       new Option(
         '-A, --exclude-all-off',
         `exclude all dotenv variables from loading OFF${
           !excludeAll ? ' (default)' : ''
-        }`
-      ).conflicts('excludeAll')
+        }`,
+      ).conflicts('excludeAll'),
     )
     .addOption(
       new Option(
         '-z, --exclude-dynamic',
         `exclude dynamic dotenv variables from loading ON${
           excludeDynamic ? ' (default)' : ''
-        }`
-      ).conflicts('excludeDynamicOff')
+        }`,
+      ).conflicts('excludeDynamicOff'),
     )
     .addOption(
       new Option(
         '-Z, --exclude-dynamic-off',
         `exclude dynamic dotenv variables from loading OFF${
           !excludeDynamic ? ' (default)' : ''
-        }`
-      ).conflicts('excludeDynamic')
+        }`,
+      ).conflicts('excludeDynamic'),
     )
     .addOption(
       new Option(
         '-n, --exclude-env',
         `exclude environment-specific dotenv variables from loading${
           excludeEnv ? ' (default)' : ''
-        }`
-      ).conflicts('excludeEnvOff')
+        }`,
+      ).conflicts('excludeEnvOff'),
     )
     .addOption(
       new Option(
         '-N, --exclude-env-off',
         `exclude environment-specific dotenv variables from loading OFF${
           !excludeEnv ? ' (default)' : ''
-        }`
-      ).conflicts('excludeEnv')
+        }`,
+      ).conflicts('excludeEnv'),
     )
     .addOption(
       new Option(
         '-g, --exclude-global',
         `exclude global dotenv variables from loading ON${
           excludeGlobal ? ' (default)' : ''
-        }`
-      ).conflicts('excludeGlobalOff')
+        }`,
+      ).conflicts('excludeGlobalOff'),
     )
     .addOption(
       new Option(
         '-G, --exclude-global-off',
         `exclude global dotenv variables from loading OFF${
           !excludeGlobal ? ' (default)' : ''
-        }`
-      ).conflicts('excludeGlobal')
+        }`,
+      ).conflicts('excludeGlobal'),
     )
     .addOption(
       new Option(
         '-r, --exclude-private',
         `exclude private dotenv variables from loading ON${
           excludePrivate ? ' (default)' : ''
-        }`
-      ).conflicts('excludePrivateOff')
+        }`,
+      ).conflicts('excludePrivateOff'),
     )
     .addOption(
       new Option(
         '-R, --exclude-private-off',
         `exclude private dotenv variables from loading OFF${
           !excludePrivate ? ' (default)' : ''
-        }`
-      ).conflicts('excludePrivate')
+        }`,
+      ).conflicts('excludePrivate'),
     )
     .addOption(
       new Option(
         '-u, --exclude-public',
         `exclude public dotenv variables from loading ON${
           excludePublic ? ' (default)' : ''
-        }`
-      ).conflicts('excludePublicOff')
+        }`,
+      ).conflicts('excludePublicOff'),
     )
     .addOption(
       new Option(
         '-U, --exclude-public-off',
         `exclude public dotenv variables from loading OFF${
           !excludePublic ? ' (default)' : ''
-        }`
-      ).conflicts('excludePublic')
+        }`,
+      ).conflicts('excludePublic'),
     )
     .addOption(
       new Option(
         '-l, --log',
-        `console log loaded variables ON${log ? ' (default)' : ''}`
-      ).conflicts('logOff')
+        `console log loaded variables ON${log ? ' (default)' : ''}`,
+      ).conflicts('logOff'),
     )
     .addOption(
       new Option(
         '-L, --log-off',
-        `console log loaded variables OFF${!log ? ' (default)' : ''}`
-      ).conflicts('log')
+        `console log loaded variables OFF${!log ? ' (default)' : ''}`,
+      ).conflicts('log'),
     )
     .addOption(
       new Option(
         '-d, --debug',
-        `debug mode ON${debug ? ' (default)' : ''}`
-      ).conflicts('debugOff')
+        `debug mode ON${debug ? ' (default)' : ''}`,
+      ).conflicts('debugOff'),
     )
     .addOption(
       new Option(
         '-D, --debug-off',
-        `debug mode OFF${!debug ? ' (default)' : ''}`
-      ).conflicts('debug')
+        `debug mode OFF${!debug ? ' (default)' : ''}`,
+      ).conflicts('debug'),
     )
     .option(
       '--default-env <string>',
       'default target environment',
-      dotenvExpand,
-      defaultEnv
+      dotenvExpandDefault,
+      defaultEnv,
     )
     .option(
       '--dotenv-token <string>',
       'dotenv-expanded token indicating a dotenv file',
-      dotenvExpand,
-      dotenvToken
+      dotenvExpandDefault,
+      dotenvToken,
     )
     .option(
       '--dynamic-path <string>',
       'dynamic variables path',
-      dotenvExpand,
-      dynamicPath
+      dotenvExpandDefault,
+      dynamicPath,
     )
     .option(
       '--paths <string>',
       'dotenv-expanded delimited list of paths to dotenv directory',
-      dotenvExpand,
-      paths
+      dotenvExpandDefault,
+      paths,
     )
     .option(
       '--paths-delimiter <string>',
       'paths delimiter string',
-      pathsDelimiter
+      pathsDelimiter,
     )
     .option(
       '--paths-delimiter-pattern <string>',
       'paths delimiter regex pattern',
-      pathsDelimiterPattern
+      pathsDelimiterPattern,
     )
     .option(
       '--private-token <string>',
       'dotenv-expanded token indicating private variables',
-      dotenvExpand,
-      privateToken
+      dotenvExpandDefault,
+      privateToken,
     )
     .option('--vars-delimiter <string>', 'vars delimiter string', varsDelimiter)
     .option(
       '--vars-delimiter-pattern <string>',
       'vars delimiter regex pattern',
-      varsDelimiterPattern
+      varsDelimiterPattern,
     )
     .option(
       '--vars-assignor <string>',
       'vars assignment operator string',
-      varsAssignor
+      varsAssignor,
     )
     .option(
       '--vars-assignor-pattern <string>',
       'vars assignment operator regex pattern',
-      varsAssignorPattern
+      varsAssignorPattern,
     )
     .addCommand(
       new Command()
@@ -330,7 +339,7 @@ export const getDotenvCli = ({
         .configureHelp({ showGlobalOptions: true })
         .enablePositionalOptions()
         .passThroughOptions()
-        .action(async (options, command) => {
+        .action(async (options, command: Command) => {
           const { args } = command;
           if (args.length)
             await execaCommand(args.join(platform === 'win32' ? '\\ ' : ' '), {
@@ -338,7 +347,7 @@ export const getDotenvCli = ({
               shell: true,
             });
         }),
-      { isDefault: true }
+      { isDefault: true },
     )
     .hook('preSubcommand', async (thisCommand) => {
       const rawOptions = thisCommand.opts();
@@ -347,7 +356,7 @@ export const getDotenvCli = ({
         logger.log('\n*** raw cli options ***\n', { rawOptions });
 
       // Load options.
-      let {
+      const {
         command,
         debugOff,
         excludeAll,
@@ -363,46 +372,62 @@ export const getDotenvCli = ({
       } = rawOptions;
 
       // Resolve flags.
-      const resolveExclusion = (exclude, excludeOff, defaultValue) =>
-        exclude ? true : excludeOff ? false : defaultValue;
+      const resolveExclusion = (
+        exclude: true | undefined,
+        excludeOff: true | undefined,
+        defaultValue: boolean | undefined,
+      ) =>
+        exclude
+          ? true
+          : excludeOff
+            ? undefined
+            : defaultValue
+              ? true
+              : undefined;
 
-      const resolveExclusionAll = (exclude, excludeOff, defaultValue) =>
+      const resolveExclusionAll = (
+        exclude: true | undefined,
+        excludeOff: true | undefined,
+        defaultValue: boolean | undefined,
+      ) =>
         excludeAll && !excludeOff
           ? true
           : excludeAllOff && !exclude
-          ? false
-          : defaultValue;
+            ? undefined
+            : defaultValue
+              ? true
+              : undefined;
 
       cliOptions.debug = resolveExclusion(cliOptions.debug, debugOff, debug);
 
       cliOptions.excludeDynamic = resolveExclusionAll(
         cliOptions.excludeDynamic,
         excludeDynamicOff,
-        excludeDynamic
+        excludeDynamic,
       );
 
       cliOptions.excludeEnv = resolveExclusionAll(
         cliOptions.excludeEnv,
         excludeEnvOff,
-        excludeEnv
+        excludeEnv,
       );
 
       cliOptions.excludeGlobal = resolveExclusionAll(
         cliOptions.excludeGlobal,
         excludeGlobalOff,
-        excludeGlobal
+        excludeGlobal,
       );
 
       cliOptions.excludePrivate = resolveExclusionAll(
         cliOptions.excludePrivate,
         excludePrivateOff,
-        excludePrivate
+        excludePrivate,
       );
 
       cliOptions.excludePublic = resolveExclusionAll(
         cliOptions.excludePublic,
         excludePublicOff,
-        excludePublic
+        excludePublic,
       );
 
       cliOptions.log = resolveExclusion(cliOptions.log, logOff, log);
@@ -410,7 +435,7 @@ export const getDotenvCli = ({
       cliOptions.loadProcess = resolveExclusion(
         cliOptions.loadProcess,
         loadProcessOff,
-        loadProcess
+        loadProcess,
       );
 
       if (cliOptions.debug)
@@ -420,37 +445,38 @@ export const getDotenvCli = ({
 
       // Execute pre-hook.
       if (preHook) {
-        cliOptions = (await preHook(cliOptions)) ?? cliOptions;
+        await preHook(cliOptions);
         if (cliOptions.debug)
           logger.log('\n*** cli options after pre-hook ***\n', cliOptions);
       }
 
       // Get getdotenv options from parent command.
-      const parentGetdotenvOptions = process.env.getdotenvOptions
-        ? JSON.parse(process.env.getdotenvOptions)
-        : {};
+      const parentGetdotenvOptions = (
+        process.env.getDotenvOptions
+          ? JSON.parse(process.env.getDotenvOptions)
+          : {}
+      ) as GetDotenvOptions;
 
-      const cliGetdotenvOptions = cli2getdotenvOptions(cliOptions);
+      const cliGetDotenvOptions = getDotenvCliOptions2Options(cliOptions);
 
-      const getdotenvOptions = {
+      const getDotenvOptions = {
         ...parentGetdotenvOptions,
-        ...cliGetdotenvOptions,
+        ...cliGetDotenvOptions,
       };
 
       if (cliOptions.debug)
         logger.log('\n*** getdotenv option resolution ***\n', {
           parentGetdotenvOptions,
-          cliGetdotenvOptions,
-          getdotenvOptions,
+          cliGetDotenvOptions,
+          getDotenvOptions,
         });
 
       // Execute getdotenv.
-      thisCommand.getdotenvOptions = {
-        ...getdotenvOptions,
-        logger,
-      };
+      const getDotenvOptionsWithLogger = { ...getDotenvOptions, logger };
 
-      const dotenv = await getDotenv(thisCommand.getdotenvOptions);
+      _.set(thisCommand, 'getDotenvOptions', getDotenvOptionsWithLogger);
+
+      const dotenv = await getDotenv(getDotenvOptionsWithLogger);
 
       if (cliOptions.debug)
         logger.log('\n*** resulting dotenv values ***\n', { dotenv });
@@ -465,11 +491,11 @@ export const getDotenvCli = ({
           {
             env: {
               ...process.env,
-              getdotenvOptions: JSON.stringify(getdotenvOptions),
+              getDotenvOptions: JSON.stringify(getDotenvOptions),
             },
             shell: true,
             stdio: 'inherit',
-          }
+          },
         );
     });
 };

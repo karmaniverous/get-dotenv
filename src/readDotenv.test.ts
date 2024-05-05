@@ -1,24 +1,21 @@
 /* eslint-env mocha */
 
-// mocha imports
-import { should as chaiShould } from 'chai';
-chaiShould();
+import { expect } from 'chai';
 
-// subject imports
-import { readDotenv, readDotenvSync } from './readDotenv.js';
+import { readDotenv, readDotenvSync } from './readDotenv';
 
 describe('readDotEnv', function () {
   describe('asynchronously', function () {
     it('reads .env', async function () {
       const output = await readDotenv('./test/full/.testenv');
 
-      output.should.deep.equal({ APP_SETTING: 'deep_app_setting' });
+      expect(output).to.deep.equal({ APP_SETTING: 'deep_app_setting' });
     });
 
     it('handles missing file', async function () {
       const output = await readDotenv('./test/full/.env.prod');
 
-      output.should.deep.equal({});
+      expect(output).to.deep.equal({});
     });
   });
 
@@ -26,13 +23,13 @@ describe('readDotEnv', function () {
     it('reads .env', function () {
       const output = readDotenvSync('./test/full/.testenv');
 
-      output.should.deep.equal({ APP_SETTING: 'deep_app_setting' });
+      expect(output).to.deep.equal({ APP_SETTING: 'deep_app_setting' });
     });
 
     it('handles missing file', function () {
       const output = readDotenvSync('./test/full/.env.prod');
 
-      output.should.deep.equal({});
+      expect(output).to.deep.equal({});
     });
   });
 });
