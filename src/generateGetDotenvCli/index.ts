@@ -2,64 +2,19 @@ import { Command, Option } from '@commander-js/extra-typings';
 import { execaCommand } from 'execa';
 import _ from 'lodash';
 
-import { dotenvExpandFromProcessEnv } from './dotenvExpand';
-import { getDotenv } from './getDotenv';
+import { dotenvExpandFromProcessEnv } from '../dotenvExpand';
+import { getDotenv } from '../getDotenv';
 import {
   defaultGetDotenvCliOptionsGlobal,
   defaultGetDotenvCliOptionsLocal,
-  type GetDotenvCliOptions,
-} from './GetDotenvCliOptions';
+} from '../GetDotenvCliOptions';
 import {
   getDotenvCliOptions2Options,
   type GetDotenvOptions,
-  Logger,
-  type ProcessEnv,
-} from './GetDotenvOptions';
-
-/**
- * GetDotenv CLI Pre-hook Callback function type. Mutates inbound options &
- * executes side effects within the `getDotenv` context.
- */
-type GetDotenvCliPreHookCallback = (
-  options: GetDotenvCliOptions,
-) => Promise<void>;
-
-/**
- * GetDotenv CLI Post-hook Callback function type. Executes side effects within
- * the `getDotenv` context.
- */
-type GetDotenvCliPostHookCallback = (dotenv: ProcessEnv) => Promise<void>;
-
-/**
- * `generateGetDotenvCli` options. Defines local instance of the GetDotenv CLI and
- * sets defaults that can be overridden by local `getdotenv.config.json` in
- * projects that import the CLI.
- */
-interface GetDotenvCliGenerateOptions extends Omit<GetDotenvCliOptions, 'env'> {
-  /**
-   * Logger object (defaults to console)
-   */
-  logger?: Logger;
-
-  /**
-   * Mutates inbound options & executes side effects within the `getDotenv`
-   * context before executing CLI commands.
-   */
-  preHook?: GetDotenvCliPreHookCallback;
-
-  /**
-   * Executes side effects within the `getDotenv` context after executing CLI
-   * commands.
-   */
-  postHook?: GetDotenvCliPostHookCallback;
-}
-
-/**
- * Commander Commmand extended with GetDotEnvOptions.
- */
-interface GetDotenvCommand extends Command {
-  getDotenvOptions: GetDotenvOptions;
-}
+  type Logger,
+} from '../GetDotenvOptions';
+import { cmd } from './cmd';
+import type { GetDotenvCliGenerateOptions } from './types';
 
 /**
  * Generate a Commander CLI Command for get-dotenv.
@@ -69,7 +24,7 @@ export const generateGetDotenvCli = ({
   preHook,
   postHook,
   ...cliOptionsCustom
-}: GetDotenvCliGenerateOptions = {}) => {
+}: GetDotenvCliGenerateOptions = {}): Command => {
   const {
     alias = 'getdotenv',
     debug,
@@ -325,34 +280,7 @@ export const generateGetDotenvCli = ({
       'vars assignment operator regex pattern',
       varsAssignorPattern,
     )
-    .addCommand(
-      new Command()
-        .name('cmd')
-        .description('execute shell command string (default command)')
-        .configureHelp({ showGlobalOptions: true })
-        .enablePositionalOptions()
-        .passThroughOptions()
-        .action(async (options, command: Command) => {
-          const {
-            args,
-            getDotenvOptions: { debug },
-          } = command.parent as GetDotenvCommand;
-
-          if (args.length) {
-            if (debug) logger.log('\n*** raw shell args ***\n', args);
-
-            const shellCommand = args.join(' ');
-
-            if (debug) logger.log('\n*** shell command ***\n', shellCommand);
-
-            await execaCommand(shellCommand, {
-              stdio: 'inherit',
-              shell: true,
-            });
-          }
-        }),
-      { isDefault: true },
-    )
+    .addCommand(cmd, { isDefault: true })
     .hook('preSubcommand', async (thisCommand) => {
       const rawOptions = thisCommand.opts();
 
