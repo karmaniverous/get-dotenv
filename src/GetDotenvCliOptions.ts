@@ -13,6 +13,16 @@ import type { GetDotenvOptions } from './GetDotenvOptions';
 export interface GetDotenvCliOptions
   extends Omit<GetDotenvOptions, 'paths' | 'vars'> {
   /**
+   * Cli alias. Should align with the `bin` property in `package.json`.
+   */
+  alias?: string;
+
+  /**
+   * Cli description (appears in CLI help).
+   */
+  description?: string;
+
+  /**
    * Logs CLI internals when true.
    */
   debug?: boolean;

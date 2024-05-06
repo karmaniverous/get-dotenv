@@ -37,14 +37,9 @@ type GetDotenvCliPostHookCallback = (dotenv: ProcessEnv) => Promise<void>;
  */
 interface GetDotenvCliGenerateOptions extends Omit<GetDotenvCliOptions, 'env'> {
   /**
-   * Cli alias. Should align with the `bin` property in `package.json`.
+   * Logger object (defaults to console)
    */
-  alias?: string;
-
-  /**
-   * Cli description (appears in CLI help).
-   */
-  description?: string;
+  logger?: Logger;
 
   /**
    * Mutates inbound options & executes side effects within the `getDotenv`
@@ -101,7 +96,7 @@ export const generateGetDotenvCli = ({
     varsDelimiterPattern,
   } = {
     ...defaultGetDotenvCliOptionsGlobal,
-    ...(cliOptionsCustom as GetDotenvCliOptions),
+    ...cliOptionsCustom,
     ...defaultGetDotenvCliOptionsLocal,
   };
 
