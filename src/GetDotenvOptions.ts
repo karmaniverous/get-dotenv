@@ -37,7 +37,7 @@ export interface GetDotenvOptions {
   dotenvToken?: string;
 
   /**
-   * path to file exporting an object keyed to dynamic variable functions
+   * path to JS module default-exporting an object keyed to dynamic variable functions
    */
   dynamicPath?: string;
 
@@ -47,37 +47,37 @@ export interface GetDotenvOptions {
   env?: string;
 
   /**
-   * exclude dynamic variables
+   * exclude dynamic variables from loading
    */
   excludeDynamic?: boolean;
 
   /**
-   * exclude environment-specific variables
+   * exclude environment-specific variables from loading
    */
   excludeEnv?: boolean;
 
   /**
-   * exclude global variables
+   * exclude global variables from loading
    */
   excludeGlobal?: boolean;
 
   /**
-   * exclude private variables
+   * exclude private variables from loading
    */
   excludePrivate?: boolean;
 
   /**
-   * exclude public variables
+   * exclude public variables from loading
    */
   excludePublic?: boolean;
 
   /**
-   * load dotenv to process.env
+   * load dotenv variables to `process.env`
    */
   loadProcess?: boolean;
 
   /**
-   * log result to logger
+   * log loaded dotenv variables to `logger`
    */
   log?: boolean;
 
@@ -87,7 +87,7 @@ export interface GetDotenvOptions {
   logger?: Logger;
 
   /**
-   * if populated, writes consolidated .env file to this path (follows dotenvExpand rules)
+   * if populated, writes consolidated dotenv file to this path (follows dotenvExpand rules)
    */
   outputPath?: string;
 

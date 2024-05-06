@@ -18,14 +18,14 @@ export interface GetDotenvCliOptions
   alias?: string;
 
   /**
-   * Cli description (appears in CLI help).
-   */
-  description?: string;
-
-  /**
    * Logs CLI internals when true.
    */
   debug?: boolean;
+
+  /**
+   * Cli description (appears in CLI help).
+   */
+  description?: string;
 
   /**
    * A delimited string of paths to dotenv files.
