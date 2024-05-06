@@ -129,3 +129,7 @@ You can also use `getdotenv` from the command line:
 ```
 
 See [this example repo](https://github.com/karmaniverous/get-dotenv-child) for a deep dive on using the `getDotenv` CLI and how to extend it for your own projects.
+
+---
+
+See more great templates & tools on [my GitHub Profile](https://github.com/karmaniverous)!
