@@ -1,12 +1,11 @@
 import { Command } from '@commander-js/extra-typings';
 import { execaCommand } from 'execa';
 
-import { GetDotenvCliCommand } from './types';
+import { GetDotenvCliCommand } from '../types';
 
 export const cmd = new Command()
   .name('cmd')
   .description('execute shell command string (default command)')
-  .configureHelp({ showGlobalOptions: true })
   .enablePositionalOptions()
   .passThroughOptions()
   .action(async (options, command) => {
