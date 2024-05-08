@@ -12,6 +12,8 @@ export const cmdCommand = new Command()
   .enablePositionalOptions()
   .passThroughOptions()
   .action(async (options, thisCommand) => {
+    if (thisCommand.args.length === 0) return;
+
     if (!thisCommand.parent) throw new Error('parent command not found');
 
     const {
@@ -22,7 +24,7 @@ export const cmdCommand = new Command()
 
     const shellCommand = shellScripts?.[command] ?? command;
 
-    if (debug) logger.log('\n*** shell command ***\n', shellCommand);
+    if (debug) logger.log('\n*** shell command ***\n', `'${shellCommand}'`);
 
     await execaCommand(shellCommand, {
       shell: true,

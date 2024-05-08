@@ -32,7 +32,7 @@ const globPaths = async ({
     rootPath.split(path.sep).join(path.posix.sep),
   );
 
-  const paths = await globby(globs, {
+  const paths = await globby(globs.split(/\s+/), {
     cwd: absRootPath,
     expandDirectories: false,
     onlyDirectories: true,
@@ -40,9 +40,7 @@ const globPaths = async ({
   });
 
   if (!paths.length) {
-    logger.error(
-      `No paths found for globs '${globs.toString()}' at '${absRootPath}'.`,
-    );
+    logger.error(`No paths found for globs '${globs}' at '${absRootPath}'.`);
     process.exit(0);
   }
 
@@ -75,7 +73,7 @@ export const execShellCommandBatch = async ({
     : 'Executing shell command batch...';
   logger.info('');
   const headerRootPath = `ROOT:  ${absRootPath}`;
-  const headerGlobs = `GLOBS: ${globs.toString()}`;
+  const headerGlobs = `GLOBS: ${globs}`;
   const headerCommand = `CMD:   ${command}`;
 
   logger.info(

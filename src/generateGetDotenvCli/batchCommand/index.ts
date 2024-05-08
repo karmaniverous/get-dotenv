@@ -19,11 +19,7 @@ export const batchCommand = new Command()
     'path to batch root directory from current working directory',
     './',
   )
-  .option(
-    '-g, --globs <strings...>',
-    'space-delimited globs from root path',
-    '*',
-  )
+  .option('-g, --globs <string>', 'space-delimited globs from root path', '*')
   .option(
     '-c, --command <string>',
     'shell command string, conflicts with cmd subcommand (dotenv-expanded)',
