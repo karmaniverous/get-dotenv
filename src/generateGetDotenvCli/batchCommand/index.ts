@@ -35,7 +35,7 @@ export const batchCommand = new Command()
     if (!thisCommand.parent) throw new Error(`unable to resolve root command`);
 
     const {
-      getDotenvOptions: { logger = console },
+      getDotenvOptions: { logger = console, shellScripts },
     } = thisCommand.parent as GetDotenvCliCommand;
 
     const { command, ignoreErrors, globs, list, pkgCwd, rootPath } =
@@ -49,7 +49,7 @@ export const batchCommand = new Command()
     // Execute shell command.
     if (command)
       await execShellCommandBatch({
-        command,
+        command: shellScripts?.[command] ?? command,
         globs,
         ignoreErrors,
         list,

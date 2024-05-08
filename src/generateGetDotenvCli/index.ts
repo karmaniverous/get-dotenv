@@ -12,6 +12,7 @@ import {
   getDotenvCliOptions2Options,
   type GetDotenvOptions,
   type Logger,
+  mergeGetDotenvOptions,
 } from '../GetDotenvOptions';
 import { batchCommand } from './batchCommand';
 import { cmdCommand } from './cmdCommand';
@@ -46,6 +47,7 @@ export const generateGetDotenvCli = ({
     pathsDelimiter,
     pathsDelimiterPattern,
     privateToken,
+    shellScripts,
     varsAssignor,
     varsAssignorPattern,
     varsDelimiter,
@@ -54,6 +56,11 @@ export const generateGetDotenvCli = ({
     ...defaultGetDotenvCliOptionsGlobal,
     ...cliOptionsCustom,
     ...defaultGetDotenvCliOptionsLocal,
+    shellScripts: {
+      ...(defaultGetDotenvCliOptionsGlobal.shellScripts ?? {}),
+      ...(cliOptionsCustom.shellScripts ?? {}),
+      ...(defaultGetDotenvCliOptionsLocal.shellScripts ?? {}),
+    },
   };
 
   const excludeAll =
@@ -281,6 +288,12 @@ export const generateGetDotenvCli = ({
       'vars assignment operator regex pattern',
       varsAssignorPattern,
     )
+    .addOption(
+      new Option('--shell-scripts <string>')
+        .default(JSON.stringify(shellScripts))
+        .hideHelp(),
+    )
+
     .addCommand(batchCommand)
     .addCommand(cmdCommand, { isDefault: true })
     .hook('preSubcommand', async (thisCommand) => {
@@ -303,7 +316,14 @@ export const generateGetDotenvCli = ({
         loadProcessOff,
         logOff,
         ...cliOptions
-      } = rawOptions;
+      } = {
+        ...rawOptions,
+        shellScripts: rawOptions.shellScripts
+          ? (JSON.parse(
+              rawOptions.shellScripts,
+            ) as GetDotenvOptions['shellScripts'])
+          : undefined,
+      };
 
       // Resolve flags.
       const resolveExclusion = (
@@ -393,10 +413,10 @@ export const generateGetDotenvCli = ({
 
       const cliGetDotenvOptions = getDotenvCliOptions2Options(cliOptions);
 
-      const getDotenvOptions = {
-        ...parentGetdotenvOptions,
-        ...cliGetDotenvOptions,
-      };
+      const getDotenvOptions = mergeGetDotenvOptions(
+        cliGetDotenvOptions,
+        parentGetdotenvOptions,
+      );
 
       if (cliOptions.debug)
         logger.log('\n*** getdotenv option resolution ***\n', {
@@ -406,11 +426,11 @@ export const generateGetDotenvCli = ({
         });
 
       // Execute getdotenv.
-      const getDotenvOptionsWithLogger = { ...getDotenvOptions, logger };
+      const getDotenvOptionsProp = { ...getDotenvOptions, logger };
 
-      _.set(thisCommand, 'getDotenvOptions', getDotenvOptionsWithLogger);
+      _.set(thisCommand, 'getDotenvOptions', getDotenvOptionsProp);
 
-      const dotenv = await getDotenv(getDotenvOptionsWithLogger);
+      const dotenv = await getDotenv(getDotenvOptionsProp);
 
       if (cliOptions.debug)
         logger.log('\n*** resulting dotenv values ***\n', { dotenv });
@@ -425,9 +445,13 @@ export const generateGetDotenvCli = ({
       }
 
       if (command) {
-        if (cliOptions.debug) logger.log('\n*** shell command ***\n', command);
+        const shellCommand =
+          getDotenvOptionsProp.shellScripts?.[command] ?? command;
 
-        await execaCommand(command, {
+        if (cliOptions.debug)
+          logger.log('\n*** shell command ***\n', shellCommand);
+
+        await execaCommand(shellCommand, {
           env: {
             ...process.env,
             getDotenvOptions: JSON.stringify(getDotenvOptions),

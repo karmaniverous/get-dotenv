@@ -19,20 +19,24 @@ export const cmdCommand = new Command()
       throw new Error(`unable to resolve root command`);
 
     const {
-      getDotenvOptions: { logger = console },
+      getDotenvOptions: { logger = console, shellScripts },
     } = thisCommand.parent.parent as GetDotenvCliCommand;
 
     const { ignoreErrors, globs, list, pkgCwd, rootPath } =
       thisCommand.parent.opts() as BatchCommandOptions;
 
     // Execute shell command.
-    await execShellCommandBatch({
-      command: thisCommand.args.join(' '),
-      globs,
-      ignoreErrors,
-      list,
-      logger,
-      pkgCwd,
-      rootPath,
-    });
+    {
+      const command = thisCommand.args.join(' ');
+
+      await execShellCommandBatch({
+        command: shellScripts?.[command] ?? command,
+        globs,
+        ignoreErrors,
+        list,
+        logger,
+        pkgCwd,
+        rootPath,
+      });
+    }
   });

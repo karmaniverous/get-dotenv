@@ -13,7 +13,7 @@ import type { GetDotenvOptions } from './GetDotenvOptions';
 export interface GetDotenvCliOptions
   extends Omit<GetDotenvOptions, 'paths' | 'vars'> {
   /**
-   * Cli alias. Should align with the `bin` property in `package.json`.
+   * CLI alias. Should align with the `bin` property in `package.json`.
    */
   alias?: string;
 
@@ -108,6 +108,7 @@ export const defaultGetDotenvCliOptionsGlobal = {
   paths: './',
   pathsDelimiter: ' ',
   privateToken: 'local',
+  shellScripts: {},
   vars: '',
   varsAssignor: '=',
   varsDelimiter: ' ',

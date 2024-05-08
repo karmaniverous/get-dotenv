@@ -121,7 +121,7 @@ You can also use `getdotenv` from the command line:
 #   --vars-delimiter-pattern <string>   vars delimiter regex pattern
 #   --vars-assignor <string>            vars assignment operator string (default: "=")
 #   --vars-assignor-pattern <string>    vars assignment operator regex pattern
-  -h, --help                          display help for command
+#   -h, --help                          display help for command
 #
 # Commands:
 #   batch [options]                     Batch shell commands across multiple working directories.

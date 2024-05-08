@@ -1,0 +1,5 @@
+{
+  "shellScripts": {
+    "git-status": "git branch --show-current && git status -s -u"
+  }
+}

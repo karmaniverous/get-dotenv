@@ -15,10 +15,12 @@ export const cmdCommand = new Command()
     if (!thisCommand.parent) throw new Error('parent command not found');
 
     const {
-      getDotenvOptions: { debug, logger = console },
+      getDotenvOptions: { debug, logger = console, shellScripts },
     } = thisCommand.parent as GetDotenvCliCommand;
 
-    const shellCommand = thisCommand.args.join(' ');
+    const command = thisCommand.args.join(' ');
+
+    const shellCommand = shellScripts?.[command] ?? command;
 
     if (debug) logger.log('\n*** shell command ***\n', shellCommand);
 

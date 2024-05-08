@@ -104,6 +104,11 @@ export interface GetDotenvOptions {
   privateToken?: string;
 
   /**
+   * Shell scripts that can be executed from the CLI, either individually or via the batch subcommand.
+   */
+  shellScripts?: Record<string, string>;
+
+  /**
    * explicit variables to include
    */
   vars?: ProcessEnv;
@@ -122,6 +127,10 @@ export const mergeGetDotenvOptions = (
 ): GetDotenvOptions => ({
   ...source,
   ...target,
+  shellScripts: {
+    ...(source.shellScripts ?? {}),
+    ...(target.shellScripts ?? {}),
+  },
   vars: _.pickBy(
     {
       ...(source.vars ?? {}),
@@ -180,4 +189,8 @@ export const getDotenvCliOptions2Options = ({
 export const getDotenvDefaultOptions = getDotenvCliOptions2Options({
   ...defaultGetDotenvCliOptionsGlobal,
   ...defaultGetDotenvCliOptionsLocal,
+  shellScripts: {
+    ...(defaultGetDotenvCliOptionsGlobal.shellScripts ?? {}),
+    ...(defaultGetDotenvCliOptionsLocal.shellScripts ?? {}),
+  },
 });
