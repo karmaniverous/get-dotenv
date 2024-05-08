@@ -135,13 +135,13 @@ See [this example repo](https://github.com/karmaniverous/get-dotenv-child) for a
 
 The `getdotenv` base CLI includes one very useful subcommand: `batch`.
 
-This command lets you execute a shell command across multiple working directories. Executions occur within the loaded `dotenv` context, which may or may not be relevant.
+This command lets you execute a shell command across multiple working directories. Executions occur within the loaded `dotenv` context. Might not be relevant to your specific use case, but when you need it, it's a game-changer!
 
-My most common use case for this command is a microservice project where release day finds me updating dependencies & performing a release in over a dozen very similar repositories. The sequence of steps in each case is exactly the same, but I need to respond individually as issues arise, so scripting the whole thing out would fail more often than it would work.
+My most common use case for this command is a microservice project where release day finds me updating dependencies & performing a release in well over a dozen very similar repositories. The sequence of steps in each case is exactly the same, but I need to respond individually as issues arise, so scripting the whole thing out would fail more often than it would work.
 
 I use the `batch` command to perform each step across all repositories at once. Once you get used to it, it feels like a superpower!
 
-Lest you doubt, consider this:
+Lest you doubt what that kind of leverage can do for you, consider this:
 
 [![batch superpower in action](./doc/contributions.png)](https://github.com/karmaniverous)
 
@@ -165,6 +165,14 @@ Lest you doubt, consider this:
 #   cmd                       batch execute shell command, conflicts with --command option (default command)
 #   help [command]            display help for command
 ```
+
+Note that `batch` executes its commands in sequence, rather than in parallel!
+
+To understand why, imagine running `npm install` in a dozen repos from the same command line. The visual feedback would be impossible to follow, and if something broke you'd have a really hard time figuring out why.
+
+Instead, everything runs in sequence, and you get a clear record of exactly what heppened and where. Also worth noting that many complex processes are resource hogs: you would not _want_ to run a dozen Serverless deployments at once!
+
+Meanwhile, [this issue](https://github.com/karmaniverous/get-dotenv/issues/7) documents the parallel-processing option requirement. Feel free to submit a PR!
 
 ---
 
