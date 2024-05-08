@@ -15,7 +15,9 @@ export type GetDotenvDynamic = Record<
   GetDotenvDynamicFunction | ReturnType<GetDotenvDynamicFunction>
 >;
 
-export type Logger = Record<string, (...args: unknown[]) => void>;
+export type Logger =
+  | Record<string, (...args: unknown[]) => void>
+  | typeof console;
 
 /**
  * Options passed programmatically to `getDotenv` and `getDotEnvSync`.

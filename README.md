@@ -90,7 +90,7 @@ You can also use `getdotenv` from the command line:
 # Options:
 #   -e, --env <string>                  target environment (dotenv-expanded)
 #   -v, --vars <string>                 extra variables expressed as delimited key-value pairs (dotenv-expanded): KEY1=VAL1 KEY2=VAL2
-#   -c, --command <string>              shell command string (dotenv-expanded)
+#   -c, --command <string>              shell command string, conflicts with cmd subcommand (dotenv-expanded)
 #   -o, --output-path <string>          consolidated output file  (dotenv-expanded)
 #   -p, --load-process                  load variables to process.env ON (default)
 #   -P, --load-process-off              load variables to process.env OFF
@@ -121,14 +121,58 @@ You can also use `getdotenv` from the command line:
 #   --vars-delimiter-pattern <string>   vars delimiter regex pattern
 #   --vars-assignor <string>            vars assignment operator string (default: "=")
 #   --vars-assignor-pattern <string>    vars assignment operator regex pattern
-#   -h, --help                          display help for command
+  -h, --help                          display help for command
 #
 # Commands:
-#   cmd                                 execute shell command string (default command)
+#   batch [options]                     Batch shell commands across multiple working directories.
+#   cmd                                 execute shell command, conflicts with --command option (default command)
 #   help [command]                      display help for command
 ```
 
 See [this example repo](https://github.com/karmaniverous/get-dotenv-child) for a deep dive on using the `getDotenv` CLI and how to extend it for your own projects.
+
+### Batch Command
+
+The `getdotenv` base CLI includes one very useful subcommand: `batch`.
+
+This command lets you execute a shell command across multiple working directories. Executions occur within the loaded `dotenv` context. Might not be relevant to your specific use case, but when you need it, it's a game-changer!
+
+My most common use case for this command is a microservice project where release day finds me updating dependencies & performing a release in well over a dozen very similar repositories. The sequence of steps in each case is exactly the same, but I need to respond individually as issues arise, so scripting the whole thing out would fail more often than it would work.
+
+I use the `batch` command to perform each step across all repositories at once. Once you get used to it, it feels like a superpower!
+
+Lest you doubt what that kind of leverage can do for you, consider this:
+
+[![batch superpower in action](./doc/contributions.png)](https://github.com/karmaniverous)
+
+```bash
+> getdotenv batch -h
+
+# Usage: getdotenv batch [options] [command]
+#
+# Batch shell commands across multiple working directories.
+#
+# Options:
+#   -p, --pkg-cwd             use nearest package directory as current working directory
+#   -r, --root-path <string>  path to batch root directory from current working directory (default: "./")
+#   -g, --globs <strings...>  space-delimited globs from root path (default: "*")
+#   -c, --command <string>    shell command string, conflicts with cmd subcommand (dotenv-expanded)
+#   -l, --list                list working directories without executing command
+#   -e, --ignore-errors       ignore errors and continue with next path
+#   -h, --help                display help for command
+#
+# Commands:
+#   cmd                       batch execute shell command, conflicts with --command option (default command)
+#   help [command]            display help for command
+```
+
+Note that `batch` executes its commands in sequence, rather than in parallel!
+
+To understand why, imagine running `npm install` in a dozen repos from the same command line. The visual feedback would be impossible to follow, and if something broke you'd have a really hard time figuring out why.
+
+Instead, everything runs in sequence, and you get a clear record of exactly what heppened and where. Also worth noting that many complex processes are resource hogs: you would not _want_ to run a dozen Serverless deployments at once!
+
+Meanwhile, [this issue](https://github.com/karmaniverous/get-dotenv/issues/7) documents the parallel-processing option requirement. Feel free to submit a PR!
 
 ---
 

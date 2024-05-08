@@ -13,7 +13,8 @@ import {
   type GetDotenvOptions,
   type Logger,
 } from '../GetDotenvOptions';
-import { cmd } from './cmd';
+import { batchCommand } from './batchCommand';
+import { cmdCommand } from './cmdCommand';
 import type { GetDotenvCliGenerateOptions } from './types';
 
 /**
@@ -83,7 +84,7 @@ export const generateGetDotenvCli = ({
     )
     .option(
       '-c, --command <string>',
-      'shell command string (dotenv-expanded)',
+      'shell command string, conflicts with cmd subcommand (dotenv-expanded)',
       dotenvExpandFromProcessEnv,
     )
     .option(
@@ -280,7 +281,8 @@ export const generateGetDotenvCli = ({
       'vars assignment operator regex pattern',
       varsAssignorPattern,
     )
-    .addCommand(cmd, { isDefault: true })
+    .addCommand(batchCommand)
+    .addCommand(cmdCommand, { isDefault: true })
     .hook('preSubcommand', async (thisCommand) => {
       const rawOptions = thisCommand.opts();
 
@@ -417,6 +419,11 @@ export const generateGetDotenvCli = ({
       if (postHook) await postHook(dotenv);
 
       // Execute shell command.
+      if (command && thisCommand.args.length) {
+        logger.error(`--command option conflicts with cmd subcommand.`);
+        process.exit(0);
+      }
+
       if (command) {
         if (cliOptions.debug) logger.log('\n*** shell command ***\n', command);
 
