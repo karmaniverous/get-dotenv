@@ -1,7 +1,7 @@
 import fs from 'fs-extra';
 import _ from 'lodash';
+import { join } from 'path';
 import { packageDirectory } from 'pkg-dir';
-import { resolve } from 'url';
 
 import {
   baseGetDotenvCliOptions,
@@ -156,7 +156,7 @@ export const resolveGetDotenvOptions = async (
   const localPkgDir = await packageDirectory();
 
   const localOptionsPath = localPkgDir
-    ? resolve(localPkgDir, getDotenvOptionsFilename)
+    ? join(localPkgDir, getDotenvOptionsFilename)
     : undefined;
 
   const localOptions = (

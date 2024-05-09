@@ -1,8 +1,9 @@
 import type { Command } from '@commander-js/extra-typings';
 import fs from 'fs-extra';
 import _ from 'lodash';
+import { join } from 'path';
 import { packageDirectory } from 'pkg-dir';
-import { fileURLToPath, resolve } from 'url';
+import { fileURLToPath } from 'url';
 
 import {
   getDotenvOptionsFilename,
@@ -96,7 +97,7 @@ export const resolveGetDotenvCliGenerateOptions = async ({
     : undefined;
 
   const globalOptionsPath = globalPkgDir
-    ? resolve(globalPkgDir, getDotenvOptionsFilename)
+    ? join(globalPkgDir, getDotenvOptionsFilename)
     : undefined;
 
   const globalOptions = (
@@ -108,7 +109,7 @@ export const resolveGetDotenvCliGenerateOptions = async ({
   const localPkgDir = await packageDirectory();
 
   const localOptionsPath = localPkgDir
-    ? resolve(localPkgDir, getDotenvOptionsFilename)
+    ? join(localPkgDir, getDotenvOptionsFilename)
     : undefined;
 
   const localOptions = (
