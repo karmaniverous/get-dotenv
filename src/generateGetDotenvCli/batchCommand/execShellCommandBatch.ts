@@ -91,7 +91,6 @@ export const execShellCommandBatch = async ({
   logger.info(headerRootPath);
   logger.info(headerGlobs);
   logger.info(headerCommand);
-  logger.info('');
 
   for (const path of paths) {
     // Write path and command to console.
@@ -105,7 +104,7 @@ export const execShellCommandBatch = async ({
     logger.info('');
     logger.info('*'.repeat(pathLabel.length));
     logger.info(pathLabel);
-    logger.info('');
+    logger.info(headerCommand);
 
     // Execute shell command.
     try {
