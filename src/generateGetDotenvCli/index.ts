@@ -4,34 +4,49 @@ import _ from 'lodash';
 
 import { dotenvExpandFromProcessEnv } from '../dotenvExpand';
 import { getDotenv } from '../getDotenv';
-import {
-  defaultGetDotenvCliOptionsGlobal,
-  defaultGetDotenvCliOptionsLocal,
-} from '../GetDotenvCliOptions';
-import {
-  getDotenvCliOptions2Options,
-  type GetDotenvOptions,
-  type Logger,
-  mergeGetDotenvOptions,
-} from '../GetDotenvOptions';
+import { getDotenvCliOptions2Options } from '../GetDotenvOptions';
 import { batchCommand } from './batchCommand';
 import { cmdCommand } from './cmdCommand';
-import type { GetDotenvCliGenerateOptions } from './types';
+import {
+  type GetDotenvCliGenerateOptions,
+  resolveGetDotenvCliGenerateOptions,
+} from './GetDotenvCliGenerateOptions';
+import type { GetDotenvCliOptions } from './GetDotenvCliOptions';
+
+const resolveExclusion = (
+  exclude: boolean | undefined,
+  excludeOff: true | undefined,
+  defaultValue: boolean | undefined,
+) =>
+  exclude ? true : excludeOff ? undefined : defaultValue ? true : undefined;
+
+const resolveExclusionAll = (
+  exclude: boolean | undefined,
+  excludeOff: true | undefined,
+  defaultValue: boolean | undefined,
+  excludeAll: true | undefined,
+  excludeAllOff: true | undefined,
+) =>
+  excludeAll && !excludeOff
+    ? true
+    : excludeAllOff && !exclude
+      ? undefined
+      : defaultValue
+        ? true
+        : undefined;
 
 /**
  * Generate a Commander CLI Command for get-dotenv.
  */
-export const generateGetDotenvCli = ({
-  logger = console as unknown as Logger,
-  preHook,
-  postHook,
-  ...cliOptionsCustom
-}: GetDotenvCliGenerateOptions = {}): Command => {
+export const generateGetDotenvCli = async (
+  customOptions: Pick<GetDotenvCliGenerateOptions, 'importMetaUrl'> &
+    Partial<Omit<GetDotenvCliGenerateOptions, 'importMetaUrl'>>,
+): Promise<Command> => {
   const {
-    alias = 'getdotenv',
+    alias,
     debug,
     defaultEnv,
-    description = 'Base CLI.',
+    description,
     dotenvToken,
     dynamicPath,
     env,
@@ -42,26 +57,20 @@ export const generateGetDotenvCli = ({
     excludePublic,
     loadProcess,
     log,
+    logger,
     outputPath,
     paths,
     pathsDelimiter,
     pathsDelimiterPattern,
+    postHook,
+    preHook,
     privateToken,
     shellScripts,
     varsAssignor,
     varsAssignorPattern,
     varsDelimiter,
     varsDelimiterPattern,
-  } = {
-    ...defaultGetDotenvCliOptionsGlobal,
-    ...cliOptionsCustom,
-    ...defaultGetDotenvCliOptionsLocal,
-    shellScripts: {
-      ...(defaultGetDotenvCliOptionsGlobal.shellScripts ?? {}),
-      ...(cliOptionsCustom.shellScripts ?? {}),
-      ...(defaultGetDotenvCliOptionsLocal.shellScripts ?? {}),
-    },
-  };
+  } = await resolveGetDotenvCliGenerateOptions(customOptions);
 
   const excludeAll =
     !!excludeDynamic &&
@@ -297,12 +306,15 @@ export const generateGetDotenvCli = ({
     .addCommand(batchCommand)
     .addCommand(cmdCommand, { isDefault: true })
     .hook('preSubcommand', async (thisCommand) => {
-      const rawOptions = thisCommand.opts();
+      // Get parent command GetDotenvCliOptions.
+      const parentGetDotenvCliOptions = process.env.getDotenvCliOptions
+        ? (JSON.parse(process.env.getDotenvCliOptions) as GetDotenvCliOptions)
+        : undefined;
 
-      if (rawOptions.debug)
-        logger.log('\n*** raw cli options ***\n', { rawOptions });
+      // Get raw CLI options from commander.
+      const rawCliOptions = thisCommand.opts();
 
-      // Load options.
+      // Extract current GetDotenvCliOptions from raw CLI options.
       const {
         command,
         debugOff,
@@ -315,125 +327,124 @@ export const generateGetDotenvCli = ({
         excludePublicOff,
         loadProcessOff,
         logOff,
-        ...cliOptions
-      } = {
-        ...rawOptions,
-        shellScripts: rawOptions.shellScripts
-          ? (JSON.parse(
-              rawOptions.shellScripts,
-            ) as GetDotenvOptions['shellScripts'])
-          : undefined,
-      };
+        shellScripts,
+        ...rawCliOptionsRest
+      } = rawCliOptions;
+
+      const currentGetDotenvCliOptions: Partial<GetDotenvCliOptions> =
+        rawCliOptionsRest;
+
+      if (shellScripts)
+        currentGetDotenvCliOptions.shellScripts = JSON.parse(
+          shellScripts,
+        ) as GetDotenvCliOptions['shellScripts'];
+
+      // Merge current & parent GetDotenvCliOptions.
+      const mergedGetDotenvCliOptions = _.defaultsDeep(
+        currentGetDotenvCliOptions,
+        parentGetDotenvCliOptions ?? {},
+      ) as GetDotenvCliOptions;
 
       // Resolve flags.
-      const resolveExclusion = (
-        exclude: true | undefined,
-        excludeOff: true | undefined,
-        defaultValue: boolean | undefined,
-      ) =>
-        exclude
-          ? true
-          : excludeOff
-            ? undefined
-            : defaultValue
-              ? true
-              : undefined;
+      mergedGetDotenvCliOptions.debug = resolveExclusion(
+        mergedGetDotenvCliOptions.debug,
+        debugOff,
+        debug,
+      );
 
-      const resolveExclusionAll = (
-        exclude: true | undefined,
-        excludeOff: true | undefined,
-        defaultValue: boolean | undefined,
-      ) =>
-        excludeAll && !excludeOff
-          ? true
-          : excludeAllOff && !exclude
-            ? undefined
-            : defaultValue
-              ? true
-              : undefined;
-
-      cliOptions.debug = resolveExclusion(cliOptions.debug, debugOff, debug);
-
-      cliOptions.excludeDynamic = resolveExclusionAll(
-        cliOptions.excludeDynamic,
+      mergedGetDotenvCliOptions.excludeDynamic = resolveExclusionAll(
+        mergedGetDotenvCliOptions.excludeDynamic,
         excludeDynamicOff,
         excludeDynamic,
+        excludeAll,
+        excludeAllOff,
       );
 
-      cliOptions.excludeEnv = resolveExclusionAll(
-        cliOptions.excludeEnv,
+      mergedGetDotenvCliOptions.excludeEnv = resolveExclusionAll(
+        mergedGetDotenvCliOptions.excludeEnv,
         excludeEnvOff,
         excludeEnv,
+        excludeAll,
+        excludeAllOff,
       );
 
-      cliOptions.excludeGlobal = resolveExclusionAll(
-        cliOptions.excludeGlobal,
+      mergedGetDotenvCliOptions.excludeGlobal = resolveExclusionAll(
+        mergedGetDotenvCliOptions.excludeGlobal,
         excludeGlobalOff,
         excludeGlobal,
+        excludeAll,
+        excludeAllOff,
       );
 
-      cliOptions.excludePrivate = resolveExclusionAll(
-        cliOptions.excludePrivate,
+      mergedGetDotenvCliOptions.excludePrivate = resolveExclusionAll(
+        mergedGetDotenvCliOptions.excludePrivate,
         excludePrivateOff,
         excludePrivate,
+        excludeAll,
+        excludeAllOff,
       );
 
-      cliOptions.excludePublic = resolveExclusionAll(
-        cliOptions.excludePublic,
+      mergedGetDotenvCliOptions.excludePublic = resolveExclusionAll(
+        mergedGetDotenvCliOptions.excludePublic,
         excludePublicOff,
         excludePublic,
+        excludeAll,
+        excludeAllOff,
       );
 
-      cliOptions.log = resolveExclusion(cliOptions.log, logOff, log);
+      mergedGetDotenvCliOptions.log = resolveExclusion(
+        mergedGetDotenvCliOptions.log,
+        logOff,
+        log,
+      );
 
-      cliOptions.loadProcess = resolveExclusion(
-        cliOptions.loadProcess,
+      mergedGetDotenvCliOptions.loadProcess = resolveExclusion(
+        mergedGetDotenvCliOptions.loadProcess,
         loadProcessOff,
         loadProcess,
       );
 
-      if (cliOptions.debug)
-        logger.log('\n*** cli options after default resolution ***\n', {
-          cliOptions,
+      if (mergedGetDotenvCliOptions.debug && parentGetDotenvCliOptions)
+        logger.debug(
+          '\n*** parent command GetDotenvCliOptions ***\n',
+          parentGetDotenvCliOptions,
+        );
+
+      if (mergedGetDotenvCliOptions.debug)
+        logger.debug('\n*** current command raw options ***\n', rawCliOptions);
+
+      if (mergedGetDotenvCliOptions.debug)
+        logger.debug(
+          '\n*** current command GetDotenvCliOptions ***\n',
+          currentGetDotenvCliOptions,
+        );
+
+      if (mergedGetDotenvCliOptions.debug)
+        logger.debug('\n*** merged GetDotenvCliOptions ***\n', {
+          mergedGetDotenvCliOptions,
         });
 
       // Execute pre-hook.
       if (preHook) {
-        await preHook(cliOptions);
-        if (cliOptions.debug)
-          logger.log('\n*** cli options after pre-hook ***\n', cliOptions);
+        await preHook(mergedGetDotenvCliOptions);
+
+        if (mergedGetDotenvCliOptions.debug)
+          logger.debug(
+            '\n*** GetDotenvCliOptions after pre-hook ***\n',
+            mergedGetDotenvCliOptions,
+          );
       }
 
-      // Get getdotenv options from parent command.
-      const parentGetdotenvOptions = (
-        process.env.getDotenvOptions
-          ? JSON.parse(process.env.getDotenvOptions)
-          : {}
-      ) as GetDotenvOptions;
-
-      const cliGetDotenvOptions = getDotenvCliOptions2Options(cliOptions);
-
-      const getDotenvOptions = mergeGetDotenvOptions(
-        cliGetDotenvOptions,
-        parentGetdotenvOptions,
-      );
-
-      if (cliOptions.debug)
-        logger.log('\n*** getdotenv option resolution ***\n', {
-          parentGetdotenvOptions,
-          cliGetDotenvOptions,
-          getDotenvOptions,
-        });
+      // Persist GetDotenvCliOptions in command for subcommand access.
+      _.set(thisCommand, 'getDotenvCliOptions', mergedGetDotenvCliOptions);
 
       // Execute getdotenv.
-      const getDotenvOptionsProp = { ...getDotenvOptions, logger };
+      const dotenv = await getDotenv(
+        getDotenvCliOptions2Options(mergedGetDotenvCliOptions),
+      );
 
-      _.set(thisCommand, 'getDotenvOptions', getDotenvOptionsProp);
-
-      const dotenv = await getDotenv(getDotenvOptionsProp);
-
-      if (cliOptions.debug)
-        logger.log('\n*** resulting dotenv values ***\n', { dotenv });
+      if (mergedGetDotenvCliOptions.debug)
+        logger.debug('\n*** getDotenv output ***\n', dotenv);
 
       // Execute post-hook.
       if (postHook) await postHook(dotenv);
@@ -446,15 +457,17 @@ export const generateGetDotenvCli = ({
 
       if (command) {
         const shellCommand =
-          getDotenvOptionsProp.shellScripts?.[command] ?? command;
+          mergedGetDotenvCliOptions.shellScripts?.[command] ?? command;
 
-        if (cliOptions.debug)
-          logger.log('\n*** shell command ***\n', shellCommand);
+        if (mergedGetDotenvCliOptions.debug)
+          logger.debug('\n*** shell command ***\n', shellCommand);
 
         await execaCommand(shellCommand, {
           env: {
             ...process.env,
-            getDotenvOptions: JSON.stringify(getDotenvOptions),
+            getDotenvCliOptions: JSON.stringify(
+              _.omit(mergedGetDotenvCliOptions, ['logger']),
+            ),
           },
           shell: true,
           stdio: 'inherit',

@@ -1,10 +1,14 @@
+import fs from 'fs-extra';
 import _ from 'lodash';
+import { packageDirectory } from 'pkg-dir';
+import { resolve } from 'url';
 
 import {
-  defaultGetDotenvCliOptionsGlobal,
-  defaultGetDotenvCliOptionsLocal,
+  baseGetDotenvCliOptions,
   type GetDotenvCliOptions,
-} from './GetDotenvCliOptions';
+} from './generateGetDotenvCli/GetDotenvCliOptions';
+
+export const getDotenvOptionsFilename = 'getdotenv.config.json';
 
 export type ProcessEnv = Record<string, string | undefined>;
 
@@ -20,14 +24,9 @@ export type Logger =
   | typeof console;
 
 /**
- * Options passed programmatically to `getDotenv` and `getDotEnvSync`.
+ * Options passed programmatically to `getDotenv`.
  */
 export interface GetDotenvOptions {
-  /**
-   * log internals to logger
-   */
-  debug?: boolean;
-
   /**
    * default target environment (used if `env` is not provided)
    */
@@ -36,7 +35,7 @@ export interface GetDotenvOptions {
   /**
    * token indicating a dotenv file
    */
-  dotenvToken?: string;
+  dotenvToken: string;
 
   /**
    * path to JS module default-exporting an object keyed to dynamic variable functions
@@ -104,41 +103,10 @@ export interface GetDotenvOptions {
   privateToken?: string;
 
   /**
-   * Shell scripts that can be executed from the CLI, either individually or via the batch subcommand.
-   */
-  shellScripts?: Record<string, string>;
-
-  /**
    * explicit variables to include
    */
   vars?: ProcessEnv;
 }
-
-/**
- * Merges two sets of `getDotenv` options and eliminates any falsy `vars`. `target` takes precedence.
- *
- * @param target - Target options object (takes precedence).
- * @param source - Source options object (provides defaults).
- * @returns Merged options object.
- */
-export const mergeGetDotenvOptions = (
-  target: GetDotenvOptions = {},
-  source: GetDotenvOptions = {},
-): GetDotenvOptions => ({
-  ...source,
-  ...target,
-  shellScripts: {
-    ...(source.shellScripts ?? {}),
-    ...(target.shellScripts ?? {}),
-  },
-  vars: _.pickBy(
-    {
-      ...(source.vars ?? {}),
-      ...(target.vars ?? {}),
-    },
-    (v) => !!v,
-  ),
-});
 
 /**
  * Converts programmatic CLI options to `getDotenv` options.
@@ -157,8 +125,8 @@ export const getDotenvCliOptions2Options = ({
   varsDelimiter,
   varsDelimiterPattern,
   ...rest
-}: GetDotenvCliOptions = {}): GetDotenvOptions => ({
-  ...rest,
+}: GetDotenvCliOptions): GetDotenvOptions => ({
+  ..._.omit(rest, ['debug', 'shellScripts']),
   paths:
     paths?.split(
       pathsDelimiterPattern
@@ -182,15 +150,33 @@ export const getDotenvCliOptions2Options = ({
   ),
 });
 
-/**
- * Extracts default programmatic `getDotenv` options from the global & local
- * CLI options defined in the respective `getdotenv.config.json` files.
- */
-export const getDotenvDefaultOptions = getDotenvCliOptions2Options({
-  ...defaultGetDotenvCliOptionsGlobal,
-  ...defaultGetDotenvCliOptionsLocal,
-  shellScripts: {
-    ...(defaultGetDotenvCliOptionsGlobal.shellScripts ?? {}),
-    ...(defaultGetDotenvCliOptionsLocal.shellScripts ?? {}),
-  },
-});
+export const resolveGetDotenvOptions = async (
+  customOptions: Partial<GetDotenvOptions>,
+) => {
+  const localPkgDir = await packageDirectory();
+
+  const localOptionsPath = localPkgDir
+    ? resolve(localPkgDir, getDotenvOptionsFilename)
+    : undefined;
+
+  const localOptions = (
+    localOptionsPath && (await fs.exists(localOptionsPath))
+      ? JSON.parse((await fs.readFile(localOptionsPath)).toString())
+      : {}
+  ) as Partial<GetDotenvCliOptions>;
+
+  const result = _.defaultsDeep(
+    customOptions,
+    getDotenvCliOptions2Options(
+      _.defaultsDeep(
+        localOptions,
+        baseGetDotenvCliOptions,
+      ) as GetDotenvCliOptions,
+    ),
+  ) as GetDotenvOptions;
+
+  return {
+    ...result,
+    vars: _.pickBy(result.vars ?? {}, (v) => !!v),
+  };
+};

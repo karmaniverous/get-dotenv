@@ -6,12 +6,11 @@ import url from 'url';
 
 import { dotenvExpandAll } from './dotenvExpand';
 import {
-  getDotenvDefaultOptions,
   type GetDotenvDynamic,
   type GetDotenvDynamicFunction,
   type GetDotenvOptions,
-  mergeGetDotenvOptions,
   type ProcessEnv,
+  resolveGetDotenvOptions,
 } from './GetDotenvOptions';
 import { readDotenv } from './readDotenv';
 
@@ -22,7 +21,7 @@ import { readDotenv } from './readDotenv';
  * @returns The combined parsed dotenv object.
  */
 export const getDotenv = async (
-  options: GetDotenvOptions = {},
+  options: Partial<GetDotenvOptions> = {},
 ): Promise<ProcessEnv> => {
   // Apply defaults.
   const {
@@ -42,7 +41,7 @@ export const getDotenv = async (
     paths = [],
     privateToken = 'local',
     vars = {},
-  } = mergeGetDotenvOptions(options, getDotenvDefaultOptions);
+  } = await resolveGetDotenvOptions(options);
 
   // Read .env files.
   const loaded = paths.length

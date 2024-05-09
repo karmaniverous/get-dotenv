@@ -1,7 +1,7 @@
 import { Command } from '@commander-js/extra-typings';
 
 import { dotenvExpandFromProcessEnv } from '../../dotenvExpand';
-import { GetDotenvCliCommand } from '../types';
+import { GetDotenvCliCommand } from '../GetDotenvCliGenerateOptions';
 import { cmdCommand } from './cmdCommand';
 import { execShellCommandBatch } from './execShellCommandBatch';
 
@@ -31,7 +31,7 @@ export const batchCommand = new Command()
     if (!thisCommand.parent) throw new Error(`unable to resolve root command`);
 
     const {
-      getDotenvOptions: { logger = console, shellScripts },
+      getDotenvCliOptions: { logger = console, shellScripts },
     } = thisCommand.parent as GetDotenvCliCommand;
 
     const { command, ignoreErrors, globs, list, pkgCwd, rootPath } =

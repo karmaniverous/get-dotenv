@@ -1,7 +1,7 @@
 import { Command } from '@commander-js/extra-typings';
 import { execaCommand } from 'execa';
 
-import { GetDotenvCliCommand } from './types';
+import { GetDotenvCliCommand } from './GetDotenvCliGenerateOptions';
 
 export const cmdCommand = new Command()
   .name('cmd')
@@ -17,7 +17,7 @@ export const cmdCommand = new Command()
     if (!thisCommand.parent) throw new Error('parent command not found');
 
     const {
-      getDotenvOptions: { debug, logger = console, shellScripts },
+      getDotenvCliOptions: { debug, logger = console, shellScripts },
     } = thisCommand.parent as GetDotenvCliCommand;
 
     const command = thisCommand.args.join(' ');

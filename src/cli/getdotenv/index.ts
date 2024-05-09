@@ -2,6 +2,6 @@
 
 import { generateGetDotenvCli } from '../../';
 
-const cli = generateGetDotenvCli();
+const cli = await generateGetDotenvCli({ importMetaUrl: import.meta.url });
 
 await cli.parseAsync();
