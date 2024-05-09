@@ -5,8 +5,9 @@ export {
 } from './dotenvExpand';
 export { generateGetDotenvCli } from './generateGetDotenvCli';
 export { getDotenv } from './getDotenv';
-export type {
-  GetDotenvDynamic,
-  GetDotenvOptions,
-  ProcessEnv,
+export {
+  getDotenvCliOptions2Options,
+  type GetDotenvDynamic,
+  type GetDotenvOptions,
+  type ProcessEnv,
 } from './GetDotenvOptions';

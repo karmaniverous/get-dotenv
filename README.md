@@ -60,7 +60,7 @@ See the [GetDotenvOptions](./src/GetDotenvOptions.ts) type for descriptions of a
 
 This package supports the full [`dotenv-expand`](https://www.npmjs.com/package/dotenv-expand) syntax, with some internal performance improvements.
 
-Use the `dynamicPath` option to add a relative path to a Javascript file with a default export like this:
+Use the `dynamicPath` option to add a relative path to a Javascript module with a default export like this:
 
 ```js
 export default {
@@ -72,9 +72,28 @@ export default {
 };
 ```
 
-If the value corresponding to a key is a function, it will be executed with the current state of `dotenv` as its single argument and the result applied back to the `dotenv` object. Otherwise, the value will just be applied back to `dotenv`.
+If the value corresponding to a key is a function, it will be executed with the current state of `dotenv` as its single argument and the result applied back to the `dotenv` object. Otherwise, the value will just be applied back to `dotenv`. (Although if you're going to do that then you might as well just create a public global variable in the first place.)
 
 Since keys will be evaluated progressively, each successive key function will have access to any previous ones. These keys can also override existing variables.
+
+### Dynamic Processing with TypeScript
+
+Even though the rest of your project is in TypeScript, the dynamic processing module SHOULD be in JavasScript.
+
+Think about it: the module is loaded via a dynamic import, with the file name determined at run time. You will have to jump through some hoops to get your bundler to compile this file, and you'll have to be careful to set `dynamicPath` to reference the compiled file. That's a lot of work for some very simple log.
+
+BUT... if you must, then your dynamic module's default export should be of the `GetDotenvDynamic` type, which is defined [here](./src/GetDotenvOptions.ts) and looks like this:
+
+```ts
+export type ProcessEnv = Record<string, string | undefined>;
+
+export type GetDotenvDynamicFunction = (vars: ProcessEnv) => string | undefined;
+
+export type GetDotenvDynamic = Record<
+  string,
+  GetDotenvDynamicFunction | ReturnType<GetDotenvDynamicFunction>
+>;
+```
 
 ## Command Line Interface
 
