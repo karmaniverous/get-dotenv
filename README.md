@@ -54,7 +54,9 @@ import { getDotenv } from '@karmaniverous/get-dotenv';
 const dotenv = await getDotenv(options);
 ```
 
-See the [GetDotenvOptions](./src/GetDotenvOptions.ts) type for descriptions of all the configuration options.
+Options can be passed programmatically or set in a `getdotenv.config.json` file in your project root directory. The same file also sets default options for the `getdotenv` CLI or any child CLI you spawn from it.
+
+See the [child CLI example repo](https://github.com/karmaniverous/get-dotenv-child#configuration) for an extensiive discussion of the various config options and how & where to set them.
 
 ## Dynamic Processing
 
