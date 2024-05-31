@@ -10,7 +10,7 @@ Load environment variables with a cascade of environment-aware dotenv files. You
 - Private files (e.g. `.env.local`, `env.dev.local`, `env.test.local`) are protected by `.gitignore`.
 - Global files (e.g. `.env`, `env.local`) apply to all environments.
 - Env files (e.g. `.env.dev`, `.env.dev.local`, `.env.test`, `.env.test.local`) apply to a specific environment.
-- Dynamic files (`.env.js`) export logic that dynamically & progressively generates new variables or overrides current ones.
+- [Dynamic files](#dynamic-processing) (`.env.js`) export logic that dynamically & progressively generates new variables or overrides current ones.
 
 ✅ Dynamically specify which variables to load by type.
 
@@ -20,11 +20,13 @@ Load environment variables with a cascade of environment-aware dotenv files. You
 
 ✅ Customize your dotenv file directories & naming patterns.
 
-✅ Perform all of the above either programmatically or from the command line, where you can also execute additional shell commands within the resulting context... including nested `getdotenv` commands that inherit the parent command's settings & context!
+✅ Perform all of the above either programmatically or [from the command line](#command-line-interface), where you can also execute additional commands within the resulting context... including nested `getdotenv` commands that inherit the parent command's settings & context!
+
+✅ [Execute batched CLI commands](#batch-command) across multiple working directories, with each command inheriting the `getdotenv` context.
 
 ✅ Set defaults for all options in a `getdotenv.config.json` file in your project root directory.
 
-✅ Generate an extensible `getdotenv`-based CLI for use in your own projects.
+✅ [Generate an extensible `getdotenv`-based CLI](https://github.com/karmaniverous/get-dotenv-child) for use in your own projects.
 
 `getdotenv` relies on the excellent [`dotenv`](https://www.npmjs.com/package/dotenv) parser and somewhat improves on [`dotenv-expand`](https://www.npmjs.com/package/dotenv-expand) for recursive variable expansion.
 
@@ -113,6 +115,8 @@ You can also use `getdotenv` from the command line:
 #   -v, --vars <string>                 extra variables expressed as delimited key-value pairs (dotenv-expanded): KEY1=VAL1 KEY2=VAL2
 #   -c, --command <string>              shell command string, conflicts with cmd subcommand (dotenv-expanded)
 #   -o, --output-path <string>          consolidated output file  (dotenv-expanded)
+#   -s, --shell [string]                command execution shell, no argument for default OS shell or provide shell string (default OS shell)
+#   -S, --shell-off                     command execution shell OFF
 #   -p, --load-process                  load variables to process.env ON (default)
 #   -P, --load-process-off              load variables to process.env OFF
 #   -a, --exclude-all                   exclude all dotenv variables from loading ON
@@ -149,6 +153,12 @@ You can also use `getdotenv` from the command line:
 #   cmd                                 execute shell command, conflicts with --command option (default command)
 #   help [command]                      display help for command
 ```
+
+By default, commands (`-c` or `--command` or the `cmd` subcommand) execute in the default OS shell with the `dotenv` context applied. The `-S` or `--shell-off` options will turn this off, and Execa will [execute your command as Javascript](https://github.com/sindresorhus/execa/blob/main/docs/bash.md).
+
+Alternatively, you can use the `-s` or `--shell` option to specify a different shell [following the Execa spec](https://github.com/sindresorhus/execa/blob/main/docs/shell.md). This is useful if you're running a command that requires a specific shell, like `bash` or `zsh`.
+
+Finally, you can set the [`shell`](https://github.com/karmaniverous/get-dotenv-child?tab=readme-ov-file#options) default globally in your `getdotenv.config.json` file.
 
 See [this example repo](https://github.com/karmaniverous/get-dotenv-child) for a deep dive on using the `getDotenv` CLI and how to extend it for your own projects.
 

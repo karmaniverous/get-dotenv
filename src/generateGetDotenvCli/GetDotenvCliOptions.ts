@@ -1,5 +1,10 @@
 import type { GetDotenvOptions } from '../GetDotenvOptions';
 
+export type Scripts = Record<
+  string,
+  string | { cmd: string; shell?: string | boolean }
+>;
+
 /**
  * Options passed programmatically to `getDotenvCli`.
  */
@@ -28,9 +33,18 @@ export interface GetDotenvCliOptions
   pathsDelimiterPattern?: string;
 
   /**
-   * Shell scripts that can be executed from the CLI, either individually or via the batch subcommand.
+   * Scripts that can be executed from the CLI, either individually or via the batch subcommand.
    */
-  shellScripts?: Record<string, string>;
+  scripts?: Scripts;
+
+  /**
+   * Determines how commands and scripts are executed. If `false` or
+   * `undefined`, commands are executed as plain Javascript using the default
+   * execa parser. If `true`, commands are executed using the default OS shell
+   * parser. Otherwise the user may provide a specific shell string (e.g.
+   * `/bin/bash`)
+   */
+  shell?: string | boolean;
 
   /**
    * A delimited string of key-value pairs declaratively specifying variables &
@@ -70,9 +84,13 @@ export const baseGetDotenvCliOptions: Partial<GetDotenvCliOptions> = {
   paths: './',
   pathsDelimiter: ' ',
   privateToken: 'local',
-  shellScripts: {
-    'git-status': 'git branch --show-current && git status -s -u',
+  scripts: {
+    'git-status': {
+      cmd: 'git branch --show-current && git status -s -u',
+      shell: true,
+    },
   },
+  shell: true,
   vars: '',
   varsAssignor: '=',
   varsDelimiter: ' ',

@@ -2,11 +2,12 @@ import { Command } from '@commander-js/extra-typings';
 import { execaCommand } from 'execa';
 
 import { GetDotenvCliCommand } from './GetDotenvCliGenerateOptions';
+import { resolveCommand, resolveShell } from './resolve';
 
 export const cmdCommand = new Command()
   .name('cmd')
   .description(
-    'batch execute shell command, conflicts with --command option (default command)',
+    'batch execute command string according to the --shell option, conflicts with --command option (default command)',
   )
   .configureHelp({ showGlobalOptions: true })
   .enablePositionalOptions()
@@ -17,17 +18,23 @@ export const cmdCommand = new Command()
     if (!thisCommand.parent) throw new Error('parent command not found');
 
     const {
-      getDotenvCliOptions: { debug, logger = console, shellScripts },
+      getDotenvCliOptions: { logger = console, ...getDotenvCliOptions },
     } = thisCommand.parent as GetDotenvCliCommand;
 
     const command = thisCommand.args.join(' ');
 
-    const shellCommand = shellScripts?.[command] ?? command;
+    const cmd = resolveCommand(getDotenvCliOptions.scripts, command);
 
-    if (debug) logger.log('\n*** shell command ***\n', `'${shellCommand}'`);
+    if (getDotenvCliOptions.debug)
+      logger.log('\n*** command ***\n', `'${cmd}'`);
 
-    await execaCommand(shellCommand, {
-      shell: true,
+    await execaCommand(cmd, {
+      env: { getDotenvCliOptions: JSON.stringify(getDotenvCliOptions) },
+      shell: resolveShell(
+        getDotenvCliOptions.scripts,
+        command,
+        getDotenvCliOptions.shell,
+      ),
       stdio: 'inherit',
     });
   });
