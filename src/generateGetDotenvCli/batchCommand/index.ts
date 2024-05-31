@@ -2,6 +2,8 @@ import { Command } from '@commander-js/extra-typings';
 
 import { dotenvExpandFromProcessEnv } from '../../dotenvExpand';
 import { GetDotenvCliCommand } from '../GetDotenvCliGenerateOptions';
+import { GetDotenvCliOptions } from '../GetDotenvCliOptions';
+import { resolveCommand, resolveShell } from '../resolve';
 import { cmdCommand } from './cmdCommand';
 import { execShellCommandBatch } from './execShellCommandBatch';
 
@@ -22,7 +24,7 @@ export const batchCommand = new Command()
   .option('-g, --globs <string>', 'space-delimited globs from root path', '*')
   .option(
     '-c, --command <string>',
-    'shell command string, conflicts with cmd subcommand (dotenv-expanded)',
+    'command string executed according to the base --shell option, conflicts with cmd subcommand (dotenv-expanded)',
     dotenvExpandFromProcessEnv,
   )
   .option('-l, --list', 'list working directories without executing command')
@@ -31,7 +33,7 @@ export const batchCommand = new Command()
     if (!thisCommand.parent) throw new Error(`unable to resolve root command`);
 
     const {
-      getDotenvCliOptions: { logger = console, shellScripts },
+      getDotenvCliOptions: { logger = console, ...getDotenvCliOptions },
     } = thisCommand.parent as GetDotenvCliCommand;
 
     const { command, ignoreErrors, globs, list, pkgCwd, rootPath } =
@@ -45,15 +47,23 @@ export const batchCommand = new Command()
     // Execute shell command.
     if (command)
       await execShellCommandBatch({
-        command: shellScripts?.[command] ?? command,
+        command: resolveCommand(getDotenvCliOptions.scripts, command),
+        getDotenvCliOptions,
         globs,
         ignoreErrors,
         list,
         logger,
         pkgCwd,
         rootPath,
+        shell: resolveShell(
+          getDotenvCliOptions.scripts,
+          command,
+          getDotenvCliOptions.shell,
+        ),
       });
   })
   .addCommand(cmdCommand, { isDefault: true });
 
-export type BatchCommandOptions = ReturnType<typeof batchCommand.opts>;
+export type BatchCommandOptions = ReturnType<typeof batchCommand.opts> & {
+  getDotenvCliOptions?: GetDotenvCliOptions;
+};

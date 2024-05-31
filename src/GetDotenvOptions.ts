@@ -126,7 +126,7 @@ export const getDotenvCliOptions2Options = ({
   varsDelimiterPattern,
   ...rest
 }: GetDotenvCliOptions): GetDotenvOptions => ({
-  ..._.omit(rest, ['debug', 'shellScripts']),
+  ..._.omit(rest, ['debug', 'scripts']),
   paths:
     paths?.split(
       pathsDelimiterPattern

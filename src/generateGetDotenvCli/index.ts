@@ -12,6 +12,7 @@ import {
   resolveGetDotenvCliGenerateOptions,
 } from './GetDotenvCliGenerateOptions';
 import type { GetDotenvCliOptions } from './GetDotenvCliOptions';
+import { resolveCommand, resolveShell } from './resolve';
 
 const resolveExclusion = (
   exclude: boolean | undefined,
@@ -65,7 +66,8 @@ export const generateGetDotenvCli = async (
     postHook,
     preHook,
     privateToken,
-    shellScripts,
+    scripts,
+    shell,
     varsAssignor,
     varsAssignorPattern,
     varsDelimiter,
@@ -100,7 +102,7 @@ export const generateGetDotenvCli = async (
     )
     .option(
       '-c, --command <string>',
-      'shell command string, conflicts with cmd subcommand (dotenv-expanded)',
+      'command string executed according to the --shell option, conflicts with cmd subcommand (dotenv-expanded)',
       dotenvExpandFromProcessEnv,
     )
     .option(
@@ -108,6 +110,18 @@ export const generateGetDotenvCli = async (
       'consolidated output file  (dotenv-expanded)',
       dotenvExpandFromProcessEnv,
       outputPath,
+    )
+    .addOption(
+      new Option(
+        '-s, --shell [string]',
+        `command execution shell, no argument for default OS shell or provide shell string${shell ? ` (default ${_.isBoolean(shell) ? 'OS shell' : shell})` : ''}`,
+      ).conflicts('shellOff'),
+    )
+    .addOption(
+      new Option(
+        '-S, --shell-off',
+        `command execution shell OFF${!shell ? ' (default)' : ''}`,
+      ).conflicts('shell'),
     )
     .addOption(
       new Option(
@@ -298,8 +312,8 @@ export const generateGetDotenvCli = async (
       varsAssignorPattern,
     )
     .addOption(
-      new Option('--shell-scripts <string>')
-        .default(JSON.stringify(shellScripts))
+      new Option('--scripts <string>')
+        .default(JSON.stringify(scripts))
         .hideHelp(),
     )
 
@@ -327,17 +341,18 @@ export const generateGetDotenvCli = async (
         excludePublicOff,
         loadProcessOff,
         logOff,
-        shellScripts,
+        scripts,
+        shellOff,
         ...rawCliOptionsRest
       } = rawCliOptions;
 
       const currentGetDotenvCliOptions: Partial<GetDotenvCliOptions> =
         rawCliOptionsRest;
 
-      if (shellScripts)
-        currentGetDotenvCliOptions.shellScripts = JSON.parse(
-          shellScripts,
-        ) as GetDotenvCliOptions['shellScripts'];
+      if (scripts)
+        currentGetDotenvCliOptions.scripts = JSON.parse(
+          scripts,
+        ) as GetDotenvCliOptions['scripts'];
 
       // Merge current & parent GetDotenvCliOptions.
       const mergedGetDotenvCliOptions = _.defaultsDeep(
@@ -404,6 +419,14 @@ export const generateGetDotenvCli = async (
         loadProcess,
       );
 
+      mergedGetDotenvCliOptions.shell = shellOff
+        ? false
+        : !_.isUndefined(mergedGetDotenvCliOptions.shell)
+          ? mergedGetDotenvCliOptions.shell
+          : !_.isUndefined(shell)
+            ? shell
+            : false;
+
       if (mergedGetDotenvCliOptions.debug && parentGetDotenvCliOptions)
         logger.debug(
           '\n*** parent command GetDotenvCliOptions ***\n',
@@ -412,12 +435,6 @@ export const generateGetDotenvCli = async (
 
       if (mergedGetDotenvCliOptions.debug)
         logger.debug('\n*** current command raw options ***\n', rawCliOptions);
-
-      if (mergedGetDotenvCliOptions.debug)
-        logger.debug(
-          '\n*** current command GetDotenvCliOptions ***\n',
-          currentGetDotenvCliOptions,
-        );
 
       if (mergedGetDotenvCliOptions.debug)
         logger.debug('\n*** merged GetDotenvCliOptions ***\n', {
@@ -456,20 +473,23 @@ export const generateGetDotenvCli = async (
       }
 
       if (command) {
-        const shellCommand =
-          mergedGetDotenvCliOptions.shellScripts?.[command] ?? command;
+        const cmd = resolveCommand(mergedGetDotenvCliOptions.scripts, command);
 
         if (mergedGetDotenvCliOptions.debug)
-          logger.debug('\n*** shell command ***\n', shellCommand);
+          logger.debug('\n*** command ***\n', cmd);
 
-        await execaCommand(shellCommand, {
+        await execaCommand(cmd, {
           env: {
             ...process.env,
             getDotenvCliOptions: JSON.stringify(
               _.omit(mergedGetDotenvCliOptions, ['logger']),
             ),
           },
-          shell: true,
+          shell: resolveShell(
+            mergedGetDotenvCliOptions.scripts,
+            command,
+            mergedGetDotenvCliOptions.shell,
+          ),
           stdio: 'inherit',
         });
       }

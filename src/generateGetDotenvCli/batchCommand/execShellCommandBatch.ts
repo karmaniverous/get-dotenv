@@ -49,13 +49,18 @@ const globPaths = async ({
 
 export const execShellCommandBatch = async ({
   command,
+  getDotenvCliOptions,
   globs,
   ignoreErrors,
   list,
   logger,
   pkgCwd,
   rootPath,
-}: BatchCommandOptions & { logger: Logger }) => {
+  shell,
+}: BatchCommandOptions & {
+  logger: Logger;
+  shell: string | boolean | undefined;
+}) => {
   if (!command) {
     logger.error(`No command provided.`);
     process.exit(0);
@@ -110,8 +115,13 @@ export const execShellCommandBatch = async ({
     try {
       await execaCommand(command, {
         cwd: path,
+        env: {
+          getDotenvCliOptions: getDotenvCliOptions
+            ? JSON.stringify(getDotenvCliOptions)
+            : undefined,
+        },
         stdio: 'inherit',
-        shell: true,
+        shell,
       });
     } catch (error) {
       if (!ignoreErrors) {
