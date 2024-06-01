@@ -9,7 +9,7 @@ import { execShellCommandBatch } from './execShellCommandBatch';
 
 export const batchCommand = new Command()
   .name('batch')
-  .description('Batch shell commands across multiple working directories.')
+  .description('Batch command execution across multiple working directories.')
   .enablePositionalOptions()
   .passThroughOptions()
   .option(
@@ -24,7 +24,7 @@ export const batchCommand = new Command()
   .option('-g, --globs <string>', 'space-delimited globs from root path', '*')
   .option(
     '-c, --command <string>',
-    'command string executed according to the base --shell option, conflicts with cmd subcommand (dotenv-expanded)',
+    'command executed according to the base --shell option, conflicts with cmd subcommand (dotenv-expanded)',
     dotenvExpandFromProcessEnv,
   )
   .option('-l, --list', 'list working directories without executing command')
@@ -44,7 +44,7 @@ export const batchCommand = new Command()
       process.exit(0);
     }
 
-    // Execute shell command.
+    // Execute command.
     if (command)
       await execShellCommandBatch({
         command: resolveCommand(getDotenvCliOptions.scripts, command),

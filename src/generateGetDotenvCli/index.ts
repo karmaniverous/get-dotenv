@@ -102,7 +102,7 @@ export const generateGetDotenvCli = async (
     )
     .option(
       '-c, --command <string>',
-      'command string executed according to the --shell option, conflicts with cmd subcommand (dotenv-expanded)',
+      'command executed according to the --shell option, conflicts with cmd subcommand (dotenv-expanded)',
       dotenvExpandFromProcessEnv,
     )
     .option(
@@ -466,7 +466,7 @@ export const generateGetDotenvCli = async (
       // Execute post-hook.
       if (postHook) await postHook(dotenv);
 
-      // Execute shell command.
+      // Execute command.
       if (command && thisCommand.args.length) {
         logger.error(`--command option conflicts with cmd subcommand.`);
         process.exit(0);

@@ -7,7 +7,7 @@ import { resolveCommand, resolveShell } from './resolve';
 export const cmdCommand = new Command()
   .name('cmd')
   .description(
-    'batch execute command string according to the --shell option, conflicts with --command option (default command)',
+    'batch execute command string according to the --shell option, conflicts with --command option (default subcommand)',
   )
   .configureHelp({ showGlobalOptions: true })
   .enablePositionalOptions()

@@ -74,8 +74,8 @@ export const execShellCommandBatch = async ({
   });
 
   const headerTitle = list
-    ? 'Listing shell command working directories...'
-    : 'Executing shell command batch...';
+    ? 'Listing working directories...'
+    : 'Executing command batch...';
   logger.info('');
   const headerRootPath = `ROOT:  ${absRootPath}`;
   const headerGlobs = `GLOBS: ${globs}`;
@@ -111,7 +111,7 @@ export const execShellCommandBatch = async ({
     logger.info(pathLabel);
     logger.info(headerCommand);
 
-    // Execute shell command.
+    // Execute command.
     try {
       await execaCommand(command, {
         cwd: path,

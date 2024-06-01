@@ -113,7 +113,7 @@ You can also use `getdotenv` from the command line:
 # Options:
 #   -e, --env <string>                  target environment (dotenv-expanded)
 #   -v, --vars <string>                 extra variables expressed as delimited key-value pairs (dotenv-expanded): KEY1=VAL1 KEY2=VAL2
-#   -c, --command <string>              shell command string, conflicts with cmd subcommand (dotenv-expanded)
+#   -c, --command <string>              command string executed according to the --shell option, conflicts with cmd subcommand (dotenv-expanded)
 #   -o, --output-path <string>          consolidated output file  (dotenv-expanded)
 #   -s, --shell [string]                command execution shell, no argument for default OS shell or provide shell string (default OS shell)
 #   -S, --shell-off                     command execution shell OFF
@@ -150,11 +150,11 @@ You can also use `getdotenv` from the command line:
 #
 # Commands:
 #   batch [options]                     Batch shell commands across multiple working directories.
-#   cmd                                 execute shell command, conflicts with --command option (default command)
+#   cmd                                 batch execute command string according to the --shell option, conflicts with --command option (default command)
 #   help [command]                      display help for command
 ```
 
-By default, commands (`-c` or `--command` or the `cmd` subcommand) execute in the default OS shell with the `dotenv` context applied. The `-S` or `--shell-off` options will turn this off, and Execa will [execute your command as Javascript](https://github.com/sindresorhus/execa/blob/main/docs/bash.md).
+By default, commands (`-c` or `--command` or the `cmd` subcommand either in the base CLI or in the `batch` subcommand) execute in the default OS shell with the `dotenv` context applied. The `-S` or `--shell-off` options will turn this off, and Execa will [execute your command as Javascript](https://github.com/sindresorhus/execa/blob/main/docs/bash.md).
 
 Alternatively, you can use the `-s` or `--shell` option to specify a different shell [following the Execa spec](https://github.com/sindresorhus/execa/blob/main/docs/shell.md). This is useful if you're running a command that requires a specific shell, like `bash` or `zsh`.
 

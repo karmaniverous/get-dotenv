@@ -8,7 +8,7 @@ import { execShellCommandBatch } from './execShellCommandBatch';
 export const cmdCommand = new Command()
   .name('cmd')
   .description(
-    'execute shell command, conflicts with --command option (default command)',
+    'execute command, conflicts with --command option (default subcommand)',
   )
   .enablePositionalOptions()
   .passThroughOptions()
@@ -26,7 +26,7 @@ export const cmdCommand = new Command()
     const { ignoreErrors, globs, list, pkgCwd, rootPath } =
       thisCommand.parent.opts() as BatchCommandOptions;
 
-    // Execute shell command.
+    // Execute command.
     {
       const command = thisCommand.args.join(' ');
 
