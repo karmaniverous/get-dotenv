@@ -113,7 +113,7 @@ You can also use `getdotenv` from the command line:
 # Options:
 #   -e, --env <string>                  target environment (dotenv-expanded)
 #   -v, --vars <string>                 extra variables expressed as delimited key-value pairs (dotenv-expanded): KEY1=VAL1 KEY2=VAL2
-#   -c, --command <string>              command string executed according to the --shell option, conflicts with cmd subcommand (dotenv-expanded)
+#   -c, --command <string>              command executed according to the --shell option, conflicts with cmd subcommand (dotenv-expanded)
 #   -o, --output-path <string>          consolidated output file  (dotenv-expanded)
 #   -s, --shell [string]                command execution shell, no argument for default OS shell or provide shell string (default OS shell)
 #   -S, --shell-off                     command execution shell OFF
@@ -150,7 +150,7 @@ You can also use `getdotenv` from the command line:
 #
 # Commands:
 #   batch [options]                     Batch shell commands across multiple working directories.
-#   cmd                                 batch execute command string according to the --shell option, conflicts with --command option (default command)
+#   cmd                                 batch execute command according to the --shell option, conflicts with --command option (default command)
 #   help [command]                      display help for command
 ```
 
@@ -181,19 +181,19 @@ Lest you doubt what that kind of leverage can do for you, consider this:
 
 # Usage: getdotenv batch [options] [command]
 #
-# Batch shell commands across multiple working directories.
+# Batch command execution across multiple working directories.
 #
 # Options:
 #   -p, --pkg-cwd             use nearest package directory as current working directory
 #   -r, --root-path <string>  path to batch root directory from current working directory (default: "./")
-#   -g, --globs <strings...>  space-delimited globs from root path (default: "*")
-#   -c, --command <string>    shell command string, conflicts with cmd subcommand (dotenv-expanded)
+#   -g, --globs <string>      space-delimited globs from root path (default: "*")
+#   -c, --command <string>    command executed according to the base --shell option, conflicts with cmd subcommand (dotenv-expanded)
 #   -l, --list                list working directories without executing command
 #   -e, --ignore-errors       ignore errors and continue with next path
 #   -h, --help                display help for command
 #
 # Commands:
-#   cmd                       batch execute shell command, conflicts with --command option (default command)
+#   cmd                       execute command, conflicts with --command option (default subcommand)
 #   help [command]            display help for command
 ```
 
