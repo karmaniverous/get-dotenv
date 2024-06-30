@@ -12,7 +12,10 @@ export const getDotenvOptionsFilename = 'getdotenv.config.json';
 
 export type ProcessEnv = Record<string, string | undefined>;
 
-export type GetDotenvDynamicFunction = (vars: ProcessEnv) => string | undefined;
+export type GetDotenvDynamicFunction = (
+  vars: ProcessEnv,
+  env: string | undefined,
+) => string | undefined;
 
 export type GetDotenvDynamic = Record<
   string,

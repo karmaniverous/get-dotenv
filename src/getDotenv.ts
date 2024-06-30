@@ -121,7 +121,10 @@ export const getDotenv = async (
         for (const key in dynamic)
           Object.assign(dotenv, {
             [key]: _.isFunction(dynamic[key])
-              ? (dynamic[key] as GetDotenvDynamicFunction)(dotenv)
+              ? (dynamic[key] as GetDotenvDynamicFunction)(
+                  dotenv,
+                  env ?? defaultEnv,
+                )
               : dynamic[key],
           });
       } catch {

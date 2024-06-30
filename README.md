@@ -84,20 +84,25 @@ Since keys will be evaluated progressively, each successive key function will ha
 
 Even though the rest of your project is in TypeScript, the dynamic processing module SHOULD be in JavasScript.
 
-Think about it: the module is loaded via a dynamic import, with the file name determined at run time. You will have to jump through some hoops to get your bundler to compile this file, and you'll have to be careful to set `dynamicPath` to reference the compiled file. That's a lot of work for some very simple log.
+Think about it: the module is loaded via a dynamic import, with the file name determined at run time. If you write this module in TS, you'll have to jump through some hoops to get your bundler to compile this file, and you'll have to be careful to set `dynamicPath` to reference the compiled file. That's a lot of work to do for some very simple logic.
 
 BUT... if you must, then your dynamic module's default export should be of the `GetDotenvDynamic` type, which is defined [here](./src/GetDotenvOptions.ts) and looks like this:
 
 ```ts
 export type ProcessEnv = Record<string, string | undefined>;
 
-export type GetDotenvDynamicFunction = (vars: ProcessEnv) => string | undefined;
+export type GetDotenvDynamicFunction = (
+  vars: ProcessEnv,
+  env: string | undefined,
+) => string | undefined;
 
 export type GetDotenvDynamic = Record<
   string,
   GetDotenvDynamicFunction | ReturnType<GetDotenvDynamicFunction>
 >;
 ```
+
+The second argumnt `env` of the `GetDotenvDynamicFunction` type is the environment token (if any) specified in the controlling `getDotenv` call.
 
 ## Command Line Interface
 
