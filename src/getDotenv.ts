@@ -121,7 +121,8 @@ export const getDotenv = async (
         for (const key in dynamic)
           Object.assign(dotenv, {
             [key]: _.isFunction(dynamic[key])
-              ? (dynamic[key] as GetDotenvDynamicFunction)(
+              ? // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+                (dynamic[key] as GetDotenvDynamicFunction)(
                   dotenv,
                   env ?? defaultEnv,
                 )
