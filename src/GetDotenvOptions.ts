@@ -134,20 +134,20 @@ export const getDotenvCliOptions2Options = ({
     paths?.split(
       pathsDelimiterPattern
         ? RegExp(pathsDelimiterPattern)
-        : pathsDelimiter ?? ' ',
+        : (pathsDelimiter ?? ' '),
     ) ?? [],
   vars: _.fromPairs(
     vars
       ?.split(
         varsDelimiterPattern
           ? RegExp(varsDelimiterPattern)
-          : varsDelimiter ?? ' ',
+          : (varsDelimiter ?? ' '),
       )
       .map((v) =>
         v.split(
           varsAssignorPattern
             ? RegExp(varsAssignorPattern)
-            : varsAssignor ?? '=',
+            : (varsAssignor ?? '='),
         ),
       ),
   ),
