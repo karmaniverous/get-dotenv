@@ -14,7 +14,10 @@ import type { ProcessEnv } from './GetDotenvOptions';
  * Unknown variables resolve to empty string unless a default is provided.
  */
 
-// like String.prototype.search but returns the last index
+/**
+ * Like String.prototype.search but returns the last index.
+ * @internal
+ */
 const searchLast = (str: string, rgx: RegExp) => {
   const matches = Array.from(str.matchAll(rgx));
   return matches.length > 0 ? (matches.slice(-1)[0]?.index ?? -1) : -1;
@@ -25,6 +28,9 @@ const replaceMatch = (
   match: RegExpMatchArray,
   ref: Record<string, string | undefined>,
 ) => {
+  /**
+   * @internal
+   */
   const group = match[0];
   const key = match[1];
   const defaultValue = match[2];
@@ -38,9 +44,11 @@ const interpolate = (
   value = '',
   ref: Record<string, string | undefined> = {},
 ): string => {
+  /**
+   * @internal
+   */
   // if value is falsy, return it as is
   if (!value) return value;
-
   // get position of last unescaped dollar sign
   const lastUnescapedDollarSignIndex = searchLast(value, /(?!(?<=\\))\$/g);
 

@@ -1,10 +1,9 @@
 # Development Plan — get-dotenv
 
-When updated: 2025-09-15T03:45:00Z
+When updated: 2025-09-15T04:05:00Z
 NOTE: Update timestamp on commit.
 
-## Next up
-- Sanity passes: npm run typecheck, npm run lint:fix, npm run test, npm run build to confirm the Rollup plugin fix and overall health.
+## Next up- Sanity passes: npm run typecheck, npm run lint:fix, npm run test, npm run build to confirm the Rollup plugin fix and overall health.
 - Docs: update README (Vitest switch, coverage, Node >=22.19, shell defaults).
 - Rollup: monitor externalization approach; if consumers request bundled build, add alternate config. Add CI to run test/lint/build.
 - CLI shell behavior
@@ -19,10 +18,16 @@ NOTE: Update timestamp on commit.
 
 ## Completed (recent)
 
+- Docs: hide @internal items from TypeDoc by setting
+  `excludeInternal: true`; mark dotenvExpand helpers as @internal to
+  reduce noise in API docs.
+- Coverage: exclude vitest.config.ts from coverage to avoid non-library
+  files skewing metrics.
+- Tests: add defaultsDeep tests (merge semantics, arrays, undefined) and
+  getDotenv outputPath integration test (verifies file content and return).
 - Lint: fix TSDoc param tags in dotenvExpandAll by removing invalid
   `@param options.ref`/`@param options.progressive` in favor of a
-  @remarks section; satisfies eslint-plugin-tsdoc.
-- Lint: restore inline disable for dynamic delete in setOptionalFlag to
+  @remarks section; satisfies eslint-plugin-tsdoc.- Lint: restore inline disable for dynamic delete in setOptionalFlag to
   comply with @typescript-eslint/no-dynamic-delete without changing behavior.
 - ESLint: enabled eslint-plugin-tsdoc in TS block with `tsdoc/syntax`
   (observes local tsdoc.json tag definitions).

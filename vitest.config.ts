@@ -15,6 +15,7 @@ export default defineConfig({
       provider: 'v8',
       exclude: [
         'docs/**',
+        'vitest.config.ts',
         'dist/**',
         'esm/**',
         '.stan/**',
