@@ -1,4 +1,5 @@
-import aliasPlugin, { Alias } from '@rollup/plugin-alias';
+import type { Alias } from '@rollup/plugin-alias';
+import aliasPlugin from '@rollup/plugin-alias';
 import commonjsPlugin from '@rollup/plugin-commonjs';
 import jsonPlugin from '@rollup/plugin-json';
 import { nodeResolve } from '@rollup/plugin-node-resolve';
@@ -54,10 +55,13 @@ const config: RollupOptions[] = [
     ...commonInputOptions,
     plugins: [
       aliasPlugin({ entries: commonAliases }),
-      ...commonPlugins, dtsPlugin()],
+      ...commonPlugins,
+      dtsPlugin(),
+    ],
     output: [
       {
-        extend: true,        file: `${outputPath}/index.d.ts`,
+        extend: true,
+        file: `${outputPath}/index.d.ts`,
         format: 'esm',
       },
       {

@@ -131,7 +131,8 @@ export const getDotenv = async (
       } catch {
         throw new Error(`Unable to import dynamic file: ${absDynamicPath}`);
       }
-    }  }
+    }
+  }
 
   // Write output file.
   if (outputPath) {

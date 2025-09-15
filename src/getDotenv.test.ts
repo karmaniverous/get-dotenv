@@ -1,10 +1,11 @@
-import { beforeEach,describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 
 import { getDotenv } from './getDotenv';
 
 describe('getDotEnv', function () {
   beforeEach(function () {
-    delete process.env.APP_SETTING;    delete process.env.APP_SECRET;
+    delete process.env.APP_SETTING;
+    delete process.env.APP_SECRET;
     delete process.env.ENV_SETTING;
     delete process.env.ENV_SECRET;
   });
@@ -37,7 +38,8 @@ describe('getDotEnv', function () {
       expect(output).toEqual({
         APP_SECRET: 'root_app_secret',
         APP_SETTING: 'root_app_setting',
-        DYNAMIC_APP_SETTING_1: 'root_app_setting',        DYNAMIC_APP_SETTING_2: 'abcroot_app_setting123',
+        DYNAMIC_APP_SETTING_1: 'root_app_setting',
+        DYNAMIC_APP_SETTING_2: 'abcroot_app_setting123',
         DYNAMIC_DOUBLE:
           'root_app_setting | root_app_setting | root_app_setting | root_app_setting',
         DYNAMIC_SETTING: 'root_app_setting | root_app_setting',
@@ -45,7 +47,8 @@ describe('getDotEnv', function () {
       expect(process.env.APP_SETTING).toBeDefined();
     });
 
-    it('exclude private', async function () {      const output = await getDotenv({
+    it('exclude private', async function () {
+      const output = await getDotenv({
         dotenvToken: '.testenv',
         env: 'foo',
         excludePrivate: true,
@@ -60,7 +63,8 @@ describe('getDotEnv', function () {
       expect(process.env.APP_SETTING).toBeDefined();
     });
 
-    it('exclude public & private', async function () {      const output = await getDotenv({
+    it('exclude public & private', async function () {
+      const output = await getDotenv({
         dotenvToken: '.testenv',
         excludePrivate: true,
         excludePublic: true,
@@ -70,7 +74,8 @@ describe('getDotEnv', function () {
       expect(output).toEqual({});
     });
 
-    it('load process', async function () {      const output = await getDotenv({
+    it('load process', async function () {
+      const output = await getDotenv({
         dotenvToken: '.testenv',
         env: 'foo',
         excludePrivate: true,
@@ -87,7 +92,8 @@ describe('getDotEnv', function () {
       expect(process.env.APP_SETTING).toBe('root_app_setting');
     });
 
-    it('load env', async function () {      const output = await getDotenv({
+    it('load env', async function () {
+      const output = await getDotenv({
         dotenvToken: '.testenv',
         env: 'dev',
         excludePrivate: true,
@@ -124,7 +130,8 @@ describe('getDotEnv', function () {
       expect(process.env.APP_SECRET).toBeDefined();
     });
 
-    it('dynamic', async function () {      const output = await getDotenv({
+    it('dynamic', async function () {
+      const output = await getDotenv({
         dotenvToken: '.testenv',
         dynamicPath: '.testenv.js',
         env: 'foo',
@@ -135,14 +142,16 @@ describe('getDotEnv', function () {
       expect(output).toEqual({
         APP_SECRET: 'deep_app_secret',
         APP_SETTING: 'deep_app_setting',
-        DYNAMIC_DOUBLE:          'deep_app_setting | deep_app_setting | deep_app_setting | deep_app_setting',
+        DYNAMIC_DOUBLE:
+          'deep_app_setting | deep_app_setting | deep_app_setting | deep_app_setting',
         DYNAMIC_SETTING: 'deep_app_setting | deep_app_setting',
       });
 
       expect(process.env.APP_SETTING).toBeDefined();
     });
 
-    it('exclude private', async function () {      const output = await getDotenv({
+    it('exclude private', async function () {
+      const output = await getDotenv({
         dotenvToken: '.testenv',
         env: 'foo',
         excludePrivate: true,
@@ -158,7 +167,8 @@ describe('getDotEnv', function () {
       expect(process.env.APP_SECRET).toBeUndefined();
     });
 
-    it('exclude public', async function () {      const output = await getDotenv({
+    it('exclude public', async function () {
+      const output = await getDotenv({
         dotenvToken: '.testenv',
         env: 'foo',
         excludePublic: true,
@@ -174,7 +184,8 @@ describe('getDotEnv', function () {
       expect(process.env.APP_SECRET).toBeDefined();
     });
 
-    it('exclude public & private', async function () {      const output = await getDotenv({
+    it('exclude public & private', async function () {
+      const output = await getDotenv({
         dotenvToken: '.testenv',
         env: 'foo',
         excludePublic: true,
@@ -188,7 +199,8 @@ describe('getDotEnv', function () {
       expect(process.env.APP_SECRET).toBeUndefined();
     });
 
-    it('load process', async function () {      const output = await getDotenv({
+    it('load process', async function () {
+      const output = await getDotenv({
         dotenvToken: '.testenv',
         env: 'foo',
         loadProcess: true,
@@ -204,7 +216,8 @@ describe('getDotEnv', function () {
       expect(process.env.APP_SECRET).toBe('deep_app_secret');
     });
 
-    it('load env', async function () {      const output = await getDotenv({
+    it('load env', async function () {
+      const output = await getDotenv({
         dotenvToken: '.testenv',
         env: 'test',
         loadProcess: true,
@@ -238,7 +251,8 @@ describe('getDotEnv', function () {
       expect(output).toEqual({
         APP_SETTING: 'root_app_setting',
         DYNAMIC_APP_SETTING_1: 'root_app_setting',
-        DYNAMIC_APP_SETTING_2: 'abcroot_app_setting123',        APP_SECRET: 'root_app_secret',
+        DYNAMIC_APP_SETTING_2: 'abcroot_app_setting123',
+        APP_SECRET: 'root_app_secret',
         ENV_SETTING: 'deep_test_setting',
         ENV_SECRET: 'deep_test_secret',
       });

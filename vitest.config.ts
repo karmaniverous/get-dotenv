@@ -1,17 +1,15 @@
-import { defineConfig } from 'vitest/config';
-//
+import tsconfigPaths from 'vite-tsconfig-paths';
+import { configDefaults, defineConfig } from 'vitest/config';
+
 export default defineConfig({
+  plugins: [tsconfigPaths()],
   test: {
     environment: 'node',
-    include: ['src/**/*.test.ts'],
-    exclude: ['dist/**', 'node_modules/**'],
-    coverage: {
-      provider: 'v8',
-      reporter: ['text', 'text-summary', 'html', 'lcov'],
-      reportsDirectory: './coverage',
-      include: ['src/**/*.{ts,tsx}'],
-      exclude: ['**/*.test.ts', 'dist/**', 'node_modules/**'],
-    },
+    // Avoid picking up transformed caches and keep node_modules excluded
+    exclude: [
+      ...configDefaults.exclude,
+      '**/.tsbuild/**',
+      '**/.rollup.cache/**',
+    ],
   },
 });
-

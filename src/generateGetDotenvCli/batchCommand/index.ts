@@ -1,8 +1,8 @@
 import { Command } from '@commander-js/extra-typings';
 
 import { dotenvExpandFromProcessEnv } from '../../dotenvExpand';
-import { GetDotenvCliCommand } from '../GetDotenvCliGenerateOptions';
-import { GetDotenvCliOptions } from '../GetDotenvCliOptions';
+import type { GetDotenvCliCommand } from '../GetDotenvCliGenerateOptions';
+import type { GetDotenvCliOptions } from '../GetDotenvCliOptions';
 import { resolveCommand, resolveShell } from '../resolve';
 import { cmdCommand } from './cmdCommand';
 import { execShellCommandBatch } from './execShellCommandBatch';

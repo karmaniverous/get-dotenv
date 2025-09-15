@@ -1,64 +1,56 @@
-import js from '@eslint/js';
-import prettier from 'eslint-config-prettier';
-import simpleImportSort from 'eslint-plugin-simple-import-sort';
-import tsdoc from 'eslint-plugin-tsdoc';
+import eslint from '@eslint/js';
+import prettierConfig from 'eslint-config-prettier';
+import prettierPlugin from 'eslint-plugin-prettier';
+import simpleImportSortPlugin from 'eslint-plugin-simple-import-sort';
+import { dirname } from 'path';
 import tseslint from 'typescript-eslint';
+import { fileURLToPath } from 'url';
+
+const tsconfigRootDir = dirname(fileURLToPath(import.meta.url));
 
 export default [
-  // Global ignores to avoid linting build artifacts and caches.
   {
-    ignores: ['dist/**', 'coverage/**', 'node_modules/**', '.rollup.cache/**'],
+    ignores: [
+      '.stan/**',
+      '**/.tsbuild/**',
+      'coverage/**',
+      'dist/**',
+      'docs/**',
+      'node_modules/**',
+    ],
   },
-
-  // Base JS rules.
-  js.configs.recommended,
-
-  // Type-aware TS rules. Apply strict + stylistic with type info to TS only,
-  // and provide parserOptions.project to enable typed linting.
-  ...tseslint.configs.strictTypeChecked.map((c) => ({
-    ...c,
-    languageOptions: {
-      ...(c.languageOptions ?? {}),
-      parserOptions: {
-        ...(c.languageOptions?.parserOptions ?? {}),
-        project: true,
-        tsconfigRootDir: import.meta.dirname,
-      },
-    },
-  })),
-  ...tseslint.configs.stylisticTypeChecked.map((c) => ({
-    ...c,
-    languageOptions: {
-      ...(c.languageOptions ?? {}),
-      parserOptions: {
-        ...(c.languageOptions?.parserOptions ?? {}),
-        project: true,
-        tsconfigRootDir: import.meta.dirname,
-      },
-    },
-  })),
-
-  // Project-specific TS rules and plugins.
+  eslint.configs.recommended,
+  ...tseslint.configs.strictTypeChecked,
+  prettierConfig,
   {
-    files: ['**/*.ts', '**/*.tsx'],
+    languageOptions: {
+      // Important: set the TS parser here, otherwise this block replaces the
+      // parser from strictTypeChecked and the CLI falls back to espree.
+      parser: tseslint.parser,
+      parserOptions: {
+        // Be explicit so the CLI loads type info from the root project.
+        project: ['./tsconfig.json'],
+        tsconfigRootDir,
+      },
+    },
     plugins: {
-      'simple-import-sort': simpleImportSort,
-      tsdoc,
+      prettier: prettierPlugin,
+      'simple-import-sort': simpleImportSortPlugin,
     },
     rules: {
-      // Prefer TS-aware unused-vars and disable the base rule.
+      '@typescript-eslint/consistent-type-imports': 'error',
+      '@typescript-eslint/no-empty-object-type': 'off',
+      '@typescript-eslint/no-non-null-assertion': 'off',
+      '@typescript-eslint/no-unsafe-assignment': 'error',
+      '@typescript-eslint/no-unsafe-member-access': 'error',
+      '@typescript-eslint/no-unsafe-return': 'error',
+      '@typescript-eslint/no-unused-expressions': 'off',
       '@typescript-eslint/no-unused-vars': 'error',
+      '@typescript-eslint/require-await': 'off',
       'no-unused-vars': 'off',
-
-      // Import/export ordering
-      'simple-import-sort/imports': 'error',
+      'prettier/prettier': 'error',
       'simple-import-sort/exports': 'error',
-
-      // TSDoc
-      'tsdoc/syntax': 'warn',
+      'simple-import-sort/imports': 'error',
     },
   },
-
-  // Prettier integration (turns off conflicting rules).
-  prettier,
 ];

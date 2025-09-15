@@ -1,4 +1,4 @@
-import { ProcessEnv } from './GetDotenvOptions';
+import type { ProcessEnv } from './GetDotenvOptions';
 
 // like String.prototype.search but returns the last index
 const searchLast = (str: string, rgx: RegExp) => {
@@ -13,10 +13,7 @@ const replaceMatch = (
 ) => {
   const [group, key, defaultValue] = match;
 
-  const replacement = value.replace(
-    group,
-    ref[key] ?? (defaultValue as string | undefined) ?? '',
-  );
+  const replacement = value.replace(group, ref[key] ?? defaultValue ?? '');
 
   return interpolate(replacement, ref);
 };

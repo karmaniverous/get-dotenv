@@ -1,7 +1,7 @@
 import { Command } from '@commander-js/extra-typings';
 import { execaCommand } from 'execa';
 
-import { GetDotenvCliCommand } from './GetDotenvCliGenerateOptions';
+import type { GetDotenvCliCommand } from './GetDotenvCliGenerateOptions';
 import { resolveCommand, resolveShell } from './resolve';
 
 export const cmdCommand = new Command()
@@ -31,14 +31,13 @@ export const cmdCommand = new Command()
     await execaCommand(cmd, {
       env: {
         ...process.env,
-        getDotenvCliOptions: JSON.stringify(
-          getDotenvCliOptions,
-        ),
+        getDotenvCliOptions: JSON.stringify(getDotenvCliOptions),
       },
       shell: resolveShell(
         getDotenvCliOptions.scripts,
         command,
         getDotenvCliOptions.shell,
-      ),      stdio: 'inherit',
+      ),
+      stdio: 'inherit',
     });
   });

@@ -1,9 +1,12 @@
 import { type Scripts } from './GetDotenvCliOptions';
 
-export const resolveCommand = (scripts: Scripts | undefined, command: string) =>
-  (scripts && typeof scripts[command] === 'object' && scripts[command] !== null
+export const resolveCommand = (
+  scripts: Scripts | undefined,
+  command: string,
+) =>
+  scripts && typeof scripts[command] === 'object' && scripts[command] !== null
     ? (scripts[command] as { cmd: string }).cmd
-    : ((scripts?.[command] as string | undefined) ?? command));
+    : ((scripts?.[command] as string | undefined) ?? command);
 
 export const resolveShell = (
   scripts: Scripts | undefined,

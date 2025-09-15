@@ -1,8 +1,8 @@
 import { Command } from '@commander-js/extra-typings';
 
-import { GetDotenvCliCommand } from '../GetDotenvCliGenerateOptions';
+import type { GetDotenvCliCommand } from '../GetDotenvCliGenerateOptions';
 import { resolveCommand, resolveShell } from '../resolve';
-import { BatchCommandOptions } from '.';
+import type { BatchCommandOptions } from '.';
 import { execShellCommandBatch } from './execShellCommandBatch';
 
 export const cmdCommand = new Command()

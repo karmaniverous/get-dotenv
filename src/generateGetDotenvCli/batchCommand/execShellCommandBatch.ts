@@ -3,8 +3,8 @@ import { globby } from 'globby';
 import { packageDirectory } from 'package-directory';
 import path from 'path';
 
-import { Logger } from '../../GetDotenvOptions';
-import { BatchCommandOptions } from '.';
+import type { Logger } from '../../GetDotenvOptions';
+import type { BatchCommandOptions } from '.';
 
 type ExecShellCommandBatchOptions = BatchCommandOptions & { logger: Logger };
 
