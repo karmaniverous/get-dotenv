@@ -1,10 +1,9 @@
 # Development Plan — get-dotenv
 
-When updated: 2025-09-15T00:30:00Z
+When updated: 2025-09-15T00:40:00Z
 NOTE: Update timestamp on commit.
 
-## Next up
-- Sanity passes: npm run typecheck, npm run lint:fix, npm run test, npm run build
+## Next up- Sanity passes: npm run typecheck, npm run lint:fix, npm run test, npm run build
   to confirm the Rollup plugin fix and overall health.
 - Docs: decide whether to add typedoc as a devDependency or adjust the docs script.
 - Docs: update README (Vitest switch, coverage, Node >=22.19, shell defaults).
@@ -19,10 +18,14 @@ NOTE: Update timestamp on commit.
 
 ## Completed (recent)
 
+- TS exactOptionalPropertyTypes: make preSubcommand defaults Partial and
+  omit undefined keys when building defaults in index.ts to satisfy
+  assignability; no behavior change.
+- Lint: remove unsafe any/member access in preSubcommandHook.ts by adding
+  precise types and guards for opts()/args and logger.error fallback.
 - Refactor: split src/generateGetDotenvCli/index.ts into smaller modules
   (flagUtils.ts, buildRootCommand.ts, preSubcommandHook.ts) without changing
-  public API or behavior.
-- Rollup: configured @rollup/plugin-typescript to use tsconfig.base.json and
+  public API or behavior.- Rollup: configured @rollup/plugin-typescript to use tsconfig.base.json and
   unset outDir for bundling; resolves outDir vs Rollup output path error.
 - ESLint: in TS files, disabled core no-unused-vars and tuned  @typescript-eslint/no-unused-vars to ignore leading-underscore args/vars and
   caught errors; rest siblings ignored.

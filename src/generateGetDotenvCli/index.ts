@@ -19,24 +19,48 @@ export const generateGetDotenvCli = async (
 
   const program = createRootCommand(options);
 
+  // Build defaults while respecting exactOptionalPropertyTypes:
+  // Only include keys when defined (do not assign undefined).
+  type DefaultsShape = Partial<
+    Pick<
+      GetDotenvCliGenerateOptions,
+      | 'debug'
+      | 'excludeDynamic'
+      | 'excludeEnv'
+      | 'excludeGlobal'
+      | 'excludePrivate'
+      | 'excludePublic'
+      | 'loadProcess'
+      | 'log'
+      | 'scripts'
+      | 'shell'
+    >
+  >;
+  const defaults: DefaultsShape = {};
+  if (options.debug !== undefined) defaults.debug = options.debug;
+  if (options.excludeDynamic !== undefined)
+    defaults.excludeDynamic = options.excludeDynamic;
+  if (options.excludeEnv !== undefined)
+    defaults.excludeEnv = options.excludeEnv;
+  if (options.excludeGlobal !== undefined)
+    defaults.excludeGlobal = options.excludeGlobal;
+  if (options.excludePrivate !== undefined)
+    defaults.excludePrivate = options.excludePrivate;
+  if (options.excludePublic !== undefined)
+    defaults.excludePublic = options.excludePublic;
+  if (options.loadProcess !== undefined)
+    defaults.loadProcess = options.loadProcess;
+  if (options.log !== undefined) defaults.log = options.log;
+  if (options.scripts !== undefined) defaults.scripts = options.scripts;
+  if (options.shell !== undefined) defaults.shell = options.shell;
+
   program.hook(
     'preSubcommand',
     makePreSubcommandHook({
       logger: options.logger ?? console,
       preHook: options.preHook,
       postHook: options.postHook,
-      defaults: {
-        debug: options.debug,
-        excludeDynamic: options.excludeDynamic,
-        excludeEnv: options.excludeEnv,
-        excludeGlobal: options.excludeGlobal,
-        excludePrivate: options.excludePrivate,
-        excludePublic: options.excludePublic,
-        loadProcess: options.loadProcess,
-        log: options.log,
-        scripts: options.scripts,
-        shell: options.shell,
-      },
+      defaults,
     }),
   );
 

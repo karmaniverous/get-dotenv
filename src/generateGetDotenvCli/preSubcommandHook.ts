@@ -20,7 +20,7 @@ export type PreSubHookContext = {
   logger: Logger;
   preHook?: GetDotenvCliPreHookCallback;
   postHook?: GetDotenvCliPostHookCallback;
-  defaults: Pick<
+  defaults: Partial<
     GetDotenvCliGenerateOptions,
     | 'debug'
     | 'excludeDynamic'
@@ -34,7 +34,6 @@ export type PreSubHookContext = {
     | 'scripts'
   >;
 };
-
 /**
  * Build the Commander preSubcommand hook using the provided context.
  */
@@ -47,8 +46,9 @@ export const makePreSubcommandHook =
       : undefined;
 
     // Get raw CLI options from commander.
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    const rawCliOptions = (thisCommand as any).opts();
+    const rawCliOptions = (
+      thisCommand as { opts: () => Record<string, unknown> }
+    ).opts();
 
     // Extract current GetDotenvCliOptions from raw CLI options.
     const {
@@ -227,11 +227,15 @@ export const makePreSubcommandHook =
     if (postHook) await postHook(dotenv);
 
     // Execute command.
-    if (command && (thisCommand as any).args.length) {
-      (logger as any).error?.(
-        `--command option conflicts with cmd subcommand.`,
-      );
-      process.exit(0);
+    {
+      const args = (thisCommand as { args?: unknown[] }).args;
+      if (command && Array.isArray(args) && args.length) {
+        const consoleLike = logger as Console;
+        if (typeof consoleLike.error === 'function')
+          consoleLike.error(`--command option conflicts with cmd subcommand.`);
+        else consoleLike.log(`--command option conflicts with cmd subcommand.`);
+        process.exit(0);
+      }
     }
 
     if (command) {
