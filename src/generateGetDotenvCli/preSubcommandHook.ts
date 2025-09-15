@@ -236,8 +236,9 @@ export type PreSubHookContext = {
     // Execute command.
     {
       const args = (thisCommand as { args?: unknown[] }).args;
-      const cmdStr = typeof command === 'string' ? command : undefined;
-      if (cmdStr && Array.isArray(args) && args.length) {
+      const isCommand = typeof command === 'string' && command.length > 0;
+      const cmdStr = isCommand ? command : undefined;
+      if (isCommand && Array.isArray(args) && args.length) {
         const lr = logger as unknown as {
           log: (...a: unknown[]) => void;
           error?: (...a: unknown[]) => void;
@@ -247,11 +248,8 @@ export type PreSubHookContext = {
       }
     }
 
-    if (command) {
-      const cmd = resolveCommand(
-        mergedGetDotenvCliOptions.scripts,
-        command as string,
-      );
+    if (typeof command === 'string' && command.length > 0) {
+      const cmd = resolveCommand(mergedGetDotenvCliOptions.scripts, command);
       if (mergedGetDotenvCliOptions.debug)
         logger.debug('\n*** command ***\n', cmd);
 
@@ -266,7 +264,7 @@ export type PreSubHookContext = {
         },
         shell: resolveShell(
           mergedGetDotenvCliOptions.scripts,
-          command as string,
+          command,
           mergedGetDotenvCliOptions.shell,
         ) as unknown as string | boolean | URL,
         stdio: 'inherit',
