@@ -81,8 +81,8 @@ export const execShellCommandBatch = async ({
     globs,
     logger,
     rootPath,
-    // exactOptionalPropertyTypes: only include when defined; coerce to boolean
-    ...(pkgCwd !== undefined ? { pkgCwd: !!pkgCwd } : {}),
+    // exactOptionalPropertyTypes: only include when defined
+    ...(pkgCwd !== undefined ? { pkgCwd } : {}),
   });
 
   const headerTitle = list

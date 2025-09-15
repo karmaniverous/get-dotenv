@@ -57,12 +57,11 @@ export const generateGetDotenvCli = async (
   if (options.shell !== undefined) defaults.shell = options.shell;
 
   const ctx: PreSubHookContext = {
-    logger: options.logger ?? console,
+    logger: options.logger,
     defaults,
     ...(options.preHook ? { preHook: options.preHook } : {}),
     ...(options.postHook ? { postHook: options.postHook } : {}),
   };
-
   program.hook('preSubcommand', makePreSubcommandHook(ctx));
 
   return program;

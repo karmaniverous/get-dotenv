@@ -6,7 +6,6 @@ import url from 'url';
 import { dotenvExpandAll } from './dotenvExpand';
 import {
   type GetDotenvDynamic,
-  type GetDotenvDynamicFunction,
   type GetDotenvOptions,
   type ProcessEnv,
   resolveGetDotenvOptions,
@@ -131,29 +130,31 @@ export const getDotenv = async (
   }
 
   // Write output file.
+  let resultDotenv: ProcessEnv = dotenv;
   if (outputPath) {
-    const outputPath = dotenv[outputKey];
-    if (!outputPath) throw new Error('Output path not found.');
-
-    delete dotenv[outputKey];
+    const outputPathResolved = dotenv[outputKey];
+    if (!outputPathResolved) throw new Error('Output path not found.');
+    const { [outputKey]: _omitted, ...dotenvForOutput } = dotenv;
 
     await fs.writeFile(
-      outputPath,
-      Object.keys(dotenv).reduce((contents, key) => {
-        const value = dotenv[key] ?? '';
+      outputPathResolved,
+      Object.keys(dotenvForOutput).reduce((contents, key) => {
+        const value = dotenvForOutput[key] ?? '';
         return `${contents}${key}=${
           value.includes('\n') ? `"${value}"` : value
         }\n`;
       }, ''),
       { encoding: 'utf-8' },
     );
+
+    resultDotenv = dotenvForOutput;
   }
 
   // Log result.
-  if (log) logger.log(dotenv);
+  if (log) logger.log(resultDotenv);
 
   // Load process.env.
-  if (loadProcess) Object.assign(process.env, dotenv);
+  if (loadProcess) Object.assign(process.env, resultDotenv);
 
-  return dotenv;
+  return resultDotenv;
 };

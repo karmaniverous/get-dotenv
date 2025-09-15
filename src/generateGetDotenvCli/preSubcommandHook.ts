@@ -236,11 +236,13 @@ export type PreSubHookContext = {
     // Execute command.
     {
       const args = (thisCommand as { args?: unknown[] }).args;
-      if (command && Array.isArray(args) && args.length) {
-        const consoleLike = logger as Console;
-        if (typeof consoleLike.error === 'function')
-          consoleLike.error(`--command option conflicts with cmd subcommand.`);
-        else consoleLike.log(`--command option conflicts with cmd subcommand.`);
+      const cmdStr = typeof command === 'string' ? command : undefined;
+      if (cmdStr && Array.isArray(args) && args.length) {
+        const lr = logger as unknown as {
+          log: (...a: unknown[]) => void;
+          error?: (...a: unknown[]) => void;
+        };
+        (lr.error ?? lr.log)(`--command option conflicts with cmd subcommand.`);
         process.exit(0);
       }
     }
@@ -250,7 +252,6 @@ export type PreSubHookContext = {
         mergedGetDotenvCliOptions.scripts,
         command as string,
       );
-
       if (mergedGetDotenvCliOptions.debug)
         logger.debug('\n*** command ***\n', cmd);
 

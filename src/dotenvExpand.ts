@@ -11,10 +11,9 @@ const replaceMatch = (
   match: RegExpMatchArray,
   ref: Record<string, string | undefined>,
 ) => {
-  const group = match[0] ?? '';
+  const group = match[0];
   const key = match[1];
   const defaultValue = match[2];
-
   if (!key) return value;
 
   const replacement = value.replace(group, ref[key] ?? defaultValue ?? '');

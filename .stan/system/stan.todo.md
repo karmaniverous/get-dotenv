@@ -1,10 +1,9 @@
 # Development Plan — get-dotenv
 
-When updated: 2025-09-15T01:30:00Z
+When updated: 2025-09-15T01:45:00Z
 NOTE: Update timestamp on commit.
 
-## Next up- Sanity passes: npm run typecheck, npm run lint:fix, npm run test, npm run build  to confirm the Rollup plugin fix and overall health.- Docs: decide whether to add typedoc as a devDependency or adjust the docs script.- Docs: update README (Vitest switch, coverage, Node >=22.19, shell defaults).
-- Rollup: monitor externalization approach; if consumers request bundled build, add alternate config. Add CI to run test/lint/build.
+## Next up- Sanity passes: npm run typecheck, npm run lint:fix, npm run test, npm run build  to confirm the Rollup plugin fix and overall health.- Docs: decide whether to add typedoc as a devDependency or adjust the docs script.- Docs: update README (Vitest switch, coverage, Node >=22.19, shell defaults).- Rollup: monitor externalization approach; if consumers request bundled build, add alternate config. Add CI to run test/lint/build.
 - CLI shell behavior  - Document normalized default shell (/bin/bash on \*nix, powershell.exe on Windows). - Add integration tests to assert consistent quoting/whitespace behavior for:
     - arguments with spaces/quotes,
     - pipes and redirects,
@@ -15,10 +14,14 @@ NOTE: Update timestamp on commit.
 
 ## Completed (recent)
 
+- Lint (strictTypeChecked) cleanups:
+  - Remove unnecessary conditionals and coercions; simplify logger/defaults.
+  - Preserve exact optional semantics with targeted disable for dynamic delete
+    in generic setter and restructure delete via destructuring in getDotenv.
+  - Remove redundant null checks in resolve helpers.
 - Lint config safety: rework strictTypeChecked rules merge in eslint.config.ts
   to avoid unsafe assignment and TS2352; reduce the flat-config array into a
-  typed rules object.
-- Lint coverage: eslint.config.ts is explicitly included by lint/lint:fix
+  typed rules object.- Lint coverage: eslint.config.ts is explicitly included by lint/lint:fix
   scripts so editor and CI report the same issues.
 - Lint coverage: include eslint.config.ts explicitly in lint and lint:fix
   scripts so config type errors surface in CI/local runs.
