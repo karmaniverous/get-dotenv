@@ -133,8 +133,9 @@
     "lint:fix": "eslint --fix src/** && prettier --write src",
     "release": "release-it",
     "release:pre": "vc -c \"release-it --no-git.requireBranch --github.prerelease --preRelease\"",
-    "test": "cross-env LOG_LEVEL=debug nyc mocha"
-  },
+    "test": "cross-env LOG_LEVEL=debug nyc mocha",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+},
   "type": "module",
   "types": "dist/index.d.ts",
   "version": "4.5.2"

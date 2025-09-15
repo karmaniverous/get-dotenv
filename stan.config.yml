@@ -1,0 +1,17 @@
+cliDefaults:
+  run:
+    sequential: true
+excludes:
+  - '**/.tsbuild/**'
+  - '**/*.tsbuildinfo'
+  - CHANGELOG.md
+  - docs
+  - package-lock.json
+patchOpenCommand: code -g {file}
+scripts:
+  knip: npm run knip
+  typecheck: npm run typecheck
+  lint: npm run lint:fix
+  test: npm run test
+  build: npm run build
+stanPath: .stan
