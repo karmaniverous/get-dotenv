@@ -1,20 +1,26 @@
 # Development Plan — get-dotenv
 
-When updated: 2025-09-15T02:00:00Z
+When updated: 2025-09-15T02:10:00Z
 NOTE: Update timestamp on commit.
 
-## Next up- Sanity passes: npm run typecheck, npm run lint:fix, npm run test, npm run build  to confirm the Rollup plugin fix and overall health.- Docs: decide whether to add typedoc as a devDependency or adjust the docs script.- Docs: update README (Vitest switch, coverage, Node >=22.19, shell defaults).- Rollup: monitor externalization approach; if consumers request bundled build, add alternate config. Add CI to run test/lint/build.- CLI shell behavior  - Document normalized default shell (/bin/bash on \*nix, powershell.exe on Windows). - Add integration tests to assert consistent quoting/whitespace behavior for:    - arguments with spaces/quotes,    - pipes and redirects,
-    - script-specific shell overrides.
+## Next up- Sanity passes: npm run typecheck, npm run lint:fix, npm run test, npm run build  to confirm the Rollup plugin fix and overall health.- Docs: decide whether to add typedoc as a devDependency or adjust the docs script.- Docs: update README (Vitest switch, coverage, Node >=22.19, shell defaults).- Rollup: monitor externalization approach; if consumers request bundled build, add alternate config. Add CI to run test/lint/build.- CLI shell behavior  - Document normalized default shell (/bin/bash on \*nix, powershell.exe on Windows). - Add integration tests to assert consistent quoting/whitespace behavior for:    - arguments with spaces/quotes,    - pipes and redirects,    - script-specific shell overrides.
   - Consider adding a --shell-mode helper (plain|posix|powershell) as sugar.
 - ESLint: add eslint-plugin-vitest config for test files; tune rules; ensure no typed rules leak outside TS.
 - Optional: prune unused deps/devDeps flagged by knip after confirming no runtime impact (radash likely removable after this change).
 
 ## Completed (recent)
 
+- Docs: add rich TypeDoc comments across core modules (dotenvExpand,
+  getDotenv, CLI resolve/flag utils, preSubcommand hook, defaultsDeep).
+- Docs: fix TypeDoc @param mismatch for dotenvExpandAll (values vs value).
+- Build/docs: add typedoc and plugins (mdn-links, replace-text) and
+  typedoc.json baseline with hosted base URL; wire docs script (already present).
+- Docs hygiene: mark internal helpers/types in defaultsDeep to reduce
+  noise in generated API docs.
+
 - Lint: resolve remaining no-unnecessary-condition by guarding command with an
   explicit string check in preSubcommandHook.
-- Lint: remove unused helper variable and use explicit args length check
-  (> 0) in preSubcommandHook to satisfy strictTypeChecked rules.
+- Lint: remove unused helper variable and use explicit args length check  (> 0) in preSubcommandHook to satisfy strictTypeChecked rules.
 - Lint: remove redundant Array.isArray guard by defaulting args to an empty
   array and checking length directly (no-unnecessary-condition compliant).
 

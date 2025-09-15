@@ -1,3 +1,17 @@
+/**
+ * getDotenv — Load and expand dotenv variables from a configurable cascade.
+ *
+ * Cascade shape (per input path):
+ * - Public global: `<token>` (e.g., `.env`)
+ * - Public env: `<token>.<env>`
+ * - Private global: `<token>.<privateToken>`
+ * - Private env: `<token>.<env>.<privateToken>`
+ *
+ * Files are parsed (if present), then merged in the order above (earlier
+ * overwritten by later). Values are then expanded recursively using the
+ * dotenv expansion rules implemented by {@link dotenvExpandAll}.
+ */
+
 import fs from 'fs-extra';
 import { nanoid } from 'nanoid';
 import path from 'path';
@@ -17,6 +31,37 @@ import { readDotenv } from './readDotenv';
  *
  * @param options - `GetDotenvOptions` object
  * @returns The combined parsed dotenv object.
+ *
+ * @example Load from the project root with default tokens
+ * ```ts
+ * const vars = await getDotenv();
+ * console.log(vars.MY_SETTING);
+ * ```
+ *
+ * @example Load from multiple paths and a specific environment
+ * ```ts
+ * const vars = await getDotenv({
+ *   env: 'dev',
+ *   dotenvToken: '.testenv',
+ *   privateToken: 'secret',
+ *   paths: ['./', './packages/app'],
+ * });
+ * ```
+ *
+ * @example Use dynamic variables
+ * ```ts
+ * // .env.js default-exports: { DYNAMIC: ({ PREV }) => `${PREV}-suffix` }
+ * const vars = await getDotenv({ dynamicPath: '.env.js' });
+ * ```
+ *
+ * @remarks
+ * - When {@link options.loadProcess} is true, the resulting variables are merged
+ *   into `process.env` as a side effect.
+ * - When {@link options.outputPath} is provided, a consolidated dotenv file is written.
+ *   The path is resolved after expansion, so it may reference previously loaded vars.
+ *
+ * @throws Error when a dynamic module is present but cannot be imported.
+ * @throws Error when an output path was requested but could not be resolved.
  */
 export const getDotenv = async (
   options: Partial<GetDotenvOptions> = {},

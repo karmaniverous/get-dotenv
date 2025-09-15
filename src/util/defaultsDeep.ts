@@ -6,13 +6,14 @@
  *
  * Merge order: defaultsDeep(base, override1, override2) → override2 wins.
  */
+/** @internal */
 type AnyRecord = Record<string, unknown>;
 
+/** @internal */
 const isPlainObject = (value: unknown): value is AnyRecord =>
   value !== null &&
   typeof value === 'object' &&
   Object.getPrototypeOf(value) === Object.prototype;
-
 const mergeInto = (target: AnyRecord, source: AnyRecord): AnyRecord => {
   for (const [key, sVal] of Object.entries(source)) {
     if (sVal === undefined) continue; // do not overwrite with undefined
@@ -28,6 +29,21 @@ const mergeInto = (target: AnyRecord, source: AnyRecord): AnyRecord => {
   return target;
 };
 
+/**
+ * Perform a deep defaults-style merge across plain objects.
+ *
+ * - Only merges plain objects (prototype === Object.prototype).
+ * - Arrays and non-objects are replaced, not merged.
+ * - `undefined` values are ignored and do not overwrite prior values.
+ *
+ * @typeParam T - The resulting shape after merging all layers.
+ * @param layers - Zero or more partial layers in ascending precedence order.
+ * @returns The merged object typed as {@link T}.
+ *
+ * @example
+ * defaultsDeep({ a: 1, nested: { b: 2 } }, { nested: { b: 3, c: 4 } })
+ * // => { a: 1, nested: { b: 3, c: 4 } }
+ */
 export const defaultsDeep = <T extends AnyRecord>(
   ...layers: Array<Partial<T> | undefined>
 ): T => {

@@ -16,6 +16,18 @@ import {
 import type { GetDotenvCliOptions, Scripts } from './GetDotenvCliOptions';
 import { resolveCommand, resolveShell } from './resolve';
 
+/**
+ * Context for composing the Commander `preSubcommand` hook.
+ *
+ * @property logger - Logger compatible with `console` (must support `log`, optional `error`).
+ * @property preHook - Optional async pre-hook called before command execution; may mutate options.
+ * @property postHook - Optional async post-hook called after `getDotenv` has run.
+ * @property defaults - Generator defaults used to resolve tri-state flags with exact-optional semantics.
+ *
+ * @remarks
+ * Flags resolved here are set or deleted via {@link setOptionalFlag} to
+ * preserve exactOptionalPropertyTypes behavior.
+ */
 export type PreSubHookContext = {
   logger: Logger;
   preHook?: GetDotenvCliPreHookCallback;
@@ -38,6 +50,19 @@ export type PreSubHookContext = {
 };
 /**
  * Build the Commander preSubcommand hook using the provided context.
+ *
+ * Responsibilities:
+ * - Merge parent CLI options with current invocation (parent < current).
+ * - Resolve tri-state flags, including `--exclude-all` overrides.
+ * - Normalize the shell setting to a concrete value (string | boolean).
+ * - Persist merged options on the command instance and pass to subcommands.
+ * - Execute {@link getDotenv} and optional post-hook.
+ * - Either forward to the default `cmd` subcommand or execute `--command`.
+ *
+ * @param context - See {@link PreSubHookContext}.
+ * @returns An async hook suitable for Commander’s `preSubcommand`.
+ *
+ * @example `program.hook('preSubcommand', makePreSubcommandHook(ctx));`
  */ export const makePreSubcommandHook =
   ({ logger, preHook, postHook, defaults }: PreSubHookContext) =>
   async (thisCommand: unknown) => {

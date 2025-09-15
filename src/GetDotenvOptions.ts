@@ -9,18 +9,25 @@ import {
 import { defaultsDeep } from './util/defaultsDeep';
 
 export const getDotenvOptionsFilename = 'getdotenv.config.json';
+/**
+ * A minimal representation of an environment key/value mapping.
+ * Values may be `undefined` to represent "unset".
+ */
 export type ProcessEnv = Record<string, string | undefined>;
 
+/**
+ * Dynamic variable function signature. Receives the current expanded variables
+ * and the selected environment (if any), and returns either a string to set
+ * or `undefined` to unset/skip the variable.
+ */
 export type GetDotenvDynamicFunction = (
   vars: ProcessEnv,
   env: string | undefined,
 ) => string | undefined;
-
 export type GetDotenvDynamic = Record<
   string,
   GetDotenvDynamicFunction | ReturnType<GetDotenvDynamicFunction>
 >;
-
 export type Logger =
   | Record<string, (...args: unknown[]) => void>
   | typeof console;
@@ -128,8 +135,19 @@ export const getDotenvCliOptions2Options = ({
   varsDelimiterPattern,
   ...rest
 }: GetDotenvCliOptions): GetDotenvOptions => {
+  /**
+   * Convert CLI-facing string options into {@link GetDotenvOptions}.
+   *
+   * - Splits {@link GetDotenvCliOptions.paths} using either a delimiter
+   *   or a regular expression pattern into a string array.
+   * - Parses {@link GetDotenvCliOptions.vars} as space-separated `KEY=VALUE`
+   *   pairs (configurable delimiters) into a {@link ProcessEnv}.
+   * - Drops CLI-only keys that have no programmatic equivalent.
+   *
+   * @remarks
+   * Follows exact-optional semantics by not emitting undefined-valued entries.
+   */
   // Drop CLI-only keys
-
   const { debug, scripts, ...restFlags } = rest as Record<string, unknown>;
 
   const splitBy = (
@@ -162,6 +180,24 @@ export const getDotenvCliOptions2Options = ({
 export const resolveGetDotenvOptions = async (
   customOptions: Partial<GetDotenvOptions>,
 ) => {
+  /**
+   * Resolve {@link GetDotenvOptions} by layering defaults in ascending precedence:
+   *
+   * 1. Base defaults derived from the CLI generator defaults
+   *    ({@link baseGetDotenvCliOptions}).
+   * 2. Local project overrides from a `getdotenv.config.json` in the nearest
+   *    package root (if present).
+   * 3. The provided {@link customOptions}.
+   *
+   * The result preserves explicit empty values and drops only `undefined`.
+   *
+   * @returns Fully-resolved {@link GetDotenvOptions}.
+   *
+   * @example
+   * ```ts
+   * const options = await resolveGetDotenvOptions({ env: 'dev' });
+   * ```
+   */
   const localPkgDir = await packageDirectory();
 
   const localOptionsPath = localPkgDir
