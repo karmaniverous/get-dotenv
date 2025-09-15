@@ -3,6 +3,7 @@ import prettierConfig from 'eslint-config-prettier';
 import jsonc from 'eslint-plugin-jsonc';
 import prettierPlugin from 'eslint-plugin-prettier';
 import simpleImportSortPlugin from 'eslint-plugin-simple-import-sort';
+import globals from 'globals';
 import jsoncParser from 'jsonc-eslint-parser';
 import { dirname } from 'path';
 import tseslint from 'typescript-eslint';
@@ -11,6 +12,10 @@ import { fileURLToPath } from 'url';
 const tsconfigRootDir = dirname(fileURLToPath(import.meta.url));
 
 export default [
+  // Make Node globals (process, console, etc.) available project-wide
+  {
+    languageOptions: { globals: { ...globals.node, ...globals.es2024 } },
+  },
   {
     ignores: [
       '.stan/**',
@@ -72,14 +77,10 @@ export default [
     rules: {
       '@typescript-eslint/consistent-type-imports': 'error',
       '@typescript-eslint/no-empty-object-type': 'off',
-      '@typescript-eslint/no-non-null-assertion': 'off',
       '@typescript-eslint/no-unsafe-assignment': 'error',
       '@typescript-eslint/no-unsafe-member-access': 'error',
       '@typescript-eslint/no-unsafe-return': 'error',
-      '@typescript-eslint/no-unused-expressions': 'off',
       '@typescript-eslint/no-unused-vars': 'error',
-      '@typescript-eslint/require-await': 'off',
-      'no-unused-vars': 'off',
       'prettier/prettier': 'error',
       'simple-import-sort/exports': 'error',
       'simple-import-sort/imports': 'error',

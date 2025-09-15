@@ -5,7 +5,6 @@ import path from 'path';
 
 import type { Logger } from '../../GetDotenvOptions';
 import type { GetDotenvCliOptions } from '../GetDotenvCliOptions';
-import type { BatchCommandOptions } from '.';
 
 type ExecShellCommandBatchOptions = {
   globs: string;

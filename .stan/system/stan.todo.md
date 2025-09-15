@@ -19,10 +19,12 @@ NOTE: Update timestamp on commit.
 
 ## Completed (recent)
 
+- ESLint/Node globals: add globals mapping so process/console are defined in lint; remove unused import in execShellCommandBatch.
+- TS flags: assign optional booleans under exactOptionalPropertyTypes using delete-or-assign pattern; remove unused destructure by deleting logger key explicitly.
+- Rollup config: drop JSON import assertion and radash; read package.json via fs with typed shape; fix unsafe any/member access.
 - IDE: enable ESLint fix on save (prettier/prettier EOL fixes apply automatically) and add .gitattributes with LF enforcement to prevent ␍ line-ending regressions.
 - Typecheck: fix exactOptionalPropertyTypes at batch seams (boolean coercion) and relax defaultsDeep typing; add unknown casts for defaults merges.
-- Rollup: replace JSON import assertion with fs read to avoid runtime SyntaxError; keep externals the same.
-- ESLint: add @typescript-eslint plugin mapping in flat config for typed rules.- Defaults layering: replaced radash.merge with local defaultsDeep (plain-object deep merge), restored merge orders:
+- Rollup: replace JSON import assertion with fs read to avoid runtime SyntaxError; keep externals the same.- ESLint: add @typescript-eslint plugin mapping in flat config for typed rules.- Defaults layering: replaced radash.merge with local defaultsDeep (plain-object deep merge), restored merge orders:
   - CLI generate: base < global < local < custom
   - getDotenv programmatic: baseFromCLI < local < custom
   - Per-command: parent < current

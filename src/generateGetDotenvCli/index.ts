@@ -13,6 +13,7 @@ import {
 } from './GetDotenvCliGenerateOptions';
 import type { GetDotenvCliOptions, Scripts } from './GetDotenvCliOptions';
 import { resolveCommand, resolveShell } from './resolve';
+
 const resolveExclusion = (
   exclude: boolean | undefined,
   excludeOff: true | undefined,
@@ -34,6 +35,20 @@ const resolveExclusionAll = (
       : defaultValue
         ? true
         : undefined;
+
+// exactOptionalPropertyTypes-safe setter for optional boolean flags.
+const setOptionalFlag = <
+  T extends Record<string, unknown>,
+  K extends keyof T & string,
+>(
+  obj: T,
+  key: K,
+  value: boolean | undefined,
+) => {
+  if (value === undefined) {
+    delete (obj as Record<string, unknown>)[key];
+  } else (obj as Record<string, unknown>)[key] = value;
+};
 
 /**
  * Generate a Commander CLI Command for get-dotenv.
@@ -364,61 +379,79 @@ export const generateGetDotenvCli = async (
       ) as unknown as GetDotenvCliOptions;
 
       // Resolve flags.
-      mergedGetDotenvCliOptions.debug = resolveExclusion(
-        mergedGetDotenvCliOptions.debug,
-        debugOff,
-        debug,
+      setOptionalFlag(
+        mergedGetDotenvCliOptions,
+        'debug',
+        resolveExclusion(mergedGetDotenvCliOptions.debug, debugOff, debug),
       );
-      mergedGetDotenvCliOptions.excludeDynamic = resolveExclusionAll(
-        mergedGetDotenvCliOptions.excludeDynamic,
-        excludeDynamicOff,
-        excludeDynamic,
-        excludeAll,
-        excludeAllOff,
+      setOptionalFlag(
+        mergedGetDotenvCliOptions,
+        'excludeDynamic',
+        resolveExclusionAll(
+          mergedGetDotenvCliOptions.excludeDynamic,
+          excludeDynamicOff,
+          excludeDynamic,
+          excludeAll,
+          excludeAllOff,
+        ),
       );
-
-      mergedGetDotenvCliOptions.excludeEnv = resolveExclusionAll(
-        mergedGetDotenvCliOptions.excludeEnv,
-        excludeEnvOff,
-        excludeEnv,
-        excludeAll,
-        excludeAllOff,
+      setOptionalFlag(
+        mergedGetDotenvCliOptions,
+        'excludeEnv',
+        resolveExclusionAll(
+          mergedGetDotenvCliOptions.excludeEnv,
+          excludeEnvOff,
+          excludeEnv,
+          excludeAll,
+          excludeAllOff,
+        ),
       );
-
-      mergedGetDotenvCliOptions.excludeGlobal = resolveExclusionAll(
-        mergedGetDotenvCliOptions.excludeGlobal,
-        excludeGlobalOff,
-        excludeGlobal,
-        excludeAll,
-        excludeAllOff,
+      setOptionalFlag(
+        mergedGetDotenvCliOptions,
+        'excludeGlobal',
+        resolveExclusionAll(
+          mergedGetDotenvCliOptions.excludeGlobal,
+          excludeGlobalOff,
+          excludeGlobal,
+          excludeAll,
+          excludeAllOff,
+        ),
       );
-
-      mergedGetDotenvCliOptions.excludePrivate = resolveExclusionAll(
-        mergedGetDotenvCliOptions.excludePrivate,
-        excludePrivateOff,
-        excludePrivate,
-        excludeAll,
-        excludeAllOff,
+      setOptionalFlag(
+        mergedGetDotenvCliOptions,
+        'excludePrivate',
+        resolveExclusionAll(
+          mergedGetDotenvCliOptions.excludePrivate,
+          excludePrivateOff,
+          excludePrivate,
+          excludeAll,
+          excludeAllOff,
+        ),
       );
-
-      mergedGetDotenvCliOptions.excludePublic = resolveExclusionAll(
-        mergedGetDotenvCliOptions.excludePublic,
-        excludePublicOff,
-        excludePublic,
-        excludeAll,
-        excludeAllOff,
+      setOptionalFlag(
+        mergedGetDotenvCliOptions,
+        'excludePublic',
+        resolveExclusionAll(
+          mergedGetDotenvCliOptions.excludePublic,
+          excludePublicOff,
+          excludePublic,
+          excludeAll,
+          excludeAllOff,
+        ),
       );
-
-      mergedGetDotenvCliOptions.log = resolveExclusion(
-        mergedGetDotenvCliOptions.log,
-        logOff,
-        log,
+      setOptionalFlag(
+        mergedGetDotenvCliOptions,
+        'log',
+        resolveExclusion(mergedGetDotenvCliOptions.log, logOff, log),
       );
-
-      mergedGetDotenvCliOptions.loadProcess = resolveExclusion(
-        mergedGetDotenvCliOptions.loadProcess,
-        loadProcessOff,
-        loadProcess,
+      setOptionalFlag(
+        mergedGetDotenvCliOptions,
+        'loadProcess',
+        resolveExclusion(
+          mergedGetDotenvCliOptions.loadProcess,
+          loadProcessOff,
+          loadProcess,
+        ),
       );
 
       // Normalize shell for predictability: explicit default shell per OS.
@@ -489,8 +522,10 @@ export const generateGetDotenvCli = async (
         if (mergedGetDotenvCliOptions.debug)
           logger.debug('\n*** command ***\n', cmd);
 
-        const { logger: _omit, ...envSafe } =
-          mergedGetDotenvCliOptions as unknown as Record<string, unknown>;
+        const envSafe = {
+          ...(mergedGetDotenvCliOptions as unknown as Record<string, unknown>),
+        };
+        delete (envSafe as Record<string, unknown>).logger;
         await execaCommand(cmd, {
           env: {
             ...process.env,
