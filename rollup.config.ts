@@ -12,15 +12,16 @@ import dtsPlugin from 'rollup-plugin-dts';
 // Avoid JSON import assertions; read and type package.json
 
 const outputPath = `dist`;
-const commonPlugins = [
-  commonjsPlugin(),
-  jsonPlugin(),
-  nodeResolve(),
-  typescriptPlugin(),
-];
+// Configure the TS plugin explicitly for Rollup builds:
+// - Point to the base tsconfig to avoid project "outDir" constraints intended for tsc.
+// - Unset outDir so @rollup/plugin-typescript doesn't error on path validation.
+const tsPlugin = typescriptPlugin({
+  tsconfig: './tsconfig.base.json',
+  compilerOptions: { outDir: undefined },
+});
+const commonPlugins = [commonjsPlugin(), jsonPlugin(), nodeResolve(), tsPlugin];
 
 const commonAliases: Alias[] = [];
-
 type PkgJson = {
   dependencies?: Record<string, string>;
   peerDependencies?: Record<string, string>;

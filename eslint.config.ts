@@ -80,8 +80,17 @@ export default [
       '@typescript-eslint/no-unsafe-assignment': 'error',
       '@typescript-eslint/no-unsafe-member-access': 'error',
       '@typescript-eslint/no-unsafe-return': 'error',
-      '@typescript-eslint/no-unused-vars': 'error',
+      // Use the TS-aware rule and ignore leading-underscore variables/args.
       'no-unused-vars': 'off',
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        {
+          argsIgnorePattern: '^_',
+          varsIgnorePattern: '^_',
+          caughtErrorsIgnorePattern: '^_',
+          ignoreRestSiblings: true,
+        },
+      ],
       'prettier/prettier': 'error',
       'simple-import-sort/exports': 'error',
       'simple-import-sort/imports': 'error',

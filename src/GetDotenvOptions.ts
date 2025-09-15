@@ -129,7 +129,7 @@ export const getDotenvCliOptions2Options = ({
   ...rest
 }: GetDotenvCliOptions): GetDotenvOptions => {
   // Drop CLI-only keys
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
   const { debug, scripts, ...restFlags } = rest as Record<string, unknown>;
 
   const splitBy = (

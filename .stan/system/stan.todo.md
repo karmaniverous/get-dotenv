@@ -1,15 +1,15 @@
 # Development Plan — get-dotenv
 
-When updated: 2025-09-15T00:00:00Z
+When updated: 2025-09-15T00:30:00Z
 NOTE: Update timestamp on commit.
 
 ## Next up
-
-- Tests: re-run and verify 14 failing getDotenv tests now pass after defaults fix.
+- Sanity passes: npm run typecheck, npm run lint:fix, npm run test, npm run build
+  to confirm the Rollup plugin fix and overall health.
+- Docs: decide whether to add typedoc as a devDependency or adjust the docs script.
 - Docs: update README (Vitest switch, coverage, Node >=22.19, shell defaults).
 - Rollup: monitor externalization approach; if consumers request bundled build, add alternate config. Add CI to run test/lint/build.
-- CLI shell behavior
-  - Document normalized default shell (/bin/bash on \*nix, powershell.exe on Windows). - Add integration tests to assert consistent quoting/whitespace behavior for:
+- CLI shell behavior  - Document normalized default shell (/bin/bash on \*nix, powershell.exe on Windows). - Add integration tests to assert consistent quoting/whitespace behavior for:
     - arguments with spaces/quotes,
     - pipes and redirects,
     - script-specific shell overrides.
@@ -19,10 +19,16 @@ NOTE: Update timestamp on commit.
 
 ## Completed (recent)
 
+- Refactor: split src/generateGetDotenvCli/index.ts into smaller modules
+  (flagUtils.ts, buildRootCommand.ts, preSubcommandHook.ts) without changing
+  public API or behavior.
+- Rollup: configured @rollup/plugin-typescript to use tsconfig.base.json and
+  unset outDir for bundling; resolves outDir vs Rollup output path error.
+- ESLint: in TS files, disabled core no-unused-vars and tuned  @typescript-eslint/no-unused-vars to ignore leading-underscore args/vars and
+  caught errors; rest siblings ignored.
 - ESLint/Node globals: add globals mapping so process/console are defined in lint; remove unused import in execShellCommandBatch.
 - TS flags: assign optional booleans under exactOptionalPropertyTypes using delete-or-assign pattern; remove unused destructure by deleting logger key explicitly.
-- Rollup config: drop JSON import assertion and radash; read package.json via fs with typed shape; fix unsafe any/member access.
-- IDE: enable ESLint fix on save (prettier/prettier EOL fixes apply automatically) and add .gitattributes with LF enforcement to prevent ␍ line-ending regressions.
+- Rollup config: drop JSON import assertion and radash; read package.json via fs with typed shape; fix unsafe any/member access.- IDE: enable ESLint fix on save (prettier/prettier EOL fixes apply automatically) and add .gitattributes with LF enforcement to prevent ␍ line-ending regressions.
 - Typecheck: fix exactOptionalPropertyTypes at batch seams (boolean coercion) and relax defaultsDeep typing; add unknown casts for defaults merges.
 - Rollup: replace JSON import assertion with fs read to avoid runtime SyntaxError; keep externals the same.- ESLint: add @typescript-eslint plugin mapping in flat config for typed rules.- Defaults layering: replaced radash.merge with local defaultsDeep (plain-object deep merge), restored merge orders:
   - CLI generate: base < global < local < custom
