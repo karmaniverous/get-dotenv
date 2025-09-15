@@ -37,17 +37,20 @@ const resolveExclusionAll = (
         : undefined;
 
 // exactOptionalPropertyTypes-safe setter for optional boolean flags.
-const setOptionalFlag = <
-  T extends Record<string, unknown>,
-  K extends keyof T & string,
->(
+const setOptionalFlag = <T, K extends keyof T & string>(
   obj: T,
   key: K,
   value: boolean | undefined,
 ) => {
+  // Write through a local Record view to avoid requiring an index signature
+  // on T while still supporting delete-or-assign semantics.
+  const target = obj as unknown as Record<string, unknown>;
+  const k = key as unknown as string;
   if (value === undefined) {
-    delete (obj as Record<string, unknown>)[key];
-  } else (obj as Record<string, unknown>)[key] = value;
+    delete target[k];
+  } else {
+    target[k] = value;
+  }
 };
 
 /**

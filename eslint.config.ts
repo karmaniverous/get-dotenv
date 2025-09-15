@@ -81,11 +81,11 @@ export default [
       '@typescript-eslint/no-unsafe-member-access': 'error',
       '@typescript-eslint/no-unsafe-return': 'error',
       '@typescript-eslint/no-unused-vars': 'error',
+      'no-unused-vars': 'off',
       'prettier/prettier': 'error',
       'simple-import-sort/exports': 'error',
       'simple-import-sort/imports': 'error',
     },
   },
-  // Disable formatting-chafing rules globally
   prettierConfig,
 ];
