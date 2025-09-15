@@ -4,6 +4,7 @@ cliDefaults:
 excludes:
   - '**/.tsbuild/**'
   - '**/*.tsbuildinfo'
+  - assets
   - CHANGELOG.md
   - docs
   - package-lock.json

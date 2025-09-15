@@ -183,15 +183,6 @@ export type PreSubHookContext = {
     }
     mergedGetDotenvCliOptions.shell = resolvedShell;
 
-    // exactOptionalPropertyTypes-safe write: delete on undefined; assign otherwise.
-    {
-      const target = mergedGetDotenvCliOptions as unknown as Record<
-        string,
-        unknown
-      >;
-      if (resolvedShell === undefined) delete target.shell;
-      else target.shell = resolvedShell;
-    }
     if (mergedGetDotenvCliOptions.debug && parentGetDotenvCliOptions) {
       logger.debug(
         '\n*** parent command GetDotenvCliOptions ***\n',
@@ -234,18 +225,18 @@ export type PreSubHookContext = {
     if (postHook) await postHook(dotenv);
 
     // Execute command.
-    {
-      const args = (thisCommand as { args?: unknown[] }).args;
-      const isCommand = typeof command === 'string' && command.length > 0;
-      if (isCommand && Array.isArray(args) && args.length > 0) {
-        const lr = logger as unknown as {
-          log: (...a: unknown[]) => void;
-          error?: (...a: unknown[]) => void;
-        };
-        (lr.error ?? lr.log)(`--command option conflicts with cmd subcommand.`);
-        process.exit(0);
-      }
+
+    const args = (thisCommand as { args?: unknown[] }).args ?? [];
+    const isCommand = typeof command === 'string' && command.length > 0;
+    if (isCommand && args.length > 0) {
+      const lr = logger as unknown as {
+        log: (...a: unknown[]) => void;
+        error?: (...a: unknown[]) => void;
+      };
+      (lr.error ?? lr.log)(`--command option conflicts with cmd subcommand.`);
+      process.exit(0);
     }
+
     if (typeof command === 'string' && command.length > 0) {
       const cmd = resolveCommand(mergedGetDotenvCliOptions.scripts, command);
       if (mergedGetDotenvCliOptions.debug)
