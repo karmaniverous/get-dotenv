@@ -1,7 +1,7 @@
 import fs from 'fs-extra';
-import _ from 'lodash';
 import { join } from 'path';
 import { packageDirectory } from 'pkg-dir';
+import { merge } from 'radash';
 
 import {
   baseGetDotenvCliOptions,
@@ -128,30 +128,30 @@ export const getDotenvCliOptions2Options = ({
   varsDelimiter,
   varsDelimiterPattern,
   ...rest
-}: GetDotenvCliOptions): GetDotenvOptions => ({
-  ..._.omit(rest, ['debug', 'scripts']),
-  paths:
-    paths?.split(
-      pathsDelimiterPattern
-        ? RegExp(pathsDelimiterPattern)
-        : (pathsDelimiter ?? ' '),
-    ) ?? [],
-  vars: _.fromPairs(
-    vars
-      ?.split(
-        varsDelimiterPattern
-          ? RegExp(varsDelimiterPattern)
-          : (varsDelimiter ?? ' '),
-      )
-      .map((v) =>
+}: GetDotenvCliOptions): GetDotenvOptions => {
+  // Drop CLI-only keys
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { debug, scripts, ...restFlags } = rest as Record<string, unknown>;
+
+  const splitBy = (value: string | undefined, delim?: string, pattern?: string) =>
+    value ? value.split(pattern ? RegExp(pattern) : (delim ?? ' ')) : [];
+
+  const kvPairs = (vars
+    ? splitBy(vars, varsDelimiter, varsDelimiterPattern).map((v) =>
         v.split(
-          varsAssignorPattern
-            ? RegExp(varsAssignorPattern)
-            : (varsAssignor ?? '='),
+          varsAssignorPattern ? RegExp(varsAssignorPattern) : varsAssignor ?? '=',
         ),
-      ),
-  ),
-});
+      )
+    : []) as [string, string][];
+
+  const parsedVars = Object.fromEntries(kvPairs);
+
+  return {
+    ...(restFlags as Omit<GetDotenvOptions, 'paths' | 'vars'>),
+    paths: splitBy(paths, pathsDelimiter, pathsDelimiterPattern),
+    vars: parsedVars,
+  };
+};
 
 export const resolveGetDotenvOptions = async (
   customOptions: Partial<GetDotenvOptions>,
@@ -168,18 +168,21 @@ export const resolveGetDotenvOptions = async (
       : {}
   ) as Partial<GetDotenvCliOptions>;
 
-  const result = _.defaultsDeep(
-    customOptions,
-    getDotenvCliOptions2Options(
-      _.defaultsDeep(
-        localOptions,
-        baseGetDotenvCliOptions,
-      ) as GetDotenvCliOptions,
-    ),
-  ) as GetDotenvOptions;
+  // Merge order: base < local < custom (custom has highest precedence)
+  const mergedCli = merge(
+    baseGetDotenvCliOptions,
+    localOptions,
+  ) as GetDotenvCliOptions;
+
+  const defaultsFromCli = getDotenvCliOptions2Options(mergedCli);
+
+  const result = merge(defaultsFromCli, customOptions) as GetDotenvOptions;
 
   return {
     ...result,
-    vars: _.pickBy(result.vars ?? {}, (v) => !!v),
+    // Keep explicit empty strings/zeros; drop only undefined
+    vars: Object.fromEntries(
+      Object.entries(result.vars ?? {}).filter(([, v]) => v !== undefined),
+    ),
   };
 };

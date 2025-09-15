@@ -29,12 +29,16 @@ export const cmdCommand = new Command()
       logger.log('\n*** command ***\n', `'${cmd}'`);
 
     await execaCommand(cmd, {
-      env: { getDotenvCliOptions: JSON.stringify(getDotenvCliOptions) },
+      env: {
+        ...process.env,
+        getDotenvCliOptions: JSON.stringify(
+          getDotenvCliOptions,
+        ),
+      },
       shell: resolveShell(
         getDotenvCliOptions.scripts,
         command,
         getDotenvCliOptions.shell,
-      ),
-      stdio: 'inherit',
+      ),      stdio: 'inherit',
     });
   });

@@ -1,15 +1,14 @@
 import type { Command } from '@commander-js/extra-typings';
 import fs from 'fs-extra';
-import _ from 'lodash';
 import { join } from 'path';
 import { packageDirectory } from 'pkg-dir';
+import { merge } from 'radash';
 import { fileURLToPath } from 'url';
 
 import {
   getDotenvOptionsFilename,
   type Logger,
-  type ProcessEnv,
-} from '../GetDotenvOptions';
+  type ProcessEnv,} from '../GetDotenvOptions';
 import {
   baseGetDotenvCliOptions,
   type GetDotenvCliOptions,
@@ -120,10 +119,11 @@ export const resolveGetDotenvCliGenerateOptions = async ({
       : {}
   ) as Partial<GetDotenvCliGenerateOptions>;
 
-  return _.defaultsDeep(
+  // Merge order: base < global < local < custom
+  const merged = merge(
+    merge(merge(baseOptions, globalOptions), localOptions),
     customOptions,
-    localOptions,
-    globalOptions,
-    baseOptions,
   ) as GetDotenvCliGenerateOptions;
+
+  return merged;
 };

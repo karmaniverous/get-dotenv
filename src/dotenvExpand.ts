@@ -39,12 +39,12 @@ const interpolate = (
 
   // find whitespace pattern: $KEY:DEFAULT
   const whitespacePattern = /^\$([\w]+)(?::([^\s]*))?/;
-  const whitespaceMatch = tail.match(whitespacePattern);
+  const whitespaceMatch = whitespacePattern.exec(tail);
   if (whitespaceMatch != null) return replaceMatch(value, whitespaceMatch, ref);
   else {
     // find bracket pattern: ${KEY:DEFAULT}
     const bracketPattern = /^\${([\w]+)(?::([^}]*))?}/;
-    const bracketMatch = tail.match(bracketPattern);
+    const bracketMatch = bracketPattern.exec(tail);
     if (bracketMatch != null) return replaceMatch(value, bracketMatch, ref);
   }
 

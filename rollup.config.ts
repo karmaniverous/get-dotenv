@@ -20,11 +20,10 @@ const commonAliases: Alias[] = [];
 
 const commonInputOptions: InputOptions = {
   input: 'src/index.ts',
-  plugins: [aliasPlugin({ entries: commonAliases }), commonPlugins],
+  plugins: [aliasPlugin({ entries: commonAliases }), ...commonPlugins],
 };
 
 const cliCommands = await fs.readdir('src/cli');
-
 const config: RollupOptions[] = [
   // ESM output.
   {
@@ -53,11 +52,12 @@ const config: RollupOptions[] = [
   // Type definitions output.
   {
     ...commonInputOptions,
-    plugins: [commonInputOptions.plugins, dtsPlugin()],
+    plugins: [
+      aliasPlugin({ entries: commonAliases }),
+      ...commonPlugins, dtsPlugin()],
     output: [
       {
-        extend: true,
-        file: `${outputPath}/index.d.ts`,
+        extend: true,        file: `${outputPath}/index.d.ts`,
         format: 'esm',
       },
       {

@@ -116,13 +116,13 @@ export const execShellCommandBatch = async ({
       await execaCommand(command, {
         cwd: path,
         env: {
+          ...process.env,
           getDotenvCliOptions: getDotenvCliOptions
             ? JSON.stringify(getDotenvCliOptions)
             : undefined,
         },
         stdio: 'inherit',
-        shell,
-      });
+        shell,      });
     } catch (error) {
       if (!ignoreErrors) {
         throw error;

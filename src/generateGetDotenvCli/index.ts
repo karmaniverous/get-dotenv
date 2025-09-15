@@ -1,6 +1,6 @@
 import { Command, Option } from '@commander-js/extra-typings';
 import { execaCommand } from 'execa';
-import _ from 'lodash';
+import { merge } from 'radash';
 
 import { dotenvExpandFromProcessEnv } from '../dotenvExpand';
 import { getDotenv } from '../getDotenv';
@@ -15,8 +15,7 @@ import type { GetDotenvCliOptions } from './GetDotenvCliOptions';
 import { resolveCommand, resolveShell } from './resolve';
 
 const resolveExclusion = (
-  exclude: boolean | undefined,
-  excludeOff: true | undefined,
+  exclude: boolean | undefined,  excludeOff: true | undefined,
   defaultValue: boolean | undefined,
 ) =>
   exclude ? true : excludeOff ? undefined : defaultValue ? true : undefined;
@@ -334,8 +333,7 @@ export const generateGetDotenvCli = async (
         debugOff,
         excludeAll,
         excludeAllOff,
-        excludeDynamicOff,
-        excludeEnvOff,
+        excludeDynamicOff,        excludeEnvOff,
         excludeGlobalOff,
         excludePrivateOff,
         excludePublicOff,
@@ -354,10 +352,10 @@ export const generateGetDotenvCli = async (
           scripts,
         ) as GetDotenvCliOptions['scripts'];
 
-      // Merge current & parent GetDotenvCliOptions.
-      const mergedGetDotenvCliOptions = _.defaultsDeep(
-        currentGetDotenvCliOptions,
+      // Merge current & parent GetDotenvCliOptions (parent < current).
+      const mergedGetDotenvCliOptions = merge(
         parentGetDotenvCliOptions ?? {},
+        currentGetDotenvCliOptions,
       ) as GetDotenvCliOptions;
 
       // Resolve flags.
@@ -366,7 +364,6 @@ export const generateGetDotenvCli = async (
         debugOff,
         debug,
       );
-
       mergedGetDotenvCliOptions.excludeDynamic = resolveExclusionAll(
         mergedGetDotenvCliOptions.excludeDynamic,
         excludeDynamicOff,
@@ -419,26 +416,31 @@ export const generateGetDotenvCli = async (
         loadProcess,
       );
 
-      mergedGetDotenvCliOptions.shell = shellOff
-        ? false
-        : !_.isUndefined(mergedGetDotenvCliOptions.shell)
-          ? mergedGetDotenvCliOptions.shell
-          : !_.isUndefined(shell)
-            ? shell
-            : false;
+      // Normalize shell for predictability: explicit default shell per OS.
+      const defaultShell = process.platform === 'win32' ? 'powershell.exe' : '/bin/bash';
+      let resolvedShell: string | boolean | undefined = mergedGetDotenvCliOptions.shell;
+      if (shellOff) resolvedShell = false;
+      else if (resolvedShell === true || resolvedShell === undefined) {
+        resolvedShell = defaultShell;
+      }
+      // if original generator default provided, prefer it when string
+      else if (typeof resolvedShell !== 'string' && typeof shell === 'string') {
+        resolvedShell = shell;
+      }
+      mergedGetDotenvCliOptions.shell = resolvedShell;
 
-      if (mergedGetDotenvCliOptions.debug && parentGetDotenvCliOptions)
+      if (mergedGetDotenvCliOptions.debug && parentGetDotenvCliOptions) {
         logger.debug(
           '\n*** parent command GetDotenvCliOptions ***\n',
           parentGetDotenvCliOptions,
         );
+      }
 
       if (mergedGetDotenvCliOptions.debug)
         logger.debug('\n*** current command raw options ***\n', rawCliOptions);
 
       if (mergedGetDotenvCliOptions.debug)
-        logger.debug('\n*** merged GetDotenvCliOptions ***\n', {
-          mergedGetDotenvCliOptions,
+        logger.debug('\n*** merged GetDotenvCliOptions ***\n', {          mergedGetDotenvCliOptions,
         });
 
       // Execute pre-hook.
@@ -453,13 +455,12 @@ export const generateGetDotenvCli = async (
       }
 
       // Persist GetDotenvCliOptions in command for subcommand access.
-      _.set(thisCommand, 'getDotenvCliOptions', mergedGetDotenvCliOptions);
+      (thisCommand as unknown as { getDotenvCliOptions: GetDotenvCliOptions }).getDotenvCliOptions = mergedGetDotenvCliOptions;
 
       // Execute getdotenv.
       const dotenv = await getDotenv(
         getDotenvCliOptions2Options(mergedGetDotenvCliOptions),
       );
-
       if (mergedGetDotenvCliOptions.debug)
         logger.debug('\n*** getDotenv output ***\n', dotenv);
 
@@ -478,12 +479,11 @@ export const generateGetDotenvCli = async (
         if (mergedGetDotenvCliOptions.debug)
           logger.debug('\n*** command ***\n', cmd);
 
+        const { logger: _omit, ...envSafe } = mergedGetDotenvCliOptions as unknown as Record<string, unknown>;
         await execaCommand(cmd, {
           env: {
             ...process.env,
-            getDotenvCliOptions: JSON.stringify(
-              _.omit(mergedGetDotenvCliOptions, ['logger']),
-            ),
+            getDotenvCliOptions: JSON.stringify(envSafe),
           },
           shell: resolveShell(
             mergedGetDotenvCliOptions.scripts,
@@ -493,5 +493,4 @@ export const generateGetDotenvCli = async (
           stdio: 'inherit',
         });
       }
-    });
-};
+    });};
