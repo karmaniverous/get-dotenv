@@ -16,13 +16,13 @@ const isPlainObject = (value: unknown): value is AnyRecord =>
 const mergeInto = (target: AnyRecord, source: AnyRecord): AnyRecord => {
   for (const [key, sVal] of Object.entries(source)) {
     if (sVal === undefined) continue; // do not overwrite with undefined
-    const tVal = (target as AnyRecord)[key];
+    const tVal = target[key];
     if (isPlainObject(tVal) && isPlainObject(sVal)) {
-      (target as AnyRecord)[key] = mergeInto({ ...tVal }, sVal);
+      target[key] = mergeInto({ ...tVal }, sVal);
     } else if (isPlainObject(sVal)) {
-      (target as AnyRecord)[key] = mergeInto({}, sVal);
+      target[key] = mergeInto({}, sVal);
     } else {
-      (target as AnyRecord)[key] = sVal;
+      target[key] = sVal;
     }
   }
   return target;

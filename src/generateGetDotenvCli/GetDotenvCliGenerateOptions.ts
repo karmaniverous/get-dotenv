@@ -121,9 +121,9 @@ export const resolveGetDotenvCliGenerateOptions = async ({
 
   // Merge order: base < global < local < custom
   const merged = defaultsDeep(
-    baseOptions as Partial<GetDotenvCliGenerateOptions>,
-    globalOptions as Partial<GetDotenvCliGenerateOptions>,
-    localOptions as Partial<GetDotenvCliGenerateOptions>,
+    baseOptions,
+    globalOptions,
+    localOptions,
     customOptions as Partial<GetDotenvCliGenerateOptions>,
   ) as unknown as GetDotenvCliGenerateOptions;
 

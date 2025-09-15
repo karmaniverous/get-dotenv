@@ -16,10 +16,14 @@ NOTE: Update timestamp on commit.
 
 ## Completed (recent)
 
+- Lint coverage: include eslint.config.ts explicitly in lint and lint:fix
+  scripts so config type errors surface in CI/local runs.
+- eslint.config.ts: replace unsafe cast to strictTypeChecked.rules with a
+  safe merge of rules from the flat-config array; resolves TS2352 during
+  typecheck/build.
 - ESLint: apply typescript-eslint strictTypeChecked baseline in TS files block,
   with local overrides preserved.
-- TS exactOptionalPropertyTypes: pass preHook/postHook only when defined from
-  index.ts; fix PreSubHookContext.defaults to Partial<Pick<…>>; avoid assigning
+- TS exactOptionalPropertyTypes: pass preHook/postHook only when defined from  index.ts; fix PreSubHookContext.defaults to Partial<Pick<…>>; avoid assigning
   undefined to optional fields.- Shell write: assign/delete shell via local Record view (no undefined write) in
   preSubcommandHook.ts.
 - TS exactOptionalPropertyTypes: make preSubcommand defaults Partial and

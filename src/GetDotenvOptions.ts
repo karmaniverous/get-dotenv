@@ -176,15 +176,15 @@ export const resolveGetDotenvOptions = async (
 
   // Merge order: base < local < custom (custom has highest precedence)
   const mergedCli = defaultsDeep(
-    baseGetDotenvCliOptions as Partial<GetDotenvCliOptions>,
-    localOptions as Partial<GetDotenvCliOptions>,
+    baseGetDotenvCliOptions,
+    localOptions,
   ) as unknown as GetDotenvCliOptions;
 
   const defaultsFromCli = getDotenvCliOptions2Options(mergedCli);
 
   const result = defaultsDeep(
     defaultsFromCli as Partial<GetDotenvOptions>,
-    customOptions as Partial<GetDotenvOptions>,
+    customOptions,
   ) as unknown as GetDotenvOptions;
 
   return {

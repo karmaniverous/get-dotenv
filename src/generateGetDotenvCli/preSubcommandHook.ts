@@ -67,7 +67,7 @@ export type PreSubHookContext = {
       scripts,
       shellOff,
       ...rawCliOptionsRest
-    } = rawCliOptions as Record<string, unknown>;
+    } = rawCliOptions;
 
     const currentGetDotenvCliOptions: Partial<GetDotenvCliOptions> =
       rawCliOptionsRest as Partial<GetDotenvCliOptions>;
@@ -80,7 +80,7 @@ export type PreSubHookContext = {
     // Merge current & parent GetDotenvCliOptions (parent < current).
     const mergedGetDotenvCliOptions = defaultsDeep(
       (parentGetDotenvCliOptions ?? {}) as Partial<GetDotenvCliOptions>,
-      currentGetDotenvCliOptions as Partial<GetDotenvCliOptions>,
+      currentGetDotenvCliOptions,
     ) as unknown as GetDotenvCliOptions;
 
     // Resolve flags using defaults + current + exclude-all toggles.
@@ -223,7 +223,7 @@ export type PreSubHookContext = {
 
     // Persist GetDotenvCliOptions in command for subcommand access.
     (
-      thisCommand as unknown as { getDotenvCliOptions: GetDotenvCliOptions }
+      thisCommand as { getDotenvCliOptions: GetDotenvCliOptions }
     ).getDotenvCliOptions = mergedGetDotenvCliOptions;
 
     // Execute getdotenv.

@@ -14,5 +14,5 @@ export const resolveShell = (
   shell: string | boolean | undefined,
 ): string | boolean | URL =>
   scripts && typeof scripts[command] === 'object' && scripts[command] !== null
-    ? ((scripts[command] as Exclude<Scripts[string], string>).shell ?? false)
+    ? (scripts[command].shell ?? false)
     : (shell ?? false);

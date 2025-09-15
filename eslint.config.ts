@@ -11,6 +11,17 @@ import { fileURLToPath } from 'url';
 
 const tsconfigRootDir = dirname(fileURLToPath(import.meta.url));
 
+// Extract rules from typescript-eslint strictTypeChecked (a flat-config array)
+// into a single rules object. Use unknown → typed array to satisfy TS.
+const strictTypeCheckedRules: Record<string, unknown> = Object.assign(
+  {},
+  ...(
+    tseslint.configs.strictTypeChecked as unknown as Array<{
+      rules?: Record<string, unknown>;
+    }>
+  ).map((c) => c.rules ?? {}),
+);
+
 export default [
   // Make Node globals (process, console, etc.) available project-wide
   {
@@ -75,13 +86,8 @@ export default [
       'simple-import-sort': simpleImportSortPlugin,
     },
     rules: {
-      // Strict type-checked baseline from typescript-eslint; customize below as needed.
-      // Keep this spread first so explicit rules below act as overrides.
-      ...(
-        tseslint.configs.strictTypeChecked as {
-          rules: Record<string, unknown>;
-        }
-      ).rules,
+      // Strict type-checked baseline from typescript-eslint (merged above).
+      ...strictTypeCheckedRules,
       '@typescript-eslint/consistent-type-imports': 'error',
       '@typescript-eslint/no-empty-object-type': 'off',
       '@typescript-eslint/no-unsafe-assignment': 'error',
