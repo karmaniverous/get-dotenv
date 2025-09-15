@@ -3,7 +3,7 @@ import type { ProcessEnv } from './GetDotenvOptions';
 // like String.prototype.search but returns the last index
 const searchLast = (str: string, rgx: RegExp) => {
   const matches = Array.from(str.matchAll(rgx));
-  return matches.length > 0 ? matches.slice(-1)[0]?.index ?? -1 : -1;
+  return matches.length > 0 ? (matches.slice(-1)[0]?.index ?? -1) : -1;
 };
 
 const replaceMatch = (

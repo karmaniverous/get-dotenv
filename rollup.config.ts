@@ -1,3 +1,5 @@
+import { builtinModules } from 'node:module';
+
 import type { Alias } from '@rollup/plugin-alias';
 import aliasPlugin from '@rollup/plugin-alias';
 import commonjsPlugin from '@rollup/plugin-commonjs';
@@ -7,8 +9,7 @@ import typescriptPlugin from '@rollup/plugin-typescript';
 import fs from 'fs-extra';
 import type { InputOptions, RollupOptions } from 'rollup';
 import dtsPlugin from 'rollup-plugin-dts';
-import { builtinModules } from 'node:module';
-import pkg from './package.json' assert { type: 'json' };
+// Read package.json dynamically to avoid JSON import assertions at runtime.
 
 const outputPath = `dist`;
 const commonPlugins = [
@@ -20,13 +21,14 @@ const commonPlugins = [
 
 const commonAliases: Alias[] = [];
 
+const pkgJson = JSON.parse(await fs.readFile('package.json', 'utf-8')) as any;
+
 const external = [
-  ...Object.keys((pkg as any).dependencies ?? {}),
-  ...Object.keys((pkg as any).peerDependencies ?? {}),
+  ...Object.keys((pkgJson as any).dependencies ?? {}),
+  ...Object.keys((pkgJson as any).peerDependencies ?? {}),
   ...builtinModules,
   ...builtinModules.map((m) => `node:${m}`),
 ];
-
 const commonInputOptions: InputOptions = {
   input: 'src/index.ts',
   // Avoid bundling runtime deps (execa/npm-run-path/unicorn-magic, etc.)

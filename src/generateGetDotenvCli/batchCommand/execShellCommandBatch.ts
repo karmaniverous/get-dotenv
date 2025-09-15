@@ -37,7 +37,6 @@ const globPaths = async ({
     cwd.split(path.sep).join(path.posix.sep),
     rootPath.split(path.sep).join(path.posix.sep),
   );
-
   const paths = await globby(globs.split(/\s+/), {
     cwd: absRootPath,
     expandDirectories: false,
@@ -82,8 +81,9 @@ export const execShellCommandBatch = async ({
   const { absRootPath, paths } = await globPaths({
     globs,
     logger,
-    pkgCwd,
     rootPath,
+    // exactOptionalPropertyTypes: only include when defined; coerce to boolean
+    ...(pkgCwd !== undefined ? { pkgCwd: !!pkgCwd } : {}),
   });
 
   const headerTitle = list

@@ -3,18 +3,19 @@ import { execaCommand } from 'execa';
 
 import { dotenvExpandFromProcessEnv } from '../dotenvExpand';
 import { getDotenv } from '../getDotenv';
-import { getDotenvCliOptions2Options } from '../GetDotenvOptions';import { batchCommand } from './batchCommand';
+import { getDotenvCliOptions2Options } from '../GetDotenvOptions';
+import { defaultsDeep } from '../util/defaultsDeep';
+import { batchCommand } from './batchCommand';
 import { cmdCommand } from './cmdCommand';
 import {
   type GetDotenvCliGenerateOptions,
   resolveGetDotenvCliGenerateOptions,
 } from './GetDotenvCliGenerateOptions';
-import type { GetDotenvCliOptions } from './GetDotenvCliOptions';
+import type { GetDotenvCliOptions, Scripts } from './GetDotenvCliOptions';
 import { resolveCommand, resolveShell } from './resolve';
-import { defaultsDeep } from '../util/defaultsDeep';
-
 const resolveExclusion = (
-  exclude: boolean | undefined,  excludeOff: true | undefined,
+  exclude: boolean | undefined,
+  excludeOff: true | undefined,
   defaultValue: boolean | undefined,
 ) =>
   exclude ? true : excludeOff ? undefined : defaultValue ? true : undefined;
@@ -119,7 +120,8 @@ export const generateGetDotenvCli = async (
           return `command execution shell, no argument for default OS shell or provide shell string${defaultLabel}`;
         })(),
       ).conflicts('shellOff'),
-    )    .addOption(
+    )
+    .addOption(
       new Option(
         '-S, --shell-off',
         `command execution shell OFF${!shell ? ' (default)' : ''}`,
@@ -353,17 +355,17 @@ export const generateGetDotenvCli = async (
         rawCliOptionsRest as Partial<GetDotenvCliOptions>;
 
       if (scripts)
-        currentGetDotenvCliOptions.scripts = JSON.parse(          scripts,
-        ) as GetDotenvCliOptions['scripts'];
+        currentGetDotenvCliOptions.scripts = JSON.parse(scripts) as Scripts;
 
       // Merge current & parent GetDotenvCliOptions (parent < current).
       const mergedGetDotenvCliOptions = defaultsDeep(
-        parentGetDotenvCliOptions ?? {},
-        currentGetDotenvCliOptions,
-      ) as GetDotenvCliOptions;
+        (parentGetDotenvCliOptions ?? {}) as Partial<GetDotenvCliOptions>,
+        currentGetDotenvCliOptions as Partial<GetDotenvCliOptions>,
+      ) as unknown as GetDotenvCliOptions;
 
       // Resolve flags.
-      mergedGetDotenvCliOptions.debug = resolveExclusion(        mergedGetDotenvCliOptions.debug,
+      mergedGetDotenvCliOptions.debug = resolveExclusion(
+        mergedGetDotenvCliOptions.debug,
         debugOff,
         debug,
       );
@@ -504,4 +506,5 @@ export const generateGetDotenvCli = async (
           stdio: 'inherit',
         });
       }
-    });};
+    });
+};

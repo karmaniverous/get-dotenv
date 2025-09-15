@@ -6,46 +6,33 @@
  *
  * Merge order: defaultsDeep(base, override1, override2) → override2 wins.
  */
-const isPlainObject = (value: unknown): value is Record<string, unknown> => {
-  return (
-    value !== null &&
-    typeof value === 'object' &&
-    Object.getPrototypeOf(value) === Object.prototype
-  );
-};
+type AnyRecord = Record<string, unknown>;
 
-const mergeInto = <T extends Record<string, unknown>>(
-  target: T,
-  source: Partial<T>,
-): T => {
-  for (const key of Object.keys(source) as (keyof T)[]) {
-    const sVal = source[key];
+const isPlainObject = (value: unknown): value is AnyRecord =>
+  value !== null &&
+  typeof value === 'object' &&
+  Object.getPrototypeOf(value) === Object.prototype;
+
+const mergeInto = (target: AnyRecord, source: AnyRecord): AnyRecord => {
+  for (const [key, sVal] of Object.entries(source)) {
     if (sVal === undefined) continue; // do not overwrite with undefined
-
-    const tVal = target[key];
-
+    const tVal = (target as AnyRecord)[key];
     if (isPlainObject(tVal) && isPlainObject(sVal)) {
-      // both sides plain objects → recurse
-      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-      target[key] = mergeInto({ ...(tVal as object) } as T[keyof T], sVal as T[keyof T]);
+      (target as AnyRecord)[key] = mergeInto({ ...tVal }, sVal);
     } else if (isPlainObject(sVal)) {
-      // target not an object, source is object → clone source
-      target[key] = mergeInto({} as T[keyof T], sVal as T[keyof T]);
+      (target as AnyRecord)[key] = mergeInto({}, sVal);
     } else {
-      // primitives, arrays, dates, functions, etc. → replace
-      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-      target[key] = sVal as T[keyof T];
+      (target as AnyRecord)[key] = sVal;
     }
   }
   return target;
 };
 
-export const defaultsDeep = <T extends Record<string, unknown>>(
+export const defaultsDeep = <T extends AnyRecord>(
   ...layers: Array<Partial<T> | undefined>
 ): T => {
-  // Start with empty object; apply layers left-to-right so later overrides win.
-  return layers.filter(Boolean).reduce<T>((acc, layer) => {
-    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-    return mergeInto(acc, layer as Partial<T>);
-  }, {} as T);
+  const result = layers
+    .filter(Boolean)
+    .reduce<AnyRecord>((acc, layer) => mergeInto(acc, layer as AnyRecord), {});
+  return result as T;
 };

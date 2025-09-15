@@ -50,10 +50,10 @@ export const batchCommand = new Command()
         command: resolveCommand(getDotenvCliOptions.scripts, command),
         getDotenvCliOptions,
         globs,
-        ignoreErrors,
-        list,
+        ignoreErrors: !!ignoreErrors,
+        list: !!list,
         logger,
-        pkgCwd,
+        pkgCwd: !!pkgCwd,
         rootPath,
         // execa expects string | boolean | URL for `shell`. We normalize earlier;
         // scripts[name].shell overrides take precedence and may be boolean or string.

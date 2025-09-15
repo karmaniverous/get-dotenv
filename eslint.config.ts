@@ -11,7 +11,8 @@ import { fileURLToPath } from 'url';
 const tsconfigRootDir = dirname(fileURLToPath(import.meta.url));
 
 export default [
-  {    ignores: [
+  {
+    ignores: [
       '.stan/**',
       '**/.tsbuild/**',
       '**/.rollup.cache/**',
@@ -56,13 +57,15 @@ export default [
     languageOptions: {
       // Important: set the TS parser here, otherwise this block replaces the
       // parser from strictTypeChecked and the CLI falls back to espree.
-      parser: tseslint.parser,      parserOptions: {
+      parser: tseslint.parser,
+      parserOptions: {
         // Be explicit so the CLI loads type info from the root project.
         project: ['./tsconfig.json'], // typed linting
         tsconfigRootDir,
       },
     },
     plugins: {
+      '@typescript-eslint': tseslint.plugin,
       prettier: prettierPlugin,
       'simple-import-sort': simpleImportSortPlugin,
     },

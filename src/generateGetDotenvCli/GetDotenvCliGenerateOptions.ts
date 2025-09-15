@@ -4,15 +4,16 @@ import { packageDirectory } from 'package-directory';
 import { join } from 'path';
 import { fileURLToPath } from 'url';
 
-import {  getDotenvOptionsFilename,
+import {
+  getDotenvOptionsFilename,
   type Logger,
   type ProcessEnv,
 } from '../GetDotenvOptions';
+import { defaultsDeep } from '../util/defaultsDeep';
 import {
   baseGetDotenvCliOptions,
   type GetDotenvCliOptions,
 } from './GetDotenvCliOptions';
-import { defaultsDeep } from '../util/defaultsDeep';
 
 /**
  * GetDotenv CLI Pre-hook Callback function type. Mutates inbound options & * executes side effects within the `getDotenv` context.
@@ -120,8 +121,11 @@ export const resolveGetDotenvCliGenerateOptions = async ({
 
   // Merge order: base < global < local < custom
   const merged = defaultsDeep(
-    baseOptions, globalOptions, localOptions, customOptions,
-  ) as GetDotenvCliGenerateOptions;
+    baseOptions as Partial<GetDotenvCliGenerateOptions>,
+    globalOptions as Partial<GetDotenvCliGenerateOptions>,
+    localOptions as Partial<GetDotenvCliGenerateOptions>,
+    customOptions as Partial<GetDotenvCliGenerateOptions>,
+  ) as unknown as GetDotenvCliGenerateOptions;
 
   return merged;
 };

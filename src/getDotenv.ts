@@ -121,8 +121,7 @@ export const getDotenv = async (
           Object.assign(dotenv, {
             [key]:
               typeof dynamic[key] === 'function'
-                ? // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
-                  (dynamic[key] as GetDotenvDynamicFunction)(
+                ? (dynamic[key] as GetDotenvDynamicFunction)(
                     dotenv,
                     env ?? defaultEnv,
                   )
@@ -139,7 +138,6 @@ export const getDotenv = async (
     const outputPath = dotenv[outputKey];
     if (!outputPath) throw new Error('Output path not found.');
 
-    // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
     delete dotenv[outputKey];
 
     await fs.writeFile(
