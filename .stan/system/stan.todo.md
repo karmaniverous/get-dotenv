@@ -19,10 +19,10 @@ NOTE: Update timestamp on commit.
 
 ## Completed (recent)
 
+- IDE: enable ESLint fix on save (prettier/prettier EOL fixes apply automatically) and add .gitattributes with LF enforcement to prevent ␍ line-ending regressions.
 - Typecheck: fix exactOptionalPropertyTypes at batch seams (boolean coercion) and relax defaultsDeep typing; add unknown casts for defaults merges.
 - Rollup: replace JSON import assertion with fs read to avoid runtime SyntaxError; keep externals the same.
-- ESLint: add @typescript-eslint plugin mapping in flat config for typed rules.
-- Defaults layering: replaced radash.merge with local defaultsDeep (plain-object deep merge), restored merge orders:
+- ESLint: add @typescript-eslint plugin mapping in flat config for typed rules.- Defaults layering: replaced radash.merge with local defaultsDeep (plain-object deep merge), restored merge orders:
   - CLI generate: base < global < local < custom
   - getDotenv programmatic: baseFromCLI < local < custom
   - Per-command: parent < current

@@ -7,9 +7,11 @@ import jsonPlugin from '@rollup/plugin-json';
 import { nodeResolve } from '@rollup/plugin-node-resolve';
 import typescriptPlugin from '@rollup/plugin-typescript';
 import fs from 'fs-extra';
+import { get, keys } from 'radash';
 import type { InputOptions, RollupOptions } from 'rollup';
 import dtsPlugin from 'rollup-plugin-dts';
-// Read package.json dynamically to avoid JSON import assertions at runtime.
+
+import pkgJson from './package.json' with { type: 'json' };
 
 const outputPath = `dist`;
 const commonPlugins = [
@@ -21,11 +23,9 @@ const commonPlugins = [
 
 const commonAliases: Alias[] = [];
 
-const pkgJson = JSON.parse(await fs.readFile('package.json', 'utf-8')) as any;
-
 const external = [
-  ...Object.keys((pkgJson as any).dependencies ?? {}),
-  ...Object.keys((pkgJson as any).peerDependencies ?? {}),
+  ...keys(get(pkgJson, 'dependencies') ?? {}),
+  ...keys(get(pkgJson, 'peerDependencies') ?? {}),
   ...builtinModules,
   ...builtinModules.map((m) => `node:${m}`),
 ];
