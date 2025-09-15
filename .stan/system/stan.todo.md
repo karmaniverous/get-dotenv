@@ -3,10 +3,10 @@
 When updated: 2025-09-15T00:00:00Z
 
 ## Next up
+- Tests: investigate defaults layering regression (outputs include only GITHUB_TOKEN); restore base path defaults and CLI inheritance while keeping radash removal.
 
 - CLI shell behavior
-  - Document normalized default shell (/bin/bash on *nix, powershell.exe on Windows).
-  - Add integration tests to assert consistent quoting/whitespace behavior for:
+  - Document normalized default shell (/bin/bash on *nix, powershell.exe on Windows).  - Add integration tests to assert consistent quoting/whitespace behavior for:
     - arguments with spaces/quotes,
     - pipes and redirects,
     - script-specific shell overrides.
@@ -18,10 +18,10 @@ When updated: 2025-09-15T00:00:00Z
 
 ## Completed (recent)
 
+- ESLint: make flat config type-aware; add global ignores; integrate Prettier.
 - Switch to Vitest (replace Mocha/Nyc), enable V8 coverage.
 - Update ESLint to v9 (flat config); remove Mocha plugin.
-- Remove lodash usage in source; add radash for deep merge; use native TS elsewhere.
-- Normalize CLI shell defaults for predictable behavior across platforms.
+- Remove lodash usage in source; add radash for deep merge; use native TS elsewhere.- Normalize CLI shell defaults for predictable behavior across platforms.
 - Fix package.json: set main to dist/index.cjs; add engines.node >= 22.19.
 - Remove unused utils (src/util/logger.ts, src/util/packageName.ts, src/util/console.ts).
 - Flatten Rollup plugin arrays to avoid nested arrays.
