@@ -1,9 +1,20 @@
 # Development Plan — get-dotenv
 
-When updated: 2025-09-15T02:10:00Z
+When updated: 2025-09-15T02:20:00Z
 NOTE: Update timestamp on commit.
 
-## Next up- Sanity passes: npm run typecheck, npm run lint:fix, npm run test, npm run build  to confirm the Rollup plugin fix and overall health.- Docs: decide whether to add typedoc as a devDependency or adjust the docs script.- Docs: update README (Vitest switch, coverage, Node >=22.19, shell defaults).- Rollup: monitor externalization approach; if consumers request bundled build, add alternate config. Add CI to run test/lint/build.- CLI shell behavior  - Document normalized default shell (/bin/bash on \*nix, powershell.exe on Windows). - Add integration tests to assert consistent quoting/whitespace behavior for:    - arguments with spaces/quotes,    - pipes and redirects,    - script-specific shell overrides.
+## Next up
+
+- Sanity passes: npm run typecheck, npm run lint:fix, npm run test, npm run build to confirm the Rollup plugin fix and overall health.
+- Docs: decide whether to add typedoc as a devDependency or adjust the docs script.
+- Docs: update README (Vitest switch, coverage, Node >=22.19, shell defaults).
+- Rollup: monitor externalization approach; if consumers request bundled build, add alternate config. Add CI to run test/lint/build.
+- CLI shell behavior
+- Document normalized default shell (/bin/bash on \*nix, powershell.exe on Windows).
+- Add integration tests to assert consistent quoting/whitespace behavior for:
+  - arguments with spaces/quotes,
+  - pipes and redirects,
+  - script-specific shell overrides.
   - Consider adding a --shell-mode helper (plain|posix|powershell) as sugar.
 - ESLint: add eslint-plugin-vitest config for test files; tune rules; ensure no typed rules leak outside TS.
 - Optional: prune unused deps/devDeps flagged by knip after confirming no runtime impact (radash likely removable after this change).
@@ -17,26 +28,34 @@ NOTE: Update timestamp on commit.
   typedoc.json baseline with hosted base URL; wire docs script (already present).
 - Docs hygiene: mark internal helpers/types in defaultsDeep to reduce
   noise in generated API docs.
+- Docs: resolve TypeDoc warnings by:
+  - Naming dotenvExpandAll options param and documenting as
+    `options.ref`/`options.progressive` (remove link to local param).
+  - Linking to `GetDotenvOptions.loadProcess`/`outputPath` in getDotenv
+    remarks instead of `options.*`.
+  - Changing defaultsDeep generic to extend `Record<string, unknown>`
+    to avoid referencing internal `AnyRecord` in public docs.
 
 - Lint: resolve remaining no-unnecessary-condition by guarding command with an
   explicit string check in preSubcommandHook.
-- Lint: remove unused helper variable and use explicit args length check  (> 0) in preSubcommandHook to satisfy strictTypeChecked rules.
+- Lint: remove unused helper variable and use explicit args length check
+  (> 0) in preSubcommandHook to satisfy strictTypeChecked rules.
 - Lint: remove redundant Array.isArray guard by defaulting args to an empty
   array and checking length directly (no-unnecessary-condition compliant).
 
 - Lint (strictTypeChecked) cleanups:
   - Remove unnecessary conditionals and coercions; simplify logger/defaults.
-  - Preserve exact optional semantics with targeted disable for dynamic delete    in generic setter and restructure delete via destructuring in getDotenv.  - Remove redundant null checks in resolve helpers.- Lint config safety: rework strictTypeChecked rules merge in eslint.config.ts
-  to avoid unsafe assignment and TS2352; reduce the flat-config array into a
-  typed rules object.- Lint coverage: eslint.config.ts is explicitly included by lint/lint:fix
-  scripts so editor and CI report the same issues.
+  - Preserve exact optional semantics with targeted disable for dynamic delete in generic setter and restructure delete via destructuring in getDotenv. - Remove redundant null checks in resolve helpers.- Lint config safety: rework strictTypeChecked rules merge in eslint.config.ts
+    to avoid unsafe assignment and TS2352; reduce the flat-config array into a
+    typed rules object.- Lint coverage: eslint.config.ts is explicitly included by lint/lint:fix
+    scripts so editor and CI report the same issues.
 - Lint coverage: include eslint.config.ts explicitly in lint and lint:fix
   scripts so config type errors surface in CI/local runs.
-- eslint.config.ts: replace unsafe cast to strictTypeChecked.rules with a  safe merge of rules from the flat-config array; resolves TS2352 during
+- eslint.config.ts: replace unsafe cast to strictTypeChecked.rules with a safe merge of rules from the flat-config array; resolves TS2352 during
   typecheck/build.
 - ESLint: apply typescript-eslint strictTypeChecked baseline in TS files block,
   with local overrides preserved.
-- TS exactOptionalPropertyTypes: pass preHook/postHook only when defined from  index.ts; fix PreSubHookContext.defaults to Partial<Pick<…>>; avoid assigning
+- TS exactOptionalPropertyTypes: pass preHook/postHook only when defined from index.ts; fix PreSubHookContext.defaults to Partial<Pick<…>>; avoid assigning
   undefined to optional fields.- Shell write: assign/delete shell via local Record view (no undefined write) in
   preSubcommandHook.ts.
 - TS exactOptionalPropertyTypes: make preSubcommand defaults Partial and
@@ -47,7 +66,7 @@ NOTE: Update timestamp on commit.
   (flagUtils.ts, buildRootCommand.ts, preSubcommandHook.ts) without changing
   public API or behavior.- Rollup: configured @rollup/plugin-typescript to use tsconfig.base.json and
   unset outDir for bundling; resolves outDir vs Rollup output path error.
-- ESLint: in TS files, disabled core no-unused-vars and tuned  @typescript-eslint/no-unused-vars to ignore leading-underscore args/vars and
+- ESLint: in TS files, disabled core no-unused-vars and tuned @typescript-eslint/no-unused-vars to ignore leading-underscore args/vars and
   caught errors; rest siblings ignored.
 - ESLint/Node globals: add globals mapping so process/console are defined in lint; remove unused import in execShellCommandBatch.
 - TS flags: assign optional booleans under exactOptionalPropertyTypes using delete-or-assign pattern; remove unused destructure by deleting logger key explicitly.

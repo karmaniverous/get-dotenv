@@ -55,9 +55,9 @@ import { readDotenv } from './readDotenv';
  * ```
  *
  * @remarks
- * - When {@link options.loadProcess} is true, the resulting variables are merged
+ * - When {@link GetDotenvOptions.loadProcess} is true, the resulting variables are merged
  *   into `process.env` as a side effect.
- * - When {@link options.outputPath} is provided, a consolidated dotenv file is written.
+ * - When {@link GetDotenvOptions.outputPath} is provided, a consolidated dotenv file is written.
  *   The path is resolved after expansion, so it may reference previously loaded vars.
  *
  * @throws Error when a dynamic module is present but cannot be imported.

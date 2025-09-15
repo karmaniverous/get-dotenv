@@ -30,8 +30,7 @@ const mergeInto = (target: AnyRecord, source: AnyRecord): AnyRecord => {
 };
 
 /**
- * Perform a deep defaults-style merge across plain objects.
- *
+ * Perform a deep defaults-style merge across plain objects. *
  * - Only merges plain objects (prototype === Object.prototype).
  * - Arrays and non-objects are replaced, not merged.
  * - `undefined` values are ignored and do not overwrite prior values.
@@ -44,7 +43,7 @@ const mergeInto = (target: AnyRecord, source: AnyRecord): AnyRecord => {
  * defaultsDeep({ a: 1, nested: { b: 2 } }, { nested: { b: 3, c: 4 } })
  * // => { a: 1, nested: { b: 3, c: 4 } }
  */
-export const defaultsDeep = <T extends AnyRecord>(
+export const defaultsDeep = <T extends Record<string, unknown>>(
   ...layers: Array<Partial<T> | undefined>
 ): T => {
   const result = layers

@@ -15,17 +15,11 @@ import type { ProcessEnv } from './GetDotenvOptions';
  */
 
 // like String.prototype.search but returns the last index
-/** @internal */
 const searchLast = (str: string, rgx: RegExp) => {
   const matches = Array.from(str.matchAll(rgx));
   return matches.length > 0 ? (matches.slice(-1)[0]?.index ?? -1) : -1;
 };
 
-/**
- * Replace a single match in a value with its resolved reference.
- * Recurses via {@link interpolate} to support nested expansions.
- * @internal
- */
 const replaceMatch = (
   value: string,
   match: RegExpMatchArray,
@@ -40,13 +34,6 @@ const replaceMatch = (
 
   return interpolate(replacement, ref);
 };
-/**
- * Recursively interpolate variable references in a string using the
- * provided reference object.
- * - Supports escaped dollar signs (`\$`) to avoid interpolation.
- * - Stops when no further unescaped `$` remain.
- * @internal
- */
 const interpolate = (
   value = '',
   ref: Record<string, string | undefined> = {},
@@ -112,8 +99,9 @@ export const dotenvExpand = (
  * `${VAR[:default]}`. Unknown variables will expand to an empty string.
  *
  * @param values - The values object to expand.
- * @param ref - The reference object to use for expansion (defaults to process.env).
- * @param progressive - Whether to progressively add expanded values to the
+ * @param options - Expansion options.
+ * @param options.ref - The reference object to use for expansion (defaults to process.env).
+ * @param options.progressive - Whether to progressively add expanded values to the
  * set of reference keys.
  * @returns The value object with expanded string values.
  *
@@ -125,17 +113,18 @@ export const dotenvExpand = (
  * ```
  *
  * @remarks
- * When {@link progressive} is true, each expanded key becomes available for
+ * When `progressive` is true, each expanded key becomes available for
  * subsequent expansions in the same object (left-to-right by object key order).
  */
 export const dotenvExpandAll = (
   values: ProcessEnv = {},
-  {
-    ref = process.env,
-    progressive = false,
-  }: { ref?: ProcessEnv; progressive?: boolean } = {},
+  options: {
+    ref?: ProcessEnv;
+    progressive?: boolean;
+  } = {},
 ) =>
   Object.keys(values).reduce<Record<string, string | undefined>>((acc, key) => {
+    const { ref = process.env, progressive = false } = options;
     acc[key] = dotenvExpand(values[key], {
       ...ref,
       ...(progressive ? acc : {}),
