@@ -1,10 +1,9 @@
 # Development Plan — get-dotenv
 
-When updated: 2025-09-15T00:50:00Z
+When updated: 2025-09-15T01:05:00Z
 NOTE: Update timestamp on commit.
 
-## Next up- Sanity passes: npm run typecheck, npm run lint:fix, npm run test, npm run build  to confirm the Rollup plugin fix and overall health.
-- Docs: decide whether to add typedoc as a devDependency or adjust the docs script.
+## Next up- Sanity passes: npm run typecheck, npm run lint:fix, npm run test, npm run build  to confirm the Rollup plugin fix and overall health.- Docs: decide whether to add typedoc as a devDependency or adjust the docs script.
 - Docs: update README (Vitest switch, coverage, Node >=22.19, shell defaults).
 - Rollup: monitor externalization approach; if consumers request bundled build, add alternate config. Add CI to run test/lint/build.
 - CLI shell behavior  - Document normalized default shell (/bin/bash on \*nix, powershell.exe on Windows). - Add integration tests to assert consistent quoting/whitespace behavior for:
@@ -17,10 +16,11 @@ NOTE: Update timestamp on commit.
 
 ## Completed (recent)
 
+- ESLint: apply typescript-eslint strictTypeChecked baseline in TS files block,
+  with local overrides preserved.
 - TS exactOptionalPropertyTypes: pass preHook/postHook only when defined from
   index.ts; fix PreSubHookContext.defaults to Partial<Pick<…>>; avoid assigning
-  undefined to optional fields.
-- Shell write: assign/delete shell via local Record view (no undefined write) in
+  undefined to optional fields.- Shell write: assign/delete shell via local Record view (no undefined write) in
   preSubcommandHook.ts.
 - TS exactOptionalPropertyTypes: make preSubcommand defaults Partial and
   omit undefined keys when building defaults in index.ts to satisfy

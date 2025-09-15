@@ -75,6 +75,13 @@ export default [
       'simple-import-sort': simpleImportSortPlugin,
     },
     rules: {
+      // Strict type-checked baseline from typescript-eslint; customize below as needed.
+      // Keep this spread first so explicit rules below act as overrides.
+      ...(
+        tseslint.configs.strictTypeChecked as {
+          rules: Record<string, unknown>;
+        }
+      ).rules,
       '@typescript-eslint/consistent-type-imports': 'error',
       '@typescript-eslint/no-empty-object-type': 'off',
       '@typescript-eslint/no-unsafe-assignment': 'error',
