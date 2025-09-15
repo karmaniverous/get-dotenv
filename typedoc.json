@@ -27,7 +27,11 @@
   },
   "out": "./docs/",
   "plugin": ["typedoc-plugin-mdn-links", "typedoc-plugin-replace-text"],
-  "projectDocuments": ["./CHANGELOG.md"],
+  "projectDocuments": [
+    "./guides/cascade.md",
+    "./guides/shell.md",
+    "./CHANGELOG.md"
+  ],
   "replaceText": {
     "replacements": [
       {

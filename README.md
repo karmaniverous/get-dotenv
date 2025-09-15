@@ -1,4 +1,14 @@
+<div align="center">
+
 # get-dotenv
+
+[![npm version](https://img.shields.io/npm/v/@karmaniverous/get-dotenv.svg)](https://www.npmjs.com/package/@karmaniverous/get-dotenv)
+![Node Current](https://img.shields.io/node/v/@karmaniverous/get-dotenv)
+[![docs](https://img.shields.io/badge/docs-website-blue)](https://docs.karmanivero.us/get-dotenv)
+[![changelog](https://img.shields.io/badge/changelog-latest-blue.svg)](https://github.com/karmaniverous/get-dotenv/tree/main/CHANGELOG.md)
+[![license](https://img.shields.io/badge/license-BSD--3--Clause-blue.svg)](https://github.com/karmaniverous/get-dotenv/tree/main/LICENSE.md)
+
+</div>
 
 Load environment variables with a cascade of environment-aware dotenv files. You can:
 
@@ -167,10 +177,15 @@ Finally, you can set the [`shell`](https://github.com/karmaniverous/get-dotenv-c
 
 See [this example repo](https://github.com/karmaniverous/get-dotenv-child) for a deep dive on using the `getDotenv` CLI and how to extend it for your own projects.
 
+### Default shell behavior
+
+To normalize behavior across platforms, the CLI resolves a default shell when `--shell` is true or omitted:
+- POSIX: `/bin/bash`
+- Windows: `powershell.exe`
+
 ### Batch Command
 
 The `getdotenv` base CLI includes one very useful subcommand: `batch`.
-
 This command lets you execute a shell command across multiple working directories. Executions occur within the loaded `dotenv` context. Might not be relevant to your specific use case, but when you need it, it's a game-changer!
 
 My most common use case for this command is a microservice project where release day finds me updating dependencies & performing a release in well over a dozen very similar repositories. The sequence of steps in each case is exactly the same, but I need to respond individually as issues arise, so scripting the whole thing out would fail more often than it would work.
@@ -211,5 +226,14 @@ Instead, everything runs in sequence, and you get a clear record of exactly what
 Meanwhile, [this issue](https://github.com/karmaniverous/get-dotenv/issues/7) documents the parallel-processing option requirement. Feel free to submit a PR!
 
 ---
+
+## Guides
+
+- Cascade and precedence:
+  - ./guides/cascade.md
+- Shell execution behavior and quoting:
+  - ./guides/shell.md
+
+The guides are also included in the hosted API docs.
 
 See more great templates & tools on [my GitHub Profile](https://github.com/karmaniverous)!

@@ -1,9 +1,10 @@
 # Development Plan — get-dotenv
 
-When updated: 2025-09-15T04:05:00Z
+When updated: 2025-09-15T04:25:00Z
 NOTE: Update timestamp on commit.
 
 ## Next up- Sanity passes: npm run typecheck, npm run lint:fix, npm run test, npm run build to confirm the Rollup plugin fix and overall health.
+
 - Docs: update README (Vitest switch, coverage, Node >=22.19, shell defaults).
 - Rollup: monitor externalization approach; if consumers request bundled build, add alternate config. Add CI to run test/lint/build.
 - CLI shell behavior
@@ -18,10 +19,29 @@ NOTE: Update timestamp on commit.
 
 ## Completed (recent)
 
+- Docs: keep internals visible in TypeDoc (excludeInternal=false) and add
+  authored guides included in the docs navigation:
+  - guides/cascade.md (cascade and precedence)
+  - guides/shell.md (shell behavior and quoting)
+- README: add Requirements (Node >=22.19), API Reference link, Testing
+  notes (Vitest V8), normalized shell defaults, and links to guides.
+- Tests: add dotenvExpand extras (escaped dollars; progressive vs
+  non-progressive behavior) and a dynamic-exclusion test for getDotenv.
+- TypeDoc: include README and guides in projectDocuments for the hosted
+  docs.
+- Docs: keep internals visible in TypeDoc (excludeInternal=false) and add
+  authored guides included in the docs navigation:
+  - guides/cascade.md (cascade and precedence)
+  - guides/shell.md (shell behavior and quoting)
+- README: add Requirements (Node >=22.19), API Reference link, Testing
+  notes (Vitest + V8), normalized shell defaults, and links to guides.
+- Tests: add dotenvExpand extras (escaped dollars; progressive vs
+  non-progressive behavior) and a dynamic-exclusion test for getDotenv.
+- TypeDoc: include README and guides in projectDocuments for the hosted
+  docs.
 - Docs: hide @internal items from TypeDoc by setting
   `excludeInternal: true`; mark dotenvExpand helpers as @internal to
-  reduce noise in API docs.
-- Coverage: exclude vitest.config.ts from coverage to avoid non-library
+  reduce noise in API docs.- Coverage: exclude vitest.config.ts from coverage to avoid non-library
   files skewing metrics.
 - Tests: add defaultsDeep tests (merge semantics, arrays, undefined) and
   getDotenv outputPath integration test (verifies file content and return).
@@ -31,7 +51,7 @@ NOTE: Update timestamp on commit.
   comply with @typescript-eslint/no-dynamic-delete without changing behavior.
 - ESLint: enabled eslint-plugin-tsdoc in TS block with `tsdoc/syntax`
   (observes local tsdoc.json tag definitions).
-- Coverage: exclude docs assets, dist, src/cli, .stan, and misc build/config  files from Vitest coverage to reflect the library surface.
+- Coverage: exclude docs assets, dist, src/cli, .stan, and misc build/config files from Vitest coverage to reflect the library surface.
 - Tests: add unit tests for flag utils (resolveExclusion, resolveExclusionAll,
   setOptionalFlag) and resolve helpers (resolveCommand, resolveShell).
 - Docs: add rich TypeDoc comments across core modules (dotenvExpand,
