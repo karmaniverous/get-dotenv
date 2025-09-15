@@ -1,12 +1,11 @@
 # Development Plan — get-dotenv
 
-When updated: 2025-09-15T02:20:00Z
+When updated: 2025-09-15T03:30:00Z
 NOTE: Update timestamp on commit.
 
 ## Next up
 
 - Sanity passes: npm run typecheck, npm run lint:fix, npm run test, npm run build to confirm the Rollup plugin fix and overall health.
-- Docs: decide whether to add typedoc as a devDependency or adjust the docs script.
 - Docs: update README (Vitest switch, coverage, Node >=22.19, shell defaults).
 - Rollup: monitor externalization approach; if consumers request bundled build, add alternate config. Add CI to run test/lint/build.
 - CLI shell behavior
@@ -21,6 +20,12 @@ NOTE: Update timestamp on commit.
 
 ## Completed (recent)
 
+- ESLint: enabled eslint-plugin-tsdoc in TS block with `tsdoc/syntax`
+  (observes local tsdoc.json tag definitions).
+- Coverage: exclude docs assets, dist, src/cli, .stan, and misc build/config
+  files from Vitest coverage to reflect the library surface.
+- Tests: add unit tests for flag utils (resolveExclusion, resolveExclusionAll,
+  setOptionalFlag) and resolve helpers (resolveCommand, resolveShell).
 - Docs: add rich TypeDoc comments across core modules (dotenvExpand,
   getDotenv, CLI resolve/flag utils, preSubcommand hook, defaultsDeep).
 - Docs: fix TypeDoc @param mismatch for dotenvExpandAll (values vs value).

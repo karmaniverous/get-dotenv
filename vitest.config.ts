@@ -11,5 +11,18 @@ export default defineConfig({
       '**/.tsbuild/**',
       '**/.rollup.cache/**',
     ],
+    coverage: {
+      provider: 'v8',
+      exclude: [
+        'docs/**',
+        'dist/**',
+        'esm/**',
+        '.stan/**',
+        '**/*.d.ts',
+        'rollup.config.ts',
+        'eslint.config.ts',
+        'src/cli/**',
+      ],
+    },
   },
 });

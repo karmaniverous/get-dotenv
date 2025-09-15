@@ -52,7 +52,7 @@ export type PreSubHookContext = {
  * Build the Commander preSubcommand hook using the provided context.
  *
  * Responsibilities:
- * - Merge parent CLI options with current invocation (parent < current).
+ * - Merge parent CLI options with current invocation (parent \< current).
  * - Resolve tri-state flags, including `--exclude-all` overrides.
  * - Normalize the shell setting to a concrete value (string | boolean).
  * - Persist merged options on the command instance and pass to subcommands.

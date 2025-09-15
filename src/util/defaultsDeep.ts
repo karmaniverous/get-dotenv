@@ -40,8 +40,8 @@ const mergeInto = (target: AnyRecord, source: AnyRecord): AnyRecord => {
  * @returns The merged object typed as {@link T}.
  *
  * @example
- * defaultsDeep({ a: 1, nested: { b: 2 } }, { nested: { b: 3, c: 4 } })
- * // => { a: 1, nested: { b: 3, c: 4 } }
+ * defaultsDeep(\{ a: 1, nested: \{ b: 2 \} \}, \{ nested: \{ b: 3, c: 4 \} \})
+ * =\> \{ a: 1, nested: \{ b: 3, c: 4 \} \}
  */
 export const defaultsDeep = <T extends Record<string, unknown>>(
   ...layers: Array<Partial<T> | undefined>

@@ -34,7 +34,7 @@ export const resolveExclusion = (
  * @param excludeAllOff - Global "exclude-all-off" flag.
  *
  * @example
- * resolveExclusionAll(undefined, undefined, false, true, undefined) // => true
+ * resolveExclusionAll(undefined, undefined, false, true, undefined) =\> true
  */
 export const resolveExclusionAll = (
   exclude: boolean | undefined,
@@ -70,7 +70,7 @@ export const setOptionalFlag = <T>(
 ): void => {
   const target = obj as unknown as Record<string, unknown>;
   const k = key as unknown as string;
-  // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+
   if (value === undefined) delete target[k];
   else target[k] = value;
 };
