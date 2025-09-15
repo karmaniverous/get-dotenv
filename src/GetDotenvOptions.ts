@@ -1,15 +1,14 @@
 import fs from 'fs-extra';
 import { packageDirectory } from 'package-directory';
 import { join } from 'path';
-import { merge } from 'radash';
 
 import {
   baseGetDotenvCliOptions,
   type GetDotenvCliOptions,
 } from './generateGetDotenvCli/GetDotenvCliOptions';
+import { defaultsDeep } from './util/defaultsDeep';
 
 export const getDotenvOptionsFilename = 'getdotenv.config.json';
-
 export type ProcessEnv = Record<string, string | undefined>;
 
 export type GetDotenvDynamicFunction = (
@@ -176,18 +175,20 @@ export const resolveGetDotenvOptions = async (
   ) as Partial<GetDotenvCliOptions>;
 
   // Merge order: base < local < custom (custom has highest precedence)
-  const mergedCli = merge(
+  const mergedCli = defaultsDeep(
     baseGetDotenvCliOptions,
     localOptions,
   ) as GetDotenvCliOptions;
 
   const defaultsFromCli = getDotenvCliOptions2Options(mergedCli);
 
-  const result = merge(defaultsFromCli, customOptions) as GetDotenvOptions;
+  const result = defaultsDeep(
+    defaultsFromCli,
+    customOptions,
+  ) as GetDotenvOptions;
 
   return {
-    ...result,
-    // Keep explicit empty strings/zeros; drop only undefined
+    ...result, // Keep explicit empty strings/zeros; drop only undefined
     vars: Object.fromEntries(
       Object.entries(result.vars ?? {}).filter(([, v]) => v !== undefined),
     ),

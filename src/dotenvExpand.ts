@@ -3,7 +3,7 @@ import type { ProcessEnv } from './GetDotenvOptions';
 // like String.prototype.search but returns the last index
 const searchLast = (str: string, rgx: RegExp) => {
   const matches = Array.from(str.matchAll(rgx));
-  return matches.length > 0 ? matches.slice(-1)[0].index : -1;
+  return matches.length > 0 ? matches.slice(-1)[0]?.index ?? -1 : -1;
 };
 
 const replaceMatch = (
@@ -11,13 +11,16 @@ const replaceMatch = (
   match: RegExpMatchArray,
   ref: Record<string, string | undefined>,
 ) => {
-  const [group, key, defaultValue] = match;
+  const group = match[0] ?? '';
+  const key = match[1];
+  const defaultValue = match[2];
+
+  if (!key) return value;
 
   const replacement = value.replace(group, ref[key] ?? defaultValue ?? '');
 
   return interpolate(replacement, ref);
 };
-
 const interpolate = (
   value = '',
   ref: Record<string, string | undefined> = {},

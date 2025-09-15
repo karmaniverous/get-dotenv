@@ -2,11 +2,9 @@ import type { Command } from '@commander-js/extra-typings';
 import fs from 'fs-extra';
 import { packageDirectory } from 'package-directory';
 import { join } from 'path';
-import { merge } from 'radash';
 import { fileURLToPath } from 'url';
 
-import {
-  getDotenvOptionsFilename,
+import {  getDotenvOptionsFilename,
   type Logger,
   type ProcessEnv,
 } from '../GetDotenvOptions';
@@ -14,10 +12,10 @@ import {
   baseGetDotenvCliOptions,
   type GetDotenvCliOptions,
 } from './GetDotenvCliOptions';
+import { defaultsDeep } from '../util/defaultsDeep';
 
 /**
- * GetDotenv CLI Pre-hook Callback function type. Mutates inbound options &
- * executes side effects within the `getDotenv` context.
+ * GetDotenv CLI Pre-hook Callback function type. Mutates inbound options & * executes side effects within the `getDotenv` context.
  */
 export type GetDotenvCliPreHookCallback = (
   options: GetDotenvCliOptions,
@@ -121,9 +119,8 @@ export const resolveGetDotenvCliGenerateOptions = async ({
   ) as Partial<GetDotenvCliGenerateOptions>;
 
   // Merge order: base < global < local < custom
-  const merged = merge(
-    merge(merge(baseOptions, globalOptions), localOptions),
-    customOptions,
+  const merged = defaultsDeep(
+    baseOptions, globalOptions, localOptions, customOptions,
   ) as GetDotenvCliGenerateOptions;
 
   return merged;

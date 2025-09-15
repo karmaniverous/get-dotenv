@@ -33,11 +33,13 @@ export const cmdCommand = new Command()
         ...process.env,
         getDotenvCliOptions: JSON.stringify(getDotenvCliOptions),
       },
+      // execa expects string | boolean | URL; we normalize in generator
+      // and allow script-level overrides.
       shell: resolveShell(
         getDotenvCliOptions.scripts,
         command,
         getDotenvCliOptions.shell,
-      ),
+      ) as unknown as string | boolean | URL,
       stdio: 'inherit',
     });
   });

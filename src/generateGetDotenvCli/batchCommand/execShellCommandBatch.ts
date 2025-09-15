@@ -4,9 +4,15 @@ import { packageDirectory } from 'package-directory';
 import path from 'path';
 
 import type { Logger } from '../../GetDotenvOptions';
+import type { GetDotenvCliOptions } from '../GetDotenvCliOptions';
 import type { BatchCommandOptions } from '.';
 
-type ExecShellCommandBatchOptions = BatchCommandOptions & { logger: Logger };
+type ExecShellCommandBatchOptions = {
+  globs: string;
+  logger: Logger;
+  pkgCwd?: boolean;
+  rootPath: string;
+};
 
 const globPaths = async ({
   globs,
@@ -57,9 +63,16 @@ export const execShellCommandBatch = async ({
   pkgCwd,
   rootPath,
   shell,
-}: BatchCommandOptions & {
+}: {
+  command?: string;
+  getDotenvCliOptions?: GetDotenvCliOptions;
+  globs: string;
+  ignoreErrors?: boolean;
+  list?: boolean;
   logger: Logger;
-  shell: string | boolean | undefined;
+  pkgCwd?: boolean;
+  rootPath: string;
+  shell: string | boolean | URL;
 }) => {
   if (!command) {
     logger.error(`No command provided.`);
@@ -122,7 +135,7 @@ export const execShellCommandBatch = async ({
             : undefined,
         },
         stdio: 'inherit',
-        shell,
+        shell, // already normalized to string | boolean | URL
       });
     } catch (error) {
       if (!ignoreErrors) {

@@ -1,11 +1,9 @@
 import { Command, Option } from '@commander-js/extra-typings';
 import { execaCommand } from 'execa';
-import { merge } from 'radash';
 
 import { dotenvExpandFromProcessEnv } from '../dotenvExpand';
 import { getDotenv } from '../getDotenv';
-import { getDotenvCliOptions2Options } from '../GetDotenvOptions';
-import { batchCommand } from './batchCommand';
+import { getDotenvCliOptions2Options } from '../GetDotenvOptions';import { batchCommand } from './batchCommand';
 import { cmdCommand } from './cmdCommand';
 import {
   type GetDotenvCliGenerateOptions,
@@ -13,10 +11,10 @@ import {
 } from './GetDotenvCliGenerateOptions';
 import type { GetDotenvCliOptions } from './GetDotenvCliOptions';
 import { resolveCommand, resolveShell } from './resolve';
+import { defaultsDeep } from '../util/defaultsDeep';
 
 const resolveExclusion = (
-  exclude: boolean | undefined,
-  excludeOff: true | undefined,
+  exclude: boolean | undefined,  excludeOff: true | undefined,
   defaultValue: boolean | undefined,
 ) =>
   exclude ? true : excludeOff ? undefined : defaultValue ? true : undefined;
@@ -114,10 +112,14 @@ export const generateGetDotenvCli = async (
     .addOption(
       new Option(
         '-s, --shell [string]',
-        `command execution shell, no argument for default OS shell or provide shell string${shell ? ` (default ${_.isBoolean(shell) ? 'OS shell' : shell})` : ''}`,
+        (() => {
+          const defaultLabel = shell
+            ? ` (default ${typeof shell === 'boolean' ? 'OS shell' : shell})`
+            : '';
+          return `command execution shell, no argument for default OS shell or provide shell string${defaultLabel}`;
+        })(),
       ).conflicts('shellOff'),
-    )
-    .addOption(
+    )    .addOption(
       new Option(
         '-S, --shell-off',
         `command execution shell OFF${!shell ? ' (default)' : ''}`,
@@ -347,22 +349,21 @@ export const generateGetDotenvCli = async (
       } = rawCliOptions;
 
       const currentGetDotenvCliOptions: Partial<GetDotenvCliOptions> =
-        rawCliOptionsRest;
+        // Narrow rawCommander options to CLI options surface
+        rawCliOptionsRest as Partial<GetDotenvCliOptions>;
 
       if (scripts)
-        currentGetDotenvCliOptions.scripts = JSON.parse(
-          scripts,
+        currentGetDotenvCliOptions.scripts = JSON.parse(          scripts,
         ) as GetDotenvCliOptions['scripts'];
 
       // Merge current & parent GetDotenvCliOptions (parent < current).
-      const mergedGetDotenvCliOptions = merge(
+      const mergedGetDotenvCliOptions = defaultsDeep(
         parentGetDotenvCliOptions ?? {},
         currentGetDotenvCliOptions,
       ) as GetDotenvCliOptions;
 
       // Resolve flags.
-      mergedGetDotenvCliOptions.debug = resolveExclusion(
-        mergedGetDotenvCliOptions.debug,
+      mergedGetDotenvCliOptions.debug = resolveExclusion(        mergedGetDotenvCliOptions.debug,
         debugOff,
         debug,
       );
@@ -493,13 +494,14 @@ export const generateGetDotenvCli = async (
             ...process.env,
             getDotenvCliOptions: JSON.stringify(envSafe),
           },
+          // execa.Options.shell is string | boolean | URL (not undefined).
+          // We normalized earlier to a concrete value (false, OS default, or provided string).
           shell: resolveShell(
             mergedGetDotenvCliOptions.scripts,
             command,
             mergedGetDotenvCliOptions.shell,
-          ),
+          ) as unknown as string | boolean | URL,
           stdio: 'inherit',
         });
       }
-    });
-};
+    });};

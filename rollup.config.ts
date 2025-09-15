@@ -7,9 +7,10 @@ import typescriptPlugin from '@rollup/plugin-typescript';
 import fs from 'fs-extra';
 import type { InputOptions, RollupOptions } from 'rollup';
 import dtsPlugin from 'rollup-plugin-dts';
+import { builtinModules } from 'node:module';
+import pkg from './package.json' assert { type: 'json' };
 
 const outputPath = `dist`;
-
 const commonPlugins = [
   commonjsPlugin(),
   jsonPlugin(),
@@ -19,11 +20,19 @@ const commonPlugins = [
 
 const commonAliases: Alias[] = [];
 
+const external = [
+  ...Object.keys((pkg as any).dependencies ?? {}),
+  ...Object.keys((pkg as any).peerDependencies ?? {}),
+  ...builtinModules,
+  ...builtinModules.map((m) => `node:${m}`),
+];
+
 const commonInputOptions: InputOptions = {
   input: 'src/index.ts',
+  // Avoid bundling runtime deps (execa/npm-run-path/unicorn-magic, etc.)
+  external,
   plugins: [aliasPlugin({ entries: commonAliases }), ...commonPlugins],
 };
-
 const cliCommands = await fs.readdir('src/cli');
 const config: RollupOptions[] = [
   // ESM output.

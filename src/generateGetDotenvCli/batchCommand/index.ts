@@ -55,11 +55,13 @@ export const batchCommand = new Command()
         logger,
         pkgCwd,
         rootPath,
+        // execa expects string | boolean | URL for `shell`. We normalize earlier;
+        // scripts[name].shell overrides take precedence and may be boolean or string.
         shell: resolveShell(
           getDotenvCliOptions.scripts,
           command,
           getDotenvCliOptions.shell,
-        ),
+        ) as unknown as string | boolean | URL,
       });
   })
   .addCommand(cmdCommand, { isDefault: true });

@@ -12,8 +12,9 @@ export const resolveShell = (
   scripts: Scripts | undefined,
   command: string,
   shell: string | boolean | undefined,
-) =>
+): string | boolean | URL =>
   scripts && typeof scripts[command] === 'object' && scripts[command] !== null
     ? // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
-      (scripts[command] as Exclude<Scripts[string], string>).shell
-    : shell;
+      ((scripts[command] as Exclude<Scripts[string], string>).shell ??
+        false)
+    : (shell ?? false);

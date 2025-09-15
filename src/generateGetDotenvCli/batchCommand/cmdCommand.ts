@@ -4,7 +4,6 @@ import type { GetDotenvCliCommand } from '../GetDotenvCliGenerateOptions';
 import { resolveCommand, resolveShell } from '../resolve';
 import type { BatchCommandOptions } from '.';
 import { execShellCommandBatch } from './execShellCommandBatch';
-
 export const cmdCommand = new Command()
   .name('cmd')
   .description(
@@ -39,11 +38,13 @@ export const cmdCommand = new Command()
         logger,
         pkgCwd,
         rootPath,
+        // execa expects string | boolean | URL for `shell`. We normalize earlier;
+        // scripts[name].shell overrides take precedence and may be boolean or string.
         shell: resolveShell(
           getDotenvCliOptions.scripts,
           command,
           getDotenvCliOptions.shell,
-        ),
+        ) as unknown as string | boolean | URL,
       });
     }
   });
