@@ -179,7 +179,7 @@ I use the `batch` command to perform each step across all repositories at once. 
 
 Lest you doubt what that kind of leverage can do for you, consider this:
 
-[![batch superpower in action](./doc/contributions.png)](https://github.com/karmaniverous)
+[![batch superpower in action](./assets/contributions.png)](https://github.com/karmaniverous)
 
 ```bash
 > getdotenv batch -h

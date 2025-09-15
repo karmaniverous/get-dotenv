@@ -1,0 +1,8 @@
+{
+  "entry": [],
+  "project": [],
+  "ignore": [],
+  "ignoreBinaries": [],
+  "ignoreDependencies": [],
+  "rules": { "exports": "off", "types": "off" }
+}
