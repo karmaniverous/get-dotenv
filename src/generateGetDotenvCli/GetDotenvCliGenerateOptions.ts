@@ -1,14 +1,15 @@
 import type { Command } from '@commander-js/extra-typings';
 import fs from 'fs-extra';
+import { packageDirectory } from 'package-directory';
 import { join } from 'path';
-import { packageDirectory } from 'pkg-dir';
 import { merge } from 'radash';
 import { fileURLToPath } from 'url';
 
 import {
   getDotenvOptionsFilename,
   type Logger,
-  type ProcessEnv,} from '../GetDotenvOptions';
+  type ProcessEnv,
+} from '../GetDotenvOptions';
 import {
   baseGetDotenvCliOptions,
   type GetDotenvCliOptions,

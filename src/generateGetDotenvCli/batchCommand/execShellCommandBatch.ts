@@ -1,7 +1,7 @@
 import { execaCommand } from 'execa';
 import { globby } from 'globby';
+import { packageDirectory } from 'package-directory';
 import path from 'path';
-import { packageDirectory } from 'pkg-dir';
 
 import { Logger } from '../../GetDotenvOptions';
 import { BatchCommandOptions } from '.';
@@ -122,7 +122,8 @@ export const execShellCommandBatch = async ({
             : undefined,
         },
         stdio: 'inherit',
-        shell,      });
+        shell,
+      });
     } catch (error) {
       if (!ignoreErrors) {
         throw error;

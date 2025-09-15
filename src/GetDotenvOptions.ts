@@ -1,6 +1,6 @@
 import fs from 'fs-extra';
+import { packageDirectory } from 'package-directory';
 import { join } from 'path';
-import { packageDirectory } from 'pkg-dir';
 import { merge } from 'radash';
 
 import {
@@ -133,16 +133,23 @@ export const getDotenvCliOptions2Options = ({
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { debug, scripts, ...restFlags } = rest as Record<string, unknown>;
 
-  const splitBy = (value: string | undefined, delim?: string, pattern?: string) =>
-    value ? value.split(pattern ? RegExp(pattern) : (delim ?? ' ')) : [];
+  const splitBy = (
+    value: string | undefined,
+    delim?: string,
+    pattern?: string,
+  ) => (value ? value.split(pattern ? RegExp(pattern) : (delim ?? ' ')) : []);
 
-  const kvPairs = (vars
-    ? splitBy(vars, varsDelimiter, varsDelimiterPattern).map((v) =>
-        v.split(
-          varsAssignorPattern ? RegExp(varsAssignorPattern) : varsAssignor ?? '=',
-        ),
-      )
-    : []) as [string, string][];
+  const kvPairs = (
+    vars
+      ? splitBy(vars, varsDelimiter, varsDelimiterPattern).map((v) =>
+          v.split(
+            varsAssignorPattern
+              ? RegExp(varsAssignorPattern)
+              : (varsAssignor ?? '='),
+          ),
+        )
+      : []
+  ) as [string, string][];
 
   const parsedVars = Object.fromEntries(kvPairs);
 
