@@ -21,23 +21,24 @@ export type PreSubHookContext = {
   preHook?: GetDotenvCliPreHookCallback;
   postHook?: GetDotenvCliPostHookCallback;
   defaults: Partial<
-    GetDotenvCliGenerateOptions,
-    | 'debug'
-    | 'excludeDynamic'
-    | 'excludeEnv'
-    | 'excludeGlobal'
-    | 'excludePrivate'
-    | 'excludePublic'
-    | 'loadProcess'
-    | 'log'
-    | 'shell'
-    | 'scripts'
+    Pick<
+      GetDotenvCliGenerateOptions,
+      | 'debug'
+      | 'excludeDynamic'
+      | 'excludeEnv'
+      | 'excludeGlobal'
+      | 'excludePrivate'
+      | 'excludePublic'
+      | 'loadProcess'
+      | 'log'
+      | 'shell'
+      | 'scripts'
+    >
   >;
 };
 /**
  * Build the Commander preSubcommand hook using the provided context.
- */
-export const makePreSubcommandHook =
+ */ export const makePreSubcommandHook =
   ({ logger, preHook, postHook, defaults }: PreSubHookContext) =>
   async (thisCommand: unknown) => {
     // Get parent command GetDotenvCliOptions.
@@ -182,6 +183,15 @@ export const makePreSubcommandHook =
     }
     mergedGetDotenvCliOptions.shell = resolvedShell;
 
+    // exactOptionalPropertyTypes-safe write: delete on undefined; assign otherwise.
+    {
+      const target = mergedGetDotenvCliOptions as unknown as Record<
+        string,
+        unknown
+      >;
+      if (resolvedShell === undefined) delete target.shell;
+      else target.shell = resolvedShell;
+    }
     if (mergedGetDotenvCliOptions.debug && parentGetDotenvCliOptions) {
       (logger.debug ?? logger.log)(
         '\n*** parent command GetDotenvCliOptions ***\n',

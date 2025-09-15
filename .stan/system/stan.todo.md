@@ -1,10 +1,9 @@
 # Development Plan — get-dotenv
 
-When updated: 2025-09-15T00:40:00Z
+When updated: 2025-09-15T00:50:00Z
 NOTE: Update timestamp on commit.
 
-## Next up- Sanity passes: npm run typecheck, npm run lint:fix, npm run test, npm run build
-  to confirm the Rollup plugin fix and overall health.
+## Next up- Sanity passes: npm run typecheck, npm run lint:fix, npm run test, npm run build  to confirm the Rollup plugin fix and overall health.
 - Docs: decide whether to add typedoc as a devDependency or adjust the docs script.
 - Docs: update README (Vitest switch, coverage, Node >=22.19, shell defaults).
 - Rollup: monitor externalization approach; if consumers request bundled build, add alternate config. Add CI to run test/lint/build.
@@ -18,10 +17,14 @@ NOTE: Update timestamp on commit.
 
 ## Completed (recent)
 
+- TS exactOptionalPropertyTypes: pass preHook/postHook only when defined from
+  index.ts; fix PreSubHookContext.defaults to Partial<Pick<…>>; avoid assigning
+  undefined to optional fields.
+- Shell write: assign/delete shell via local Record view (no undefined write) in
+  preSubcommandHook.ts.
 - TS exactOptionalPropertyTypes: make preSubcommand defaults Partial and
   omit undefined keys when building defaults in index.ts to satisfy
-  assignability; no behavior change.
-- Lint: remove unsafe any/member access in preSubcommandHook.ts by adding
+  assignability; no behavior change.- Lint: remove unsafe any/member access in preSubcommandHook.ts by adding
   precise types and guards for opts()/args and logger.error fallback.
 - Refactor: split src/generateGetDotenvCli/index.ts into smaller modules
   (flagUtils.ts, buildRootCommand.ts, preSubcommandHook.ts) without changing

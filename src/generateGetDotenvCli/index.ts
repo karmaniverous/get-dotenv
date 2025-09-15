@@ -5,11 +5,13 @@ import {
   type GetDotenvCliGenerateOptions,
   resolveGetDotenvCliGenerateOptions,
 } from './GetDotenvCliGenerateOptions';
-import { makePreSubcommandHook } from './preSubcommandHook';
+import {
+  makePreSubcommandHook,
+  type PreSubHookContext,
+} from './preSubcommandHook';
 
 /**
- * Generate a Commander CLI Command for get-dotenv.
- * Orchestration only: delegates building and lifecycle hooks.
+ * Generate a Commander CLI Command for get-dotenv. * Orchestration only: delegates building and lifecycle hooks.
  */
 export const generateGetDotenvCli = async (
   customOptions: Pick<GetDotenvCliGenerateOptions, 'importMetaUrl'> &
@@ -54,15 +56,14 @@ export const generateGetDotenvCli = async (
   if (options.scripts !== undefined) defaults.scripts = options.scripts;
   if (options.shell !== undefined) defaults.shell = options.shell;
 
-  program.hook(
-    'preSubcommand',
-    makePreSubcommandHook({
-      logger: options.logger ?? console,
-      preHook: options.preHook,
-      postHook: options.postHook,
-      defaults,
-    }),
-  );
+  const ctx: PreSubHookContext = {
+    logger: options.logger ?? console,
+    defaults,
+    ...(options.preHook ? { preHook: options.preHook } : {}),
+    ...(options.postHook ? { postHook: options.postHook } : {}),
+  };
+
+  program.hook('preSubcommand', makePreSubcommandHook(ctx));
 
   return program;
 };
