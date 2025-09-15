@@ -193,20 +193,17 @@ export type PreSubHookContext = {
       else target.shell = resolvedShell;
     }
     if (mergedGetDotenvCliOptions.debug && parentGetDotenvCliOptions) {
-      (logger.debug ?? logger.log)(
+      logger.debug(
         '\n*** parent command GetDotenvCliOptions ***\n',
         parentGetDotenvCliOptions,
       );
     }
 
     if (mergedGetDotenvCliOptions.debug)
-      (logger.debug ?? logger.log)(
-        '\n*** current command raw options ***\n',
-        rawCliOptions,
-      );
+      logger.debug('\n*** current command raw options ***\n', rawCliOptions);
 
     if (mergedGetDotenvCliOptions.debug)
-      (logger.debug ?? logger.log)('\n*** merged GetDotenvCliOptions ***\n', {
+      logger.debug('\n*** merged GetDotenvCliOptions ***\n', {
         mergedGetDotenvCliOptions,
       });
 
@@ -215,7 +212,7 @@ export type PreSubHookContext = {
       await preHook(mergedGetDotenvCliOptions);
 
       if (mergedGetDotenvCliOptions.debug)
-        (logger.debug ?? logger.log)(
+        logger.debug(
           '\n*** GetDotenvCliOptions after pre-hook ***\n',
           mergedGetDotenvCliOptions,
         );
@@ -231,7 +228,7 @@ export type PreSubHookContext = {
       getDotenvCliOptions2Options(mergedGetDotenvCliOptions),
     );
     if (mergedGetDotenvCliOptions.debug)
-      (logger.debug ?? logger.log)('\n*** getDotenv output ***\n', dotenv);
+      logger.debug('\n*** getDotenv output ***\n', dotenv);
 
     // Execute post-hook.
     if (postHook) await postHook(dotenv);
@@ -255,7 +252,7 @@ export type PreSubHookContext = {
       );
 
       if (mergedGetDotenvCliOptions.debug)
-        (logger.debug ?? logger.log)('\n*** command ***\n', cmd);
+        logger.debug('\n*** command ***\n', cmd);
 
       const envSafe = {
         ...(mergedGetDotenvCliOptions as unknown as Record<string, unknown>),

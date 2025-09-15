@@ -12,14 +12,16 @@ import { fileURLToPath } from 'url';
 const tsconfigRootDir = dirname(fileURLToPath(import.meta.url));
 
 // Extract rules from typescript-eslint strictTypeChecked (a flat-config array)
-// into a single rules object. Use unknown → typed array to satisfy TS.
-const strictTypeCheckedRules: Record<string, unknown> = Object.assign(
+// into a single rules object in a type-safe way.
+const strictConfigs = tseslint.configs
+  .strictTypeChecked as unknown as Array<unknown>;
+const strictTypeCheckedRules = strictConfigs.reduce<Record<string, unknown>>(
+  (acc, cfg) => {
+    const rules = (cfg as { rules?: Record<string, unknown> }).rules;
+    if (rules) Object.assign(acc, rules);
+    return acc;
+  },
   {},
-  ...(
-    tseslint.configs.strictTypeChecked as unknown as Array<{
-      rules?: Record<string, unknown>;
-    }>
-  ).map((c) => c.rules ?? {}),
 );
 
 export default [
@@ -86,7 +88,7 @@ export default [
       'simple-import-sort': simpleImportSortPlugin,
     },
     rules: {
-      // Strict type-checked baseline from typescript-eslint (merged above).
+      // Strict type-checked baseline from typescript-eslint (merged above)
       ...strictTypeCheckedRules,
       '@typescript-eslint/consistent-type-imports': 'error',
       '@typescript-eslint/no-empty-object-type': 'off',
