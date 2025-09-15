@@ -13,5 +13,6 @@ scripts:
   typecheck: npm run typecheck
   lint: npm run lint:fix
   test: npm run test
+  docs: npm run stan:docs
   build: npm run build
 stanPath: .stan

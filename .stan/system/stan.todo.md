@@ -1,12 +1,13 @@
 # Development Plan — get-dotenv
 
 When updated: 2025-09-15T00:00:00Z
+NOTE: Update timestamp on commit.
 
 ## Next up
-- Tests: investigate defaults layering regression (outputs include only GITHUB_TOKEN); restore base path defaults and CLI inheritance while keeping radash removal.
 
+- Tests: investigate defaults layering regression (outputs include only GITHUB_TOKEN); restore base path defaults and CLI inheritance while keeping radash removal.
 - CLI shell behavior
-  - Document normalized default shell (/bin/bash on *nix, powershell.exe on Windows).  - Add integration tests to assert consistent quoting/whitespace behavior for:
+  - Document normalized default shell (/bin/bash on \*nix, powershell.exe on Windows). - Add integration tests to assert consistent quoting/whitespace behavior for:
     - arguments with spaces/quotes,
     - pipes and redirects,
     - script-specific shell overrides.
@@ -18,6 +19,7 @@ When updated: 2025-09-15T00:00:00Z
 
 ## Completed (recent)
 
+- ESLint: type-aware flat config scoped to TS, Prettier integrated, ignores include .rollup.cache/\*\*
 - ESLint: make flat config type-aware; add global ignores; integrate Prettier.
 - Switch to Vitest (replace Mocha/Nyc), enable V8 coverage.
 - Update ESLint to v9 (flat config); remove Mocha plugin.
