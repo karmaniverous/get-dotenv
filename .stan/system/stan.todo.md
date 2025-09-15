@@ -1,10 +1,9 @@
 # Development Plan — get-dotenv
 
-When updated: 2025-09-15T03:30:00Z
+When updated: 2025-09-15T03:45:00Z
 NOTE: Update timestamp on commit.
 
 ## Next up
-
 - Sanity passes: npm run typecheck, npm run lint:fix, npm run test, npm run build to confirm the Rollup plugin fix and overall health.
 - Docs: update README (Vitest switch, coverage, Node >=22.19, shell defaults).
 - Rollup: monitor externalization approach; if consumers request bundled build, add alternate config. Add CI to run test/lint/build.
@@ -20,10 +19,14 @@ NOTE: Update timestamp on commit.
 
 ## Completed (recent)
 
+- Lint: fix TSDoc param tags in dotenvExpandAll by removing invalid
+  `@param options.ref`/`@param options.progressive` in favor of a
+  @remarks section; satisfies eslint-plugin-tsdoc.
+- Lint: restore inline disable for dynamic delete in setOptionalFlag to
+  comply with @typescript-eslint/no-dynamic-delete without changing behavior.
 - ESLint: enabled eslint-plugin-tsdoc in TS block with `tsdoc/syntax`
   (observes local tsdoc.json tag definitions).
-- Coverage: exclude docs assets, dist, src/cli, .stan, and misc build/config
-  files from Vitest coverage to reflect the library surface.
+- Coverage: exclude docs assets, dist, src/cli, .stan, and misc build/config  files from Vitest coverage to reflect the library surface.
 - Tests: add unit tests for flag utils (resolveExclusion, resolveExclusionAll,
   setOptionalFlag) and resolve helpers (resolveCommand, resolveShell).
 - Docs: add rich TypeDoc comments across core modules (dotenvExpand,

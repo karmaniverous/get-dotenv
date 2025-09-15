@@ -100,9 +100,6 @@ export const dotenvExpand = (
  *
  * @param values - The values object to expand.
  * @param options - Expansion options.
- * @param options.ref - The reference object to use for expansion (defaults to process.env).
- * @param options.progressive - Whether to progressively add expanded values to the
- * set of reference keys.
  * @returns The value object with expanded string values.
  *
  * @example
@@ -113,6 +110,11 @@ export const dotenvExpand = (
  * ```
  *
  * @remarks
+ * Options:
+ * - ref: The reference object to use for expansion (defaults to process.env).
+ * - progressive: Whether to progressively add expanded values to the set of
+ *   reference keys.
+ *
  * When `progressive` is true, each expanded key becomes available for
  * subsequent expansions in the same object (left-to-right by object key order).
  */
