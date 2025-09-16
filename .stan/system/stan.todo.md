@@ -1,6 +1,6 @@
 # Development Plan — get-dotenv
 
-When updated: 2025-09-16T16:55:00Z
+When updated: 2025-09-16T17:25:00Z
 NOTE: Update timestamp on commit.
 
 ## Next up
@@ -24,10 +24,10 @@ NOTE: Update timestamp on commit.
   - Loader features (for the new host first):
     - Discover packaged root config; consumer repo global + .local.
     - Support JSON/YAML; JS/TS via direct import → esbuild → transpile fallback; clear error guidance.
+  - (Host continues) Wire CLI option parsing/validation against schemas (strict).
   - Config-provided env sources:
     - vars (global, public) and envVars (env-specific, public) in config.
-    - JS/TS config: allow dynamic map (GetDotenvDynamic).
-  - Env overlay engine:
+    - JS/TS config: allow dynamic map (GetDotenvDynamic). - Env overlay engine:
     - Apply precedence axes: kind (dynamic > env > global) > privacy (local > public) > source (config > file).
     - Programmatic dynamic sits above all dynamics.
     - Preserve multi-path file cascade order per existing behavior.
@@ -58,3 +58,10 @@ NOTE: Update timestamp on commit.
   - No wiring changes to legacy flows (validation remains staged for new host).
 - Lint: remove unnecessary async from schema generator options test to satisfy
   @typescript-eslint/require-await.
+- Step B (skeleton): Introduce plugin-first host and helpers
+  - Created src/cliHost/GetDotenvCli.ts with:
+    - resolveAndLoad → strict options getDotenv → ctx; getCtx accessor.
+    - ns helper; plugin registration/install; parent → children afterResolve.
+  - Created src/cliHost/definePlugin.ts for composable plugins (.use()).
+  - Tests: context lifecycle, plugin afterResolve order, ns helper.
+  - Legacy CLI/generator remain unchanged.
