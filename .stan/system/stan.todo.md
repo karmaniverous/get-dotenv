@@ -1,50 +1,63 @@
 # Development Plan — get-dotenv
 
-When updated: 2025-09-16T12:30:00Z
+When updated: 2025-09-16T12:40:00Z
 NOTE: Update timestamp on commit.
 
 ## Next up
 
-- Docs/help alignment:
-  - Update CLI --dynamic-path option help to remove "otherwise precompile" and
-    recommend installing esbuild; note fallback is for simple single-file TS only.
-  - Update README CLI help snippet to match the above.
-- Rollup: monitor externalization approach; if consumers request a bundled build,
-  add an alternate config.
-- CLI shell behavior:
-  - Add integration tests for quoting/whitespace, pipes and redirects, and
-    script-specific shell overrides.
-  - Consider adding a --shell-mode helper (plain|posix|powershell) as sugar.
+- Step A — Schemas and defaults (shared types; no behavior change)
+  - Add Zod and yaml as deps (externalized by rollup).
+  - Create schemas:
+    - getDotenvOptionsSchemaRaw/Resolved
+    - getDotenvCliOptionsSchemaRaw/Resolved (extends programmatic)
+    - getDotenvCliGenerateOptionsSchemaRaw/Resolved (extends CLI)
+  - Infer exported types from Resolved schemas (preserve names: GetDotenvOptions, etc.).
+  - Stage validation:
+    - Legacy resolve functions: safeParse (warn logs), no behavior change.
+    - New host will use strict parse.
+  - Add packaged root defaults config at library root (getdotenv.config.json); wire loader to read it for new host; KEEP legacy path reading existing JSON only for now.
+  - Tests: schema round-trips; fatal on missing required defaults in packaged config.
+
+- Step B — Plugin host (GetDotenvCli extends Command)
+  - Implement class with:
+    - preSubcommand lifecycle to resolve options (Zod) and call getDotenv.
+    - Context creation { optionsResolved, dotenv, plugins? }, optional process.env merge.
+    - Accessor cli.getCtx(); Symbol-keyed storage on root.
+    - Namespacing helper cli.ns('aws') for mounting subcommands.
+  - Add definePlugin helper with .use() composition; install order parent → children for setup and afterResolve.
+  - Tests: context lifecycle; nested commands; composition order; subprocess env passing.
+
+- Step C — Batch plugin
+  - Port batch subcommand into src/plugins/batch (no behavior changes).
+  - Wire the shipped CLI internally to use batch plugin to maintain parity.
+  - Plan exports for plugins (subpath export), to be added in a later code change.
+  - Tests: parity with current behavior (list, cwd, shell resolution, ignore-errors).
+
+- Step D — Config loader (formats & env overlays)
+  - Loader features (for the new host first):
+    - Discover packaged root config; consumer repo global + .local.
+    - Support JSON/YAML; JS/TS via direct import → esbuild → transpile fallback; clear error guidance.
+  - Config-provided env sources:
+    - vars (global, public) and envVars (env-specific, public) in config.
+    - JS/TS config: allow dynamic map (GetDotenvDynamic).
+  - Env overlay engine:
+    - Apply precedence axes: kind (dynamic > env > global) > privacy (local > public) > source (config > file).
+    - Programmatic dynamic sits above all dynamics.
+    - Preserve multi-path file cascade order per existing behavior.
+  - Tests: loader precedence; overlay combinations; dynamic ordering; progressive expansion.
+
+- Step E — Legacy parity safeguards
+  - Ensure existing CLI and generator behavior unchanged under warn-mode validation.
+  - Add a feature flag (future) to opt legacy into full loader + strict validation after stabilization.
+
+- Step F — Docs
+  - README: dynamic TS guidance (install esbuild; simple fallback note).
+  - README: “Build your own CLI with plugins” quickstart; ctx (dotenv) usage; subprocess env passing.
+  - New guide: plugin authoring (definePlugin, setup/afterResolve, .use(), namespacing).
+
+- Step G — Exports and release notes
+  - Plan subpath exports for plugins (e.g., "./plugins/batch") and for the host (./cliHost).
+  - Non-breaking release: introduce new host and plugins as additive; legacy stays stable.
+  - Document validation modes (warn legacy; strict host); migration notes for opting-in.
 
 ## Completed (recent)
-
-- Tests: make the dynamic.ts error-path deterministic by creating a
-  module that throws at evaluation time. This forces both direct import and compiled import to fail and surfaces the guidance error without
-  relying on fs.writeFile interception.
-
-- Tests/typecheck: fix Vitest TS signature errors by removing the
-  unsupported third argument from `vi.mock` calls; make the error-path
-  deterministic by rejecting `fs.writeFile` during the TypeScript fallback so `getDotenv` throws with the expected guidance message.
-
-- Dynamic TS enablement & tests:
-  - Add `esbuild` to devDependencies so CI exercises dynamic.ts auto-compile path; keep it externalized in Rollup.
-  - Advertise integration with optional peer metadata
-    (`peerDependencies` + `peerDependenciesMeta.optional`).
-  - Add fallback/error-path tests using vitest ESM mocks to simulate
-    missing `esbuild` and missing `typescript`.
-  - Update README to steer users to “install esbuild”; remove
-    precompile-to-JS guidance; clarify trivial fallback only.
-  - Remove `esbuild` from knip ignore (now declared).
-  - Simplify error message in `getDotenv` to recommend installing esbuild.
-
-- Dynamic variables (TS-first DX):
-  - Add programmatic `dynamic?: GetDotenvDynamic` with precedence over
-    `dynamicPath`. Export `defineDynamic` helper to improve inference. - Auto-compile `dynamic.ts` via optional `esbuild` (bundle to a temp
-    ESM file). Fallback to `typescript.transpileModule` for simple
-    single-file modules; otherwise emit a concise guidance error.
-  - CLI: update `--dynamic-path` help to note `.ts` auto-compilation.
-  - Docs: update README Dynamic Processing for TS-first (examples,
-    troubleshooting, and programmatic usage).
-  - Tests: add programmatic dynamic test, precedence over `dynamicPath`,
-    and conditional dynamic.ts auto-compile test (skips if `esbuild` is
-    not installed).
