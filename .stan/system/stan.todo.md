@@ -1,10 +1,9 @@
 # Development Plan — get-dotenv
 
-When updated: 2025-09-17T00:25:00Z
+When updated: 2025-09-17T00:45:00Z
 NOTE: Update timestamp on commit.
 
-## Next up- Step C — Batch plugin - Port batch subcommand into src/plugins/batch (no behavior changes). - Wire the shipped CLI internally to use batch plugin to maintain parity. - Plan exports for plugins (subpath export), to be added in a later code change.
-- Tests: parity with current behavior (list, cwd, shell resolution, ignore-errors).- Step D — Config loader (formats & env overlays) - Loader features (for the new host first):
+## Next up- Step C — Batch plugin - Port batch subcommand into src/plugins/batch (no behavior changes). - Wire the shipped CLI internally to use batch plugin to maintain parity. - Plan exports for plugins (subpath export), to be added in a later code change.- Tests: parity with current behavior (list, cwd, shell resolution, ignore-errors).- Step D — Config loader (formats & env overlays) - Loader features (for the new host first):
   - Discover packaged root config; consumer repo global + .local.
   - Support JSON/YAML; JS/TS via direct import → esbuild → transpile fallback; clear error guidance.
 - (Host continues) Wire CLI option parsing/validation against schemas (strict).
@@ -141,3 +140,7 @@ NOTE: Update timestamp on commit.
   - Pre-resolve the dotenv context with the flag so batch subcommands run
     inside the overlaid environment when enabled.
   - Default remains OFF; behavior unchanged unless the flag is provided.
+- Tests — stabilize dynamic TS fallback error path
+  - Increase timeout for "throws a clear error when both esbuild and
+    typescript are unavailable" to avoid intermittent CI timeouts on
+    slower environments. No behavior changes.

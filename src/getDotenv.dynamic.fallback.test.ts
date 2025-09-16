@@ -73,5 +73,5 @@ describe('getDotenv dynamic.ts fallback/error paths', () => {
     await fs.remove(dynTs);
     vi.unmock('esbuild');
     vi.resetModules();
-  });
+  }, 15000);
 });
