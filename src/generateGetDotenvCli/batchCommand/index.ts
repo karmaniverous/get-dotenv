@@ -37,14 +37,15 @@ export const batchCommand = new Command()
     } = thisCommand.parent as GetDotenvCliCommand;
 
     const raw = thisCommand.opts();
-    const commandOpt = raw.command;
+    const commandOpt =
+      typeof raw.command === 'string' ? raw.command : undefined;
     const ignoreErrors = !!raw.ignoreErrors;
-    const globs = (raw.globs as string) ?? '*';
+    const globs = typeof raw.globs === 'string' ? raw.globs : '*';
     const list = !!raw.list;
     const pkgCwd = !!raw.pkgCwd;
-    const rootPath = (raw.rootPath as string) ?? './';
+    const rootPath = typeof raw.rootPath === 'string' ? raw.rootPath : './';
 
-    const argCount = ((thisCommand.args as unknown[]) ?? []).length;
+    const argCount = (thisCommand.args as unknown[]).length;
     if (typeof commandOpt === 'string' && argCount > 0) {
       logger.error(`--command option conflicts with cmd subcommand.`);
       process.exit(0);
@@ -56,16 +57,16 @@ export const batchCommand = new Command()
         command: resolveCommand(getDotenvCliOptions.scripts, commandOpt),
         getDotenvCliOptions,
         globs,
-        ignoreErrors: !!ignoreErrors,
-        list: !!list,
+        ignoreErrors,
+        list,
         logger,
-        pkgCwd: !!pkgCwd,
+        pkgCwd,
         rootPath,
         // execa expects string | boolean | URL for `shell`. We normalize earlier;
         // scripts[name].shell overrides take precedence and may be boolean or string.
         shell: resolveShell(
           getDotenvCliOptions.scripts,
-          command,
+          commandOpt,
           getDotenvCliOptions.shell,
         ) as unknown as string | boolean | URL,
       });

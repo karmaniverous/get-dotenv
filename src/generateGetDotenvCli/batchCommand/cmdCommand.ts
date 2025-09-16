@@ -2,7 +2,6 @@ import { Command } from 'commander';
 
 import type { GetDotenvCliCommand } from '../GetDotenvCliGenerateOptions';
 import { resolveCommand, resolveShell } from '../resolve';
-import type { BatchCommandOptions } from '.';
 import { execShellCommandBatch } from './execShellCommandBatch';
 export const cmdCommand = new Command()
   .name('cmd')
@@ -24,32 +23,29 @@ export const cmdCommand = new Command()
 
     const raw = thisCommand.parent.opts();
     const ignoreErrors = !!raw.ignoreErrors;
-    const globs = (raw.globs as string) ?? '*';
+    const globs = typeof raw.globs === 'string' ? raw.globs : '*';
     const list = !!raw.list;
     const pkgCwd = !!raw.pkgCwd;
-    const rootPath = (raw.rootPath as string) ?? './';
+    const rootPath = typeof raw.rootPath === 'string' ? raw.rootPath : './';
 
     // Execute command.
-    {
-      const args = (thisCommand.args ?? []) as unknown[];
-      const command = args.map(String).join(' ');
+    const command = thisCommand.args.join(' ');
 
-      await execShellCommandBatch({
-        command: resolveCommand(getDotenvCliOptions.scripts, command),
-        getDotenvCliOptions,
-        globs,
-        ignoreErrors: !!ignoreErrors,
-        list: !!list,
-        logger,
-        pkgCwd: !!pkgCwd,
-        rootPath,
-        // execa expects string | boolean | URL for `shell`. We normalize earlier;
-        // scripts[name].shell overrides take precedence and may be boolean or string.
-        shell: resolveShell(
-          getDotenvCliOptions.scripts,
-          command,
-          getDotenvCliOptions.shell,
-        ) as unknown as string | boolean | URL,
-      });
-    }
+    await execShellCommandBatch({
+      command: resolveCommand(getDotenvCliOptions.scripts, command),
+      getDotenvCliOptions,
+      globs,
+      ignoreErrors,
+      list,
+      logger,
+      pkgCwd,
+      rootPath,
+      // execa expects string | boolean | URL for `shell`. We normalize earlier;
+      // scripts[name].shell overrides take precedence and may be boolean or string.
+      shell: resolveShell(
+        getDotenvCliOptions.scripts,
+        command,
+        getDotenvCliOptions.shell,
+      ) as unknown as string | boolean | URL,
+    });
   });
