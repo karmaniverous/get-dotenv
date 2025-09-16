@@ -1,17 +1,18 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 // Mock the batch executor to capture inputs
-const execMock = vi.fn(async () => undefined);
+const execMock = vi.fn(() => undefined);
 vi.mock(
   '../../generateGetDotenvCli/batchCommand/execShellCommandBatch',
   () => ({
-    execShellCommandBatch: (...args: unknown[]) => execMock(...args),
+    execShellCommandBatch: (arg: unknown) => {
+      execMock(arg);
+    },
   }),
 );
 
 import { GetDotenvCli } from '../../cliHost/GetDotenvCli';
 import { batchPlugin } from './index';
-
 describe('plugins/batch', () => {
   const logger = {
     info: vi.fn(),
@@ -42,7 +43,7 @@ describe('plugins/batch', () => {
     ]);
 
     expect(execMock).toHaveBeenCalledTimes(1);
-    const [args] = execMock.mock.calls[0] as [Record<string, unknown>];
+    const args = execMock.mock.calls[0]?.[0] as Record<string, unknown>;
     expect(args.list).toBe(true);
     expect(args.globs).toBe('a b');
     expect(args.rootPath).toBe('./');
@@ -69,11 +70,10 @@ describe('plugins/batch', () => {
     ]);
 
     expect(execMock).toHaveBeenCalledTimes(1);
-    const [args] = execMock.mock.calls[0] as [Record<string, unknown>];
+    const args = execMock.mock.calls[0]?.[0] as Record<string, unknown>;
     expect(args.command).toBe('npm run build');
     expect(args.shell).toBe('/bin/zsh');
   });
-
   it('propagates pkg-cwd flag', async () => {
     const cli = new GetDotenvCli('test').use(
       batchPlugin({ logger: logger as unknown as Console }),
@@ -88,10 +88,9 @@ describe('plugins/batch', () => {
     ]);
 
     expect(execMock).toHaveBeenCalledTimes(1);
-    const [args] = execMock.mock.calls[0] as [Record<string, unknown>];
+    const args = execMock.mock.calls[0]?.[0] as Record<string, unknown>;
     expect(args.pkgCwd).toBe(true);
   });
-
   it('propagates ignore-errors', async () => {
     const cli = new GetDotenvCli('test').use(
       batchPlugin({ logger: logger as unknown as Console }),
@@ -106,7 +105,7 @@ describe('plugins/batch', () => {
     ]);
 
     expect(execMock).toHaveBeenCalledTimes(1);
-    const [args] = execMock.mock.calls[0] as [Record<string, unknown>];
+    const args = execMock.mock.calls[0]?.[0] as Record<string, unknown>;
     expect(args.ignoreErrors).toBe(true);
   });
 });

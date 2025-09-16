@@ -1,6 +1,6 @@
 # Development Plan — get-dotenv
 
-When updated: 2025-09-16T18:45:00Z
+When updated: 2025-09-16T19:00:00Z
 NOTE: Update timestamp on commit.
 
 ## Next up- Step B — Plugin host (GetDotenvCli extends Command)
@@ -85,3 +85,8 @@ NOTE: Update timestamp on commit.
   - Tests (mocks executor): list mode, shell resolution (script override),
     pkg-cwd propagation, ignore-errors propagation.
   - Wiring the shipped CLI to use the plugin remains as a follow-up (no behavior change).
+- Step C — Batch plugin fixes
+  - Register plugins immediately on use() so subcommands/options exist before parsing.
+  - Adjusted execShellCommandBatch calls to satisfy exactOptionalPropertyTypes
+    (omit undefined-valued props).
+  - Test mocks/typings updated to avoid tuple spreads and require-await lint.

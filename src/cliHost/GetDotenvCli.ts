@@ -95,6 +95,14 @@ export class GetDotenvCli extends Command {
    */
   use(plugin: GetDotenvCliPlugin): this {
     this._plugins.push(plugin);
+    // Immediately run setup so subcommands exist before parsing.
+    const setupOne = (p: GetDotenvCliPlugin) => {
+      const maybe = p.setup(this);
+      // Best-effort: ignore async completion for registration-only setup.
+      void maybe;
+      for (const child of p.children) setupOne(child);
+    };
+    setupOne(plugin);
     return this;
   }
 
@@ -103,19 +111,13 @@ export class GetDotenvCli extends Command {
    * Runs only once per CLI instance.
    */
   async install(): Promise<void> {
-    if (this._installed) return;
-    const installOne = async (p: GetDotenvCliPlugin) => {
-      await p.setup(this);
-      for (const child of p.children) await installOne(child);
-    };
-    for (const p of this._plugins) await installOne(p);
+    // Setup is performed immediately in use(); here we only guard for afterResolve.
     this._installed = true;
   }
 
   /**
    * Run afterResolve hooks for all plugins (parent → children).
-   */
-  private async _runAfterResolve(ctx: GetDotenvCliCtx): Promise<void> {
+   */ private async _runAfterResolve(ctx: GetDotenvCliCtx): Promise<void> {
     const run = async (p: GetDotenvCliPlugin) => {
       if (p.afterResolve) await p.afterResolve(this, ctx);
       for (const child of p.children) await run(child);

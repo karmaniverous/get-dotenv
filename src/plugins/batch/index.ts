@@ -65,7 +65,11 @@ export const batchPlugin = (opts: BatchPluginOptions = {}) =>
           const ctx = cli.getCtx();
           void ctx; // reserved for future use (dotenv/process merge already handled by host)
 
-          const raw = thisCommand.opts?.() ?? {};
+          const raw = (
+            thisCommand as unknown as {
+              opts: () => Record<string, unknown>;
+            }
+          ).opts();
           const commandOpt =
             typeof raw.command === 'string' ? raw.command : undefined;
           const ignoreErrors = !!raw.ignoreErrors;
@@ -83,7 +87,6 @@ export const batchPlugin = (opts: BatchPluginOptions = {}) =>
           if (typeof commandOpt === 'string') {
             await execShellCommandBatch({
               command: resolveCommand(opts.scripts, commandOpt),
-              getDotenvCliOptions: undefined, // reserved: pass to children via env if desired
               globs,
               ignoreErrors,
               list,
@@ -99,15 +102,15 @@ export const batchPlugin = (opts: BatchPluginOptions = {}) =>
           } else {
             // list only
             await execShellCommandBatch({
-              command: undefined,
-              getDotenvCliOptions: undefined,
               globs,
               ignoreErrors,
               list: true,
               logger,
               ...(pkgCwd ? { pkgCwd } : {}),
               rootPath,
-              shell: opts.shell ?? false,
+              shell: (opts.shell === undefined
+                ? false
+                : opts.shell) as unknown as string | boolean | URL,
             });
           }
         });
