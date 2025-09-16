@@ -1,9 +1,8 @@
-import { Command } from '@commander-js/extra-typings';
+import { Command } from 'commander';
 import { execaCommand } from 'execa';
 
 import type { GetDotenvCliCommand } from './GetDotenvCliGenerateOptions';
 import { resolveCommand, resolveShell } from './resolve';
-
 export const cmdCommand = new Command()
   .name('cmd')
   .description(

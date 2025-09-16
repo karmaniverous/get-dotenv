@@ -25,7 +25,6 @@
   },
   "description": "Process dotenv files in an arbitrary location & optionally populate environment variables.",
   "devDependencies": {
-    "@commander-js/extra-typings": "^14.0.0",
     "@eslint/js": "^9.35.0",
     "@rollup/plugin-alias": "^5.1.1",
     "@rollup/plugin-commonjs": "^28.0.6",

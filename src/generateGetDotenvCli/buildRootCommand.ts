@@ -1,10 +1,9 @@
-import { Command, Option } from '@commander-js/extra-typings';
+import { Command, Option } from 'commander';
 
 import { dotenvExpandFromProcessEnv } from '../dotenvExpand';
 import { batchCommand } from './batchCommand';
 import { cmdCommand } from './cmdCommand';
 import type { GetDotenvCliGenerateOptions } from './GetDotenvCliGenerateOptions';
-
 /**
  * Create the root Commander command with all options and subcommands.
  * Pure builder: no side-effects; the caller attaches lifecycle hooks.

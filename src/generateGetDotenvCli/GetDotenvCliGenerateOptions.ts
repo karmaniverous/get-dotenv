@@ -1,4 +1,4 @@
-import type { Command } from '@commander-js/extra-typings';
+import type { Command } from 'commander';
 import fs from 'fs-extra';
 import { packageDirectory } from 'package-directory';
 import { join } from 'path';

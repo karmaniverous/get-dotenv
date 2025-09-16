@@ -19,10 +19,21 @@ NOTE: Update timestamp on commit.
 
 ## Completed (recent)
 
+- CLI: fix ESM runtime error importing commander default. Replace all
+  runtime imports from '@commander-js/extra-typings' with 'commander'
+  (v14 provides types and named exports). This prevents Rollup from
+  emitting a default import that fails at runtime.
+- Chore: remove '@commander-js/extra-typings' from devDependencies.
+
+- CLI: fix ESM runtime error importing commander default. Replace all
+  runtime imports from '@commander-js/extra-typings' with 'commander'
+  (v14 provides types and named exports). This prevents Rollup from
+  emitting a default import that fails at runtime.
+- Chore: remove '@commander-js/extra-typings' from devDependencies.
+
 - Docs: keep internals visible in TypeDoc (excludeInternal=false) and add
   authored guides included in the docs navigation:
-  - guides/cascade.md (cascade and precedence)
-  - guides/shell.md (shell behavior and quoting)
+  - guides/cascade.md (cascade and precedence) - guides/shell.md (shell behavior and quoting)
 - README: add Requirements (Node >=22.19), API Reference link, Testing
   notes (Vitest V8), normalized shell defaults, and links to guides.
 - Tests: add dotenvExpand extras (escaped dollars; progressive vs

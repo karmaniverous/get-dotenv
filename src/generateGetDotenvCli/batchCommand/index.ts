@@ -1,4 +1,4 @@
-import { Command } from '@commander-js/extra-typings';
+import { Command } from 'commander';
 
 import { dotenvExpandFromProcessEnv } from '../../dotenvExpand';
 import type { GetDotenvCliCommand } from '../GetDotenvCliGenerateOptions';

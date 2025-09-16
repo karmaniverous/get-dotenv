@@ -1,4 +1,4 @@
-import { Command } from '@commander-js/extra-typings';
+import { Command } from 'commander';
 
 import type { GetDotenvCliCommand } from '../GetDotenvCliGenerateOptions';
 import { resolveCommand, resolveShell } from '../resolve';
