@@ -1,6 +1,6 @@
 # Development Plan — get-dotenv
 
-When updated: 2025-09-16T16:30:00Z
+When updated: 2025-09-16T16:55:00Z
 NOTE: Update timestamp on commit.
 
 ## Next up
@@ -56,3 +56,5 @@ NOTE: Update timestamp on commit.
     - getDotenvCliGenerateOptions (RAW) valid/invalid shapes.
   - Validated packaged getdotenv.config.json passes the CLI schema.
   - No wiring changes to legacy flows (validation remains staged for new host).
+- Lint: remove unnecessary async from schema generator options test to satisfy
+  @typescript-eslint/require-await.

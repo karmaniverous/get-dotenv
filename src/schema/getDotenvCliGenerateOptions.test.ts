@@ -9,8 +9,8 @@ describe('schema/getDotenvCliGenerateOptions', () => {
       description: 'Base CLI.',
       importMetaUrl: 'file:///path/to/mod.mjs',
       // Hooks and logger intentionally wide in RAW
-      preHook: async () => undefined,
-      postHook: async () => undefined,
+      preHook: () => undefined,
+      postHook: () => undefined,
       logger: console,
       // Inherits CLI option shapes
       dotenvToken: '.env',
