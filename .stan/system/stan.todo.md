@@ -1,10 +1,9 @@
 # Development Plan — get-dotenv
 
-When updated: 2025-09-16T21:10:00Z
+When updated: 2025-09-16T21:25:00Z
 NOTE: Update timestamp on commit.
 
-## Next up- Step C — Batch plugin  - Port batch subcommand into src/plugins/batch (no behavior changes).  - Wire the shipped CLI internally to use batch plugin to maintain parity.
-  - Plan exports for plugins (subpath export), to be added in a later code change.
+## Next up- Step C — Batch plugin  - Port batch subcommand into src/plugins/batch (no behavior changes).  - Wire the shipped CLI internally to use batch plugin to maintain parity.  - Plan exports for plugins (subpath export), to be added in a later code change.
   - Tests: parity with current behavior (list, cwd, shell resolution, ignore-errors).
 
 - Step D — Config loader (formats & env overlays)
@@ -114,3 +113,7 @@ NOTE: Update timestamp on commit.
   - Legacy behavior unchanged by default; the flag is off unless explicitly set.
   - Note: loadDynamicFromPath-style logic is duplicated locally in host; plan to factor into
     a shared util in a later refactor.
+- Step D (fixes: types + lint)
+  - Host: omit programmaticVars in overlayEnv call when undefined to satisfy
+    exactOptionalPropertyTypes.
+  - Loader: remove unused local variable to satisfy no-unused-vars.

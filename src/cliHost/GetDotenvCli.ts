@@ -92,7 +92,8 @@ export class GetDotenvCli extends Command {
         base,
         env: validated.env ?? validated.defaultEnv,
         configs: sources,
-        programmaticVars: validated.vars,
+        // exactOptionalPropertyTypes: only include when defined
+        ...(validated.vars ? { programmaticVars: validated.vars } : {}),
       });
 
       // 3) Apply dynamics in order:

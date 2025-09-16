@@ -174,12 +174,10 @@ export const loadConfigFile = async (
       `Config ${filePath} is JS/TS — not supported in this step. Use JSON/YAML or enable JS/TS support in a later version.`,
     );
   }
-  const ext = extname(filePath).toLowerCase();
   let raw: unknown = {};
   try {
     if (isJsOrTs(filePath)) {
-      // JS/TS support: load default export
-      const abs = path.resolve(filePath);
+      // JS/TS support: load default export      const abs = path.resolve(filePath);
       const mod = await loadJsTsDefault<unknown>(abs);
       raw = mod ?? {};
     } else {
