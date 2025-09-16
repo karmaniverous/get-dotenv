@@ -1,11 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 // Mock the batch executor to capture inputs
-const execMock = vi.fn(() => undefined);
+const execMock = vi.fn<[Record<string, unknown>], void>();
 vi.mock(
   '../../generateGetDotenvCli/batchCommand/execShellCommandBatch',
   () => ({
-    execShellCommandBatch: (arg: unknown) => {
+    execShellCommandBatch: (arg: Record<string, unknown>) => {
       execMock(arg);
     },
   }),
@@ -43,7 +43,7 @@ describe('plugins/batch', () => {
     ]);
 
     expect(execMock).toHaveBeenCalledTimes(1);
-    const args = execMock.mock.calls[0]?.[0] as Record<string, unknown>;
+    const args = execMock.mock.calls[0]![0];
     expect(args.list).toBe(true);
     expect(args.globs).toBe('a b');
     expect(args.rootPath).toBe('./');
@@ -70,7 +70,7 @@ describe('plugins/batch', () => {
     ]);
 
     expect(execMock).toHaveBeenCalledTimes(1);
-    const args = execMock.mock.calls[0]?.[0] as Record<string, unknown>;
+    const args = execMock.mock.calls[0]![0];
     expect(args.command).toBe('npm run build');
     expect(args.shell).toBe('/bin/zsh');
   });
@@ -88,7 +88,7 @@ describe('plugins/batch', () => {
     ]);
 
     expect(execMock).toHaveBeenCalledTimes(1);
-    const args = execMock.mock.calls[0]?.[0] as Record<string, unknown>;
+    const args = execMock.mock.calls[0]![0];
     expect(args.pkgCwd).toBe(true);
   });
   it('propagates ignore-errors', async () => {
@@ -105,7 +105,7 @@ describe('plugins/batch', () => {
     ]);
 
     expect(execMock).toHaveBeenCalledTimes(1);
-    const args = execMock.mock.calls[0]?.[0] as Record<string, unknown>;
+    const args = execMock.mock.calls[0]![0];
     expect(args.ignoreErrors).toBe(true);
   });
 });

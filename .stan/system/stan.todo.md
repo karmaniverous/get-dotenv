@@ -1,17 +1,9 @@
 # Development Plan — get-dotenv
 
-When updated: 2025-09-16T19:00:00Z
+When updated: 2025-09-16T19:30:00Z
 NOTE: Update timestamp on commit.
 
-## Next up- Step B — Plugin host (GetDotenvCli extends Command)
-
-- Implement class with:
-  - preSubcommand lifecycle to resolve options (Zod) and call getDotenv.
-  - Context creation { optionsResolved, dotenv, plugins? }, optional process.env merge.
-  - Accessor cli.getCtx(); Symbol-keyed storage on root.
-  - Namespacing helper cli.ns('aws') for mounting subcommands.
-- Add definePlugin helper with .use() composition; install order parent → children for setup and afterResolve.
-- Tests: context lifecycle; nested commands; composition order; subprocess env passing.
+## Next up
 
 - Step C — Batch plugin
   - Port batch subcommand into src/plugins/batch (no behavior changes).
@@ -90,3 +82,9 @@ NOTE: Update timestamp on commit.
   - Adjusted execShellCommandBatch calls to satisfy exactOptionalPropertyTypes
     (omit undefined-valued props).
   - Test mocks/typings updated to avoid tuple spreads and require-await lint.
+- Step C (fixes): host + tests + lint
+  - Root CLI now calls enablePositionalOptions() to satisfy Commander’s requirement
+    for subcommands using passThroughOptions.
+  - Batch plugin tests: typed execMock with a single-arg signature and use non-null
+    assertion on mock.calls to avoid unsafe casts; fixes TS errors and build/typedoc noise.
+  - Lint: add no-op await in install() to satisfy @typescript-eslint/require-await.

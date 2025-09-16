@@ -37,6 +37,10 @@ export class GetDotenvCli extends Command {
 
   constructor(alias = 'getdotenv') {
     super(alias);
+    // Ensure subcommands that use passThroughOptions can be attached safely.
+    // Commander requires parent commands to enable positional options when a
+    // child uses passThroughOptions.
+    this.enablePositionalOptions();
     // Skeleton preSubcommand hook: produce context if absent.
     this.hook('preSubcommand', async () => {
       // If a context already exists for this invocation, do nothing.
@@ -113,6 +117,8 @@ export class GetDotenvCli extends Command {
   async install(): Promise<void> {
     // Setup is performed immediately in use(); here we only guard for afterResolve.
     this._installed = true;
+    // Satisfy require-await without altering behavior.
+    await Promise.resolve();
   }
 
   /**
