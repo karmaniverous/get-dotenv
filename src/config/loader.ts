@@ -177,7 +177,8 @@ export const loadConfigFile = async (
   let raw: unknown = {};
   try {
     if (isJsOrTs(filePath)) {
-      // JS/TS support: load default export      const abs = path.resolve(filePath);
+      // JS/TS support: load default export
+      const abs = path.resolve(filePath);
       const mod = await loadJsTsDefault<unknown>(abs);
       raw = mod ?? {};
     } else {

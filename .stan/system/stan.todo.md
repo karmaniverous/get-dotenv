@@ -1,11 +1,10 @@
 # Development Plan — get-dotenv
 
-When updated: 2025-09-16T21:25:00Z
+When updated: 2025-09-16T21:40:00Z
 NOTE: Update timestamp on commit.
 
 ## Next up- Step C — Batch plugin  - Port batch subcommand into src/plugins/batch (no behavior changes).  - Wire the shipped CLI internally to use batch plugin to maintain parity.  - Plan exports for plugins (subpath export), to be added in a later code change.
   - Tests: parity with current behavior (list, cwd, shell resolution, ignore-errors).
-
 - Step D — Config loader (formats & env overlays)
   - Loader features (for the new host first):
     - Discover packaged root config; consumer repo global + .local.
@@ -117,3 +116,7 @@ NOTE: Update timestamp on commit.
   - Host: omit programmaticVars in overlayEnv call when undefined to satisfy
     exactOptionalPropertyTypes.
   - Loader: remove unused local variable to satisfy no-unused-vars.
+- Step D (fix): loader abs var
+  - Restore `const abs = path.resolve(filePath);` (was inadvertently part of a
+    comment), resolving TS2304 and the follow-on ESLint no-unsafe-argument at
+    the JS/TS config load site.
