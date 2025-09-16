@@ -1,8 +1,7 @@
 # Development Plan — get-dotenv
 
-When updated: 2025-09-17T02:00:00Z
+When updated: 2025-09-17T02:20:00Z
 NOTE: Update timestamp on commit.
-
 ## Next up- Step C — Batch plugin - Port batch subcommand into src/plugins/batch (no behavior changes). - Wire the shipped CLI internally to use batch plugin to maintain parity. - Plan exports for plugins (subpath export), to be added in a later code change.- Tests: parity with current behavior (list, cwd, shell resolution, ignore-errors).- Step D — Config loader (formats & env overlays) - Loader features (for the new host first):  - Discover packaged root config; consumer repo global + .local.  - Support JSON/YAML; JS/TS via direct import → esbuild → transpile fallback; clear error guidance.- (Host continues) Wire CLI option parsing/validation against schemas (strict).
 - Config-provided env sources:
   - vars (global, public) and envVars (env-specific, public) in config.
@@ -154,3 +153,10 @@ NOTE: Update timestamp on commit.
 - Docs: reflect guarded config loader flag in README
   - Add --use-config-loader line to the CLI help section so the README
     matches the current CLI options.
+- Docs: initial guides for config and plugins
+  - Add ./guides/config.md describing discovery, formats, privacy, overlay
+    precedence, and dynamic ordering for the guarded path.
+  - Add ./guides/plugins.md covering the GetDotenvCli host quickstart,
+    plugin composition, afterResolve lifecycle, and subprocess env advice.
+  - Update typedoc.json projectDocuments and README links so the new
+    guides are published and discoverable.

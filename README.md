@@ -260,3 +260,9 @@ Meanwhile, [this issue](https://github.com/karmaniverous/get-dotenv/issues/7) do
 The guides are also included in the hosted API docs.
 
 See more great templates & tools on [my GitHub Profile](https://github.com/karmaniverous)!
+
+---
+
+Further reading:
+- Config files and overlays (guarded): ./guides/config.md
+- Plugin-first host and plugins: ./guides/plugins.md
