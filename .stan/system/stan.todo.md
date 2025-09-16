@@ -1,28 +1,13 @@
 # Development Plan — get-dotenv
 
-When updated: 2025-09-16T12:55:00Z
+When updated: 2025-09-16T16:30:00Z
 NOTE: Update timestamp on commit.
 
 ## Next up
-- Step A — Schemas and defaults (shared types; no behavior change)
-  - Add Zod and yaml as deps (externalized by rollup).
-  - Create schemas:
-    - getDotenvOptionsSchemaRaw/Resolved
-    - getDotenvCliOptionsSchemaRaw/Resolved (extends programmatic)
-    - getDotenvCliGenerateOptionsSchemaRaw/Resolved (extends CLI)
-  - Infer exported types from Resolved schemas (preserve names: GetDotenvOptions, etc.).
-  - Stage validation:
-    - Legacy resolve functions: safeParse (warn logs), no behavior change.
-    - New host will use strict parse.
-  - Add packaged root defaults config at library root (getdotenv.config.json); wire loader to read it for new host; KEEP legacy path reading existing JSON only for now.
-  - Tests: schema round-trips; fatal on missing required defaults in packaged config.
-  - Status: initial schemas scaffolded under src/schema (raw/resolved stubs);
-    packaged defaults file added at repo root; package.json updated with zod/yaml
-    and files export. No wiring yet; legacy behavior unchanged. Tests for schemas
-    to be added in a subsequent step.
 
 - Step B — Plugin host (GetDotenvCli extends Command)
-  - Implement class with:    - preSubcommand lifecycle to resolve options (Zod) and call getDotenv.
+  - Implement class with:
+    - preSubcommand lifecycle to resolve options (Zod) and call getDotenv.
     - Context creation { optionsResolved, dotenv, plugins? }, optional process.env merge.
     - Accessor cli.getCtx(); Symbol-keyed storage on root.
     - Namespacing helper cli.ns('aws') for mounting subcommands.
@@ -63,3 +48,11 @@ NOTE: Update timestamp on commit.
   - Document validation modes (warn legacy; strict host); migration notes for opting-in.
 
 ## Completed (recent)
+
+- Step A — Schemas and defaults (tests; no behavior change)
+  - Added unit tests for:
+    - getDotenvOptions (RAW) valid/invalid shapes.
+    - getDotenvCliOptions (RAW) valid/invalid shapes.
+    - getDotenvCliGenerateOptions (RAW) valid/invalid shapes.
+  - Validated packaged getdotenv.config.json passes the CLI schema.
+  - No wiring changes to legacy flows (validation remains staged for new host).
