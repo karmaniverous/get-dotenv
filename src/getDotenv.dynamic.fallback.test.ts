@@ -41,26 +41,22 @@ describe('getDotenv dynamic.ts fallback/error paths', () => {
   });
 
   it('throws a clear error when both esbuild and typescript are unavailable', async () => {
-    // Force esbuild "successfully mocked" but unusable.
+    // Force esbuild "successfully mocked" but unusable (skip to TS fallback).
     vi.mock('esbuild', () => ({
       build: () => {
         throw new Error('mock esbuild failure');
       },
     }));
-    // Make the fallback path fail by rejecting the write step.
-    const writeSpy = vi
-      .spyOn(fs, 'writeFile')
-      .mockRejectedValueOnce(new Error('mock write failure'));
 
     const dir = path.posix.join('.tsbuild', 'getdotenv-tests');
     const dynTs = path.posix.join(dir, 'dynamic.fallback.error.ts');
     await fs.ensureDir(dir);
+    // Force both direct import and compiled import to fail at evaluation time.
     await fs.writeFile(
       dynTs,
       `
-        export default {
-          TS_DYNAMIC_ERR: ({ APP_SETTING = '' }) => APP_SETTING + '-err'
-        }
+        throw new Error('module load failure');
+        export default {};
       `,
       'utf-8',
     );
@@ -76,7 +72,6 @@ describe('getDotenv dynamic.ts fallback/error paths', () => {
 
     await fs.remove(dynTs);
     vi.unmock('esbuild');
-    writeSpy.mockRestore();
     vi.resetModules();
   });
 });

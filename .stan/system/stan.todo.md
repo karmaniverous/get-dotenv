@@ -1,10 +1,9 @@
 # Development Plan — get-dotenv
 
-When updated: 2025-09-16T12:05:00Z
+When updated: 2025-09-16T12:25:00Z
 NOTE: Update timestamp on commit.
 
 ## Next up
-
 - Re-run sanity passes: npm run typecheck, npm run lint:fix, npm run test, npm run build, npm run stan:docs, npm run knip. Expect green across the board.
 - Docs: update README (Vitest switch, coverage, Node >=22.19, shell defaults).
 - Rollup: monitor externalization approach; if consumers request bundled build, add alternate config. Add CI to run test/lint/build.
@@ -20,10 +19,14 @@ NOTE: Update timestamp on commit.
 
 ## Completed (recent)
 
+- Tests: make the dynamic.ts error-path deterministic by creating a
+  module that throws at evaluation time. This forces both direct import
+  and compiled import to fail and surfaces the guidance error without
+  relying on fs.writeFile interception.
+
 - Tests/typecheck: fix Vitest TS signature errors by removing the
   unsupported third argument from `vi.mock` calls; make the error-path
-  deterministic by rejecting `fs.writeFile` during the TypeScript
-  fallback so `getDotenv` throws with the expected guidance message.
+  deterministic by rejecting `fs.writeFile` during the TypeScript  fallback so `getDotenv` throws with the expected guidance message.
 
 - Dynamic TS enablement & tests:
   - Add `esbuild` to devDependencies so CI exercises dynamic.ts
