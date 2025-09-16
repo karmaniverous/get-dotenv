@@ -33,15 +33,14 @@ const applyConfigSlice = (
 
 /**
  * Overlay config-provided values onto a base ProcessEnv using precedence axes:
- * - kind: env > global
- * - privacy: local > public
- * - source: project > packaged > base
+ * - kind: env \> global
+ * - privacy: local \> public
+ * - source: project \> packaged \> base
  *
  * Programmatic explicit vars (if provided) override all config slices.
  * Progressive expansion is applied within each slice.
  */
-export const overlayEnv = ({
-  base,
+export const overlayEnv = ({  base,
   env,
   configs,
   programmaticVars,

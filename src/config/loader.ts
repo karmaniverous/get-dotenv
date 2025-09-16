@@ -5,12 +5,10 @@ import { fileURLToPath, pathToFileURL } from 'url';
 import YAML from 'yaml';
 
 import {
-  type GetDotenvConfigRaw,
   type GetDotenvConfigResolved,
   getDotenvConfigSchemaRaw,
   getDotenvConfigSchemaResolved,
 } from '../schema/getDotenvConfig';
-
 const PUBLIC_FILENAMES = [
   'getdotenv.config.json',
   'getdotenv.config.yaml',

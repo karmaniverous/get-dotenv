@@ -1,10 +1,9 @@
 # Development Plan — get-dotenv
 
-When updated: 2025-09-16T20:25:00Z
+When updated: 2025-09-16T20:35:00Z
 NOTE: Update timestamp on commit.
 
-## Next up- Step C — Batch plugin
-  - Port batch subcommand into src/plugins/batch (no behavior changes).
+## Next up- Step C — Batch plugin  - Port batch subcommand into src/plugins/batch (no behavior changes).
   - Wire the shipped CLI internally to use batch plugin to maintain parity.
   - Plan exports for plugins (subpath export), to be added in a later code change.
   - Tests: parity with current behavior (list, cwd, shell resolution, ignore-errors).
@@ -100,3 +99,6 @@ NOTE: Update timestamp on commit.
     Programmatic explicit vars applied last; progressive expansion preserved.
   - Tests added for schemas, loader discovery and parsing, and overlay precedence/expansion.
   - Host integration will be guarded by a flag in a follow-up to preserve legacy behavior.
+- Step D (lint fixes)
+  - Remove unused type import from src/config/loader.ts to satisfy no-unused-vars.
+  - Escape “>” in TSDoc block in src/env/overlay.ts to satisfy tsdoc/syntax.
