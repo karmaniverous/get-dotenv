@@ -6,10 +6,10 @@ import {
   type ProcessEnv,
   resolveGetDotenvOptions,
 } from '../GetDotenvOptions';
+import { getDotenvOptionsSchemaResolved } from '../schema/getDotenvOptions';
 import type { GetDotenvCliPlugin } from './definePlugin';
 
-/**
- * Per-invocation context shared with plugins and actions.
+/** * Per-invocation context shared with plugins and actions.
  */
 export type GetDotenvCliCtx = {
   optionsResolved: GetDotenvOptions;
@@ -53,17 +53,18 @@ export class GetDotenvCli extends Command {
   async resolveAndLoad(
     customOptions: Partial<GetDotenvOptions> = {},
   ): Promise<GetDotenvCliCtx> {
+    // Resolve defaults, then validate strictly under the new host.
     const optionsResolved = await resolveGetDotenvOptions(customOptions);
-    const dotenv = await getDotenv(optionsResolved);
+    const validated = getDotenvOptionsSchemaResolved.parse(optionsResolved);
+    const dotenv = await getDotenv(validated);
 
     const ctx: GetDotenvCliCtx = {
-      optionsResolved,
+      optionsResolved: validated,
       dotenv,
       plugins: {},
     };
 
-    // Persist context on the instance for later access.
-    (this as unknown as Record<symbol, GetDotenvCliCtx>)[CTX_SYMBOL] = ctx;
+    // Persist context on the instance for later access.    (this as unknown as Record<symbol, GetDotenvCliCtx>)[CTX_SYMBOL] = ctx;
 
     // Ensure plugins are installed exactly once, then run afterResolve.
     await this.install();

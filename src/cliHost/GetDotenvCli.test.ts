@@ -48,9 +48,18 @@ describe('GetDotenvCli host (skeleton)', () => {
     expect(process.env.ENV_SECRET).toBe('deep_test_secret');
   });
 
+  it('rejects invalid option shapes under strict schema', async () => {
+    const cli = new GetDotenvCli('test');
+    await expect(
+      cli.resolveAndLoad({
+        // invalid type: should be boolean
+        excludePublic: 'yes' as unknown as boolean,
+      }),
+    ).rejects.toThrow();
+  });
+
   it('runs plugin afterResolve in parent → children order', async () => {
     const order: string[] = [];
-
     const child = definePlugin({
       id: 'child',
       setup: () => undefined,

@@ -1,10 +1,9 @@
 # Development Plan — get-dotenv
 
-When updated: 2025-09-16T17:40:00Z
+When updated: 2025-09-16T18:05:00Z
 NOTE: Update timestamp on commit.
 
 ## Next up
-
 - Step B — Plugin host (GetDotenvCli extends Command)
   - Implement class with:
     - preSubcommand lifecycle to resolve options (Zod) and call getDotenv.
@@ -69,3 +68,8 @@ NOTE: Update timestamp on commit.
   - Fixed truncated GetDotenvCli.test.ts (parent/child composition and ns test).
   - Rewrote TSDoc example in definePlugin.ts using a fenced code block to satisfy
     tsdoc/syntax.
+ - Step B (strict validation + docs warning)
+   - Host now validates resolved options with Zod in resolveAndLoad (strict mode).
+   - Added negative test asserting rejection of invalid option shapes.
+   - Marked internal DefineSpec type as @internal to silence Typedoc warning
+     about a non-exported referenced type.
