@@ -1,10 +1,9 @@
 # Development Plan — get-dotenv
 
-When updated: 2025-09-16T20:35:00Z
+When updated: 2025-09-16T21:10:00Z
 NOTE: Update timestamp on commit.
 
-## Next up- Step C — Batch plugin  - Port batch subcommand into src/plugins/batch (no behavior changes).
-  - Wire the shipped CLI internally to use batch plugin to maintain parity.
+## Next up- Step C — Batch plugin  - Port batch subcommand into src/plugins/batch (no behavior changes).  - Wire the shipped CLI internally to use batch plugin to maintain parity.
   - Plan exports for plugins (subpath export), to be added in a later code change.
   - Tests: parity with current behavior (list, cwd, shell resolution, ignore-errors).
 
@@ -102,3 +101,16 @@ NOTE: Update timestamp on commit.
 - Step D (lint fixes)
   - Remove unused type import from src/config/loader.ts to satisfy no-unused-vars.
   - Escape “>” in TSDoc block in src/env/overlay.ts to satisfy tsdoc/syntax.
+- Step D (JS/TS config + host integration flag)
+  - JS/TS config support in loader: .js/.mjs/.cjs via direct import; .ts/.mts/.cts via
+    direct import → esbuild → transpile fallback. Dynamic allowed for JS/TS configs.
+  - Host guarded integration (useConfigLoader flag added to programmatic schema):
+    - Base via getDotenv with excludeDynamic and without programmatic vars.
+    - Overlay with config sources (packaged → project public → project local), then apply
+      dynamic layers in order: programmatic dynamic > config dynamic (packaged → project public
+      → project local) > file dynamicPath.
+    - Write outputPath (multiline quoting), log to logger when enabled, and merge into process.env
+      when loadProcess is true.
+  - Legacy behavior unchanged by default; the flag is off unless explicitly set.
+  - Note: loadDynamicFromPath-style logic is duplicated locally in host; plan to factor into
+    a shared util in a later refactor.

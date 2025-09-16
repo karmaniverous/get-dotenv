@@ -1,8 +1,15 @@
 import { Command } from 'commander';
+import fs from 'fs-extra';
+import path from 'path';
+import url from 'url';
 
+import { resolveGetDotenvConfigSources } from '../config/loader';
+import { overlayEnv } from '../env/overlay';
 import { getDotenv } from '../getDotenv';
 import {
+  type GetDotenvDynamic,
   type GetDotenvOptions,
+  type Logger,
   type ProcessEnv,
   resolveGetDotenvOptions,
 } from '../GetDotenvOptions';
@@ -17,10 +24,16 @@ export type GetDotenvCliCtx = {
   plugins?: Record<string, unknown>;
 };
 
+const HOST_META_URL = import.meta.url;
+
+const importDefault = async <T>(fileUrl: string): Promise<T | undefined> => {
+  const mod = (await import(fileUrl)) as { default?: T };
+  return mod.default;
+};
+
 const CTX_SYMBOL = Symbol('GetDotenvCli.ctx');
 /**
- * Plugin-first CLI host for get-dotenv. Extends Commander.Command.
- *
+ * Plugin-first CLI host for get-dotenv. Extends Commander.Command. *
  * Responsibilities:
  * - Resolve options strictly and compute dotenv context (resolveAndLoad).
  * - Expose a stable accessor for the current context (getCtx).
@@ -59,10 +72,172 @@ export class GetDotenvCli extends Command {
     // Resolve defaults, then validate strictly under the new host.
     const optionsResolved = await resolveGetDotenvOptions(customOptions);
     const validated = getDotenvOptionsSchemaResolved.parse(optionsResolved);
-    // exactOptionalPropertyTypes: cast parsed object to the exact optional shape.
-    const dotenv = await getDotenv(
-      validated as unknown as Partial<GetDotenvOptions>,
-    );
+    let dotenv: ProcessEnv;
+
+    // Guarded integration: when enabled, use config loader + overlay + dynamics.
+    if (
+      (validated as unknown as { useConfigLoader?: boolean }).useConfigLoader
+    ) {
+      // 1) Compute base from files only (no dynamic, no programmatic vars)
+      const base = await getDotenv({
+        ...validated,
+        excludeDynamic: true,
+        // Omit programmatic vars at this stage
+        vars: {},
+      } as unknown as Partial<GetDotenvOptions>);
+
+      // 2) Discover config sources and overlay
+      const sources = await resolveGetDotenvConfigSources(HOST_META_URL);
+      const overlaid = overlayEnv({
+        base,
+        env: validated.env ?? validated.defaultEnv,
+        configs: sources,
+        programmaticVars: validated.vars,
+      });
+
+      // 3) Apply dynamics in order:
+      //    programmatic dynamic > config dynamic (packaged -> project.public -> project.local) > file dynamicPath
+      dotenv = { ...overlaid };
+      const applyDynamic = (
+        target: ProcessEnv,
+        dynamic: GetDotenvDynamic | undefined,
+        env: string | undefined,
+      ) => {
+        if (!dynamic) return;
+        for (const key of Object.keys(dynamic)) {
+          const value =
+            typeof dynamic[key] === 'function'
+              ? (
+                  dynamic[key] as (
+                    v: ProcessEnv,
+                    e?: string,
+                  ) => string | undefined
+                )(target, env)
+              : dynamic[key];
+          Object.assign(target, { [key]: value });
+        }
+      };
+      // programmatic dynamic
+      applyDynamic(
+        dotenv,
+        (validated as unknown as { dynamic?: GetDotenvDynamic }).dynamic,
+        validated.env ?? validated.defaultEnv,
+      );
+      // config dynamic from JS/TS (packaged -> project public -> project local)
+      applyDynamic(
+        dotenv,
+        (sources.packaged?.dynamic ?? undefined) as
+          | GetDotenvDynamic
+          | undefined,
+        validated.env ?? validated.defaultEnv,
+      );
+      applyDynamic(
+        dotenv,
+        (sources.project?.public?.dynamic ?? undefined) as
+          | GetDotenvDynamic
+          | undefined,
+        validated.env ?? validated.defaultEnv,
+      );
+      applyDynamic(
+        dotenv,
+        (sources.project?.local?.dynamic ?? undefined) as
+          | GetDotenvDynamic
+          | undefined,
+        validated.env ?? validated.defaultEnv,
+      );
+      // file dynamicPath (lowest)
+      if (validated.dynamicPath) {
+        const absDynamicPath = path.resolve(validated.dynamicPath);
+        const fileUrl = url.pathToFileURL(absDynamicPath).toString();
+        // TS support: try import -> esbuild -> transpile (best-effort via dynamic import of loader in place)
+        try {
+          const dyn = await importDefault<GetDotenvDynamic>(fileUrl);
+          applyDynamic(dotenv, dyn, validated.env ?? validated.defaultEnv);
+        } catch {
+          try {
+            const esbuild = (await import('esbuild')) as unknown as {
+              build: (opts: Record<string, unknown>) => Promise<unknown>;
+            };
+            const outDir = path.resolve('.tsbuild', 'getdotenv-dynamic-host');
+            await fs.ensureDir(outDir);
+            const outfile = path.join(
+              outDir,
+              `${path.basename(absDynamicPath)}.mjs`,
+            );
+            await esbuild.build({
+              entryPoints: [absDynamicPath],
+              bundle: true,
+              platform: 'node',
+              format: 'esm',
+              target: 'node22',
+              outfile,
+              sourcemap: false,
+              logLevel: 'silent',
+            });
+            const dyn2 = await importDefault<GetDotenvDynamic>(
+              url.pathToFileURL(outfile).toString(),
+            );
+            applyDynamic(dotenv, dyn2, validated.env ?? validated.defaultEnv);
+          } catch {
+            // final fallback: try naive transpile
+            try {
+              const ts = (await import('typescript')) as unknown as {
+                transpileModule: (
+                  code: string,
+                  opts: { compilerOptions: Record<string, unknown> },
+                ) => { outputText: string };
+              };
+              const code = await fs.readFile(absDynamicPath, 'utf-8');
+              const out = ts.transpileModule(code, {
+                compilerOptions: {
+                  module: 'ESNext',
+                  target: 'ES2022',
+                  moduleResolution: 'NodeNext',
+                },
+              }).outputText;
+              const outDir = path.resolve('.tsbuild', 'getdotenv-dynamic-host');
+              await fs.ensureDir(outDir);
+              const outfile = path.join(
+                outDir,
+                `${path.basename(absDynamicPath)}.mjs`,
+              );
+              await fs.writeFile(outfile, out, 'utf-8');
+              const dyn3 = await importDefault<GetDotenvDynamic>(
+                url.pathToFileURL(outfile).toString(),
+              );
+              applyDynamic(dotenv, dyn3, validated.env ?? validated.defaultEnv);
+            } catch {
+              throw new Error(
+                `Unable to load dynamic from ${validated.dynamicPath}`,
+              );
+            }
+          }
+        }
+      }
+      // 4) Write output file if requested
+      if (validated.outputPath) {
+        await fs.writeFile(
+          validated.outputPath,
+          Object.keys(dotenv).reduce((contents, key) => {
+            const value = dotenv[key] ?? '';
+            return `${contents}${key}=${
+              value.includes('\n') ? `"${value}"` : value
+            }\n`;
+          }, ''),
+          { encoding: 'utf-8' },
+        );
+      }
+      // 5) Log and process.env merge
+      const logger: Logger =
+        (validated as unknown as { logger?: Logger }).logger ?? console;
+      if (validated.log) logger.log(dotenv);
+      if (validated.loadProcess) Object.assign(process.env, dotenv);
+    } else {
+      // Legacy-safe path via getDotenv (unchanged)
+      dotenv = await getDotenv(
+        validated as unknown as Partial<GetDotenvOptions>,
+      );
+    }
 
     const ctx: GetDotenvCliCtx = {
       optionsResolved: validated as unknown as GetDotenvOptions,

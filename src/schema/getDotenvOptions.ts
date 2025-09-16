@@ -30,11 +30,12 @@ export const getDotenvOptionsSchemaRaw = z.object({
   paths: z.array(z.string()).optional(),
   privateToken: z.string().optional(),
   vars: processEnvSchema.optional(),
+  // Host-only feature flag: guarded integration of config loader/overlay
+  useConfigLoader: z.boolean().optional(),
 });
 
 // RESOLVED: service-boundary contract (post-inheritance).
-// For Step A, keep identical to RAW (no behavior change). Later stages will
-// materialize required defaults and narrow shapes as resolution is wired.
+// For Step A, keep identical to RAW (no behavior change). Later stages will// materialize required defaults and narrow shapes as resolution is wired.
 export const getDotenvOptionsSchemaResolved = getDotenvOptionsSchemaRaw;
 
 export type GetDotenvOptionsRaw = z.infer<typeof getDotenvOptionsSchemaRaw>;
