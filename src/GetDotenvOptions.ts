@@ -130,11 +130,18 @@ export interface GetDotenvOptions {
    * explicit variables to include
    */
   vars?: ProcessEnv;
+
+  /**
+   * Host-only feature flag: guarded integration of the new config
+   * loader/overlay path in the plugin-first CLI host. Ignored by the
+   * legacy getDotenv() path; accepted here to allow callers like the
+   * demo host to opt in without type errors.
+   */
+  useConfigLoader?: boolean;
 }
 
 /**
- * Converts programmatic CLI options to `getDotenv` options.
- *
+ * Converts programmatic CLI options to `getDotenv` options. *
  * @param cliOptions - CLI options. Defaults to `{}`.
  *
  * @returns `getDotenv` options.

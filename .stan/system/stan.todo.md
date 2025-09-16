@@ -1,21 +1,21 @@
 # Development Plan — get-dotenv
 
-When updated: 2025-09-16T22:05:00Z
+When updated: 2025-09-16T23:59:00Z
 NOTE: Update timestamp on commit.
 
-## Next up- Step C — Batch plugin  - Port batch subcommand into src/plugins/batch (no behavior changes).  - Wire the shipped CLI internally to use batch plugin to maintain parity.  - Plan exports for plugins (subpath export), to be added in a later code change.
-  - Tests: parity with current behavior (list, cwd, shell resolution, ignore-errors).- Step D — Config loader (formats & env overlays)
-  - Loader features (for the new host first):
-    - Discover packaged root config; consumer repo global + .local.
-    - Support JSON/YAML; JS/TS via direct import → esbuild → transpile fallback; clear error guidance.
-  - (Host continues) Wire CLI option parsing/validation against schemas (strict).
-  - Config-provided env sources:
-    - vars (global, public) and envVars (env-specific, public) in config.
-    - JS/TS config: allow dynamic map (GetDotenvDynamic). - Env overlay engine:
-    - Apply precedence axes: kind (dynamic > env > global) > privacy (local > public) > source (config > file).
-    - Programmatic dynamic sits above all dynamics.
-    - Preserve multi-path file cascade order per existing behavior.
-  - Tests: loader precedence; overlay combinations; dynamic ordering; progressive expansion.
+## Next up- Step C — Batch plugin - Port batch subcommand into src/plugins/batch (no behavior changes). - Wire the shipped CLI internally to use batch plugin to maintain parity. - Plan exports for plugins (subpath export), to be added in a later code change.
+
+- Tests: parity with current behavior (list, cwd, shell resolution, ignore-errors).- Step D — Config loader (formats & env overlays) - Loader features (for the new host first):
+  - Discover packaged root config; consumer repo global + .local.
+  - Support JSON/YAML; JS/TS via direct import → esbuild → transpile fallback; clear error guidance.
+- (Host continues) Wire CLI option parsing/validation against schemas (strict).
+- Config-provided env sources:
+  - vars (global, public) and envVars (env-specific, public) in config.
+  - JS/TS config: allow dynamic map (GetDotenvDynamic). - Env overlay engine:
+  - Apply precedence axes: kind (dynamic > env > global) > privacy (local > public) > source (config > file).
+  - Programmatic dynamic sits above all dynamics.
+  - Preserve multi-path file cascade order per existing behavior.
+- Tests: loader precedence; overlay combinations; dynamic ordering; progressive expansion.
 
 - Step E — Legacy parity safeguards
   - Ensure existing CLI and generator behavior unchanged under warn-mode validation.
@@ -132,3 +132,8 @@ NOTE: Update timestamp on commit.
   - Extend rollup config to produce ESM/CJS and .d.ts outputs for the new subpaths.
   - Note: knip still flags yaml/zod as unused from the main entry; subpaths are now
     public exports and can be referenced downstream.
+- Step D (fix): Host integration typing
+  - Add `useConfigLoader?: boolean` to `GetDotenvOptions` so the demo
+    host can pass `{ useConfigLoader: true }` to `resolveAndLoad`
+    without TS2353. Clears typecheck/typedoc/build warnings tied to
+    this flag.
