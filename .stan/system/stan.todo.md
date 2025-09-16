@@ -1,10 +1,9 @@
 # Development Plan — get-dotenv
 
-When updated: 2025-09-17T01:35:00Z
+When updated: 2025-09-17T02:00:00Z
 NOTE: Update timestamp on commit.
 
-## Next up- Step C — Batch plugin - Port batch subcommand into src/plugins/batch (no behavior changes). - Wire the shipped CLI internally to use batch plugin to maintain parity. - Plan exports for plugins (subpath export), to be added in a later code change.- Tests: parity with current behavior (list, cwd, shell resolution, ignore-errors).- Step D — Config loader (formats & env overlays) - Loader features (for the new host first):  - Discover packaged root config; consumer repo global + .local.  - Support JSON/YAML; JS/TS via direct import → esbuild → transpile fallback; clear error guidance.
-- (Host continues) Wire CLI option parsing/validation against schemas (strict).
+## Next up- Step C — Batch plugin - Port batch subcommand into src/plugins/batch (no behavior changes). - Wire the shipped CLI internally to use batch plugin to maintain parity. - Plan exports for plugins (subpath export), to be added in a later code change.- Tests: parity with current behavior (list, cwd, shell resolution, ignore-errors).- Step D — Config loader (formats & env overlays) - Loader features (for the new host first):  - Discover packaged root config; consumer repo global + .local.  - Support JSON/YAML; JS/TS via direct import → esbuild → transpile fallback; clear error guidance.- (Host continues) Wire CLI option parsing/validation against schemas (strict).
 - Config-provided env sources:
   - vars (global, public) and envVars (env-specific, public) in config.
   - JS/TS config: allow dynamic map (GetDotenvDynamic). - Env overlay engine:
@@ -152,3 +151,6 @@ NOTE: Update timestamp on commit.
 - Lint: TSDoc escape fix
   - Escape ">" in TSDoc for resolveWithLoader to satisfy tsdoc/syntax
     (no code behavior changes).
+- Docs: reflect guarded config loader flag in README
+  - Add --use-config-loader line to the CLI help section so the README
+    matches the current CLI options.
