@@ -1,10 +1,9 @@
 # Development Plan — get-dotenv
 
-When updated: 2025-09-16T19:55:00Z
+When updated: 2025-09-16T20:25:00Z
 NOTE: Update timestamp on commit.
 
-## Next up
-- Step C — Batch plugin
+## Next up- Step C — Batch plugin
   - Port batch subcommand into src/plugins/batch (no behavior changes).
   - Wire the shipped CLI internally to use batch plugin to maintain parity.
   - Plan exports for plugins (subpath export), to be added in a later code change.
@@ -92,3 +91,12 @@ NOTE: Update timestamp on commit.
     on direct invocation (no subcommand required); preserves legacy behavior.
   - Update tests to type vi.fn using a function signature and remove non-null assertions
     on mock.calls; resolves lint/typecheck errors.
+- Step D — Config loader (JSON/YAML) and overlays
+  - Added schemas at src/schema/getDotenvConfig.ts (RAW/Resolved) with normalization.
+  - Implemented loader at src/config/loader.ts to discover packaged + project configs (JSON/YAML),
+    validate, and normalize; rejects JS/TS and dynamic in JSON/YAML with clear errors.
+  - Implemented overlay engine at src/env/overlay.ts applying axes:
+    kind (env > global) > privacy (local > public) > source (project > packaged) > base.
+    Programmatic explicit vars applied last; progressive expansion preserved.
+  - Tests added for schemas, loader discovery and parsing, and overlay precedence/expansion.
+  - Host integration will be guarded by a flag in a follow-up to preserve legacy behavior.
