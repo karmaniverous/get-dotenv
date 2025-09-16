@@ -18,14 +18,12 @@ import url from 'url';
 
 import { dotenvExpandAll } from './dotenvExpand';
 import {
-  defineDynamic,
   type GetDotenvDynamic,
   type GetDotenvOptions,
   type ProcessEnv,
   resolveGetDotenvOptions,
 } from './GetDotenvOptions';
-import { readDotenv } from './readDotenv';
-/**
+import { readDotenv } from './readDotenv'; /**
  * Asynchronously process dotenv files of the form `.env[.<ENV>][.<PRIVATE_TOKEN>]`
  *
  * @internal Try to import a module by file URL; returns default export when present.
@@ -81,8 +79,8 @@ const loadDynamicFromPath = async (
 
   // Try esbuild first
   try {
-    const esbuild = (await import('esbuild')) as {
-      build: (opts: Record<string, unknown>) => Promise<void>;
+    const esbuild = (await import('esbuild')) as unknown as {
+      build: (opts: Record<string, unknown>) => Promise<unknown>;
     };
     await fs.ensureDir(cacheDir);
     await esbuild.build({
@@ -95,7 +93,7 @@ const loadDynamicFromPath = async (
       sourcemap: false,
       logLevel: 'silent',
     });
-    return importDefault<GetDotenvDynamic>(
+    return await importDefault<GetDotenvDynamic>(
       url.pathToFileURL(cacheFile).toString(),
     );
   } catch {
@@ -118,7 +116,7 @@ const loadDynamicFromPath = async (
     });
     await fs.ensureDir(cacheDir);
     await fs.writeFile(cacheFile, out.outputText, 'utf-8');
-    return importDefault<GetDotenvDynamic>(
+    return await importDefault<GetDotenvDynamic>(
       url.pathToFileURL(cacheFile).toString(),
     );
   } catch {

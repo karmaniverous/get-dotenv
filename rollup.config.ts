@@ -32,6 +32,8 @@ const pkgJson = JSON.parse(
 const external = [
   ...Object.keys(pkgJson.dependencies ?? {}),
   ...Object.keys(pkgJson.peerDependencies ?? {}),
+  'esbuild',
+  'typescript',
   ...builtinModules,
   ...builtinModules.map((m) => `node:${m}`),
 ];

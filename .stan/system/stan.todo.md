@@ -1,9 +1,11 @@
 # Development Plan — get-dotenv
 
-When updated: 2025-09-16T09:30:00Z
+When updated: 2025-09-16T10:20:00Z
 NOTE: Update timestamp on commit.
 
-## Next up- Sanity passes: npm run typecheck, npm run lint:fix, npm run test, npm run build to confirm the Rollup plugin fix and overall health.
+## Next up
+
+- Re-run sanity passes: npm run typecheck, npm run lint:fix, npm run test, npm run build, npm run stan:docs, npm run knip. Expect green across the board.
 - Docs: update README (Vitest switch, coverage, Node >=22.19, shell defaults).
 - Rollup: monitor externalization approach; if consumers request bundled build, add alternate config. Add CI to run test/lint/build.
 - CLI shell behavior
@@ -33,18 +35,18 @@ NOTE: Update timestamp on commit.
 
 - Knip config: align analysis with CLI usage
   - Remove redundant entry pattern for `src/cli/getdotenv/index.ts` per
-    knip hint; project scanning already reaches the CLI tree via imports.  - Add `ignoreDependencies` for runtime-only CLI deps that knip misses:
+    knip hint; project scanning already reaches the CLI tree via imports.
+  - Add `ignoreDependencies` for runtime-only CLI deps that knip misses:
     `execa`, `globby`, `nanoid`, `package-directory`. These are exercised
     by the CLI adapters (cmd/batch) and batch helpers (globby/package-
     directory), but may not be statically resolved by knip under our
     bundler-style module resolution.
 
-- ESLint (tests): enable eslint-plugin-vitest recommended rules for
-  **/*.test.{ts,tsx} with the typed TS parser and globals; resolves the
+- ESLint (tests): enable eslint-plugin-vitest recommended rules for \*_/_.test.{ts,tsx} with the typed TS parser and globals; resolves the
   “unused devDependency” note from knip and improves test linting.
 - CLI types and imports:
   - Replace lingering `@commander-js/extra-typings` import in
-    `src/generateGetDotenvCli/index.ts` with `commander` types.  - Annotate Command usage and sanitize args/options in CLI adapters
+    `src/generateGetDotenvCli/index.ts` with `commander` types. - Annotate Command usage and sanitize args/options in CLI adapters
     (`cmdCommand.ts`, `batchCommand/index.ts`, `batchCommand/cmdCommand.ts`)
     to satisfy strictTypeChecked no-unsafe-\* rules.
 
