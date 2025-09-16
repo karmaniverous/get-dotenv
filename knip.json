@@ -3,12 +3,6 @@
   "project": [],
   "ignore": [],
   "ignoreBinaries": [],
-  "ignoreDependencies": [
-    "execa",
-    "globby",
-    "nanoid",
-    "package-directory",
-    "esbuild"
-  ],
+  "ignoreDependencies": ["execa", "globby", "nanoid", "package-directory"],
   "rules": { "exports": "off", "types": "off" }
 }

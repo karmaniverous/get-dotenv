@@ -102,7 +102,7 @@ Since keys will be evaluated progressively, each successive key function will ha
 
 ### TypeScript-first dynamic processing
 
-You can write your dynamic module in TypeScript and point `dynamicPath` at a `.ts` file. get-dotenv will compile it automatically when [`esbuild`](https://esbuild.github.io/) is available:
+You can write your dynamic module in TypeScript and point `dynamicPath` at a `.ts` file. Install [`esbuild`](https://esbuild.github.io/) as a dev dependency to enable automatic compilation:
 
 ```ts
 // dynamic.ts
@@ -111,10 +111,9 @@ export default {
 };
 ```
 
-If `esbuild` is not installed and a direct import fails, you have two options:
-
-- Install it (recommended): `npm i -D esbuild`
-- Or precompile your `dynamic.ts` and point `dynamicPath` to the compiled `.js`.
+If `esbuild` is not installed and a direct import fails, get-dotenv attempts a
+simple fallback for single-file `.ts` modules without imports; otherwise it will
+throw with clear guidance to install `esbuild`.
 
 Programmatic users can skip files entirely and pass dynamic variables directly:
 
@@ -138,11 +137,11 @@ Notes:
 #### Troubleshooting
 
 - “Unknown file extension '.ts'” when loading `dynamic.ts`:
-  - Install `esbuild` (`npm i -D esbuild`), or
-  - Precompile your `dynamic.ts` and point `dynamicPath` to the output `.js`.
+  - Install `esbuild` (`npm i -D esbuild`).
 
 - “Unable to load dynamic TypeScript file …”:
-  - Same as above: install `esbuild` or precompile; for single-file modules you can also rely on a TypeScript transpile fallback, but imports inside `dynamic.ts` are best handled with `esbuild` bundling.
+  - Install `esbuild`. A simple transpile fallback exists only for trivial
+    single-file modules; any imports in `dynamic.ts` require `esbuild` bundling.
 
 ## Command Line Interface
 

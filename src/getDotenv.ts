@@ -122,11 +122,10 @@ const loadDynamicFromPath = async (
   } catch {
     throw new Error(
       `Unable to load dynamic TypeScript file: ${absPath}. ` +
-        `Install 'esbuild' (recommended) or precompile to JS and point dynamicPath at it.`,
+        `Install 'esbuild' (devDependency) to enable TypeScript dynamic modules.`,
     );
   }
 };
-
 /**
  * Asynchronously process dotenv files of the form `.env[.<ENV>][.<PRIVATE_TOKEN>]`
  *

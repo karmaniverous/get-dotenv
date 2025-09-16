@@ -33,6 +33,7 @@
     "@types/node": "^22",
     "@vitest/coverage-v8": "^3.2.4",
     "auto-changelog": "^2.5.0",
+    "esbuild": "^0.23.0",
     "eslint": "^9.35.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-jsonc": "^2.20.1",
@@ -94,6 +95,14 @@
   "license": "BSD-3-Clause",
   "main": "dist/index.cjs",
   "name": "@karmaniverous/get-dotenv",
+  "peerDependencies": {
+    "esbuild": "*"
+  },
+  "peerDependenciesMeta": {
+    "esbuild": {
+      "optional": true
+    }
+  },
   "publishConfig": {
     "access": "public"
   },

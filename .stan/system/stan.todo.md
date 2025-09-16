@@ -1,10 +1,9 @@
 # Development Plan — get-dotenv
 
-When updated: 2025-09-16T10:20:00Z
+When updated: 2025-09-16T11:40:00Z
 NOTE: Update timestamp on commit.
 
 ## Next up
-
 - Re-run sanity passes: npm run typecheck, npm run lint:fix, npm run test, npm run build, npm run stan:docs, npm run knip. Expect green across the board.
 - Docs: update README (Vitest switch, coverage, Node >=22.19, shell defaults).
 - Rollup: monitor externalization approach; if consumers request bundled build, add alternate config. Add CI to run test/lint/build.
@@ -20,10 +19,21 @@ NOTE: Update timestamp on commit.
 
 ## Completed (recent)
 
+- Dynamic TS enablement & tests:
+  - Add `esbuild` to devDependencies so CI exercises dynamic.ts
+    auto-compile path; keep it externalized in Rollup.
+  - Advertise integration with optional peer metadata
+    (`peerDependencies` + `peerDependenciesMeta.optional`).
+  - Add fallback/error-path tests using vitest ESM mocks to simulate
+    missing `esbuild` and missing `typescript`.
+  - Update README to steer users to “install esbuild”; remove
+    precompile-to-JS guidance; clarify trivial fallback only.
+  - Remove `esbuild` from knip ignore (now declared).
+  - Simplify error message in `getDotenv` to recommend installing esbuild.
+
 - Dynamic variables (TS-first DX):
   - Add programmatic `dynamic?: GetDotenvDynamic` with precedence over
-    `dynamicPath`. Export `defineDynamic` helper to improve inference.
-  - Auto-compile `dynamic.ts` via optional `esbuild` (bundle to a temp
+    `dynamicPath`. Export `defineDynamic` helper to improve inference.  - Auto-compile `dynamic.ts` via optional `esbuild` (bundle to a temp
     ESM file). Fallback to `typescript.transpileModule` for simple
     single-file modules; otherwise emit a concise guidance error.
   - CLI: update `--dynamic-path` help to note `.ts` auto-compilation.
