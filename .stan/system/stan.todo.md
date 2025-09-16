@@ -1,16 +1,17 @@
 # Development Plan — get-dotenv
 
-When updated: 2025-09-16T18:25:00Z
+When updated: 2025-09-16T18:45:00Z
 NOTE: Update timestamp on commit.
 
 ## Next up- Step B — Plugin host (GetDotenvCli extends Command)
-  - Implement class with:
-    - preSubcommand lifecycle to resolve options (Zod) and call getDotenv.
-    - Context creation { optionsResolved, dotenv, plugins? }, optional process.env merge.
-    - Accessor cli.getCtx(); Symbol-keyed storage on root.
-    - Namespacing helper cli.ns('aws') for mounting subcommands.
-  - Add definePlugin helper with .use() composition; install order parent → children for setup and afterResolve.
-  - Tests: context lifecycle; nested commands; composition order; subprocess env passing.
+
+- Implement class with:
+  - preSubcommand lifecycle to resolve options (Zod) and call getDotenv.
+  - Context creation { optionsResolved, dotenv, plugins? }, optional process.env merge.
+  - Accessor cli.getCtx(); Symbol-keyed storage on root.
+  - Namespacing helper cli.ns('aws') for mounting subcommands.
+- Add definePlugin helper with .use() composition; install order parent → children for setup and afterResolve.
+- Tests: context lifecycle; nested commands; composition order; subprocess env passing.
 
 - Step C — Batch plugin
   - Port batch subcommand into src/plugins/batch (no behavior changes).
@@ -67,13 +68,20 @@ NOTE: Update timestamp on commit.
   - Fixed truncated GetDotenvCli.test.ts (parent/child composition and ns test).
   - Rewrote TSDoc example in definePlugin.ts using a fenced code block to satisfy
     tsdoc/syntax.
- - Step B (strict validation + docs warning)
-   - Host now validates resolved options with Zod in resolveAndLoad (strict mode).
-   - Added negative test asserting rejection of invalid option shapes.
-   - Marked internal DefineSpec type as @internal to silence Typedoc warning
-     about a non-exported referenced type.
- - Step B (fix): exactOptionalPropertyTypes + ctx storage
-   - Cast Zod-validated options to satisfy exactOptionalPropertyTypes when
-     invoking getDotenv and storing optionsResolved in ctx.
-   - Fixed context assignment line (was commented inadvertently), so getCtx()
-     returns the current invocation context.
+- Step B (strict validation + docs warning)
+  - Host now validates resolved options with Zod in resolveAndLoad (strict mode).
+  - Added negative test asserting rejection of invalid option shapes.
+  - Marked internal DefineSpec type as @internal to silence Typedoc warning
+    about a non-exported referenced type.
+- Step B (fix): exactOptionalPropertyTypes + ctx storage
+  - Cast Zod-validated options to satisfy exactOptionalPropertyTypes when
+    invoking getDotenv and storing optionsResolved in ctx.
+  - Fixed context assignment line (was commented inadvertently), so getCtx()
+    returns the current invocation context.
+- Step C — Batch plugin (skeleton + parity tests)
+  - Added src/plugins/batch (plugin) registering "batch" with flags:
+    --pkg-cwd, --root-path, --globs, --command, --list, --ignore-errors.
+  - Reuses existing resolveCommand/resolveShell and execShellCommandBatch for behavior parity.
+  - Tests (mocks executor): list mode, shell resolution (script override),
+    pkg-cwd propagation, ignore-errors propagation.
+  - Wiring the shipped CLI to use the plugin remains as a follow-up (no behavior change).
