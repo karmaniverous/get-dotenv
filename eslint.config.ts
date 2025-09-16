@@ -4,6 +4,7 @@ import jsonc from 'eslint-plugin-jsonc';
 import prettierPlugin from 'eslint-plugin-prettier';
 import simpleImportSortPlugin from 'eslint-plugin-simple-import-sort';
 import tsdocPlugin from 'eslint-plugin-tsdoc';
+import vitestPlugin from 'eslint-plugin-vitest';
 import globals from 'globals';
 import jsoncParser from 'jsonc-eslint-parser';
 import { dirname } from 'path';
@@ -23,6 +24,13 @@ const strictTypeCheckedRules = strictConfigs.reduce<Record<string, unknown>>(
   },
   {},
 );
+// Safely extract Vitest recommended rules for flat config usage.
+const vitestRecommendedRules =
+  (
+    vitestPlugin as unknown as {
+      configs?: { recommended?: { rules?: Record<string, unknown> } };
+    }
+  ).configs?.recommended?.rules ?? {};
 
 export default [
   // Make Node globals (process, console, etc.) available project-wide
@@ -111,6 +119,28 @@ export default [
       'prettier/prettier': 'error',
       'simple-import-sort/exports': 'error',
       'simple-import-sort/imports': 'error',
+    },
+  },
+  // Vitest-specific rules for test files, with typed parser settings
+  {
+    files: ['**/*.test.{ts,tsx}'],
+    languageOptions: {
+      parser: tseslint.parser,
+      parserOptions: {
+        project: ['./tsconfig.json'],
+        tsconfigRootDir,
+      },
+      // Re-assert globals in this block (flat config does not implicitly merge)
+      globals: { ...globals.node, ...globals.es2024 },
+    },
+    plugins: {
+      vitest: vitestPlugin,
+    },
+    rules: {
+      // Apply Vitest recommended and allow projects to override locally if needed
+      ...vitestRecommendedRules,
+      // Keep Prettier alignment in tests as well if desired (optional)
+      'prettier/prettier': 'error',
     },
   },
   prettierConfig,

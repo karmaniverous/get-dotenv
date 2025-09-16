@@ -19,10 +19,13 @@ NOTE: Update timestamp on commit.
 
 ## Completed (recent)
 
+- ESLint (tests): enable eslint-plugin-vitest recommended rules for
+  **/*.test.{ts,tsx} with the typed TS parser and globals; resolves the
+  “unused devDependency” note from knip and improves test linting.
+
 - CLI types and imports:
   - Replace lingering `@commander-js/extra-typings` import in
-    `src/generateGetDotenvCli/index.ts` with `commander` types.
-  - Annotate Command usage and sanitize args/options in CLI adapters
+    `src/generateGetDotenvCli/index.ts` with `commander` types.  - Annotate Command usage and sanitize args/options in CLI adapters
     (`cmdCommand.ts`, `batchCommand/index.ts`, `batchCommand/cmdCommand.ts`)
     to satisfy strictTypeChecked no-unsafe-\* rules.
 
