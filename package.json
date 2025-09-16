@@ -19,7 +19,9 @@
     "fs-extra": "^11.3.1",
     "globby": "^14",
     "nanoid": "^5.1.5",
-    "package-directory": "^8.1.0"
+    "package-directory": "^8.1.0",
+    "yaml": "^2.5.0",
+    "zod": "^3.23.8"
   },
   "description": "Process dotenv files in an arbitrary location & optionally populate environment variables.",
   "devDependencies": {
@@ -78,7 +80,8 @@
     }
   },
   "files": [
-    "dist"
+    "dist",
+    "getdotenv.config.json"
   ],
   "homepage": "https://github.com/karmaniverous/get-dotenv#readme",
   "keywords": [

@@ -1,0 +1,19 @@
+{
+  "//": "Packaged root defaults for get-dotenv (lowest precedence).",
+  "dotenvToken": ".env",
+  "privateToken": "local",
+  "paths": "./",
+  "loadProcess": true,
+  "shell": true,
+  "scripts": {
+    "git-status": {
+      "cmd": "git branch --show-current && git status -s -u",
+      "shell": true
+    }
+  },
+  "excludeDynamic": false,
+  "excludeEnv": false,
+  "excludeGlobal": false,
+  "excludePrivate": false,
+  "excludePublic": false
+}
