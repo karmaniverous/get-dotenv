@@ -1,10 +1,9 @@
 # Development Plan — get-dotenv
 
-When updated: 2025-09-16T23:59:00Z
+When updated: 2025-09-17T00:25:00Z
 NOTE: Update timestamp on commit.
 
 ## Next up- Step C — Batch plugin - Port batch subcommand into src/plugins/batch (no behavior changes). - Wire the shipped CLI internally to use batch plugin to maintain parity. - Plan exports for plugins (subpath export), to be added in a later code change.
-
 - Tests: parity with current behavior (list, cwd, shell resolution, ignore-errors).- Step D — Config loader (formats & env overlays) - Loader features (for the new host first):
   - Discover packaged root config; consumer repo global + .local.
   - Support JSON/YAML; JS/TS via direct import → esbuild → transpile fallback; clear error guidance.
@@ -137,3 +136,8 @@ NOTE: Update timestamp on commit.
     host can pass `{ useConfigLoader: true }` to `resolveAndLoad`
     without TS2353. Clears typecheck/typedoc/build warnings tied to
     this flag.
+- Step D — Host CLI flag for config loader
+  - Add `--use-config-loader` to the demo host CLI (`getdotenv-host`).
+  - Pre-resolve the dotenv context with the flag so batch subcommands run
+    inside the overlaid environment when enabled.
+  - Default remains OFF; behavior unchanged unless the flag is provided.
