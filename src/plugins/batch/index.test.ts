@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 // Mock the batch executor to capture inputs
-const execMock = vi.fn<[Record<string, unknown>], void>();
+const execMock = vi.fn<(arg: Record<string, unknown>) => void>();
 vi.mock(
   '../../generateGetDotenvCli/batchCommand/execShellCommandBatch',
   () => ({
@@ -43,12 +43,15 @@ describe('plugins/batch', () => {
     ]);
 
     expect(execMock).toHaveBeenCalledTimes(1);
-    const args = execMock.mock.calls[0]![0];
+    // Safe after call-count assertion
+    const firstCall = execMock.mock.calls[0] as
+      | [Record<string, unknown>]
+      | undefined;
+    const [args] = firstCall as [Record<string, unknown>];
     expect(args.list).toBe(true);
     expect(args.globs).toBe('a b');
     expect(args.rootPath).toBe('./');
   });
-
   it('resolves shell from script override', async () => {
     const cli = new GetDotenvCli('test').use(
       batchPlugin({
@@ -70,7 +73,10 @@ describe('plugins/batch', () => {
     ]);
 
     expect(execMock).toHaveBeenCalledTimes(1);
-    const args = execMock.mock.calls[0]![0];
+    const firstCall = execMock.mock.calls[0] as
+      | [Record<string, unknown>]
+      | undefined;
+    const [args] = firstCall as [Record<string, unknown>];
     expect(args.command).toBe('npm run build');
     expect(args.shell).toBe('/bin/zsh');
   });
@@ -88,7 +94,10 @@ describe('plugins/batch', () => {
     ]);
 
     expect(execMock).toHaveBeenCalledTimes(1);
-    const args = execMock.mock.calls[0]![0];
+    const firstCall = execMock.mock.calls[0] as
+      | [Record<string, unknown>]
+      | undefined;
+    const [args] = firstCall as [Record<string, unknown>];
     expect(args.pkgCwd).toBe(true);
   });
   it('propagates ignore-errors', async () => {
@@ -105,7 +114,10 @@ describe('plugins/batch', () => {
     ]);
 
     expect(execMock).toHaveBeenCalledTimes(1);
-    const args = execMock.mock.calls[0]![0];
+    const firstCall = execMock.mock.calls[0] as
+      | [Record<string, unknown>]
+      | undefined;
+    const [args] = firstCall as [Record<string, unknown>];
     expect(args.ignoreErrors).toBe(true);
   });
 });

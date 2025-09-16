@@ -1,10 +1,9 @@
 # Development Plan — get-dotenv
 
-When updated: 2025-09-16T19:30:00Z
+When updated: 2025-09-16T19:55:00Z
 NOTE: Update timestamp on commit.
 
 ## Next up
-
 - Step C — Batch plugin
   - Port batch subcommand into src/plugins/batch (no behavior changes).
   - Wire the shipped CLI internally to use batch plugin to maintain parity.
@@ -88,3 +87,8 @@ NOTE: Update timestamp on commit.
   - Batch plugin tests: typed execMock with a single-arg signature and use non-null
     assertion on mock.calls to avoid unsafe casts; fixes TS errors and build/typedoc noise.
   - Lint: add no-op await in install() to satisfy @typescript-eslint/require-await.
+- Step C (plugin wiring + tests)
+  - Switch batch plugin from preSubcommand hook to an action handler so it runs
+    on direct invocation (no subcommand required); preserves legacy behavior.
+  - Update tests to type vi.fn using a function signature and remove non-null assertions
+    on mock.calls; resolves lint/typecheck errors.

@@ -1,3 +1,5 @@
+import type { Command } from 'commander';
+
 import { definePlugin } from '../../cliHost/definePlugin';
 import type { GetDotenvCli } from '../../cliHost/GetDotenvCli';
 import { execShellCommandBatch } from '../../generateGetDotenvCli/batchCommand/execShellCommandBatch';
@@ -60,16 +62,11 @@ export const batchPlugin = (opts: BatchPluginOptions = {}) =>
           '-e, --ignore-errors',
           'ignore errors and continue with next path',
         )
-        .hook('preSubcommand', async (thisCommand) => {
-          // Ensure context exists (host preSubcommand will create if missing).
-          const ctx = cli.getCtx();
-          void ctx; // reserved for future use (dotenv/process merge already handled by host)
+        .action(async (_options: unknown, thisCommand: Command) => {
+          // Ensure context exists (host preSubcommand on root creates if missing).
+          void cli.getCtx();
 
-          const raw = (
-            thisCommand as unknown as {
-              opts: () => Record<string, unknown>;
-            }
-          ).opts();
+          const raw = thisCommand.opts();
           const commandOpt =
             typeof raw.command === 'string' ? raw.command : undefined;
           const ignoreErrors = !!raw.ignoreErrors;
