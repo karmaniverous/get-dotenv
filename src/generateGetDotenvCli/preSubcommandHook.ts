@@ -1,7 +1,12 @@
 import { execaCommand } from 'execa';
 
+import { resolveDotenvWithConfigLoader } from '../config/resolveWithLoader';
 import { getDotenv } from '../getDotenv';
-import { getDotenvCliOptions2Options, type Logger } from '../GetDotenvOptions';
+import {
+  getDotenvCliOptions2Options,
+  type Logger,
+  type ProcessEnv,
+} from '../GetDotenvOptions';
 import { defaultsDeep } from '../util/defaultsDeep';
 import {
   resolveExclusion,
@@ -240,15 +245,23 @@ export type PreSubHookContext = {
     ).getDotenvCliOptions = mergedGetDotenvCliOptions;
 
     // Execute getdotenv.
-    const dotenv = await getDotenv(
-      getDotenvCliOptions2Options(mergedGetDotenvCliOptions),
+    let dotenv: ProcessEnv;
+    const serviceOptions = getDotenvCliOptions2Options(
+      mergedGetDotenvCliOptions,
     );
+    if (
+      (mergedGetDotenvCliOptions as unknown as { useConfigLoader?: boolean })
+        .useConfigLoader
+    ) {
+      dotenv = await resolveDotenvWithConfigLoader(serviceOptions);
+    } else {
+      dotenv = await getDotenv(serviceOptions);
+    }
     if (mergedGetDotenvCliOptions.debug)
       logger.debug('\n*** getDotenv output ***\n', dotenv);
 
     // Execute post-hook.
     if (postHook) await postHook(dotenv);
-
     // Execute command.
 
     const args = (thisCommand as { args?: unknown[] }).args ?? [];

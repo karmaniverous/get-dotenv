@@ -244,6 +244,10 @@ export const createRootCommand = (
       dynamicPath,
     )
     .option(
+      '--use-config-loader',
+      'enable config loader/overlay path (guarded; default OFF)',
+    )
+    .option(
       '--paths <string>',
       'dotenv-expanded delimited list of paths to dotenv directory',
       dotenvExpandFromProcessEnv,

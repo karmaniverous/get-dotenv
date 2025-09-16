@@ -1,4 +1,5 @@
 import { Command } from 'commander';
+// NOTE: no-op change to assist patch application; functional behavior unchanged.
 import fs from 'fs-extra';
 import path from 'path';
 
