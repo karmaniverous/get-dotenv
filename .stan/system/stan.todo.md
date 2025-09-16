@@ -1,10 +1,9 @@
 # Development Plan — get-dotenv
 
-When updated: 2025-09-16T18:05:00Z
+When updated: 2025-09-16T18:25:00Z
 NOTE: Update timestamp on commit.
 
-## Next up
-- Step B — Plugin host (GetDotenvCli extends Command)
+## Next up- Step B — Plugin host (GetDotenvCli extends Command)
   - Implement class with:
     - preSubcommand lifecycle to resolve options (Zod) and call getDotenv.
     - Context creation { optionsResolved, dotenv, plugins? }, optional process.env merge.
@@ -73,3 +72,8 @@ NOTE: Update timestamp on commit.
    - Added negative test asserting rejection of invalid option shapes.
    - Marked internal DefineSpec type as @internal to silence Typedoc warning
      about a non-exported referenced type.
+ - Step B (fix): exactOptionalPropertyTypes + ctx storage
+   - Cast Zod-validated options to satisfy exactOptionalPropertyTypes when
+     invoking getDotenv and storing optionsResolved in ctx.
+   - Fixed context assignment line (was commented inadvertently), so getCtx()
+     returns the current invocation context.

@@ -18,7 +18,6 @@ export type GetDotenvCliCtx = {
 };
 
 const CTX_SYMBOL = Symbol('GetDotenvCli.ctx');
-
 /**
  * Plugin-first CLI host for get-dotenv. Extends Commander.Command.
  *
@@ -56,15 +55,19 @@ export class GetDotenvCli extends Command {
     // Resolve defaults, then validate strictly under the new host.
     const optionsResolved = await resolveGetDotenvOptions(customOptions);
     const validated = getDotenvOptionsSchemaResolved.parse(optionsResolved);
-    const dotenv = await getDotenv(validated);
+    // exactOptionalPropertyTypes: cast parsed object to the exact optional shape.
+    const dotenv = await getDotenv(
+      validated as unknown as Partial<GetDotenvOptions>,
+    );
 
     const ctx: GetDotenvCliCtx = {
-      optionsResolved: validated,
+      optionsResolved: validated as unknown as GetDotenvOptions,
       dotenv,
       plugins: {},
     };
 
-    // Persist context on the instance for later access.    (this as unknown as Record<symbol, GetDotenvCliCtx>)[CTX_SYMBOL] = ctx;
+    // Persist context on the instance for later access.
+    (this as unknown as Record<symbol, GetDotenvCliCtx>)[CTX_SYMBOL] = ctx;
 
     // Ensure plugins are installed exactly once, then run afterResolve.
     await this.install();
@@ -72,7 +75,6 @@ export class GetDotenvCli extends Command {
 
     return ctx;
   }
-
   /**
    * Retrieve the current invocation context (if any).
    */
