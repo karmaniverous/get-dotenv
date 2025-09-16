@@ -23,6 +23,7 @@
   },
   "description": "Process dotenv files in an arbitrary location & optionally populate environment variables.",
   "devDependencies": {
+    "@dotenvx/dotenvx": "^1.49.1",
     "@eslint/js": "^9.35.0",
     "@rollup/plugin-alias": "^5.1.1",
     "@rollup/plugin-commonjs": "^28.0.6",
@@ -144,8 +145,8 @@
     "knip": "knip",
     "lint": "eslint . eslint.config.ts",
     "lint:fix": "eslint --fix . eslint.config.ts",
-    "release": "release-it",
-    "release:pre": "release-it --no-git.requireBranch --github.prerelease --preRelease",
+    "release": "dotenvx run -f .env.local -- release-it",
+    "release:pre": "dotenvx run -f .env.local -- release-it --no-git.requireBranch --github.prerelease --preRelease",
     "stan:docs": "typedoc --emit none",
     "test": "vitest run --coverage",
     "typecheck": "tsc -p tsconfig.json --noEmit"
