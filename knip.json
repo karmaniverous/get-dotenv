@@ -1,8 +1,8 @@
 {
-  "entry": [],
+  "entry": ["src/index.ts"],
   "project": [],
   "ignore": [],
   "ignoreBinaries": [],
-  "ignoreDependencies": [],
+  "ignoreDependencies": ["execa", "globby", "nanoid", "package-directory"],
   "rules": { "exports": "off", "types": "off" }
 }

@@ -19,10 +19,18 @@ NOTE: Update timestamp on commit.
 
 ## Completed (recent)
 
+- Knip config: align analysis with CLI usage
+  - Remove redundant entry pattern for `src/cli/getdotenv/index.ts` per
+    knip hint; project scanning already reaches the CLI tree via imports.
+  - Add `ignoreDependencies` for runtime-only CLI deps that knip misses:
+    `execa`, `globby`, `nanoid`, `package-directory`. These are exercised
+    by the CLI adapters (cmd/batch) and batch helpers (globby/package-
+    directory), but may not be statically resolved by knip under our
+    bundler-style module resolution.
+
 - ESLint (tests): enable eslint-plugin-vitest recommended rules for
   **/*.test.{ts,tsx} with the typed TS parser and globals; resolves the
   “unused devDependency” note from knip and improves test linting.
-
 - CLI types and imports:
   - Replace lingering `@commander-js/extra-typings` import in
     `src/generateGetDotenvCli/index.ts` with `commander` types.  - Annotate Command usage and sanitize args/options in CLI adapters

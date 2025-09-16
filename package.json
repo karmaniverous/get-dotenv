@@ -19,9 +19,7 @@
     "fs-extra": "^11.3.1",
     "globby": "^14",
     "nanoid": "^5.1.5",
-    "package-directory": "^8.1.0",
-    "radash": "^12.1.1",
-    "tslog": "^4.9.3"
+    "package-directory": "^8.1.0"
   },
   "description": "Process dotenv files in an arbitrary location & optionally populate environment variables.",
   "devDependencies": {
@@ -30,7 +28,6 @@
     "@rollup/plugin-commonjs": "^28.0.6",
     "@rollup/plugin-json": "^6.1.0",
     "@rollup/plugin-node-resolve": "^16.0.1",
-    "@rollup/plugin-terser": "^0.4.4",
     "@rollup/plugin-typescript": "^12.1.4",
     "@types/fs-extra": "^11.0.4",
     "@types/node": "^22",
