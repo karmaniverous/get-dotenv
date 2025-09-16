@@ -68,6 +68,63 @@ const config: RollupOptions[] = [
     ],
   },
 
+  // cliHost subpath (ESM/CJS)
+  {
+    ...commonInputOptions,
+    input: 'src/cliHost/index.ts',
+    output: [
+      { extend: true, file: `${outputPath}/cliHost.mjs`, format: 'esm' },
+    ],
+  },
+  {
+    ...commonInputOptions,
+    input: 'src/cliHost/index.ts',
+    output: [
+      { extend: true, file: `${outputPath}/cliHost.cjs`, format: 'cjs' },
+    ],
+  },
+  // plugins/batch subpath
+  {
+    ...commonInputOptions,
+    input: 'src/plugins/batch/index.ts',
+    output: [
+      { extend: true, file: `${outputPath}/plugins-batch.mjs`, format: 'esm' },
+    ],
+  },
+  {
+    ...commonInputOptions,
+    input: 'src/plugins/batch/index.ts',
+    output: [
+      { extend: true, file: `${outputPath}/plugins-batch.cjs`, format: 'cjs' },
+    ],
+  },
+  // config loader subpath
+  {
+    ...commonInputOptions,
+    input: 'src/config/index.ts',
+    output: [{ extend: true, file: `${outputPath}/config.mjs`, format: 'esm' }],
+  },
+  {
+    ...commonInputOptions,
+    input: 'src/config/index.ts',
+    output: [{ extend: true, file: `${outputPath}/config.cjs`, format: 'cjs' }],
+  },
+  // env overlay subpath
+  {
+    ...commonInputOptions,
+    input: 'src/env/overlay.ts',
+    output: [
+      { extend: true, file: `${outputPath}/env-overlay.mjs`, format: 'esm' },
+    ],
+  },
+  {
+    ...commonInputOptions,
+    input: 'src/env/overlay.ts',
+    output: [
+      { extend: true, file: `${outputPath}/env-overlay.cjs`, format: 'cjs' },
+    ],
+  },
+
   // Type definitions output.
   {
     ...commonInputOptions,
@@ -92,6 +149,74 @@ const config: RollupOptions[] = [
         file: `${outputPath}/index.d.cts`,
         format: 'cjs',
       },
+    ],
+  },
+  // Types: cliHost
+  {
+    ...commonInputOptions,
+    input: 'src/cliHost/index.ts',
+    plugins: [
+      aliasPlugin({ entries: commonAliases }),
+      ...commonPlugins,
+      dtsPlugin(),
+    ],
+    output: [
+      { extend: true, file: `${outputPath}/cliHost.d.ts`, format: 'esm' },
+      { extend: true, file: `${outputPath}/cliHost.d.mts`, format: 'esm' },
+      { extend: true, file: `${outputPath}/cliHost.d.cts`, format: 'cjs' },
+    ],
+  },
+  // Types: plugins-batch
+  {
+    ...commonInputOptions,
+    input: 'src/plugins/batch/index.ts',
+    plugins: [
+      aliasPlugin({ entries: commonAliases }),
+      ...commonPlugins,
+      dtsPlugin(),
+    ],
+    output: [
+      { extend: true, file: `${outputPath}/plugins-batch.d.ts`, format: 'esm' },
+      {
+        extend: true,
+        file: `${outputPath}/plugins-batch.d.mts`,
+        format: 'esm',
+      },
+      {
+        extend: true,
+        file: `${outputPath}/plugins-batch.d.cts`,
+        format: 'cjs',
+      },
+    ],
+  },
+  // Types: config
+  {
+    ...commonInputOptions,
+    input: 'src/config/index.ts',
+    plugins: [
+      aliasPlugin({ entries: commonAliases }),
+      ...commonPlugins,
+      dtsPlugin(),
+    ],
+    output: [
+      { extend: true, file: `${outputPath}/config.d.ts`, format: 'esm' },
+      { extend: true, file: `${outputPath}/config.d.mts`, format: 'esm' },
+      { extend: true, file: `${outputPath}/config.d.cts`, format: 'cjs' },
+    ],
+  },
+  // Types: env-overlay
+  {
+    ...commonInputOptions,
+    input: 'src/env/overlay.ts',
+    plugins: [
+      aliasPlugin({ entries: commonAliases }),
+      ...commonPlugins,
+      dtsPlugin(),
+    ],
+    output: [
+      { extend: true, file: `${outputPath}/env-overlay.d.ts`, format: 'esm' },
+      { extend: true, file: `${outputPath}/env-overlay.d.mts`, format: 'esm' },
+      { extend: true, file: `${outputPath}/env-overlay.d.cts`, format: 'cjs' },
     ],
   },
 

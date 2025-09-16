@@ -1,11 +1,10 @@
 # Development Plan — get-dotenv
 
-When updated: 2025-09-16T21:40:00Z
+When updated: 2025-09-16T22:05:00Z
 NOTE: Update timestamp on commit.
 
 ## Next up- Step C — Batch plugin  - Port batch subcommand into src/plugins/batch (no behavior changes).  - Wire the shipped CLI internally to use batch plugin to maintain parity.  - Plan exports for plugins (subpath export), to be added in a later code change.
-  - Tests: parity with current behavior (list, cwd, shell resolution, ignore-errors).
-- Step D — Config loader (formats & env overlays)
+  - Tests: parity with current behavior (list, cwd, shell resolution, ignore-errors).- Step D — Config loader (formats & env overlays)
   - Loader features (for the new host first):
     - Discover packaged root config; consumer repo global + .local.
     - Support JSON/YAML; JS/TS via direct import → esbuild → transpile fallback; clear error guidance.
@@ -120,3 +119,16 @@ NOTE: Update timestamp on commit.
   - Restore `const abs = path.resolve(filePath);` (was inadvertently part of a
     comment), resolving TS2304 and the follow-on ESLint no-unsafe-argument at
     the JS/TS config load site.
+- Step D (subpaths + refactor + demo CLI)
+  - Add subpath exports and build outputs:
+    - ./cliHost (GetDotenvCli, definePlugin)
+    - ./plugins/batch (batchPlugin)
+    - ./config (config loader helpers)
+    - ./env/overlay (overlayEnv)
+  - Refactor dynamic module loading into src/util/loadModuleDefault.ts and use it
+    in getDotenv and host file dynamicPath loader (shared behavior).
+  - Add host-only CLI example at src/cli/getdotenv-host (not in package bin) to
+    demonstrate host usage with the config loader enabled.
+  - Extend rollup config to produce ESM/CJS and .d.ts outputs for the new subpaths.
+  - Note: knip still flags yaml/zod as unused from the main entry; subpaths are now
+    public exports and can be referenced downstream.

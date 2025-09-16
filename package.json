@@ -77,6 +77,46 @@
         "types": "./dist/index.d.cts",
         "default": "./dist/index.cjs"
       }
+    },
+    "./cliHost": {
+      "import": {
+        "types": "./dist/cliHost.d.mts",
+        "default": "./dist/cliHost.mjs"
+      },
+      "require": {
+        "types": "./dist/cliHost.d.cts",
+        "default": "./dist/cliHost.cjs"
+      }
+    },
+    "./plugins/batch": {
+      "import": {
+        "types": "./dist/plugins-batch.d.mts",
+        "default": "./dist/plugins-batch.mjs"
+      },
+      "require": {
+        "types": "./dist/plugins-batch.d.cts",
+        "default": "./dist/plugins-batch.cjs"
+      }
+    },
+    "./config": {
+      "import": {
+        "types": "./dist/config.d.mts",
+        "default": "./dist/config.mjs"
+      },
+      "require": {
+        "types": "./dist/config.d.cts",
+        "default": "./dist/config.cjs"
+      }
+    },
+    "./env/overlay": {
+      "import": {
+        "types": "./dist/env-overlay.d.mts",
+        "default": "./dist/env-overlay.mjs"
+      },
+      "require": {
+        "types": "./dist/env-overlay.d.cts",
+        "default": "./dist/env-overlay.cjs"
+      }
     }
   },
   "files": [

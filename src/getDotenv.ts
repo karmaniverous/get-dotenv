@@ -1,20 +1,6 @@
-import { createHash } from 'crypto';
-/**
- * getDotenv — Load and expand dotenv variables from a configurable cascade.
- * * Cascade shape (per input path):
- * - Public global: `<token>` (e.g., `.env`)
- * - Public env: `<token>.<env>`
- * - Private global: `<token>.<privateToken>`
- * - Private env: `<token>.<env>.<privateToken>`
- *
- * Files are parsed (if present), then merged in the order above (earlier
- * overwritten by later). Values are then expanded recursively using the
- * dotenv expansion rules implemented by {@link dotenvExpandAll}.
- */
 import fs from 'fs-extra';
 import { nanoid } from 'nanoid';
 import path from 'path';
-import url from 'url';
 
 import { dotenvExpandAll } from './dotenvExpand';
 import {
@@ -23,109 +9,9 @@ import {
   type ProcessEnv,
   resolveGetDotenvOptions,
 } from './GetDotenvOptions';
-import { readDotenv } from './readDotenv'; /**
- * Asynchronously process dotenv files of the form `.env[.<ENV>][.<PRIVATE_TOKEN>]`
- *
- * @internal Try to import a module by file URL; returns default export when present.
- */
-const importDefault = async <T>(fileUrl: string): Promise<T | undefined> => {
-  const mod = (await import(fileUrl)) as { default?: T };
-  return mod.default;
-};
+import { readDotenv } from './readDotenv';
+import { loadModuleDefault } from './util/loadModuleDefault';
 
-/**
- * @internal Compute a short hash from path + mtime for cache filenames.
- */
-const cacheHash = (absPath: string, mtimeMs: number) =>
-  createHash('sha1')
-    .update(absPath)
-    .update(String(mtimeMs))
-    .digest('hex')
-    .slice(0, 12);
-
-/**
- * @internal Load a dynamic module from path. Supports .js/.mjs/.ts/.tsx:
- * - .js/.mjs: direct import
- * - .ts/.tsx: try direct import (in case a TS loader is active), otherwise:
- *   - esbuild (if present): bundle to a temp ESM file and import it
- *   - fallback: typescript.transpileModule (single-file), then import temp file
- */
-const loadDynamicFromPath = async (
-  absPath: string,
-): Promise<GetDotenvDynamic | undefined> => {
-  if (!(await fs.exists(absPath))) return undefined;
-
-  const ext = path.extname(absPath).toLowerCase();
-  const fileUrl = url.pathToFileURL(absPath).toString();
-  if (ext !== '.ts' && ext !== '.tsx') {
-    return importDefault<GetDotenvDynamic>(fileUrl);
-  }
-
-  // Try direct import (in case user started Node with a TS loader).
-  try {
-    const dyn = await importDefault<GetDotenvDynamic>(fileUrl);
-    if (dyn) return dyn;
-  } catch {
-    // ignore; fall through to compile
-  }
-
-  const stat = await fs.stat(absPath);
-  const hash = cacheHash(absPath, stat.mtimeMs);
-  const cacheDir = path.resolve('.tsbuild', 'getdotenv-dynamic');
-  const cacheFile = path.join(
-    cacheDir,
-    `${path.basename(absPath)}.${hash}.mjs`,
-  );
-
-  // Try esbuild first
-  try {
-    const esbuild = (await import('esbuild')) as unknown as {
-      build: (opts: Record<string, unknown>) => Promise<unknown>;
-    };
-    await fs.ensureDir(cacheDir);
-    await esbuild.build({
-      entryPoints: [absPath],
-      bundle: true,
-      platform: 'node',
-      format: 'esm',
-      target: 'node22',
-      outfile: cacheFile,
-      sourcemap: false,
-      logLevel: 'silent',
-    });
-    return await importDefault<GetDotenvDynamic>(
-      url.pathToFileURL(cacheFile).toString(),
-    );
-  } catch {
-    // no esbuild; fall back to TS transpile for simple modules
-  }
-  try {
-    const ts = (await import('typescript')) as unknown as {
-      transpileModule: (
-        code: string,
-        opts: { compilerOptions: Record<string, unknown> },
-      ) => { outputText: string };
-    };
-    const code = await fs.readFile(absPath, 'utf-8');
-    const out = ts.transpileModule(code, {
-      compilerOptions: {
-        module: 'ESNext',
-        target: 'ES2022',
-        moduleResolution: 'NodeNext',
-      },
-    });
-    await fs.ensureDir(cacheDir);
-    await fs.writeFile(cacheFile, out.outputText, 'utf-8');
-    return await importDefault<GetDotenvDynamic>(
-      url.pathToFileURL(cacheFile).toString(),
-    );
-  } catch {
-    throw new Error(
-      `Unable to load dynamic TypeScript file: ${absPath}. ` +
-        `Install 'esbuild' (devDependency) to enable TypeScript dynamic modules.`,
-    );
-  }
-};
 /**
  * Asynchronously process dotenv files of the form `.env[.<ENV>][.<PRIVATE_TOKEN>]`
  *
@@ -257,7 +143,20 @@ export const getDotenv = async (
       dynamic = options.dynamic;
     } else if (dynamicPath) {
       const absDynamicPath = path.resolve(dynamicPath);
-      dynamic = await loadDynamicFromPath(absDynamicPath);
+      if (await fs.exists(absDynamicPath)) {
+        try {
+          dynamic = await loadModuleDefault<GetDotenvDynamic>(
+            absDynamicPath,
+            'getdotenv-dynamic',
+          );
+        } catch {
+          // Preserve legacy error text for compatibility with tests/docs.
+          throw new Error(
+            `Unable to load dynamic TypeScript file: ${absDynamicPath}. ` +
+              `Install 'esbuild' (devDependency) to enable TypeScript dynamic modules.`,
+          );
+        }
+      }
     }
     if (dynamic) {
       try {

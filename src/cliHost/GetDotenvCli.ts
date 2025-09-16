@@ -1,7 +1,6 @@
 import { Command } from 'commander';
 import fs from 'fs-extra';
 import path from 'path';
-import url from 'url';
 
 import { resolveGetDotenvConfigSources } from '../config/loader';
 import { overlayEnv } from '../env/overlay';
@@ -14,6 +13,7 @@ import {
   resolveGetDotenvOptions,
 } from '../GetDotenvOptions';
 import { getDotenvOptionsSchemaResolved } from '../schema/getDotenvOptions';
+import { loadModuleDefault } from '../util/loadModuleDefault';
 import type { GetDotenvCliPlugin } from './definePlugin';
 
 /** * Per-invocation context shared with plugins and actions.
@@ -25,11 +25,6 @@ export type GetDotenvCliCtx = {
 };
 
 const HOST_META_URL = import.meta.url;
-
-const importDefault = async <T>(fileUrl: string): Promise<T | undefined> => {
-  const mod = (await import(fileUrl)) as { default?: T };
-  return mod.default;
-};
 
 const CTX_SYMBOL = Symbol('GetDotenvCli.ctx');
 /**
@@ -149,73 +144,18 @@ export class GetDotenvCli extends Command {
       // file dynamicPath (lowest)
       if (validated.dynamicPath) {
         const absDynamicPath = path.resolve(validated.dynamicPath);
-        const fileUrl = url.pathToFileURL(absDynamicPath).toString();
-        // TS support: try import -> esbuild -> transpile (best-effort via dynamic import of loader in place)
         try {
-          const dyn = await importDefault<GetDotenvDynamic>(fileUrl);
+          const dyn = await loadModuleDefault<GetDotenvDynamic>(
+            absDynamicPath,
+            'getdotenv-dynamic-host',
+          );
           applyDynamic(dotenv, dyn, validated.env ?? validated.defaultEnv);
         } catch {
-          try {
-            const esbuild = (await import('esbuild')) as unknown as {
-              build: (opts: Record<string, unknown>) => Promise<unknown>;
-            };
-            const outDir = path.resolve('.tsbuild', 'getdotenv-dynamic-host');
-            await fs.ensureDir(outDir);
-            const outfile = path.join(
-              outDir,
-              `${path.basename(absDynamicPath)}.mjs`,
-            );
-            await esbuild.build({
-              entryPoints: [absDynamicPath],
-              bundle: true,
-              platform: 'node',
-              format: 'esm',
-              target: 'node22',
-              outfile,
-              sourcemap: false,
-              logLevel: 'silent',
-            });
-            const dyn2 = await importDefault<GetDotenvDynamic>(
-              url.pathToFileURL(outfile).toString(),
-            );
-            applyDynamic(dotenv, dyn2, validated.env ?? validated.defaultEnv);
-          } catch {
-            // final fallback: try naive transpile
-            try {
-              const ts = (await import('typescript')) as unknown as {
-                transpileModule: (
-                  code: string,
-                  opts: { compilerOptions: Record<string, unknown> },
-                ) => { outputText: string };
-              };
-              const code = await fs.readFile(absDynamicPath, 'utf-8');
-              const out = ts.transpileModule(code, {
-                compilerOptions: {
-                  module: 'ESNext',
-                  target: 'ES2022',
-                  moduleResolution: 'NodeNext',
-                },
-              }).outputText;
-              const outDir = path.resolve('.tsbuild', 'getdotenv-dynamic-host');
-              await fs.ensureDir(outDir);
-              const outfile = path.join(
-                outDir,
-                `${path.basename(absDynamicPath)}.mjs`,
-              );
-              await fs.writeFile(outfile, out, 'utf-8');
-              const dyn3 = await importDefault<GetDotenvDynamic>(
-                url.pathToFileURL(outfile).toString(),
-              );
-              applyDynamic(dotenv, dyn3, validated.env ?? validated.defaultEnv);
-            } catch {
-              throw new Error(
-                `Unable to load dynamic from ${validated.dynamicPath}`,
-              );
-            }
-          }
+          throw new Error(
+            `Unable to load dynamic from ${validated.dynamicPath}`,
+          );
         }
-      }
-      // 4) Write output file if requested
+      } // 4) Write output file if requested
       if (validated.outputPath) {
         await fs.writeFile(
           validated.outputPath,
