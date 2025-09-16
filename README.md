@@ -1,14 +1,16 @@
-<div align="center">
-
 # get-dotenv
 
-[![npm version](https://img.shields.io/npm/v/@karmaniverous/get-dotenv.svg)](https://www.npmjs.com/package/@karmaniverous/get-dotenv)
-![Node Current](https://img.shields.io/node/v/@karmaniverous/get-dotenv)
-[![docs](https://img.shields.io/badge/docs-website-blue)](https://docs.karmanivero.us/get-dotenv)
-[![changelog](https://img.shields.io/badge/changelog-latest-blue.svg)](https://github.com/karmaniverous/get-dotenv/tree/main/CHANGELOG.md)
-[![license](https://img.shields.io/badge/license-BSD--3--Clause-blue.svg)](https://github.com/karmaniverous/get-dotenv/tree/main/LICENSE.md)
+## Requirements
 
-</div>
+- Node.js >= 22.19 (this repository pins 22.19.0 for CI/reproducibility)
+
+## API Reference
+
+Generated API documentation is hosted at:
+
+- https://docs.karmanivero.us/get-dotenv
+
+The site is built with TypeDoc from the source code in this repository.
 
 Load environment variables with a cascade of environment-aware dotenv files. You can:
 
@@ -52,6 +54,14 @@ Dynamic importing is intrinsically asynchronous, and so far I haven't been able 
 
 If you have a use case for sync dotenv processing and DON'T need dynamic variables, let me know and I'll put the restricted version back in. If you have an idea of how to make dynamic imports synchronous, I'm all ears!
 
+## Testing
+
+This project uses Vitest with the V8 coverage provider. Run:
+
+```bash
+npm run test
+```
+
 ## Installation
 
 ```bash
@@ -72,7 +82,7 @@ See the [child CLI example repo](https://github.com/karmaniverous/get-dotenv-chi
 
 ## Dynamic Processing
 
-This package supports the full [`dotenv-expand`](https://www.npmjs.com/package/dotenv-expand) syntax, with some internal performance improvements.
+This package supports the full [`dotenv-expand`](https://www.npmjs.com/package/dotenv-expand) syntax, with some internal performance improvements. Dynamic variables can be authored in JS or TS.
 
 Use the `dynamicPath` option to add a relative path to a Javascript module with a default export like this:
 
@@ -90,29 +100,49 @@ If the value corresponding to a key is a function, it will be executed with the 
 
 Since keys will be evaluated progressively, each successive key function will have access to any previous ones. These keys can also override existing variables.
 
-### Dynamic Processing with TypeScript
+### TypeScript-first dynamic processing
 
-Even though the rest of your project is in TypeScript, the dynamic processing module SHOULD be in JavasScript.
-
-Think about it: the module is loaded via a dynamic import, with the file name determined at run time. If you write this module in TS, you'll have to jump through some hoops to get your bundler to compile this file, and you'll have to be careful to set `dynamicPath` to reference the compiled file. That's a lot of work to do for some very simple logic.
-
-BUT... if you must, then your dynamic module's default export should be of the `GetDotenvDynamic` type, which is defined [here](./src/GetDotenvOptions.ts) and looks like this:
+You can write your dynamic module in TypeScript and point `dynamicPath` at a `.ts` file. get-dotenv will compile it automatically when [`esbuild`](https://esbuild.github.io/) is available:
 
 ```ts
-export type ProcessEnv = Record<string, string | undefined>;
-
-export type GetDotenvDynamicFunction = (
-  vars: ProcessEnv,
-  env: string | undefined,
-) => string | undefined;
-
-export type GetDotenvDynamic = Record<
-  string,
-  GetDotenvDynamicFunction | ReturnType<GetDotenvDynamicFunction>
->;
+// dynamic.ts
+export default {
+  MY_DYNAMIC: ({ APP_SETTING = '' }) => `${APP_SETTING}-ts`,
+};
 ```
 
-The second argumnt `env` of the `GetDotenvDynamicFunction` type is the environment token (if any) specified in the controlling `getDotenv` call.
+If `esbuild` is not installed and a direct import fails, you have two options:
+
+- Install it (recommended): `npm i -D esbuild`
+- Or precompile your `dynamic.ts` and point `dynamicPath` to the compiled `.js`.
+
+Programmatic users can skip files entirely and pass dynamic variables directly:
+
+```ts
+import { getDotenv, defineDynamic } from '@karmaniverous/get-dotenv';
+
+const dynamic = defineDynamic({
+  MY_DYNAMIC(vars, env) {
+    return `${vars.APP_SETTING}-${env ?? ''}`;
+  },
+});
+
+const vars = await getDotenv({ dynamic, paths: ['./'], env: 'dev' });
+```
+
+Notes:
+
+- Programmatic `dynamic` takes precedence over `dynamicPath` when both are provided.
+- Dynamic keys are evaluated progressively, so later keys can reference earlier results.
+
+#### Troubleshooting
+
+- “Unknown file extension '.ts'” when loading `dynamic.ts`:
+  - Install `esbuild` (`npm i -D esbuild`), or
+  - Precompile your `dynamic.ts` and point `dynamicPath` to the output `.js`.
+
+- “Unable to load dynamic TypeScript file …”:
+  - Same as above: install `esbuild` or precompile; for single-file modules you can also rely on a TypeScript transpile fallback, but imports inside `dynamic.ts` are best handled with `esbuild` bundling.
 
 ## Command Line Interface
 
@@ -152,7 +182,7 @@ You can also use `getdotenv` from the command line:
 #   -D, --debug-off                     debug mode OFF (default)
 #   --default-env <string>              default target environment
 #   --dotenv-token <string>             dotenv-expanded token indicating a dotenv file (default: ".env")
-#   --dynamic-path <string>             dynamic variables path
+#   --dynamic-path <string>             dynamic variables path (.js or .ts; .ts is auto-compiled when esbuild is available, otherwise precompile)
 #   --paths <string>                    dotenv-expanded delimited list of paths to dotenv directory (default: "./")
 #   --paths-delimiter <string>          paths delimiter string (default: " ")
 #   --paths-delimiter-pattern <string>  paths delimiter regex pattern
@@ -169,23 +199,17 @@ You can also use `getdotenv` from the command line:
 #   help [command]                      display help for command
 ```
 
-By default, commands (`-c` or `--command` or the `cmd` subcommand either in the base CLI or in the `batch` subcommand) execute in the default OS shell with the `dotenv` context applied. The `-S` or `--shell-off` options will turn this off, and Execa will [execute your command as Javascript](https://github.com/sindresorhus/execa/blob/main/docs/bash.md).
-
-Alternatively, you can use the `-s` or `--shell` option to specify a different shell [following the Execa spec](https://github.com/sindresorhus/execa/blob/main/docs/shell.md). This is useful if you're running a command that requires a specific shell, like `bash` or `zsh`.
-
-Finally, you can set the [`shell`](https://github.com/karmaniverous/get-dotenv-child?tab=readme-ov-file#options) default globally in your `getdotenv.config.json` file.
-
-See [this example repo](https://github.com/karmaniverous/get-dotenv-child) for a deep dive on using the `getDotenv` CLI and how to extend it for your own projects.
-
 ### Default shell behavior
 
 To normalize behavior across platforms, the CLI resolves a default shell when `--shell` is true or omitted:
+
 - POSIX: `/bin/bash`
 - Windows: `powershell.exe`
 
 ### Batch Command
 
 The `getdotenv` base CLI includes one very useful subcommand: `batch`.
+
 This command lets you execute a shell command across multiple working directories. Executions occur within the loaded `dotenv` context. Might not be relevant to your specific use case, but when you need it, it's a game-changer!
 
 My most common use case for this command is a microservice project where release day finds me updating dependencies & performing a release in well over a dozen very similar repositories. The sequence of steps in each case is exactly the same, but I need to respond individually as issues arise, so scripting the whole thing out would fail more often than it would work.

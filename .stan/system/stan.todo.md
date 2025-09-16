@@ -1,10 +1,9 @@
 # Development Plan — get-dotenv
 
-When updated: 2025-09-15T04:25:00Z
+When updated: 2025-09-16T09:30:00Z
 NOTE: Update timestamp on commit.
 
 ## Next up- Sanity passes: npm run typecheck, npm run lint:fix, npm run test, npm run build to confirm the Rollup plugin fix and overall health.
-
 - Docs: update README (Vitest switch, coverage, Node >=22.19, shell defaults).
 - Rollup: monitor externalization approach; if consumers request bundled build, add alternate config. Add CI to run test/lint/build.
 - CLI shell behavior
@@ -19,10 +18,22 @@ NOTE: Update timestamp on commit.
 
 ## Completed (recent)
 
+- Dynamic variables (TS-first DX):
+  - Add programmatic `dynamic?: GetDotenvDynamic` with precedence over
+    `dynamicPath`. Export `defineDynamic` helper to improve inference.
+  - Auto-compile `dynamic.ts` via optional `esbuild` (bundle to a temp
+    ESM file). Fallback to `typescript.transpileModule` for simple
+    single-file modules; otherwise emit a concise guidance error.
+  - CLI: update `--dynamic-path` help to note `.ts` auto-compilation.
+  - Docs: update README Dynamic Processing for TS-first (examples,
+    troubleshooting, and programmatic usage).
+  - Tests: add programmatic dynamic test, precedence over `dynamicPath`,
+    and conditional dynamic.ts auto-compile test (skips if `esbuild` is
+    not installed).
+
 - Knip config: align analysis with CLI usage
   - Remove redundant entry pattern for `src/cli/getdotenv/index.ts` per
-    knip hint; project scanning already reaches the CLI tree via imports.
-  - Add `ignoreDependencies` for runtime-only CLI deps that knip misses:
+    knip hint; project scanning already reaches the CLI tree via imports.  - Add `ignoreDependencies` for runtime-only CLI deps that knip misses:
     `execa`, `globby`, `nanoid`, `package-directory`. These are exercised
     by the CLI adapters (cmd/batch) and batch helpers (globby/package-
     directory), but may not be statically resolved by knip under our

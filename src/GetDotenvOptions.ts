@@ -1,3 +1,4 @@
+// src/GetDotenvOptions.ts
 import fs from 'fs-extra';
 import { packageDirectory } from 'package-directory';
 import { join } from 'path';
@@ -33,6 +34,14 @@ export type Logger =
   | typeof console;
 
 /**
+ * Helper to define a dynamic map with strong inference.
+ *
+ * @example
+ * const dynamic = defineDynamic(\{ KEY: (\{ FOO = '' \}) =\> FOO + '-x' \});
+ */
+export const defineDynamic = <T extends GetDotenvDynamic>(d: T): T => d;
+
+/**
  * Options passed programmatically to `getDotenv`.
  */
 export interface GetDotenvOptions {
@@ -47,9 +56,15 @@ export interface GetDotenvOptions {
   dotenvToken: string;
 
   /**
-   * path to JS module default-exporting an object keyed to dynamic variable functions
+   * path to JS/TS module default-exporting an object keyed to dynamic variable functions
    */
   dynamicPath?: string;
+
+  /**
+   * Programmatic dynamic variables map. When provided, this takes precedence
+   * over {@link GetDotenvOptions.dynamicPath}.
+   */
+  dynamic?: GetDotenvDynamic;
 
   /**
    * target environment

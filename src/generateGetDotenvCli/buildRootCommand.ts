@@ -239,7 +239,7 @@ export const createRootCommand = (
     )
     .option(
       '--dynamic-path <string>',
-      'dynamic variables path',
+      'dynamic variables path (.js or .ts; .ts is auto-compiled when esbuild is available, otherwise precompile)',
       dotenvExpandFromProcessEnv,
       dynamicPath,
     )
