@@ -19,6 +19,13 @@ NOTE: Update timestamp on commit.
 
 ## Completed (recent)
 
+- CLI types and imports:
+  - Replace lingering `@commander-js/extra-typings` import in
+    `src/generateGetDotenvCli/index.ts` with `commander` types.
+  - Annotate Command usage and sanitize args/options in CLI adapters
+    (`cmdCommand.ts`, `batchCommand/index.ts`, `batchCommand/cmdCommand.ts`)
+    to satisfy strictTypeChecked no-unsafe-\* rules.
+
 - CLI: fix ESM runtime error importing commander default. Replace all
   runtime imports from '@commander-js/extra-typings' with 'commander'
   (v14 provides types and named exports). This prevents Rollup from

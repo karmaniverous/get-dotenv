@@ -29,25 +29,31 @@ export const batchCommand = new Command()
   )
   .option('-l, --list', 'list working directories without executing command')
   .option('-e, --ignore-errors', 'ignore errors and continue with next path')
-  .hook('preSubcommand', async (thisCommand) => {
+  .hook('preSubcommand', async (thisCommand: Command) => {
     if (!thisCommand.parent) throw new Error(`unable to resolve root command`);
 
     const {
       getDotenvCliOptions: { logger = console, ...getDotenvCliOptions },
     } = thisCommand.parent as GetDotenvCliCommand;
 
-    const { command, ignoreErrors, globs, list, pkgCwd, rootPath } =
-      thisCommand.opts();
+    const raw = thisCommand.opts();
+    const commandOpt = raw.command;
+    const ignoreErrors = !!raw.ignoreErrors;
+    const globs = (raw.globs as string) ?? '*';
+    const list = !!raw.list;
+    const pkgCwd = !!raw.pkgCwd;
+    const rootPath = (raw.rootPath as string) ?? './';
 
-    if (command && thisCommand.args.length) {
+    const argCount = ((thisCommand.args as unknown[]) ?? []).length;
+    if (typeof commandOpt === 'string' && argCount > 0) {
       logger.error(`--command option conflicts with cmd subcommand.`);
       process.exit(0);
     }
 
     // Execute command.
-    if (command)
+    if (typeof commandOpt === 'string')
       await execShellCommandBatch({
-        command: resolveCommand(getDotenvCliOptions.scripts, command),
+        command: resolveCommand(getDotenvCliOptions.scripts, commandOpt),
         getDotenvCliOptions,
         globs,
         ignoreErrors: !!ignoreErrors,

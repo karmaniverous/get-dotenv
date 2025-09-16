@@ -11,8 +11,9 @@ export const cmdCommand = new Command()
   .configureHelp({ showGlobalOptions: true })
   .enablePositionalOptions()
   .passThroughOptions()
-  .action(async (options, thisCommand) => {
-    if (thisCommand.args.length === 0) return;
+  .action(async (_options: unknown, thisCommand: Command) => {
+    const args = (thisCommand.args ?? []) as unknown[];
+    if (args.length === 0) return;
 
     if (!thisCommand.parent) throw new Error('parent command not found');
 
@@ -20,13 +21,12 @@ export const cmdCommand = new Command()
       getDotenvCliOptions: { logger = console, ...getDotenvCliOptions },
     } = thisCommand.parent as GetDotenvCliCommand;
 
-    const command = thisCommand.args.join(' ');
+    const command = args.map(String).join(' ');
 
     const cmd = resolveCommand(getDotenvCliOptions.scripts, command);
 
     if (getDotenvCliOptions.debug)
       logger.log('\n*** command ***\n', `'${cmd}'`);
-
     await execaCommand(cmd, {
       env: {
         ...process.env,

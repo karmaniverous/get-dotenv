@@ -11,7 +11,7 @@ export const cmdCommand = new Command()
   )
   .enablePositionalOptions()
   .passThroughOptions()
-  .action(async (options, thisCommand) => {
+  .action(async (_options: unknown, thisCommand: Command) => {
     if (!thisCommand.parent)
       throw new Error(`unable to resolve parent command`);
 
@@ -22,12 +22,17 @@ export const cmdCommand = new Command()
       getDotenvCliOptions: { logger = console, ...getDotenvCliOptions },
     } = thisCommand.parent.parent as GetDotenvCliCommand;
 
-    const { ignoreErrors, globs, list, pkgCwd, rootPath } =
-      thisCommand.parent.opts() as BatchCommandOptions;
+    const raw = thisCommand.parent.opts();
+    const ignoreErrors = !!raw.ignoreErrors;
+    const globs = (raw.globs as string) ?? '*';
+    const list = !!raw.list;
+    const pkgCwd = !!raw.pkgCwd;
+    const rootPath = (raw.rootPath as string) ?? './';
 
     // Execute command.
     {
-      const command = thisCommand.args.join(' ');
+      const args = (thisCommand.args ?? []) as unknown[];
+      const command = args.map(String).join(' ');
 
       await execShellCommandBatch({
         command: resolveCommand(getDotenvCliOptions.scripts, command),

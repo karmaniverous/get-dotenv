@@ -1,7 +1,11 @@
 #!/usr/bin/env node
 
+import type { Command } from 'commander';
+
 import { generateGetDotenvCli } from '../../';
 
-const cli = await generateGetDotenvCli({ importMetaUrl: import.meta.url });
+const program: Command = await generateGetDotenvCli({
+  importMetaUrl: import.meta.url,
+});
 
-await cli.parseAsync();
+await program.parseAsync();
