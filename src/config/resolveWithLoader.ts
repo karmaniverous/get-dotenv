@@ -21,8 +21,8 @@ import { resolveGetDotenvConfigSources } from './loader';
  * 1) Compute base from files only (exclude dynamic; ignore programmatic vars).
  * 2) Discover packaged + project config sources and overlay onto base.
  * 3) Apply dynamics in order:
- *    programmatic dynamic > config dynamic (packaged → project public → project local)
- *    > file dynamicPath.
+ *    programmatic dynamic \> config dynamic (packaged → project public → project local)
+ *    \> file dynamicPath.
  * 4) Optionally write outputPath, log, and merge into process.env.
  */
 export const resolveDotenvWithConfigLoader = async (

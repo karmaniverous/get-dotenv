@@ -1,10 +1,9 @@
 # Development Plan — get-dotenv
 
-When updated: 2025-09-17T01:20:00Z
+When updated: 2025-09-17T01:35:00Z
 NOTE: Update timestamp on commit.
 
-## Next up- Step C — Batch plugin - Port batch subcommand into src/plugins/batch (no behavior changes). - Wire the shipped CLI internally to use batch plugin to maintain parity. - Plan exports for plugins (subpath export), to be added in a later code change.- Tests: parity with current behavior (list, cwd, shell resolution, ignore-errors).- Step D — Config loader (formats & env overlays) - Loader features (for the new host first):  - Discover packaged root config; consumer repo global + .local.
-  - Support JSON/YAML; JS/TS via direct import → esbuild → transpile fallback; clear error guidance.
+## Next up- Step C — Batch plugin - Port batch subcommand into src/plugins/batch (no behavior changes). - Wire the shipped CLI internally to use batch plugin to maintain parity. - Plan exports for plugins (subpath export), to be added in a later code change.- Tests: parity with current behavior (list, cwd, shell resolution, ignore-errors).- Step D — Config loader (formats & env overlays) - Loader features (for the new host first):  - Discover packaged root config; consumer repo global + .local.  - Support JSON/YAML; JS/TS via direct import → esbuild → transpile fallback; clear error guidance.
 - (Host continues) Wire CLI option parsing/validation against schemas (strict).
 - Config-provided env sources:
   - vars (global, public) and envVars (env-specific, public) in config.
@@ -150,3 +149,6 @@ NOTE: Update timestamp on commit.
     explicitly enabled.
   - Factor shared resolution into `src/config/resolveWithLoader.ts` and
     reuse in both the host and the shipped CLI.
+- Lint: TSDoc escape fix
+  - Escape ">" in TSDoc for resolveWithLoader to satisfy tsdoc/syntax
+    (no code behavior changes).
