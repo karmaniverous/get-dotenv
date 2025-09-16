@@ -1,9 +1,10 @@
 # Development Plan — get-dotenv
 
-When updated: 2025-09-16T11:40:00Z
+When updated: 2025-09-16T12:05:00Z
 NOTE: Update timestamp on commit.
 
 ## Next up
+
 - Re-run sanity passes: npm run typecheck, npm run lint:fix, npm run test, npm run build, npm run stan:docs, npm run knip. Expect green across the board.
 - Docs: update README (Vitest switch, coverage, Node >=22.19, shell defaults).
 - Rollup: monitor externalization approach; if consumers request bundled build, add alternate config. Add CI to run test/lint/build.
@@ -19,6 +20,11 @@ NOTE: Update timestamp on commit.
 
 ## Completed (recent)
 
+- Tests/typecheck: fix Vitest TS signature errors by removing the
+  unsupported third argument from `vi.mock` calls; make the error-path
+  deterministic by rejecting `fs.writeFile` during the TypeScript
+  fallback so `getDotenv` throws with the expected guidance message.
+
 - Dynamic TS enablement & tests:
   - Add `esbuild` to devDependencies so CI exercises dynamic.ts
     auto-compile path; keep it externalized in Rollup.
@@ -33,7 +39,7 @@ NOTE: Update timestamp on commit.
 
 - Dynamic variables (TS-first DX):
   - Add programmatic `dynamic?: GetDotenvDynamic` with precedence over
-    `dynamicPath`. Export `defineDynamic` helper to improve inference.  - Auto-compile `dynamic.ts` via optional `esbuild` (bundle to a temp
+    `dynamicPath`. Export `defineDynamic` helper to improve inference. - Auto-compile `dynamic.ts` via optional `esbuild` (bundle to a temp
     ESM file). Fallback to `typescript.transpileModule` for simple
     single-file modules; otherwise emit a concise guidance error.
   - CLI: update `--dynamic-path` help to note `.ts` auto-compilation.

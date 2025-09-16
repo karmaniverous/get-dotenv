@@ -7,16 +7,12 @@ import { getDotenv } from './getDotenv';
 describe('getDotenv dynamic.ts fallback/error paths', () => {
   it('falls back to TypeScript transpile when esbuild fails', async () => {
     // Mock esbuild so that calling build() throws and triggers fallback.
-    vi.mock(
-      'esbuild',
-      () => ({
-        // Throw on use to ensure we enter the catch branch.
-        build: () => {
-          throw new Error('mock esbuild failure');
-        },
-      }),
-      { virtual: true },
-    );
+    vi.mock('esbuild', () => ({
+      // Throw on use to ensure we enter the catch branch.
+      build: () => {
+        throw new Error('mock esbuild failure');
+      },
+    }));
 
     const dir = path.posix.join('.tsbuild', 'getdotenv-tests');
     const dynTs = path.posix.join(dir, 'dynamic.fallback.ts');
@@ -46,25 +42,15 @@ describe('getDotenv dynamic.ts fallback/error paths', () => {
 
   it('throws a clear error when both esbuild and typescript are unavailable', async () => {
     // Force esbuild "successfully mocked" but unusable.
-    vi.mock(
-      'esbuild',
-      () => ({
-        build: () => {
-          throw new Error('mock esbuild failure');
-        },
-      }),
-      { virtual: true },
-    );
-    // Force typescript transpile fallback to fail as well.
-    vi.mock(
-      'typescript',
-      () => ({
-        transpileModule: () => {
-          throw new Error('mock typescript failure');
-        },
-      }),
-      { virtual: true },
-    );
+    vi.mock('esbuild', () => ({
+      build: () => {
+        throw new Error('mock esbuild failure');
+      },
+    }));
+    // Make the fallback path fail by rejecting the write step.
+    const writeSpy = vi
+      .spyOn(fs, 'writeFile')
+      .mockRejectedValueOnce(new Error('mock write failure'));
 
     const dir = path.posix.join('.tsbuild', 'getdotenv-tests');
     const dynTs = path.posix.join(dir, 'dynamic.fallback.error.ts');
@@ -90,7 +76,7 @@ describe('getDotenv dynamic.ts fallback/error paths', () => {
 
     await fs.remove(dynTs);
     vi.unmock('esbuild');
-    vi.unmock('typescript');
+    writeSpy.mockRestore();
     vi.resetModules();
   });
 });
