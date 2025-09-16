@@ -34,7 +34,7 @@ type DefineSpec = Omit<GetDotenvCliPlugin, 'children' | 'use'> & {
  * Define a GetDotenv CLI plugin with compositional helpers.
  *
  * @example
- * const parent = definePlugin({ id: 'p', setup(cli) { /* ... *\/ } })
+ * const parent = definePlugin(\{ id: 'p', setup(cli) \{ /* ... *\/ \} \})
  *   .use(childA)
  *   .use(childB);
  */

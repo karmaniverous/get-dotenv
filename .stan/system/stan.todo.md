@@ -1,6 +1,6 @@
 # Development Plan — get-dotenv
 
-When updated: 2025-09-16T17:25:00Z
+When updated: 2025-09-16T17:40:00Z
 NOTE: Update timestamp on commit.
 
 ## Next up
@@ -65,3 +65,7 @@ NOTE: Update timestamp on commit.
   - Created src/cliHost/definePlugin.ts for composable plugins (.use()).
   - Tests: context lifecycle, plugin afterResolve order, ns helper.
   - Legacy CLI/generator remain unchanged.
+- Step B (fixes): complete host tests and TSDoc example
+  - Fixed truncated GetDotenvCli.test.ts (parent/child composition and ns test).
+  - Rewrote TSDoc example in definePlugin.ts using a fenced code block to satisfy
+    tsdoc/syntax.

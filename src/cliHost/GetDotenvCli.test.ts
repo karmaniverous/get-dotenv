@@ -1,7 +1,7 @@
-import { describe, expect, it, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 
-import { GetDotenvCli } from './GetDotenvCli';
 import { definePlugin } from './definePlugin';
+import { GetDotenvCli } from './GetDotenvCli';
 
 describe('GetDotenvCli host (skeleton)', () => {
   beforeEach(() => {
@@ -59,4 +59,28 @@ describe('GetDotenvCli host (skeleton)', () => {
       },
     });
 
-    const parent = definePlugin
+    const parent = definePlugin({
+      id: 'parent',
+      setup: () => undefined,
+      afterResolve: () => {
+        order.push('parent');
+      },
+    }).use(child);
+
+    const cli = new GetDotenvCli('test').use(parent);
+    await cli.resolveAndLoad({
+      dotenvToken: '.testenv',
+      env: 'test',
+      privateToken: 'secret',
+      paths: ['./test/full'],
+    });
+
+    expect(order).toEqual(['parent', 'child']);
+  });
+
+  it('ns helper creates a namespaced subcommand', () => {
+    const cli = new GetDotenvCli('test');
+    const sub = cli.ns('foo');
+    expect(sub.name()).toBe('foo');
+  });
+});
