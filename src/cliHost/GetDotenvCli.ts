@@ -1,28 +1,18 @@
 import { Command } from 'commander';
-// NOTE: no-op change to assist patch application; functional behavior unchanged.
-import fs from 'fs-extra';
-import path from 'path';
 
-import { resolveGetDotenvConfigSources } from '../config/loader';
-import { overlayEnv } from '../env/overlay';
-import { getDotenv } from '../getDotenv';
+// NOTE: host class kept thin; heavy context computation lives in computeContext.
 import {
-  type GetDotenvDynamic,
   type GetDotenvOptions,
-  type Logger,
-  type ProcessEnv,
   resolveGetDotenvOptions,
 } from '../GetDotenvOptions';
 import { getDotenvOptionsSchemaResolved } from '../schema/getDotenvOptions';
-import { defaultsDeep } from '../util/defaultsDeep';
-import { loadModuleDefault } from '../util/loadModuleDefault';
+import { computeContext } from './computeContext';
 import type { GetDotenvCliPlugin } from './definePlugin';
 
-/** * Per-invocation context shared with plugins and actions.
- */
+/** * Per-invocation context shared with plugins and actions. */
 export type GetDotenvCliCtx = {
   optionsResolved: GetDotenvOptions;
-  dotenv: ProcessEnv;
+  dotenv: Record<string, string | undefined>;
   plugins?: Record<string, unknown>;
   pluginConfigs?: Record<string, unknown>;
 };
@@ -30,8 +20,10 @@ export type GetDotenvCliCtx = {
 const HOST_META_URL = import.meta.url;
 
 const CTX_SYMBOL = Symbol('GetDotenvCli.ctx');
+
 /**
- * Plugin-first CLI host for get-dotenv. Extends Commander.Command. *
+ * Plugin-first CLI host for get-dotenv. Extends Commander.Command.
+ *
  * Responsibilities:
  * - Resolve options strictly and compute dotenv context (resolveAndLoad).
  * - Expose a stable accessor for the current context (getCtx).
@@ -54,7 +46,6 @@ export class GetDotenvCli extends Command {
     this.enablePositionalOptions();
     // Skeleton preSubcommand hook: produce context if absent.
     this.hook('preSubcommand', async () => {
-      // If a context already exists for this invocation, do nothing.
       if (this.getCtx()) return;
       await this.resolveAndLoad({});
     });
@@ -69,187 +60,14 @@ export class GetDotenvCli extends Command {
   ): Promise<GetDotenvCliCtx> {
     // Resolve defaults, then validate strictly under the new host.
     const optionsResolved = await resolveGetDotenvOptions(customOptions);
-    const validated = getDotenvOptionsSchemaResolved.parse(optionsResolved);
-    let dotenv: ProcessEnv;
+    getDotenvOptionsSchemaResolved.parse(optionsResolved);
 
-    // Guarded integration: when enabled, use config loader + overlay + dynamics.
-    if (
-      (validated as unknown as { useConfigLoader?: boolean }).useConfigLoader
-    ) {
-      // 1) Compute base from files only (no dynamic, no programmatic vars)
-      const base = await getDotenv({
-        ...validated,
-        excludeDynamic: true,
-        // Omit programmatic vars at this stage
-        vars: {},
-      } as unknown as Partial<GetDotenvOptions>);
-
-      // 2) Discover config sources and overlay
-      const sources = await resolveGetDotenvConfigSources(HOST_META_URL);
-      const overlaid = overlayEnv({
-        base,
-        env: validated.env ?? validated.defaultEnv,
-        configs: sources,
-        // exactOptionalPropertyTypes: only include when defined
-        ...(validated.vars ? { programmaticVars: validated.vars } : {}),
-      });
-
-      // 3) Apply dynamics in order:
-      //    programmatic dynamic > config dynamic (packaged -> project.public -> project.local) > file dynamicPath
-      dotenv = { ...overlaid };
-      const applyDynamic = (
-        target: ProcessEnv,
-        dynamic: GetDotenvDynamic | undefined,
-        env: string | undefined,
-      ) => {
-        if (!dynamic) return;
-        for (const key of Object.keys(dynamic)) {
-          const value =
-            typeof dynamic[key] === 'function'
-              ? (
-                  dynamic[key] as (
-                    v: ProcessEnv,
-                    e?: string,
-                  ) => string | undefined
-                )(target, env)
-              : dynamic[key];
-          Object.assign(target, { [key]: value });
-        }
-      };
-      // programmatic dynamic
-      applyDynamic(
-        dotenv,
-        (validated as unknown as { dynamic?: GetDotenvDynamic }).dynamic,
-        validated.env ?? validated.defaultEnv,
-      );
-      // config dynamic from JS/TS (packaged -> project public -> project local)
-      applyDynamic(
-        dotenv,
-        (sources.packaged?.dynamic ?? undefined) as
-          | GetDotenvDynamic
-          | undefined,
-        validated.env ?? validated.defaultEnv,
-      );
-      applyDynamic(
-        dotenv,
-        (sources.project?.public?.dynamic ?? undefined) as
-          | GetDotenvDynamic
-          | undefined,
-        validated.env ?? validated.defaultEnv,
-      );
-      applyDynamic(
-        dotenv,
-        (sources.project?.local?.dynamic ?? undefined) as
-          | GetDotenvDynamic
-          | undefined,
-        validated.env ?? validated.defaultEnv,
-      );
-      // file dynamicPath (lowest)
-      if (validated.dynamicPath) {
-        const absDynamicPath = path.resolve(validated.dynamicPath);
-        try {
-          const dyn = await loadModuleDefault<GetDotenvDynamic>(
-            absDynamicPath,
-            'getdotenv-dynamic-host',
-          );
-          applyDynamic(dotenv, dyn, validated.env ?? validated.defaultEnv);
-        } catch {
-          throw new Error(
-            `Unable to load dynamic from ${validated.dynamicPath}`,
-          );
-        }
-      } // 4) Write output file if requested
-      if (validated.outputPath) {
-        await fs.writeFile(
-          validated.outputPath,
-          Object.keys(dotenv).reduce((contents, key) => {
-            const value = dotenv[key] ?? '';
-            return `${contents}${key}=${
-              value.includes('\n') ? `"${value}"` : value
-            }\n`;
-          }, ''),
-          { encoding: 'utf-8' },
-        );
-      }
-      // 5) Log and process.env merge
-      const logger: Logger =
-        (validated as unknown as { logger?: Logger }).logger ?? console;
-      if (validated.log) logger.log(dotenv);
-      if (validated.loadProcess) Object.assign(process.env, dotenv);
-
-      // 6) Merge and validate per-plugin config (packaged < project.public < project.local).
-      const packagedPlugins =
-        (sources.packaged &&
-          (
-            sources.packaged as unknown as {
-              plugins?: Record<string, unknown>;
-            }
-          ).plugins) ??
-        {};
-      const publicPlugins =
-        (sources.project?.public &&
-          (
-            sources.project.public as unknown as {
-              plugins?: Record<string, unknown>;
-            }
-          ).plugins) ??
-        {};
-      const localPlugins =
-        (sources.project?.local &&
-          (
-            sources.project.local as unknown as {
-              plugins?: Record<string, unknown>;
-            }
-          ).plugins) ??
-        {};
-      const mergedPluginConfigs = defaultsDeep<Record<string, unknown>>(
-        {},
-        packagedPlugins,
-        publicPlugins,
-        localPlugins,
-      );
-
-      // Validate slices for installed plugins that declare a schema.
-      for (const p of this._plugins) {
-        if (!p.id || !p.configSchema) continue;
-        const slice = mergedPluginConfigs[p.id];
-        if (slice === undefined) continue;
-        const parsed = p.configSchema.safeParse(slice);
-        if (!parsed.success) {
-          const msgs = parsed.error.issues
-            .map((i) => `${i.path.join('.')}: ${i.message}`)
-            .join('\n');
-          throw new Error(`Invalid config for plugin '${p.id}':\n${msgs}`);
-        }
-        // Write back normalized slice
-        mergedPluginConfigs[p.id] = parsed.data as unknown;
-      }
-    } else {
-      // Legacy-safe path via getDotenv (unchanged)
-      dotenv = await getDotenv(
-        validated as unknown as Partial<GetDotenvOptions>,
-      );
-      const pluginConfigsForCtx: Record<string, unknown> = {};
-      const ctx: GetDotenvCliCtx = {
-        optionsResolved: validated as unknown as GetDotenvOptions,
-        dotenv,
-        plugins: {},
-        pluginConfigs: pluginConfigsForCtx,
-      };
-      (this as unknown as Record<symbol, GetDotenvCliCtx>)[CTX_SYMBOL] = ctx;
-      await this.install();
-      await this._runAfterResolve(ctx);
-      return ctx;
-    }
-
-    const ctx: GetDotenvCliCtx = {
-      optionsResolved: validated as unknown as GetDotenvOptions,
-      dotenv,
-      plugins: {},
-      pluginConfigs: (this as unknown as Record<string, unknown>)[
-        'pluginConfigsForCtx'
-      ] as Record<string, unknown>, // placeholder to satisfy types; replaced below
-    };
+    // Delegate the heavy lifting to the shared helper (guarded path supported).
+    const ctx = await computeContext(
+      optionsResolved,
+      this._plugins,
+      HOST_META_URL,
+    );
 
     // Persist context on the instance for later access.
     (this as unknown as Record<symbol, GetDotenvCliCtx>)[CTX_SYMBOL] = ctx;
@@ -260,6 +78,7 @@ export class GetDotenvCli extends Command {
 
     return ctx;
   }
+
   /**
    * Retrieve the current invocation context (if any).
    */
@@ -304,7 +123,8 @@ export class GetDotenvCli extends Command {
 
   /**
    * Run afterResolve hooks for all plugins (parent → children).
-   */ private async _runAfterResolve(ctx: GetDotenvCliCtx): Promise<void> {
+   */
+  private async _runAfterResolve(ctx: GetDotenvCliCtx): Promise<void> {
     const run = async (p: GetDotenvCliPlugin) => {
       if (p.afterResolve) await p.afterResolve(this, ctx);
       for (const child of p.children) await run(child);

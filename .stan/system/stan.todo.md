@@ -1,12 +1,25 @@
 # Development Plan — get-dotenv
 
-When updated: 2025-09-17T12:25:00Z
+When updated: 2025-09-17T13:20:00Z
 NOTE: Update timestamp on commit.
-## Next up- Step C — Batch plugin - Port batch subcommand into src/plugins/batch (no behavior changes). - Wire the shipped CLI internally to use batch plugin to maintain parity. - Plan exports for plugins (subpath export), to be added in a later code change.- Tests: parity with current behavior (list, cwd, shell resolution, ignore-errors).- Step D — Config loader (formats & env overlays) - Loader features (for the new host first): - Discover packaged root config; consumer repo global + .local. - Support JSON/YAML; JS/TS via direct import → esbuild → transpile fallback; clear error guidance.- (Host continues) Wire CLI option parsing/validation against schemas (strict).
+
+## Next up
+
+- Step C — Batch plugin
+  - Port batch subcommand into src/plugins/batch (no behavior changes).
+  - Wire the shipped CLI internally to use batch plugin to maintain parity.
+  - Plan exports for plugins (subpath export), to be added in a later code change.
+  - Tests: parity with current behavior (list, cwd, shell resolution, ignore-errors).
+- Step D — Config loader (formats & env overlays)
+  - Loader features (for the new host first):
+    - Discover packaged root config; consumer repo global + .local.
+    - Support JSON/YAML; JS/TS via direct import → esbuild → transpile fallback; clear error guidance.
+  - (Host continues) Wire CLI option parsing/validation against schemas (strict).
 
 - Config-provided env sources:
   - vars (global, public) and envVars (env-specific, public) in config.
-  - JS/TS config: allow dynamic map (GetDotenvDynamic). - Env overlay engine:
+  - JS/TS config: allow dynamic map (GetDotenvDynamic).
+- Env overlay engine:
   - Apply precedence axes: kind (dynamic > env > global) > privacy (local > public) > source (config > file).
   - Programmatic dynamic sits above all dynamics.
   - Preserve multi-path file cascade order per existing behavior.
@@ -28,16 +41,19 @@ NOTE: Update timestamp on commit.
 
 ## Completed (recent)
 
+- Refactor — break down GetDotenvCli (long file)
+  - Extracted context computation (options → overlays/dynamics → plugin config
+    merge/validation) to src/cliHost/computeContext.ts.
+  - Slimmed src/cliHost/GetDotenvCli.ts to lifecycle wiring and delegation.
 - Fixes — typing, lint, and test stability
   - Widened neutral batch Scripts type to accept `shell?: string | boolean | undefined`
-    for exact-optional compatibility with plugin config; removes TS2345 errors.
-  - Cleaned GetDotenvCli plugin-config merge (no-var → let; removed unnecessary
+    for exact-optional compatibility with plugin config; removes TS2345 errors. - Cleaned GetDotenvCli plugin-config merge (no-var → let; removed unnecessary
     optional chaining on non-nullish values).
   - Increased timeouts for esbuild-related dynamic.ts tests to reduce flakiness.
 
 - Step C/D — Batch services extraction and plugin config plumbing
   - Extracted neutral batch services under src/services/batch (resolve + exec),
-    re-exported from legacy generator paths to avoid cycles while preserving behavior.  - Batch plugin now consumes services directly and declares a Zod config schema;
+    re-exported from legacy generator paths to avoid cycles while preserving behavior. - Batch plugin now consumes services directly and declares a Zod config schema;
     supports defaults from config-loader (packaged → project public → project local)
     with programmatic options and CLI flags taking precedence at runtime.
   - Host merges per-plugin config under guarded loader path, validates slices
