@@ -14,7 +14,7 @@ import type { RootOptionsShape, ScriptsTable } from './types';
 export const resolveCliOptions = <
   T extends RootOptionsShape & { scripts?: ScriptsTable },
 >(
-  rawCliOptions: Partial<T>,
+  rawCliOptions: unknown,
   defaults: Partial<T>,
   parentJson?: string,
 ): { merged: T; command?: string } => {

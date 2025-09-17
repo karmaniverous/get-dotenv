@@ -97,8 +97,7 @@ export const makePreSubcommandHook = <
         defaults,
         process.env.getDotenvCliOptions,
       );
-    // Optional debug logging retained via mergedGetDotenvCliOptions.debug if desired.
-    // Execute pre-hook.
+    // Optional debug logging retained via mergedGetDotenvCliOptions.debug if desired.    // Execute pre-hook.
     if (preHook) {
       await preHook(
         mergedGetDotenvCliOptions as unknown as GetDotenvCliOptions,
