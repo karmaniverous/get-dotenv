@@ -53,6 +53,7 @@ const promptDecision = async (
     `File exists: ${filePath}\nChoose: [o]verwrite, [e]xample, [s]kip, [O]verwrite All, [E]xample All, [S]kip All`,
   );
 
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   while (true) {
     const a = (await rl.question('> ')).trim();
     const valid = ['o', 'e', 's', 'O', 'E', 'S'] as const;
@@ -128,7 +129,7 @@ const planConfigCopies = ({
       src: path.join(TEMPLATES_ROOT, 'config', 'js', 'getdotenv.config.js'),
       dest: path.join(destRoot, 'getdotenv.config.js'),
     });
-  } else if (format === 'ts') {
+  } else {
     copies.push({
       src: path.join(TEMPLATES_ROOT, 'config', 'ts', 'getdotenv.config.ts'),
       dest: path.join(destRoot, 'getdotenv.config.ts'),
@@ -185,7 +186,7 @@ export const initPlugin = (opts: InitPluginOptions = {}) =>
           // Read options directly from the captured command instance.
           // Cast to a plain record to satisfy exact-optional and lint safety.
           const o =
-            ((cmd as unknown as Command).opts?.() as
+            ((cmd as unknown as Command).opts() as
               | Record<string, unknown>
               | undefined) ?? {};
           const destRel =
