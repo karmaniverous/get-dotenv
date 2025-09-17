@@ -82,6 +82,20 @@ The shipped CLI uses a nested-CLI strategy by placing the merged CLI options on
 `process.env.getDotenvCliOptions` (JSON) so child `getdotenv` invocations can
 inherit the parent’s defaults and flags.
 
+## Scaffolding a host-based CLI
+
+Use the built-in scaffolder to create config files and a starter CLI:
+
+```bash
+# JSON config + .local + CLI skeleton named "acme"
+getdotenv init . --config-format json --with-local --cli-name acme --force
+```
+
+Notes:
+- Templates are shipped with the package and copied verbatim (no inline codegen).
+- Collision flow supports [o]/[e]/[s] and [O]/[E]/[S]; non-interactive defaults to `--yes` (skip all) unless `--force`.
+- The CLI skeleton replaces `__CLI_NAME__` tokens with your chosen name.
+
 ## Guarded config loader
 
 The plugin host can enable the config-loader/overlay path by passing

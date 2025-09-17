@@ -1,6 +1,6 @@
 # Development Plan — get-dotenv
 
-When updated: 2025-09-17T17:30:00Z
+When updated: 2025-09-17T17:45:00Z
 NOTE: Update timestamp on commit.
 
 ## Next up
@@ -214,11 +214,15 @@ NOTE: Update timestamp on commit.
     scaffold-only files; maintained publication via package.files.
   - All init plugin tests now pass; typecheck/lint/build remain green across
     root and subpaths.
+- Docs — scaffolding
+  - Added README “Scaffold” section with examples for config CLI scaffolds and
+    collision flow behavior (non-interactive defaults, --force precedence,
+    **CLI_NAME** token substitution).
+  - Added a brief “Scaffolding a host-based CLI” section to the plugins guide.
 
 ## Next up (focused)
 
 - Init scaffolding (finalize & docs)
   - Strengthen non-interactive detection across CI shells and document precedence (--force > --yes).
   - Expand templates as needed (additional examples), and validate token substitution coverage.
-  - README/docs: Scaffold section (config + CLI scaffolds; collision flow); expand Plugins guide with scaffolding notes.
   - Verify package files include templates and subpath exports across publish dry-run.

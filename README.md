@@ -68,13 +68,47 @@ npm run test
 npm install @karmaniverous/get-dotenv
 ```
 
+## Scaffold
+
+You can scaffold config files and a host-based CLI skeleton using the built-in
+init command. Templates are shipped with the package and copied verbatim.
+
+Examples:
+
+```bash
+# JSON config + .local variant, and a CLI skeleton named "acme"
+npx getdotenv init . \
+  --config-format json \
+  --with-local \
+  --cli-name acme \
+  --force
+```
+
+```bash
+# TypeScript config with a dynamic example; CLI named "toolbox"
+npx getdotenv init ./apps/toolbox \
+  --config-format ts \
+  --cli-name toolbox
+```
+
+Collision flow (when a destination file exists):
+- Interactive prompt: [o]verwrite, [e]xample, [s]kip, or their “all” variants
+  [O]/[E]/[S].
+- Non-interactive environments are treated as `--yes` (Skip All) unless
+  `--force` is provided (Overwrite All).
+- Options overview:
+  - `--config-format <json|yaml|js|ts>`
+  - `--with-local` to generate `.local` alongside public config (JSON/YAML)
+  - `--cli-name <string>` for token substitution (`__CLI_NAME__`) in the CLI
+    skeleton
+  - `--force` to overwrite all; `--yes` to skip all
+
 ## Usage
 
 ```js
 import { getDotenv } from '@karmaniverous/get-dotenv';
 
-const dotenv = await getDotenv(options);
-```
+const dotenv = await getDotenv(options);```
 
 Options can be passed programmatically or set in a `getdotenv.config.json` file in your project root directory. The same file also sets default options for the `getdotenv` CLI or any child CLI you spawn from it.
 
