@@ -110,7 +110,8 @@
     },
     "./config": {
       "import": {
-        "types": "./dist/config.d.mts",        "default": "./dist/config.mjs"
+        "types": "./dist/config.d.mts",
+        "default": "./dist/config.mjs"
       },
       "require": {
         "types": "./dist/config.d.cts",
@@ -132,7 +133,8 @@
     "dist",
     "getdotenv.config.json",
     "templates"
-  ],  "homepage": "https://github.com/karmaniverous/get-dotenv#readme",
+  ],
+  "homepage": "https://github.com/karmaniverous/get-dotenv#readme",
   "keywords": [
     "cli",
     "configuration",

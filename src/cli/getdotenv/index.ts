@@ -12,7 +12,8 @@ const program: Command = new GetDotenvCli('getdotenv')
   .use(initPlugin());
 
 // Guarded config loader flag (default OFF to preserve legacy unless opted-in).
-program.option(  '--use-config-loader',
+program.option(
+  '--use-config-loader',
   'enable config loader/overlay path (guarded; default OFF)',
 );
 
