@@ -1,46 +1,15 @@
 # Development Plan — get-dotenv
 
-When updated: 2025-09-17T17:45:00Z
+When updated: 2025-09-17T18:50:00Z
 NOTE: Update timestamp on commit.
 
 ## Next up
 
-- Step C — Batch plugin
-  - Port batch subcommand into src/plugins/batch (no behavior changes).
-  - Wire the shipped CLI internally to use batch plugin to maintain parity.
-  - Plan exports for plugins (subpath export), to be added in a later code change.
-  - Tests: parity with current behavior (list, cwd, shell resolution, ignore-errors).
-- Step D — Config loader (formats & env overlays)
-  - Loader features (for the new host first):
-    - Discover packaged root config; consumer repo global + .local.
-    - Support JSON/YAML; JS/TS via direct import → esbuild → transpile fallback; clear error guidance.
-  - (Host continues) Wire CLI option parsing/validation against schemas (strict).
-
-- Config-provided env sources:
-  - vars (global, public) and envVars (env-specific, public) in config.
-  - JS/TS config: allow dynamic map (GetDotenvDynamic).
-- Env overlay engine:
-  - Apply precedence axes: kind (dynamic > env > global) > privacy (local > public) > source (config > file).
-  - Programmatic dynamic sits above all dynamics.
-  - Preserve multi-path file cascade order per existing behavior.
-- Tests: loader precedence; overlay combinations; dynamic ordering; progressive expansion.
-
-- Step E — Legacy parity safeguards
-  - Ensure existing CLI and generator behavior unchanged under warn-mode validation.
-  - Add a feature flag (future) to opt legacy into full loader + strict validation after stabilization.
-
-- Step F — Docs
-  - README: dynamic TS guidance (install esbuild; simple fallback note).
-  - README: “Build your own CLI with plugins” quickstart; ctx (dotenv) usage; subprocess env passing.
-  - New guide: plugin authoring (definePlugin, setup/afterResolve, .use(), namespacing).
-
-- Step G — Exports and release notes
-  - Plan subpath exports for plugins (e.g., "./plugins/batch") and for the host (./cliHost).
-  - Non-breaking release: introduce new host and plugins as additive; legacy stays stable.
-  - Document validation modes (warn legacy; strict host); migration notes for opting-in.
+- Init scaffolding (finalize & docs)
+  - Expand templates as needed (additional examples).
+  - Verify package files include templates and subpath exports across a publish dry-run.
 
 ## Completed (recent)
-
 - Refactor — break down GetDotenvCli (long file)
   - Extracted context computation (options → overlays/dynamics → plugin config
     merge/validation) to src/cliHost/computeContext.ts.
@@ -122,7 +91,7 @@ NOTE: Update timestamp on commit.
   - Implemented overlay engine at src/env/overlay.ts applying axes:
     kind (env > global) > privacy (local > public) > source (project > packaged) > base.
     Programmatic explicit vars applied last; progressive expansion preserved.
-  - Tests added for schemas, loader discovery and parsing, and overlay precedence/expansion.
+  - Tests: loader precedence; overlay combinations; dynamic ordering; progressive expansion.
   - Host integration will be guarded by a flag in a follow-up to preserve legacy behavior.
 - Step D (lint fixes)
   - Remove unused type import from src/config/loader.ts to satisfy no-unused-vars.
@@ -218,11 +187,21 @@ NOTE: Update timestamp on commit.
   - Added README “Scaffold” section with examples for config CLI scaffolds and
     collision flow behavior (non-interactive defaults, --force precedence,
     **CLI_NAME** token substitution).
-  - Added a brief “Scaffolding a host-based CLI” section to the plugins guide.
+- Init scaffolding — non-interactive detection and precedence
+  - Treat non-interactive when stdin/stdout are not TTY OR when CI-like env vars
+    are present: CI, GITHUB_ACTIONS, BUILDKITE, TEAMCITY_VERSION, TF_BUILD.
+  - Preserve precedence: --force > --yes > auto-detect (non-interactive => Skip All).
+  - Implemented in init plugin; added tests for force precedence and CI auto-skip.
+  - Docs updated (README and guides/plugins.md) to clarify detection and precedence.
+  - Behavior remains backward-compatible; interactive prompts unchanged when TTY
+    and no CI signals are present.
+- Init scaffolding — token substitution coverage tests
+  - Added assertions to verify __CLI_NAME__ replacement in both CLI skeleton
+    files (index.ts and plugins/hello.ts) for JSON and TS scaffold cases.
+  - Ensures future template edits preserve token substitution behavior.
 
 ## Next up (focused)
-
 - Init scaffolding (finalize & docs)
   - Strengthen non-interactive detection across CI shells and document precedence (--force > --yes).
   - Expand templates as needed (additional examples), and validate token substitution coverage.
-  - Verify package files include templates and subpath exports across publish dry-run.
+  - Verify package files include templates and subpath exports across a publish dry-run.

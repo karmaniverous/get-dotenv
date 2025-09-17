@@ -92,10 +92,16 @@ npx getdotenv init ./apps/toolbox \
 ```
 
 Collision flow (when a destination file exists):
+
 - Interactive prompt: [o]verwrite, [e]xample, [s]kip, or their “all” variants
   [O]/[E]/[S].
-- Non-interactive environments are treated as `--yes` (Skip All) unless
-  `--force` is provided (Overwrite All).
+- Non-interactive detection:
+  - Treated as `--yes` (Skip All) unless `--force` is provided (Overwrite All).
+  - Considered non-interactive when stdin or stdout is not a TTY OR when a
+    CI-like environment variable is present (`CI`, `GITHUB_ACTIONS`,
+    `BUILDKITE`, `TEAMCITY_VERSION`, `TF_BUILD`).
+- Precedence:
+  - `--force` > `--yes` > auto-detect (non-interactive => Skip All).
 - Options overview:
   - `--config-format <json|yaml|js|ts>`
   - `--with-local` to generate `.local` alongside public config (JSON/YAML)
@@ -103,9 +109,14 @@ Collision flow (when a destination file exists):
     skeleton
   - `--force` to overwrite all; `--yes` to skip all
 
+Notes:
+
+- Templates are shipped with the package and copied verbatim.
+- The CLI skeleton replaces `__CLI_NAME__` tokens with your chosen name.
+
 ## Usage
 
-```js
+````js
 import { getDotenv } from '@karmaniverous/get-dotenv';
 
 const dotenv = await getDotenv(options);```
@@ -128,7 +139,7 @@ export default {
   ONE_MORE_TIME: ({ DESTRUCTRED_VARIABLE, ANOTHER_DYNAMIC_VARIABLE }) =>
     DESTRUCTRED_VARIABLE + ANOTHER_DYNAMIC_VARIABLE,
 };
-```
+````
 
 If the value corresponding to a key is a function, it will be executed with the current state of `dotenv` as its single argument and the result applied back to the `dotenv` object. Otherwise, the value will just be applied back to `dotenv`. (Although if you're going to do that then you might as well just create a public global variable in the first place.)
 

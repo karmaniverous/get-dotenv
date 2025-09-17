@@ -1,5 +1,7 @@
 import { stdin as input, stdout as output } from 'node:process';
 
+// NOTE: pay attention to non-interactive detection and precedence
+// (--force > --yes > auto-detect). See README for details.
 import type { Command } from 'commander';
 import fs from 'fs-extra';
 import path from 'path';
@@ -16,7 +18,23 @@ type CopyDecision = 'overwrite' | 'example' | 'skip';
 
 const TEMPLATES_ROOT = path.resolve('templates');
 
-const isInteractive = () => input.isTTY && output.isTTY;
+/**
+ * Determine whether the current environment should be treated as
+ * non-interactive. We consider it non-interactive when either:
+ * - stdin or stdout is not a TTY, or
+ * - a CI-like environment variable is present.
+ *
+ * CI heuristics include: CI, GITHUB_ACTIONS, BUILDKITE, TEAMCITY_VERSION, TF_BUILD.
+ */
+const isNonInteractive = () => {
+  const ciLike =
+    process.env.CI ||
+    process.env.GITHUB_ACTIONS ||
+    process.env.BUILDKITE ||
+    process.env.TEAMCITY_VERSION ||
+    process.env.TF_BUILD;
+  return Boolean(ciLike) || !(input.isTTY && output.isTTY);
+};
 
 const ensureDir = async (p: string) => {
   await fs.ensureDir(p);
@@ -214,8 +232,9 @@ export const initPlugin = (opts: InitPluginOptions = {}) =>
               ? o.cliName
               : path.basename(destRoot) || 'mycli') || 'mycli';
 
+          // Precedence: --force > --yes > auto-detect(non-interactive => yes)
           const force = !!o.force;
-          const yes = !!o.yes || !isInteractive();
+          const yes = !!o.yes || (!force && isNonInteractive());
 
           // Build copy plan
           const cfgCopies = planConfigCopies({ format, withLocal, destRoot });

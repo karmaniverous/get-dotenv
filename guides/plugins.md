@@ -95,10 +95,14 @@ Notes:
 - Templates are shipped with the package and copied verbatim (no inline codegen).
 - Collision flow supports [o]/[e]/[s] and [O]/[E]/[S]; non-interactive defaults to `--yes` (skip all) unless `--force`.
 - The CLI skeleton replaces `__CLI_NAME__` tokens with your chosen name.
+- Non-interactive detection and precedence:
+  - Treated as `--yes` (Skip All) when stdin or stdout is not a TTY OR when a CI-like
+    environment variable is present (`CI`, `GITHUB_ACTIONS`, `BUILDKITE`,
+    `TEAMCITY_VERSION`, `TF_BUILD`).
+  - Precedence is `--force` > `--yes` > auto-detect (non-interactive => Skip All).
 
 ## Guarded config loader
 
 The plugin host can enable the config-loader/overlay path by passing
 `{ useConfigLoader: true }` to `resolveAndLoad()` or by exposing a flag and
-reading it from `argv`. See the “Config files and overlays” guide for discovery,
-formats, and precedence.
+reading it from `argv`. See the “Config files and overlays” guide for discovery,formats, and precedence.

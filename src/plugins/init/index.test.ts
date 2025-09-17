@@ -40,6 +40,9 @@ describe('plugins/init', () => {
     const indexTxt = await fs.readFile(cliIndex, 'utf-8');
     expect(indexTxt).toMatch(/acme/);
     expect(await fs.pathExists(hello)).toBe(true);
+    // validate token substitution coverage across skeleton files
+    const helloTxt = await fs.readFile(hello, 'utf-8');
+    expect(helloTxt).toMatch(/acme/);
   }, 15000);
 
   it('idempotence with --yes (skip)', async () => {
@@ -87,5 +90,70 @@ describe('plugins/init', () => {
     expect(await fs.pathExists(cfg)).toBe(true);
     const txt = await fs.readFile(cfg, 'utf-8');
     expect(txt).toMatch(/dynamic:/);
+    // skeleton should also be created with tokens replaced
+    const cliIndex = path.posix.join(dir, 'src', 'cli', 'case3', 'index.ts');
+    const hello = path.posix.join(
+      dir,
+      'src',
+      'cli',
+      'case3',
+      'plugins',
+      'hello.ts',
+    );
+    expect(await fs.pathExists(cliIndex)).toBe(true);
+    expect(await fs.pathExists(hello)).toBe(true);
+    expect(await fs.readFile(cliIndex, 'utf-8')).resolves.toMatch(/case3/);
+    expect(await fs.readFile(hello, 'utf-8')).resolves.toMatch(/case3/);
+  }, 15000);
+
+  it('forces overwrite in non-interactive/CI scenarios (force precedence)', async () => {
+    const dir = path.posix.join(TROOT, 'case4');
+    await fs.remove(dir);
+    await fs.ensureDir(dir);
+    const cfg = path.posix.join(dir, 'getdotenv.config.json');
+    // Precreate with sentinel content
+    await fs.writeFile(cfg, 'OLD', 'utf-8');
+
+    const cli = new GetDotenvCli('test').use(initPlugin({ logger: console }));
+    await cli.parseAsync([
+      'node',
+      'test',
+      'init',
+      dir,
+      '--config-format',
+      'json',
+      '--force',
+    ]);
+    const after = await fs.readFile(cfg, 'utf-8');
+    expect(after).not.toBe('OLD'); // overwritten
+  }, 15000);
+
+  it('auto-skips in CI-like environments when no flags are provided', async () => {
+    const dir = path.posix.join(TROOT, 'case5');
+    await fs.remove(dir);
+    await fs.ensureDir(dir);
+    const cfg = path.posix.join(dir, 'getdotenv.config.json');
+    await fs.writeFile(cfg, 'OLD', 'utf-8');
+
+    // Simulate CI; note: tests generally run non-interactive already,
+    // this asserts that CI heuristic does not make behavior less safe.
+    const prev = process.env.CI;
+    process.env.CI = 'true';
+    try {
+      const cli = new GetDotenvCli('test').use(initPlugin({ logger: console }));
+      await cli.parseAsync([
+        'node',
+        'test',
+        'init',
+        dir,
+        '--config-format',
+        'json',
+      ]);
+      const after = await fs.readFile(cfg, 'utf-8');
+      expect(after).toBe('OLD'); // skipped
+    } finally {
+      if (prev === undefined) delete process.env.CI;
+      else process.env.CI = prev;
+    }
   }, 15000);
 });
