@@ -34,29 +34,13 @@ export const computeContext = async (
   const optionsResolved = await resolveGetDotenvOptions(customOptions);
   const validated = getDotenvOptionsSchemaResolved.parse(optionsResolved);
 
-  // Legacy-safe path (no guarded loader)
-  if (
-    !(validated as unknown as { useConfigLoader?: boolean }).useConfigLoader
-  ) {
-    const dotenv = await getDotenv(
-      validated as unknown as Partial<GetDotenvOptions>,
-    );
-    return {
-      optionsResolved: validated as unknown as GetDotenvOptions,
-      dotenv,
-      plugins: {},
-      pluginConfigs: {},
-    };
-  }
-
-  // Guarded loader path
+  // Always-on loader path
   // 1) Base from files only (no dynamic, no programmatic vars)
   const base = await getDotenv({
     ...validated,
     excludeDynamic: true,
     vars: {},
   } as unknown as Partial<GetDotenvOptions>);
-
   // 2) Discover config sources and overlay
   const sources = await resolveGetDotenvConfigSources(hostMetaUrl);
   const dotenvOverlaid = overlayEnv({
@@ -65,7 +49,6 @@ export const computeContext = async (
     configs: sources,
     ...(validated.vars ? { programmaticVars: validated.vars } : {}),
   });
-
   // Helper to apply a dynamic map progressively.
   const applyDynamic = (
     target: Record<string, string | undefined>,

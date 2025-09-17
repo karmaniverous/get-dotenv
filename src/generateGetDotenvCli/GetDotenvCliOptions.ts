@@ -1,3 +1,4 @@
+import { baseRootOptionDefaults } from '../cliCore/defaults';
 import type { GetDotenvOptions } from '../GetDotenvOptions';
 
 export type Scripts = Record<
@@ -77,21 +78,5 @@ export interface GetDotenvCliOptions
   varsDelimiterPattern?: string;
 }
 
-export const baseGetDotenvCliOptions: Partial<GetDotenvCliOptions> = {
-  dotenvToken: '.env',
-  loadProcess: true,
-  logger: console,
-  paths: './',
-  pathsDelimiter: ' ',
-  privateToken: 'local',
-  scripts: {
-    'git-status': {
-      cmd: 'git branch --show-current && git status -s -u',
-      shell: true,
-    },
-  },
-  shell: true,
-  vars: '',
-  varsAssignor: '=',
-  varsDelimiter: ' ',
-};
+export const baseGetDotenvCliOptions: Partial<GetDotenvCliOptions> =
+  baseRootOptionDefaults as unknown as Partial<GetDotenvCliOptions>;

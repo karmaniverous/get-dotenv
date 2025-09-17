@@ -1,6 +1,6 @@
 # Development Plan — get-dotenv
 
-When updated: 2025-09-17T20:25:00Z
+When updated: 2025-09-17T21:10:00Z
 NOTE: Update timestamp on commit.
 
 ## Next up
@@ -189,7 +189,7 @@ NOTE: Update timestamp on commit.
 - Init scaffolding — non-interactive detection and precedence
   - Treat non-interactive when stdin/stdout are not TTY OR when CI-like env vars
     are present: CI, GITHUB_ACTIONS, BUILDKITE, TEAMCITY_VERSION, TF_BUILD.
-  - Preserve precedence: --force > --yes > auto-detect (non-interactive => Skip All).
+  - Preserve precedence: --force > --yes > auto-detect(non-interactive => Skip All).
   - Implemented in init plugin; added tests for force precedence and CI auto-skip.
   - Docs updated (README and guides/plugins.md) to clarify detection and precedence.
   - Behavior remains backward-compatible; interactive prompts unchanged when TTY
@@ -215,4 +215,4 @@ NOTE: Update timestamp on commit.
 ## Next up (focused)
 
 - Init scaffolding (finalize & docs)
-  - Perform publish dry-run and confirm tarball includes templates and subpath exports.
+  - Perform publish dry-run and confirm tarball

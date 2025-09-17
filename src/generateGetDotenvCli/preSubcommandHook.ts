@@ -1,29 +1,22 @@
 import { execaCommand } from 'execa';
 
+import { resolveCliOptions } from '../cliCore/resolveCliOptions';
 import { resolveDotenvWithConfigLoader } from '../config/resolveWithLoader';
-import { getDotenv } from '../getDotenv';
 import {
   getDotenvCliOptions2Options,
   type Logger,
   type ProcessEnv,
 } from '../GetDotenvOptions';
-import { defaultsDeep } from '../util/defaultsDeep';
-import {
-  resolveExclusion,
-  resolveExclusionAll,
-  setOptionalFlag,
-} from './flagUtils';
 import {
   type GetDotenvCliGenerateOptions,
   type GetDotenvCliPostHookCallback,
   type GetDotenvCliPreHookCallback,
 } from './GetDotenvCliGenerateOptions';
-import type { GetDotenvCliOptions, Scripts } from './GetDotenvCliOptions';
+import type { GetDotenvCliOptions } from './GetDotenvCliOptions';
 import { resolveCommand, resolveShell } from './resolve';
 
 /**
- * Context for composing the Commander `preSubcommand` hook.
- *
+ * Context for composing the Commander `preSubcommand` hook. *
  * @property logger - Logger compatible with `console` (must support `log`, optional `error`).
  * @property preHook - Optional async pre-hook called before command execution; may mutate options.
  * @property postHook - Optional async post-hook called after `getDotenv` has run.
@@ -71,167 +64,23 @@ export type PreSubHookContext = {
  */ export const makePreSubcommandHook =
   ({ logger, preHook, postHook, defaults }: PreSubHookContext) =>
   async (thisCommand: unknown) => {
-    // Get parent command GetDotenvCliOptions.
-    const parentGetDotenvCliOptions = process.env.getDotenvCliOptions
-      ? (JSON.parse(process.env.getDotenvCliOptions) as GetDotenvCliOptions)
-      : undefined;
-
     // Get raw CLI options from commander.
     const rawCliOptions = (
       thisCommand as { opts: () => Record<string, unknown> }
     ).opts();
 
-    // Extract current GetDotenvCliOptions from raw CLI options.
-    const {
-      command,
-      debugOff,
-      excludeAll,
-      excludeAllOff,
-      excludeDynamicOff,
-      excludeEnvOff,
-      excludeGlobalOff,
-      excludePrivateOff,
-      excludePublicOff,
-      loadProcessOff,
-      logOff,
-      scripts,
-      shellOff,
-      ...rawCliOptionsRest
-    } = rawCliOptions;
-
-    const currentGetDotenvCliOptions: Partial<GetDotenvCliOptions> =
-      rawCliOptionsRest as Partial<GetDotenvCliOptions>;
-
-    if (scripts)
-      currentGetDotenvCliOptions.scripts = JSON.parse(
-        scripts as string,
-      ) as Scripts;
-
-    // Merge current & parent GetDotenvCliOptions (parent < current).
-    const mergedGetDotenvCliOptions = defaultsDeep(
-      (parentGetDotenvCliOptions ?? {}) as Partial<GetDotenvCliOptions>,
-      currentGetDotenvCliOptions,
-    ) as unknown as GetDotenvCliOptions;
-
-    // Resolve flags using defaults + current + exclude-all toggles.
-    setOptionalFlag(
-      mergedGetDotenvCliOptions,
-      'debug',
-      resolveExclusion(
-        mergedGetDotenvCliOptions.debug,
-        debugOff as true | undefined,
-        defaults.debug,
-      ),
-    );
-    setOptionalFlag(
-      mergedGetDotenvCliOptions,
-      'excludeDynamic',
-      resolveExclusionAll(
-        mergedGetDotenvCliOptions.excludeDynamic,
-        excludeDynamicOff as true | undefined,
-        defaults.excludeDynamic,
-        excludeAll as true | undefined,
-        excludeAllOff as true | undefined,
-      ),
-    );
-    setOptionalFlag(
-      mergedGetDotenvCliOptions,
-      'excludeEnv',
-      resolveExclusionAll(
-        mergedGetDotenvCliOptions.excludeEnv,
-        excludeEnvOff as true | undefined,
-        defaults.excludeEnv,
-        excludeAll as true | undefined,
-        excludeAllOff as true | undefined,
-      ),
-    );
-    setOptionalFlag(
-      mergedGetDotenvCliOptions,
-      'excludeGlobal',
-      resolveExclusionAll(
-        mergedGetDotenvCliOptions.excludeGlobal,
-        excludeGlobalOff as true | undefined,
-        defaults.excludeGlobal,
-        excludeAll as true | undefined,
-        excludeAllOff as true | undefined,
-      ),
-    );
-    setOptionalFlag(
-      mergedGetDotenvCliOptions,
-      'excludePrivate',
-      resolveExclusionAll(
-        mergedGetDotenvCliOptions.excludePrivate,
-        excludePrivateOff as true | undefined,
-        defaults.excludePrivate,
-        excludeAll as true | undefined,
-        excludeAllOff as true | undefined,
-      ),
-    );
-    setOptionalFlag(
-      mergedGetDotenvCliOptions,
-      'excludePublic',
-      resolveExclusionAll(
-        mergedGetDotenvCliOptions.excludePublic,
-        excludePublicOff as true | undefined,
-        defaults.excludePublic,
-        excludeAll as true | undefined,
-        excludeAllOff as true | undefined,
-      ),
-    );
-    setOptionalFlag(
-      mergedGetDotenvCliOptions,
-      'log',
-      resolveExclusion(
-        mergedGetDotenvCliOptions.log,
-        logOff as true | undefined,
-        defaults.log,
-      ),
-    );
-    setOptionalFlag(
-      mergedGetDotenvCliOptions,
-      'loadProcess',
-      resolveExclusion(
-        mergedGetDotenvCliOptions.loadProcess,
-        loadProcessOff as true | undefined,
-        defaults.loadProcess,
-      ),
-    );
-
-    // Normalize shell for predictability: explicit default shell per OS.
-    const defaultShell =
-      process.platform === 'win32' ? 'powershell.exe' : '/bin/bash';
-    let resolvedShell: string | boolean | undefined =
-      mergedGetDotenvCliOptions.shell;
-    if (shellOff) resolvedShell = false;
-    else if (resolvedShell === true || resolvedShell === undefined) {
-      resolvedShell = defaultShell;
-    } else if (
-      typeof resolvedShell !== 'string' &&
-      typeof defaults.shell === 'string'
-    ) {
-      resolvedShell = defaults.shell;
-    }
-    mergedGetDotenvCliOptions.shell = resolvedShell;
-
-    if (mergedGetDotenvCliOptions.debug && parentGetDotenvCliOptions) {
-      logger.debug(
-        '\n*** parent command GetDotenvCliOptions ***\n',
-        parentGetDotenvCliOptions,
+    const { merged: mergedGetDotenvCliOptions, command: commandOpt } =
+      resolveCliOptions(
+        rawCliOptions,
+        (defaults ?? {}) as Record<string, unknown>,
+        process.env.getDotenvCliOptions,
       );
-    }
 
-    if (mergedGetDotenvCliOptions.debug)
-      logger.debug('\n*** current command raw options ***\n', rawCliOptions);
-
-    if (mergedGetDotenvCliOptions.debug)
-      logger.debug('\n*** merged GetDotenvCliOptions ***\n', {
-        mergedGetDotenvCliOptions,
-      });
+    // Optional debug logging retained via mergedGetDotenvCliOptions.debug if desired.
 
     // Execute pre-hook.
     if (preHook) {
       await preHook(mergedGetDotenvCliOptions);
-
       if (mergedGetDotenvCliOptions.debug)
         logger.debug(
           '\n*** GetDotenvCliOptions after pre-hook ***\n',
@@ -244,28 +93,18 @@ export type PreSubHookContext = {
       thisCommand as { getDotenvCliOptions: GetDotenvCliOptions }
     ).getDotenvCliOptions = mergedGetDotenvCliOptions;
 
-    // Execute getdotenv.
+    // Execute getdotenv via always-on config loader/overlay path.
     let dotenv: ProcessEnv;
     const serviceOptions = getDotenvCliOptions2Options(
       mergedGetDotenvCliOptions,
     );
-    if (
-      (mergedGetDotenvCliOptions as unknown as { useConfigLoader?: boolean })
-        .useConfigLoader
-    ) {
-      dotenv = await resolveDotenvWithConfigLoader(serviceOptions);
-    } else {
-      dotenv = await getDotenv(serviceOptions);
-    }
-    if (mergedGetDotenvCliOptions.debug)
-      logger.debug('\n*** getDotenv output ***\n', dotenv);
+    dotenv = await resolveDotenvWithConfigLoader(serviceOptions);
 
     // Execute post-hook.
     if (postHook) await postHook(dotenv);
     // Execute command.
-
     const args = (thisCommand as { args?: unknown[] }).args ?? [];
-    const isCommand = typeof command === 'string' && command.length > 0;
+    const isCommand = typeof commandOpt === 'string' && commandOpt.length > 0;
     if (isCommand && args.length > 0) {
       const lr = logger as unknown as {
         log: (...a: unknown[]) => void;
@@ -275,8 +114,8 @@ export type PreSubHookContext = {
       process.exit(0);
     }
 
-    if (typeof command === 'string' && command.length > 0) {
-      const cmd = resolveCommand(mergedGetDotenvCliOptions.scripts, command);
+    if (typeof commandOpt === 'string' && commandOpt.length > 0) {
+      const cmd = resolveCommand(mergedGetDotenvCliOptions.scripts, commandOpt);
       if (mergedGetDotenvCliOptions.debug)
         logger.debug('\n*** command ***\n', cmd);
 
@@ -291,7 +130,7 @@ export type PreSubHookContext = {
         },
         shell: resolveShell(
           mergedGetDotenvCliOptions.scripts,
-          command,
+          commandOpt,
           mergedGetDotenvCliOptions.shell,
         ) as unknown as string | boolean | URL,
         stdio: 'inherit',
