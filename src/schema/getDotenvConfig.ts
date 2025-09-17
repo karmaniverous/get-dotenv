@@ -3,8 +3,7 @@ import { z } from 'zod';
 import type { Scripts } from '../generateGetDotenvCli/GetDotenvCliOptions';
 
 /**
- * Zod schemas for configuration files discovered by the new loader.
- *
+ * Zod schemas for configuration files discovered by the new loader. *
  * Notes:
  * - RAW: all fields optional; shapes are stringly-friendly (paths may be string[] or string).
  * - RESOLVED: normalized shapes (paths always string[]).
@@ -30,10 +29,11 @@ export const getDotenvConfigSchemaRaw = z.object({
   envVars: envStringMap.optional(), // public, per-env
   // Dynamic in config (JS/TS only). JSON/YAML loader will reject if set.
   dynamic: z.unknown().optional(),
+  // Per-plugin config bag; validated by plugins/host when used.
+  plugins: z.record(z.unknown()).optional(),
 });
 
 export type GetDotenvConfigRaw = z.infer<typeof getDotenvConfigSchemaRaw>;
-
 // Normalize paths to string[]
 const normalizePaths = (p?: string[] | string) =>
   p === undefined ? undefined : Array.isArray(p) ? p : [p];
@@ -57,8 +57,8 @@ export type GetDotenvConfigResolved = {
   vars?: Record<string, string>;
   envVars?: Record<string, Record<string, string>>;
   dynamic?: unknown;
+  plugins?: Record<string, unknown>;
 };
-
 /**
  * Helper to normalize a RAW config object into a RESOLVED shape,
  * with Zod validation and helpful errors.

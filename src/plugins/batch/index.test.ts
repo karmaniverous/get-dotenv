@@ -2,14 +2,11 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 // Mock the batch executor to capture inputs
 const execMock = vi.fn<(arg: Record<string, unknown>) => void>();
-vi.mock(
-  '../../generateGetDotenvCli/batchCommand/execShellCommandBatch',
-  () => ({
-    execShellCommandBatch: (arg: Record<string, unknown>) => {
-      execMock(arg);
-    },
-  }),
-);
+vi.mock('../../services/batch/execShellCommandBatch', () => ({
+  execShellCommandBatch: (arg: Record<string, unknown>) => {
+    execMock(arg);
+  },
+}));
 
 import { GetDotenvCli } from '../../cliHost/GetDotenvCli';
 import { batchPlugin } from './index';

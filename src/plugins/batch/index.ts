@@ -1,20 +1,35 @@
 import type { Command } from 'commander';
+import { z } from 'zod';
 
 import { definePlugin } from '../../cliHost/definePlugin';
 import type { GetDotenvCli } from '../../cliHost/GetDotenvCli';
-import { execShellCommandBatch } from '../../generateGetDotenvCli/batchCommand/execShellCommandBatch';
-import type { Scripts } from '../../generateGetDotenvCli/GetDotenvCliOptions';
-import {
-  resolveCommand,
-  resolveShell,
-} from '../../generateGetDotenvCli/resolve';
 import type { Logger } from '../../GetDotenvOptions';
+import { execShellCommandBatch } from '../../services/batch/execShellCommandBatch';
+import type { Scripts } from '../../services/batch/resolve';
+import { resolveCommand, resolveShell } from '../../services/batch/resolve';
 
 export type BatchPluginOptions = {
   scripts?: Scripts;
   shell?: string | boolean;
   logger?: Logger;
 };
+
+// Per-plugin config schema (optional fields; used as defaults).
+const ScriptSchema = z.union([
+  z.string(),
+  z.object({
+    cmd: z.string(),
+    shell: z.union([z.string(), z.boolean()]).optional(),
+  }),
+]);
+const BatchConfigSchema = z.object({
+  scripts: z.record(ScriptSchema).optional(),
+  shell: z.union([z.string(), z.boolean()]).optional(),
+  rootPath: z.string().optional(),
+  globs: z.string().optional(),
+  pkgCwd: z.boolean().optional(),
+});
+type BatchConfig = z.infer<typeof BatchConfigSchema>;
 
 /**
  * Batch plugin for the GetDotenv CLI host.
@@ -27,6 +42,9 @@ export type BatchPluginOptions = {
 export const batchPlugin = (opts: BatchPluginOptions = {}) =>
   definePlugin({
     id: 'batch',
+    // Host validates this when config-loader is enabled; plugins may also
+    // re-validate at action time as a safety belt.
+    configSchema: BatchConfigSchema,
     setup(cli: GetDotenvCli) {
       const logger = opts.logger ?? console;
       const ns = cli.ns('batch');
@@ -64,17 +82,24 @@ export const batchPlugin = (opts: BatchPluginOptions = {}) =>
         )
         .action(async (_options: unknown, thisCommand: Command) => {
           // Ensure context exists (host preSubcommand on root creates if missing).
-          void cli.getCtx();
+          const ctx = cli.getCtx();
+          // Read merged per-plugin config (host-populated when guarded loader is enabled).
+          const cfgRaw = (ctx?.pluginConfigs?.['batch'] ?? {}) as unknown;
+          // Best-effort typing; host already validated when loader path is on.
+          const cfg = (cfgRaw || {}) as BatchConfig;
 
           const raw = thisCommand.opts();
           const commandOpt =
             typeof raw.command === 'string' ? raw.command : undefined;
           const ignoreErrors = !!raw.ignoreErrors;
-          const globs = typeof raw.globs === 'string' ? raw.globs : '*';
+          const globs =
+            typeof raw.globs === 'string' ? raw.globs : (cfg.globs ?? '*');
           const list = !!raw.list;
-          const pkgCwd = !!raw.pkgCwd;
+          const pkgCwd = raw.pkgCwd !== undefined ? !!raw.pkgCwd : !!cfg.pkgCwd;
           const rootPath =
-            typeof raw.rootPath === 'string' ? raw.rootPath : './';
+            typeof raw.rootPath === 'string'
+              ? raw.rootPath
+              : (cfg.rootPath ?? './');
 
           if (!commandOpt && !list) {
             logger.error(`No command provided. Use --command or --list.`);
@@ -83,7 +108,7 @@ export const batchPlugin = (opts: BatchPluginOptions = {}) =>
 
           if (typeof commandOpt === 'string') {
             await execShellCommandBatch({
-              command: resolveCommand(opts.scripts, commandOpt),
+              command: resolveCommand(opts.scripts ?? cfg.scripts, commandOpt),
               globs,
               ignoreErrors,
               list,
@@ -91,9 +116,9 @@ export const batchPlugin = (opts: BatchPluginOptions = {}) =>
               ...(pkgCwd ? { pkgCwd } : {}),
               rootPath,
               shell: resolveShell(
-                opts.scripts,
+                opts.scripts ?? cfg.scripts,
                 commandOpt,
-                opts.shell,
+                opts.shell ?? cfg.shell,
               ) as unknown as string | boolean | URL,
             });
           } else {
@@ -105,9 +130,10 @@ export const batchPlugin = (opts: BatchPluginOptions = {}) =>
               logger,
               ...(pkgCwd ? { pkgCwd } : {}),
               rootPath,
-              shell: (opts.shell === undefined
-                ? false
-                : opts.shell) as unknown as string | boolean | URL,
+              shell: (opts.shell ?? cfg.shell ?? false) as unknown as
+                | string
+                | boolean
+                | URL,
             });
           }
         });

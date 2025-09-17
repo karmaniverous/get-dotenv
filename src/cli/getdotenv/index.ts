@@ -2,10 +2,26 @@
 
 import type { Command } from 'commander';
 
-import { generateGetDotenvCli } from '../../';
+import { GetDotenvCli } from '../../cliHost/GetDotenvCli';
+import { batchPlugin } from '../../plugins/batch';
 
-const program: Command = await generateGetDotenvCli({
-  importMetaUrl: import.meta.url,
-});
+// Shipped CLI rebased on plugin-first host.
+const program: Command = new GetDotenvCli('getdotenv').use(batchPlugin());
+
+// Guarded config loader flag (default OFF to preserve legacy unless opted-in).
+program.option(
+  '--use-config-loader',
+  'enable config loader/overlay path (guarded; default OFF)',
+);
+
+// Eagerly resolve context so subcommands inherit overlaid env when enabled.
+const useConfigLoader =
+  process.argv.includes('--use-config-loader') ||
+  process.argv.includes('--use-config-loader=true') ||
+  process.argv.includes('--use-config-loader=1');
+
+await (program as unknown as GetDotenvCli).resolveAndLoad(
+  useConfigLoader ? { useConfigLoader } : {},
+);
 
 await program.parseAsync();

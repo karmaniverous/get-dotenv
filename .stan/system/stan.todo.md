@@ -1,8 +1,10 @@
 # Development Plan — get-dotenv
 
-When updated: 2025-09-17T02:20:00Z
+When updated: 2025-09-17T12:05:00Z
 NOTE: Update timestamp on commit.
-## Next up- Step C — Batch plugin - Port batch subcommand into src/plugins/batch (no behavior changes). - Wire the shipped CLI internally to use batch plugin to maintain parity. - Plan exports for plugins (subpath export), to be added in a later code change.- Tests: parity with current behavior (list, cwd, shell resolution, ignore-errors).- Step D — Config loader (formats & env overlays) - Loader features (for the new host first):  - Discover packaged root config; consumer repo global + .local.  - Support JSON/YAML; JS/TS via direct import → esbuild → transpile fallback; clear error guidance.- (Host continues) Wire CLI option parsing/validation against schemas (strict).
+
+## Next up- Step C — Batch plugin - Port batch subcommand into src/plugins/batch (no behavior changes). - Wire the shipped CLI internally to use batch plugin to maintain parity. - Plan exports for plugins (subpath export), to be added in a later code change.- Tests: parity with current behavior (list, cwd, shell resolution, ignore-errors).- Step D — Config loader (formats & env overlays) - Loader features (for the new host first): - Discover packaged root config; consumer repo global + .local. - Support JSON/YAML; JS/TS via direct import → esbuild → transpile fallback; clear error guidance.- (Host continues) Wire CLI option parsing/validation against schemas (strict).
+
 - Config-provided env sources:
   - vars (global, public) and envVars (env-specific, public) in config.
   - JS/TS config: allow dynamic map (GetDotenvDynamic). - Env overlay engine:
@@ -27,6 +29,18 @@ NOTE: Update timestamp on commit.
 
 ## Completed (recent)
 
+- Step C/D — Batch services extraction and plugin config plumbing
+  - Extracted neutral batch services under src/services/batch (resolve + exec),
+    re-exported from legacy generator paths to avoid cycles while preserving behavior.
+  - Batch plugin now consumes services directly and declares a Zod config schema;
+    supports defaults from config-loader (packaged → project public → project local)
+    with programmatic options and CLI flags taking precedence at runtime.
+  - Host merges per-plugin config under guarded loader path, validates slices
+    using plugin-declared schemas, and exposes them as ctx.pluginConfigs.
+- Shipped CLI rebase (breaking, planned major)
+  - Rewired src/cli/getdotenv to the plugin-first host and mounted the batch plugin.
+  - Guarded --use-config-loader flag supported; eager context resolution ensures
+    subcommands run with overlaid env when enabled.
 - Step A — Schemas and defaults (tests; no behavior change)
   - Added unit tests for:
     - getDotenvOptions (RAW) valid/invalid shapes.
@@ -160,3 +174,15 @@ NOTE: Update timestamp on commit.
     plugin composition, afterResolve lifecycle, and subprocess env advice.
   - Update typedoc.json projectDocuments and README links so the new
     guides are published and discoverable.
+
+## Next up (focused)
+
+- Init scaffolding (host-only)
+  - Implement initPlugin (only host-type CLIs; drop --cli-kind).
+  - Options: --path, --config-format <json|yaml|js|ts>, --with-local, --dynamic,
+    --cli-name, --force, --yes.
+  - Collision handling: (o)verwrite, (e)xample, (s)kip, (O)verwrite All,
+    (E)Example All, (S)kip All. Non-interactive: --force => Overwrite All;
+    --yes => Skip All (unless --force).
+  - Mount in shipped CLI; export at ./plugins/init.
+  - Tests: sandboxed write, idempotence, contents per format, hello plugin wiring.

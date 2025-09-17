@@ -14,6 +14,7 @@ import {
   resolveGetDotenvOptions,
 } from '../GetDotenvOptions';
 import { getDotenvOptionsSchemaResolved } from '../schema/getDotenvOptions';
+import { defaultsDeep } from '../util/defaultsDeep';
 import { loadModuleDefault } from '../util/loadModuleDefault';
 import type { GetDotenvCliPlugin } from './definePlugin';
 
@@ -23,6 +24,7 @@ export type GetDotenvCliCtx = {
   optionsResolved: GetDotenvOptions;
   dotenv: ProcessEnv;
   plugins?: Record<string, unknown>;
+  pluginConfigs?: Record<string, unknown>;
 };
 
 const HOST_META_URL = import.meta.url;
@@ -174,17 +176,54 @@ export class GetDotenvCli extends Command {
         (validated as unknown as { logger?: Logger }).logger ?? console;
       if (validated.log) logger.log(dotenv);
       if (validated.loadProcess) Object.assign(process.env, dotenv);
+      // 6) Merge and validate per-plugin config (packaged < project.public < project.local).
+      const mergedPluginConfigs = defaultsDeep<Record<string, unknown>>(
+        {},
+        (
+          sources.packaged as unknown as {
+            plugins?: Record<string, unknown>;
+          }
+        )?.plugins ?? {},
+        (
+          sources.project?.public as unknown as {
+            plugins?: Record<string, unknown>;
+          }
+        )?.plugins ?? {},
+        (
+          sources.project?.local as unknown as {
+            plugins?: Record<string, unknown>;
+          }
+        )?.plugins ?? {},
+      );
+      // Validate slices for installed plugins that declare a schema.
+      for (const p of this._plugins) {
+        if (!p.id || !p.configSchema) continue;
+        const slice = mergedPluginConfigs[p.id];
+        if (slice === undefined) continue;
+        const parsed = p.configSchema.safeParse(slice);
+        if (!parsed.success) {
+          const msgs = parsed.error.issues
+            .map((i) => `${i.path.join('.')}: ${i.message}`)
+            .join('\n');
+          throw new Error(`Invalid config for plugin '${p.id}':\n${msgs}`);
+        }
+        // Write back normalized slice
+        mergedPluginConfigs[p.id] = parsed.data as unknown;
+      }
+      var pluginConfigsForCtx: Record<string, unknown> = mergedPluginConfigs;
     } else {
       // Legacy-safe path via getDotenv (unchanged)
       dotenv = await getDotenv(
         validated as unknown as Partial<GetDotenvOptions>,
       );
+      var pluginConfigsForCtx: Record<string, unknown> = {};
     }
 
     const ctx: GetDotenvCliCtx = {
       optionsResolved: validated as unknown as GetDotenvOptions,
       dotenv,
       plugins: {},
+      pluginConfigs: pluginConfigsForCtx,
     };
 
     // Persist context on the instance for later access.

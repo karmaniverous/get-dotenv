@@ -1,11 +1,13 @@
+// Optional per-plugin config validation (host validates when loader is enabled).
+import type { ZodTypeAny } from 'zod';
+
 import type { GetDotenvCli, GetDotenvCliCtx } from './GetDotenvCli';
 
 export interface GetDotenvCliPlugin {
-  id?: string;
-  /**
+  id?: string /**
    * Setup phase: register commands and wiring on the provided CLI instance.
    * Runs parent → children (pre-order).
-   */
+   */;
   setup: (cli: GetDotenvCli) => void | Promise<void>;
   /**
    * After the dotenv context is resolved, initialize any clients/secrets
@@ -16,6 +18,11 @@ export interface GetDotenvCliPlugin {
     cli: GetDotenvCli,
     ctx: GetDotenvCliCtx,
   ) => void | Promise<void>;
+  /**
+   * Optional Zod schema for this plugin's config slice (from config.plugins[id]).
+   * When provided, the host validates the merged config under the guarded loader path.
+   */
+  configSchema?: ZodTypeAny;
   /**
    * Compositional children. Installed after the parent per pre-order.
    */
@@ -29,7 +36,6 @@ export interface GetDotenvCliPlugin {
 type DefineSpec = Omit<GetDotenvCliPlugin, 'children' | 'use'> & {
   children?: GetDotenvCliPlugin[];
 };
-
 /**
  * Define a GetDotenv CLI plugin with compositional helpers.
  *
