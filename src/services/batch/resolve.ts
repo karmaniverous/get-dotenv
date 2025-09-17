@@ -3,9 +3,6 @@
  * Shared by the generator path and the batch plugin to avoid circular deps.
  */
 
-// Minimal Scripts shape aliased to shared type.
-import type { ScriptsTable } from '../../cliCore/types';
-
 // Accept undefined as an explicit shell value to interoperate with
 // exactOptionalPropertyTypes in plugin-provided configs.
 export type Scripts = Record<
@@ -14,8 +11,12 @@ export type Scripts = Record<
 >;
 
 /**
- * Resolve a command string from the {@link Scripts} table. * A script may be expressed as a string or an object with a `cmd` property. * * @param scripts - Optional scripts table.
- * @param command - User-provided command name or string. * @returns Resolved command string (falls back to the provided command).
+ * Resolve a command string from the {@link Scripts} table.
+ * A script may be expressed as a string or an object with a `cmd` property.
+ *
+ * @param scripts - Optional scripts table.
+ * @param command - User-provided command name or string.
+ * @returns Resolved command string (falls back to the provided command).
  */
 export const resolveCommand = (
   scripts: Scripts | undefined,

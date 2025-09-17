@@ -94,11 +94,10 @@ export const makePreSubcommandHook = <
     const { merged: mergedGetDotenvCliOptions, command: commandOpt } =
       resolveCliOptions<T>(
         rawCliOptions,
-        defaults ?? {},
+        defaults,
         process.env.getDotenvCliOptions,
       );
     // Optional debug logging retained via mergedGetDotenvCliOptions.debug if desired.
-
     // Execute pre-hook.
     if (preHook) {
       await preHook(
