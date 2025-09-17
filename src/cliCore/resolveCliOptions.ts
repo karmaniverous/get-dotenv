@@ -38,7 +38,7 @@ export const resolveCliOptions = <
     scripts,
     shellOff,
     ...rest
-  } = (rawCliOptions ?? {}) as Partial<T> & Record<string, unknown>;
+  } = rawCliOptions as Partial<T> & Record<string, unknown>;
 
   const current: Partial<T> = { ...(rest as Partial<T>) };
   if (typeof (scripts as unknown) === 'string') {

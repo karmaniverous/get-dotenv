@@ -1,7 +1,5 @@
 #!/usr/bin/env node
 
-import type { Command } from 'commander';
-
 import { attachRootOptions } from '../../cliCore/attachRootOptions';
 import { baseRootOptionDefaults } from '../../cliCore/defaults';
 import { resolveCliOptions } from '../../cliCore/resolveCliOptions';

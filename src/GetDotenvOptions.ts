@@ -146,7 +146,7 @@ export interface GetDotenvOptions {
  *
  * @returns `getDotenv` options.
  */
-export const getDotenvCliOptions2Options = <T extends RootOptionsShape>({
+export const getDotenvCliOptions2Options = ({
   paths,
   pathsDelimiter,
   pathsDelimiterPattern,
@@ -156,13 +156,12 @@ export const getDotenvCliOptions2Options = <T extends RootOptionsShape>({
   varsDelimiter,
   varsDelimiterPattern,
   ...rest
-}: T): GetDotenvOptions => {
+}: RootOptionsShape): GetDotenvOptions => {
   /**
    * Convert CLI-facing string options into {@link GetDotenvOptions}.
    *
    * - Splits {@link GetDotenvCliOptions.paths} using either a delimiter
-   *   or a regular expression pattern into a string array.
-   * - Parses {@link GetDotenvCliOptions.vars} as space-separated `KEY=VALUE`
+   *   or a regular expression pattern into a string array.   * - Parses {@link GetDotenvCliOptions.vars} as space-separated `KEY=VALUE`
    *   pairs (configurable delimiters) into a {@link ProcessEnv}.
    * - Drops CLI-only keys that have no programmatic equivalent.
    *

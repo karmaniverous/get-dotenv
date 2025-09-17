@@ -1,11 +1,11 @@
 import type { Command } from 'commander';
-import type { OptionValues } from 'commander';
 import { execaCommand } from 'execa';
 
 import { resolveCliOptions } from '../cliCore/resolveCliOptions';
 import type {
   CommandWithOptions,
-  RootOptionsShape,  ScriptsTable,
+  RootOptionsShape,
+  ScriptsTable,
 } from '../cliCore/types';
 import { resolveDotenvWithConfigLoader } from '../config/resolveWithLoader';
 import {
@@ -57,7 +57,6 @@ export type PreSubHookContext = {
 const omitLogger = <U extends { logger?: unknown }>(
   obj: U,
 ): Omit<U, 'logger'> => {
-   
   const { logger: _omitted, ...rest } = obj;
   return rest;
 };
@@ -90,7 +89,7 @@ export const makePreSubcommandHook = <
 }) => {
   return async (thisCommand: CommandWithOptions<T> | Command) => {
     // Get raw CLI options from commander.
-    const rawCliOptions = (thisCommand as CommandWithOptions<T>).opts()) as Partial<T>;
+    const rawCliOptions = (thisCommand as CommandWithOptions<T>).opts();
 
     const { merged: mergedGetDotenvCliOptions, command: commandOpt } =
       resolveCliOptions<T>(

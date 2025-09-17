@@ -1,19 +1,25 @@
 # Development Plan — get-dotenv
 
-When updated: 2025-09-17T22:30:00Z
+When updated: 2025-09-17T22:45:00Z
 NOTE: Update timestamp on commit.
 
 ## Next up
-
 - Init scaffolding (finalize & docs)
   - Perform publish dry-run and confirm tarball includes templates and subpath exports.
 
 ## Completed (recent)
 
+- Post-generics stabilization (parser/typing/lint)
+  - Fixed preSubcommandHook opts() syntax; cast opts() to Partial<T>.
+  - Dropped unnecessary generic from getDotenvCliOptions2Options; accept RootOptionsShape.
+  - Removed unnecessary rawCliOptions ?? {} in resolveCliOptions.
+  - Widened neutral batch Scripts acceptance via local alias to allow explicit undefined for shell.
+  - Removed unused Command imports in CLI entrypoints.
+  - Lint clean across modified modules.
+
 - Finish generics pass and fix type/lint issues
   - Genericized getDotenvCliOptions2Options<T extends RootOptionsShape>, preserving exactOptionalPropertyTypes by omitting undefined keys.
-  - Completed preSubcommandHook generics; fixed OptionValues typing; removed Record cast via typed omitLogger helper.
-  - Made host class and computeContext generic:
+  - Completed preSubcommandHook generics; fixed OptionValues typing; removed Record cast via typed omitLogger helper.  - Made host class and computeContext generic:
     - GetDotenvCli<TOptions extends GetDotenvOptions>.
     - computeContext<TOptions> returns GetDotenvCliCtx<TOptions>.
   - Updated shipped CLI and demo host:
