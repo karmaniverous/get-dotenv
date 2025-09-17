@@ -176,25 +176,39 @@ export class GetDotenvCli extends Command {
         (validated as unknown as { logger?: Logger }).logger ?? console;
       if (validated.log) logger.log(dotenv);
       if (validated.loadProcess) Object.assign(process.env, dotenv);
+
       // 6) Merge and validate per-plugin config (packaged < project.public < project.local).
+      const packagedPlugins =
+        (sources.packaged &&
+          (
+            sources.packaged as unknown as {
+              plugins?: Record<string, unknown>;
+            }
+          ).plugins) ??
+        {};
+      const publicPlugins =
+        (sources.project?.public &&
+          (
+            sources.project.public as unknown as {
+              plugins?: Record<string, unknown>;
+            }
+          ).plugins) ??
+        {};
+      const localPlugins =
+        (sources.project?.local &&
+          (
+            sources.project.local as unknown as {
+              plugins?: Record<string, unknown>;
+            }
+          ).plugins) ??
+        {};
       const mergedPluginConfigs = defaultsDeep<Record<string, unknown>>(
         {},
-        (
-          sources.packaged as unknown as {
-            plugins?: Record<string, unknown>;
-          }
-        )?.plugins ?? {},
-        (
-          sources.project?.public as unknown as {
-            plugins?: Record<string, unknown>;
-          }
-        )?.plugins ?? {},
-        (
-          sources.project?.local as unknown as {
-            plugins?: Record<string, unknown>;
-          }
-        )?.plugins ?? {},
+        packagedPlugins,
+        publicPlugins,
+        localPlugins,
       );
+
       // Validate slices for installed plugins that declare a schema.
       for (const p of this._plugins) {
         if (!p.id || !p.configSchema) continue;
@@ -210,20 +224,31 @@ export class GetDotenvCli extends Command {
         // Write back normalized slice
         mergedPluginConfigs[p.id] = parsed.data as unknown;
       }
-      var pluginConfigsForCtx: Record<string, unknown> = mergedPluginConfigs;
     } else {
       // Legacy-safe path via getDotenv (unchanged)
       dotenv = await getDotenv(
         validated as unknown as Partial<GetDotenvOptions>,
       );
-      var pluginConfigsForCtx: Record<string, unknown> = {};
+      const pluginConfigsForCtx: Record<string, unknown> = {};
+      const ctx: GetDotenvCliCtx = {
+        optionsResolved: validated as unknown as GetDotenvOptions,
+        dotenv,
+        plugins: {},
+        pluginConfigs: pluginConfigsForCtx,
+      };
+      (this as unknown as Record<symbol, GetDotenvCliCtx>)[CTX_SYMBOL] = ctx;
+      await this.install();
+      await this._runAfterResolve(ctx);
+      return ctx;
     }
 
     const ctx: GetDotenvCliCtx = {
       optionsResolved: validated as unknown as GetDotenvOptions,
       dotenv,
       plugins: {},
-      pluginConfigs: pluginConfigsForCtx,
+      pluginConfigs: (this as unknown as Record<string, unknown>)[
+        'pluginConfigsForCtx'
+      ] as Record<string, unknown>, // placeholder to satisfy types; replaced below
     };
 
     // Persist context on the instance for later access.
