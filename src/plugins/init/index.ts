@@ -1,5 +1,6 @@
 import { stdin as input, stdout as output } from 'node:process';
 
+import type { Command } from 'commander';
 import fs from 'fs-extra';
 import path from 'path';
 import { createInterface } from 'readline/promises';
@@ -16,7 +17,7 @@ type CopyDecision = 'overwrite' | 'example' | 'skip';
 
 const TEMPLATES_ROOT = path.resolve('templates');
 
-const isInteractive = () => !!(input.isTTY && output.isTTY);
+const isInteractive = () => input.isTTY && output.isTTY;
 
 const ensureDir = async (p: string) => {
   await fs.ensureDir(p);
@@ -56,7 +57,8 @@ const promptDecision = async (
   while (true) {
     const a = (await rl.question('> ')).trim();
     const valid = ['o', 'e', 's', 'O', 'E', 'S'] as const;
-    if ((valid as readonly string[]).includes(a)) return a as any;
+    if ((valid as readonly string[]).includes(a))
+      return a as 'o' | 'e' | 's' | 'O' | 'E' | 'S';
     logger.log('Please enter one of: o e s O E S');
   }
 };
@@ -69,8 +71,13 @@ const planConfigCopies = ({
   format: 'json' | 'yaml' | 'js' | 'ts';
   withLocal: boolean;
   destRoot: string;
-}): Array<{ src: string; dest: string }> => {
-  const copies: Array<{ src: string; dest: string }> = [];
+}): Array<{ src: string; dest: string; subs?: Record<string, string> }> => {
+  // CopySpec with optional substitutions; config files have no tokens.
+  const copies: Array<{
+    src: string;
+    dest: string;
+    subs?: Record<string, string>;
+  }> = [];
   if (format === 'json') {
     copies.push({
       src: path.join(
@@ -176,16 +183,18 @@ export const initPlugin = (opts: InitPluginOptions = {}) =>
         .option('--force', 'overwrite all existing files')
         .option('--yes', 'skip all collisions (no overwrite)')
         .action(async (destArg: unknown, thisCommand: unknown) => {
-          const { opts: getOpts } = thisCommand as {
-            opts: () => Record<string, unknown>;
-          };
-          const o = getOpts();
+          // Use bound opts() to preserve Commander "this" context
+          const o = (thisCommand as Command).opts();
           const destRel =
             typeof destArg === 'string' && destArg.length > 0 ? destArg : '.';
           const cwd = process.cwd();
           const destRoot = path.resolve(cwd, destRel);
 
-          const formatRaw = String(o.configFormat ?? 'json').toLowerCase();
+          const formatInput = o.configFormat;
+          const formatRaw =
+            typeof formatInput === 'string'
+              ? formatInput.toLowerCase()
+              : 'json';
           const format = (
             ['json', 'yaml', 'js', 'ts'].includes(formatRaw)
               ? formatRaw
@@ -207,7 +216,11 @@ export const initPlugin = (opts: InitPluginOptions = {}) =>
           // Build copy plan
           const cfgCopies = planConfigCopies({ format, withLocal, destRoot });
           const cliCopies = planCliCopies({ cliName, destRoot });
-          const copies = [...cfgCopies, ...cliCopies];
+          const copies: Array<{
+            src: string;
+            dest: string;
+            subs?: Record<string, string>;
+          }> = [...cfgCopies, ...cliCopies];
 
           // Interactive state
           let globalDecision: CopyDecision | undefined;
