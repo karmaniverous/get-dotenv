@@ -59,8 +59,6 @@ export const resolveCliOptions = <
   ) as T;
 
   const d = defaults;
-  const boolOrUndef = (v: unknown) => (typeof v === 'boolean' ? v : undefined);
-
   setOptionalFlag(
     merged,
     'debug',

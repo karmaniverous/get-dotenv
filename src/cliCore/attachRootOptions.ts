@@ -8,9 +8,9 @@ import type { RootOptionsShape } from './types';
  * Attach legacy root flags to a Commander program.
  * Uses provided defaults to render help labels without coupling to generators.
  */
-export const attachRootOptions = <TDefaults extends Partial<RootOptionsShape>>(
+export const attachRootOptions = (
   program: Command,
-  defaults?: TDefaults,
+  defaults?: Partial<RootOptionsShape>,
 ) => {
   const {
     defaultEnv,
@@ -35,18 +35,12 @@ export const attachRootOptions = <TDefaults extends Partial<RootOptionsShape>>(
     varsAssignorPattern,
     varsDelimiter,
     varsDelimiterPattern,
-  } = (defaults ?? {}) as Partial<RootOptionsShape>;
+  } = defaults ?? {};
 
   const va =
-    typeof (defaults as Partial<RootOptionsShape> | undefined)?.varsAssignor ===
-    'string'
-      ? (defaults as Partial<RootOptionsShape>).varsAssignor!
-      : '=';
+    typeof defaults?.varsAssignor === 'string' ? defaults.varsAssignor : '=';
   const vd =
-    typeof (defaults as Partial<RootOptionsShape> | undefined)
-      ?.varsDelimiter === 'string'
-      ? (defaults as Partial<RootOptionsShape>).varsDelimiter!
-      : ' ';
+    typeof defaults?.varsDelimiter === 'string' ? defaults.varsDelimiter : ' ';
 
   program
     .enablePositionalOptions()

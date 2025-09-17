@@ -13,12 +13,12 @@ import { getDotenvCliOptions2Options } from '../../GetDotenvOptions';
 import { batchPlugin } from '../../plugins/batch';
 
 // Demonstration CLI using the plugin-first host with the config loader enabled.
-const program: Command = new (GetDotenvCli as new (
-  alias?: string,
-) => GetDotenvCli<GetDotenvOptions>)('getdotenv-host').use(batchPlugin());
+const program: GetDotenvCli = new GetDotenvCli<GetDotenvOptions>(
+  'getdotenv-host',
+).use(batchPlugin());
 
 // Attach legacy root flags for demo parity.
-attachRootOptions<GetDotenvCliOptions>(program, baseGetDotenvCliOptions);
+attachRootOptions(program, baseGetDotenvCliOptions);
 
 // Compute context from CLI flags before subcommands execute.
 program.hook(
@@ -36,9 +36,7 @@ program.hook(
 
     // Build service options and compute context (always-on config loader path).
     const serviceOptions = getDotenvCliOptions2Options(merged);
-    await (program as unknown as GetDotenvCli<GetDotenvOptions>).resolveAndLoad(
-      serviceOptions,
-    );
+    await program.resolveAndLoad(serviceOptions);
   },
 );
 

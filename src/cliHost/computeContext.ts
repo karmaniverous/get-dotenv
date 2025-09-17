@@ -4,6 +4,7 @@ import path from 'path';
 import { resolveGetDotenvConfigSources } from '../config/loader';
 import { overlayEnv } from '../env/overlay';
 import { getDotenv } from '../getDotenv';
+import type { ProcessEnv } from '../GetDotenvOptions';
 import {
   type GetDotenvDynamic,
   type GetDotenvOptions,
@@ -17,8 +18,7 @@ import type { GetDotenvCliPlugin } from './definePlugin';
 import type { GetDotenvCliCtx } from './GetDotenvCli';
 
 /**
- * Compute the dotenv context for the host (guarded config loader path supported).
- * - Resolves and validates options strictly (host-only).
+ * Compute the dotenv context for the host (guarded config loader path supported). * - Resolves and validates options strictly (host-only).
  * - Applies file cascade, overlays, dynamics, and optional effects.
  * - Merges and validates per-plugin config slices (when provided).
  *
@@ -26,14 +26,15 @@ import type { GetDotenvCliCtx } from './GetDotenvCli';
  * @param plugins - Installed plugins (for config validation).
  * @param hostMetaUrl - import.meta.url of the host module (for packaged root discovery).
  */
-export const computeContext = async (
-  customOptions: Partial<GetDotenvOptions>,
+export const computeContext = async <
+  TOptions extends GetDotenvOptions = GetDotenvOptions,
+>(
+  customOptions: Partial<TOptions>,
   plugins: GetDotenvCliPlugin[],
   hostMetaUrl: string,
-): Promise<GetDotenvCliCtx> => {
+): Promise<GetDotenvCliCtx<TOptions>> => {
   const optionsResolved = await resolveGetDotenvOptions(customOptions);
   const validated = getDotenvOptionsSchemaResolved.parse(optionsResolved);
-
   // Always-on loader path
   // 1) Base from files only (no dynamic, no programmatic vars)
   const base = await getDotenv({
@@ -173,8 +174,8 @@ export const computeContext = async (
   }
 
   return {
-    optionsResolved: validated as unknown as GetDotenvOptions,
-    dotenv,
+    optionsResolved: validated as unknown as TOptions,
+    dotenv: dotenv as ProcessEnv,
     plugins: {},
     pluginConfigs: mergedPluginConfigs,
   };

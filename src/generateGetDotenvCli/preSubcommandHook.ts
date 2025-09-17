@@ -1,11 +1,11 @@
 import type { Command } from 'commander';
+import type { OptionValues } from 'commander';
 import { execaCommand } from 'execa';
 
 import { resolveCliOptions } from '../cliCore/resolveCliOptions';
 import type {
   CommandWithOptions,
-  RootOptionsShape,
-  ScriptsTable,
+  RootOptionsShape,  ScriptsTable,
 } from '../cliCore/types';
 import { resolveDotenvWithConfigLoader } from '../config/resolveWithLoader';
 import {
@@ -52,10 +52,19 @@ export type PreSubHookContext = {
   >;
 };
 /**
+ * Omit a "logger" key from an options object in a typed manner.
+ */
+const omitLogger = <U extends { logger?: unknown }>(
+  obj: U,
+): Omit<U, 'logger'> => {
+   
+  const { logger: _omitted, ...rest } = obj;
+  return rest;
+};
+/**
  * Build the Commander preSubcommand hook using the provided context.
  * * Responsibilities:
- * - Merge parent CLI options with current invocation (parent \< current).
- * - Resolve tri-state flags, including `--exclude-all` overrides.
+ * - Merge parent CLI options with current invocation (parent \< current). * - Resolve tri-state flags, including `--exclude-all` overrides.
  * - Normalize the shell setting to a concrete value (string | boolean).
  * - Persist merged options on the command instance and pass to subcommands.
  * - Execute {@link getDotenv} and optional post-hook.
@@ -81,8 +90,7 @@ export const makePreSubcommandHook = <
 }) => {
   return async (thisCommand: CommandWithOptions<T> | Command) => {
     // Get raw CLI options from commander.
-    const rawCliOptions =
-      (thisCommand as CommandWithOptions<T>).opts?.() ?? ({} as Partial<T>);
+    const rawCliOptions = (thisCommand as CommandWithOptions<T>).opts()) as Partial<T>;
 
     const { merged: mergedGetDotenvCliOptions, command: commandOpt } =
       resolveCliOptions<T>(
@@ -90,7 +98,6 @@ export const makePreSubcommandHook = <
         defaults ?? {},
         process.env.getDotenvCliOptions,
       );
-
     // Optional debug logging retained via mergedGetDotenvCliOptions.debug if desired.
 
     // Execute pre-hook.
@@ -111,11 +118,10 @@ export const makePreSubcommandHook = <
 
     // Execute getdotenv via always-on config loader/overlay path.
     const serviceOptions = getDotenvCliOptions2Options(
-      mergedGetDotenvCliOptions as unknown as GetDotenvCliOptions,
+      mergedGetDotenvCliOptions,
     );
     const dotenv: ProcessEnv =
       await resolveDotenvWithConfigLoader(serviceOptions);
-
     // Execute post-hook.
     if (postHook) await postHook(dotenv); // Execute command.
     const args = (thisCommand as { args?: unknown[] }).args ?? [];
@@ -137,11 +143,12 @@ export const makePreSubcommandHook = <
       if (mergedGetDotenvCliOptions.debug)
         logger.debug('\n*** command ***\n', cmd);
 
-      const envSafe = { ...(mergedGetDotenvCliOptions as object) } as Omit<
-        GetDotenvCliOptions,
-        'logger'
-      >;
-      delete (envSafe as Record<string, unknown>).logger;
+      // Build a logger-free bag for env round-trip.
+      const envSafe = omitLogger(
+        mergedGetDotenvCliOptions as unknown as GetDotenvCliOptions & {
+          logger?: unknown;
+        },
+      );
       await execaCommand(cmd, {
         env: { ...process.env, getDotenvCliOptions: JSON.stringify(envSafe) },
         shell: resolveShell(

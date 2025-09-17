@@ -3,14 +3,14 @@ import fs from 'fs-extra';
 import { packageDirectory } from 'package-directory';
 import { join } from 'path';
 
+import type { RootOptionsShape } from './cliCore/types';
 import {
   baseGetDotenvCliOptions,
   type GetDotenvCliOptions,
 } from './generateGetDotenvCli/GetDotenvCliOptions';
 import { defaultsDeep } from './util/defaultsDeep';
 
-export const getDotenvOptionsFilename = 'getdotenv.config.json';
-/**
+export const getDotenvOptionsFilename = 'getdotenv.config.json'; /**
  * A minimal representation of an environment key/value mapping.
  * Values may be `undefined` to represent "unset".
  */
@@ -146,7 +146,7 @@ export interface GetDotenvOptions {
  *
  * @returns `getDotenv` options.
  */
-export const getDotenvCliOptions2Options = ({
+export const getDotenvCliOptions2Options = <T extends RootOptionsShape>({
   paths,
   pathsDelimiter,
   pathsDelimiterPattern,
@@ -156,7 +156,7 @@ export const getDotenvCliOptions2Options = ({
   varsDelimiter,
   varsDelimiterPattern,
   ...rest
-}: GetDotenvCliOptions): GetDotenvOptions => {
+}: T): GetDotenvOptions => {
   /**
    * Convert CLI-facing string options into {@link GetDotenvOptions}.
    *
@@ -169,8 +169,11 @@ export const getDotenvCliOptions2Options = ({
    * @remarks
    * Follows exact-optional semantics by not emitting undefined-valued entries.
    */
-  // Drop CLI-only keys
-  const { debug, scripts, ...restFlags } = rest as Record<string, unknown>;
+  // Drop CLI-only keys (debug/scripts) without relying on Record casts.
+  // Create a shallow copy then delete optional CLI-only keys if present.
+  const restObj = { ...(rest as unknown as Record<string, unknown>) };
+  delete restObj.debug;
+  delete restObj.scripts;
 
   const splitBy = (
     value: string | undefined,
@@ -192,11 +195,16 @@ export const getDotenvCliOptions2Options = ({
 
   const parsedVars = Object.fromEntries(kvPairs);
 
+  // Preserve exactOptionalPropertyTypes: only include keys when defined.
   return {
-    ...(restFlags as Omit<GetDotenvOptions, 'paths' | 'vars'>),
-    paths: splitBy(paths, pathsDelimiter, pathsDelimiterPattern),
-    vars: parsedVars,
-  };
+    ...(restObj as Partial<GetDotenvOptions>),
+    ...(paths !== undefined
+      ? {
+          paths: splitBy(paths, pathsDelimiter, pathsDelimiterPattern),
+        }
+      : {}),
+    ...(vars !== undefined ? { vars: parsedVars } : {}),
+  } as GetDotenvOptions;
 };
 
 export const resolveGetDotenvOptions = async (

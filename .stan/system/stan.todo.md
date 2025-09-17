@@ -1,6 +1,6 @@
 # Development Plan — get-dotenv
 
-When updated: 2025-09-17T21:10:00Z
+When updated: 2025-09-17T22:30:00Z
 NOTE: Update timestamp on commit.
 
 ## Next up
@@ -8,7 +8,27 @@ NOTE: Update timestamp on commit.
 - Init scaffolding (finalize & docs)
   - Perform publish dry-run and confirm tarball includes templates and subpath exports.
 
-## Completed (recent)- Refactor — break down GetDotenvCli (long file)
+## Completed (recent)
+
+- Finish generics pass and fix type/lint issues
+  - Genericized getDotenvCliOptions2Options<T extends RootOptionsShape>, preserving exactOptionalPropertyTypes by omitting undefined keys.
+  - Completed preSubcommandHook generics; fixed OptionValues typing; removed Record cast via typed omitLogger helper.
+  - Made host class and computeContext generic:
+    - GetDotenvCli<TOptions extends GetDotenvOptions>.
+    - computeContext<TOptions> returns GetDotenvCliCtx<TOptions>.
+  - Updated shipped CLI and demo host:
+    - Use typed resolveCliOptions<GetDotenvCliOptions>.
+    - Remove unsafe casts; use CommandWithOptions<T>.
+    - Removed unnecessary generic arg on attachRootOptions.
+  - Batch services:
+    - Fixed Scripts alias to use default ScriptsTable (optional shell already implies undefined).
+    - Removed unnecessary generic parameter from execShellCommandBatch to satisfy lint.
+  - Lint fixes:
+    - attachRootOptions: removed unused generic and non-null assertions.
+    - resolveCliOptions: removed unused helper.
+    - flagUtils: escaped remaining '>' in TSDoc example.
+
+- Refactor — break down GetDotenvCli (long file)
 
 - Extracted context computation (options → overlays/dynamics → plugin config
   merge/validation) to src/cliHost/computeContext.ts.

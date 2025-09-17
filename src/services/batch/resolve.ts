@@ -6,13 +6,12 @@
 // Minimal Scripts shape aliased to shared type.
 import type { ScriptsTable } from '../../cliCore/types';
 
-export type Scripts = ScriptsTable<string | boolean | undefined>;
+export type Scripts = ScriptsTable;
 
 /**
  * Resolve a command string from the {@link Scripts} table. * A script may be expressed as a string or an object with a `cmd` property. *
  * @param scripts - Optional scripts table.
- * @param command - User-provided command name or string.
- * @returns Resolved command string (falls back to the provided command).
+ * @param command - User-provided command name or string. * @returns Resolved command string (falls back to the provided command).
  */
 export const resolveCommand = (
   scripts: Scripts | undefined,

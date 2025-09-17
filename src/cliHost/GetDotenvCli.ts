@@ -1,5 +1,6 @@
 import { Command } from 'commander';
 
+import type { ProcessEnv } from '../GetDotenvOptions';
 // NOTE: host class kept thin; heavy context computation lives in computeContext.
 import {
   type GetDotenvOptions,
@@ -10,13 +11,14 @@ import { computeContext } from './computeContext';
 import type { GetDotenvCliPlugin } from './definePlugin';
 
 /** * Per-invocation context shared with plugins and actions. */
-export type GetDotenvCliCtx = {
-  optionsResolved: GetDotenvOptions;
-  dotenv: Record<string, string | undefined>;
+export type GetDotenvCliCtx<
+  TOptions extends GetDotenvOptions = GetDotenvOptions,
+> = {
+  optionsResolved: TOptions;
+  dotenv: ProcessEnv;
   plugins?: Record<string, unknown>;
   pluginConfigs?: Record<string, unknown>;
 };
-
 const HOST_META_URL = import.meta.url;
 
 const CTX_SYMBOL = Symbol('GetDotenvCli.ctx');
@@ -32,12 +34,13 @@ const CTX_SYMBOL = Symbol('GetDotenvCli.ctx');
  *
  * NOTE: This host is additive and does not alter the legacy CLI.
  */
-export class GetDotenvCli extends Command {
+export class GetDotenvCli<
+  TOptions extends GetDotenvOptions = GetDotenvOptions,
+> extends Command {
   /** Registered top-level plugins (composition happens via .use()) */
   private _plugins: GetDotenvCliPlugin[] = [];
   /** One-time installation guard */
   private _installed = false;
-
   constructor(alias = 'getdotenv') {
     super(alias);
     // Ensure subcommands that use passThroughOptions can be attached safely.
@@ -47,7 +50,7 @@ export class GetDotenvCli extends Command {
     // Skeleton preSubcommand hook: produce context if absent.
     this.hook('preSubcommand', async () => {
       if (this.getCtx()) return;
-      await this.resolveAndLoad({});
+      await this.resolveAndLoad({} as Partial<TOptions>);
     });
   }
 
@@ -56,21 +59,24 @@ export class GetDotenvCli extends Command {
    * Stores the context on the instance under a symbol.
    */
   async resolveAndLoad(
-    customOptions: Partial<GetDotenvOptions> = {},
-  ): Promise<GetDotenvCliCtx> {
+    customOptions: Partial<TOptions> = {},
+  ): Promise<GetDotenvCliCtx<TOptions>> {
     // Resolve defaults, then validate strictly under the new host.
-    const optionsResolved = await resolveGetDotenvOptions(customOptions);
+    const optionsResolved = await resolveGetDotenvOptions(
+      customOptions as Partial<GetDotenvOptions>,
+    );
     getDotenvOptionsSchemaResolved.parse(optionsResolved);
 
     // Delegate the heavy lifting to the shared helper (guarded path supported).
-    const ctx = await computeContext(
-      optionsResolved,
+    const ctx = await computeContext<TOptions>(
+      optionsResolved as unknown as Partial<TOptions>,
       this._plugins,
       HOST_META_URL,
     );
 
     // Persist context on the instance for later access.
-    (this as unknown as Record<symbol, GetDotenvCliCtx>)[CTX_SYMBOL] = ctx;
+    (this as unknown as Record<symbol, GetDotenvCliCtx<TOptions>>)[CTX_SYMBOL] =
+      ctx;
 
     // Ensure plugins are installed exactly once, then run afterResolve.
     await this.install();
@@ -82,12 +88,13 @@ export class GetDotenvCli extends Command {
   /**
    * Retrieve the current invocation context (if any).
    */
-  getCtx(): GetDotenvCliCtx | undefined {
-    return (this as unknown as Record<symbol, GetDotenvCliCtx>)[CTX_SYMBOL];
+  getCtx(): GetDotenvCliCtx<TOptions> | undefined {
+    return (this as unknown as Record<symbol, GetDotenvCliCtx<TOptions>>)[
+      CTX_SYMBOL
+    ];
   }
 
-  /**
-   * Convenience helper to create a namespaced subcommand.
+  /**   * Convenience helper to create a namespaced subcommand.
    */
   ns(name: string): Command {
     return this.command(name);
