@@ -8,7 +8,6 @@ import { createInterface } from 'readline/promises';
 import { definePlugin } from '../../cliHost/definePlugin';
 import type { GetDotenvCli } from '../../cliHost/GetDotenvCli';
 import type { Logger } from '../../GetDotenvOptions';
-
 export type InitPluginOptions = {
   logger?: Logger;
 };
@@ -166,7 +165,7 @@ export const initPlugin = (opts: InitPluginOptions = {}) =>
     id: 'init',
     setup(cli: GetDotenvCli) {
       const logger = opts.logger ?? console;
-      cli
+      const cmd = cli
         .ns('init')
         .description(
           'Scaffold getdotenv config files and a host-based CLI skeleton.',
@@ -182,9 +181,13 @@ export const initPlugin = (opts: InitPluginOptions = {}) =>
         .option('--cli-name <string>', 'CLI name for skeleton and tokens')
         .option('--force', 'overwrite all existing files')
         .option('--yes', 'skip all collisions (no overwrite)')
-        .action(async (destArg: unknown, thisCommand: unknown) => {
-          // Use bound opts() to preserve Commander "this" context
-          const o = (thisCommand as Command).opts();
+        .action(async (destArg?: string) => {
+          // Read options directly from the captured command instance.
+          // Cast to a plain record to satisfy exact-optional and lint safety.
+          const o =
+            ((cmd as unknown as Command).opts?.() as
+              | Record<string, unknown>
+              | undefined) ?? {};
           const destRel =
             typeof destArg === 'string' && destArg.length > 0 ? destArg : '.';
           const cwd = process.cwd();
