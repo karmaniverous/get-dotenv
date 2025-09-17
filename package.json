@@ -174,7 +174,8 @@
       "after:init": [
         "npm run lint",
         "npm run test",
-        "npm run build"
+        "npm run build",
+        "npm run verify:package"
       ],
       "after:release": [
         "git switch -c release/${version}",
@@ -196,6 +197,7 @@
     "cli:dist": "node dist/getdotenv.cli.mjs",
     "changelog": "auto-changelog",
     "docs": "typedoc",
+    "verify:package": "node tools/verify-package.mjs",
     "knip": "knip",
     "lint": "eslint . eslint.config.ts",
     "lint:fix": "eslint --fix . eslint.config.ts",

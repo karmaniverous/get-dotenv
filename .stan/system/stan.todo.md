@@ -1,18 +1,18 @@
 # Development Plan — get-dotenv
 
-When updated: 2025-09-17T20:10:00Z
+When updated: 2025-09-17T20:25:00Z
 NOTE: Update timestamp on commit.
+
 ## Next up
 
 - Init scaffolding (finalize & docs)
-  - Expand templates as needed (additional examples).
-  - Verify package files include templates and subpath exports across a publish dry-run.
+  - Perform publish dry-run and confirm tarball includes templates and subpath exports.
 
-## Completed (recent)
-- Refactor — break down GetDotenvCli (long file)
-  - Extracted context computation (options → overlays/dynamics → plugin config
-    merge/validation) to src/cliHost/computeContext.ts.
-  - Slimmed src/cliHost/GetDotenvCli.ts to lifecycle wiring and delegation.
+## Completed (recent)- Refactor — break down GetDotenvCli (long file)
+
+- Extracted context computation (options → overlays/dynamics → plugin config
+  merge/validation) to src/cliHost/computeContext.ts.
+- Slimmed src/cliHost/GetDotenvCli.ts to lifecycle wiring and delegation.
 - Fixes — typing, lint, and test stability
   - Widened neutral batch Scripts type to accept `shell?: string | boolean | undefined`
     for exact-optional compatibility with plugin config; removes TS2345 errors. - Cleaned GetDotenvCli plugin-config merge (no-var → let; removed unnecessary
@@ -201,11 +201,18 @@ NOTE: Update timestamp on commit.
   - Prevents unbounded accumulation of files like
     dynamic.fallback.error.ts.<hash>.mjs over repeated runs.
 - Init scaffolding — token substitution coverage tests
-  - Added assertions to verify __CLI_NAME__ replacement in both CLI skeleton
-    files (index.ts and plugins/hello.ts) for JSON and TS scaffold cases.  - Ensures future template edits preserve token substitution behavior.
+  - Added assertions to verify **CLI_NAME** replacement in both CLI skeleton
+    files (index.ts and plugins/hello.ts) for JSON and TS scaffold cases. - Ensures future template edits preserve token substitution behavior.
+
+* - Init scaffolding — template expansion
+* - Added env-aware dynamic examples (ENV_TAG) to JS/TS config templates to
+* demonstrate the dynamic function env parameter.
+  +- Packaging verification
+* - Added tools/verify-package.mjs and npm script "verify:package".
+* - Wired verify step into release-it after:init (post-build) to sanity-check
+* "files" entries, subpath exports, and dist outputs when present.
 
 ## Next up (focused)
+
 - Init scaffolding (finalize & docs)
-  - Strengthen non-interactive detection across CI shells and document precedence (--force > --yes).
-  - Expand templates as needed (additional examples), and validate token substitution coverage.
-  - Verify package files include templates and subpath exports across a publish dry-run.
+  - Perform publish dry-run and confirm tarball includes templates and subpath exports.
