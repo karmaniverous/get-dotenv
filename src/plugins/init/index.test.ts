@@ -102,10 +102,9 @@ describe('plugins/init', () => {
     );
     expect(await fs.pathExists(cliIndex)).toBe(true);
     expect(await fs.pathExists(hello)).toBe(true);
-    expect(await fs.readFile(cliIndex, 'utf-8')).resolves.toMatch(/case3/);
-    expect(await fs.readFile(hello, 'utf-8')).resolves.toMatch(/case3/);
+    await expect(fs.readFile(cliIndex, 'utf-8')).resolves.toMatch(/case3/);
+    await expect(fs.readFile(hello, 'utf-8')).resolves.toMatch(/case3/);
   }, 15000);
-
   it('forces overwrite in non-interactive/CI scenarios (force precedence)', async () => {
     const dir = path.posix.join(TROOT, 'case4');
     await fs.remove(dir);

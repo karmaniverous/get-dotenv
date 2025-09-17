@@ -1,8 +1,7 @@
 # Development Plan — get-dotenv
 
-When updated: 2025-09-17T18:50:00Z
+When updated: 2025-09-17T20:10:00Z
 NOTE: Update timestamp on commit.
-
 ## Next up
 
 - Init scaffolding (finalize & docs)
@@ -195,10 +194,15 @@ NOTE: Update timestamp on commit.
   - Docs updated (README and guides/plugins.md) to clarify detection and precedence.
   - Behavior remains backward-compatible; interactive prompts unchanged when TTY
     and no CI signals are present.
+- Dynamic TS cache hygiene
+  - Implemented cleanup of compiled dynamic cache files under
+    .tsbuild/getdotenv-dynamic in loadModuleDefault(), keeping the most recent
+    two per source (configurable via GETDOTENV_CACHE_KEEP).
+  - Prevents unbounded accumulation of files like
+    dynamic.fallback.error.ts.<hash>.mjs over repeated runs.
 - Init scaffolding — token substitution coverage tests
   - Added assertions to verify __CLI_NAME__ replacement in both CLI skeleton
-    files (index.ts and plugins/hello.ts) for JSON and TS scaffold cases.
-  - Ensures future template edits preserve token substitution behavior.
+    files (index.ts and plugins/hello.ts) for JSON and TS scaffold cases.  - Ensures future template edits preserve token substitution behavior.
 
 ## Next up (focused)
 - Init scaffolding (finalize & docs)

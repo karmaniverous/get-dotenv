@@ -16,9 +16,42 @@ const cacheHash = (absPath: string, mtimeMs: number) =>
     .slice(0, 12);
 
 /**
+ * Remove older compiled cache files for a given source base name, keeping
+ * at most `keep` most-recent files. Errors are ignored by design.
+ */
+const cleanupOldCacheFiles = async (
+  cacheDir: string,
+  baseName: string,
+  keep = Math.max(1, Number.parseInt(process.env.GETDOTENV_CACHE_KEEP ?? '2')),
+) => {
+  try {
+    const entries = await fs.readdir(cacheDir);
+    const mine = entries
+      .filter((f) => f.startsWith(`${baseName}.`) && f.endsWith('.mjs'))
+      .map((f) => path.join(cacheDir, f));
+    if (mine.length <= keep) return;
+    const stats = await Promise.all(
+      mine.map(async (p) => ({ p, mtimeMs: (await fs.stat(p)).mtimeMs })),
+    );
+    stats.sort((a, b) => b.mtimeMs - a.mtimeMs);
+    const toDelete = stats.slice(keep).map((s) => s.p);
+    await Promise.all(
+      toDelete.map(async (p) => {
+        try {
+          await fs.remove(p);
+        } catch {
+          // best-effort cleanup
+        }
+      }),
+    );
+  } catch {
+    // best-effort cleanup
+  }
+};
+
+/**
  * Load a module default export from a JS/TS file with robust fallbacks:
- * - .js/.mjs/.cjs: direct import
- * - .ts/.mts/.cts/.tsx:
+ * - .js/.mjs/.cjs: direct import * - .ts/.mts/.cts/.tsx:
  *   1) try direct import (if a TS loader is active),
  *   2) esbuild bundle to a temp ESM file,
  *   3) typescript.transpileModule fallback for simple modules.
@@ -69,7 +102,12 @@ export const loadModuleDefault = async <T>(
       sourcemap: false,
       logLevel: 'silent',
     });
-    return await importDefault<T>(url.pathToFileURL(cacheFile).toString());
+    const result = await importDefault<T>(
+      url.pathToFileURL(cacheFile).toString(),
+    );
+    // Best-effort: trim older cache files for this source.
+    await cleanupOldCacheFiles(cacheDir, path.basename(absPath));
+    return result;
   } catch {
     /* fall through to TS transpile */
   }
@@ -91,7 +129,12 @@ export const loadModuleDefault = async <T>(
       },
     }).outputText;
     await fs.writeFile(cacheFile, out, 'utf-8');
-    return await importDefault<T>(url.pathToFileURL(cacheFile).toString());
+    const result = await importDefault<T>(
+      url.pathToFileURL(cacheFile).toString(),
+    );
+    // Best-effort: trim older cache files for this source.
+    await cleanupOldCacheFiles(cacheDir, path.basename(absPath));
+    return result;
   } catch {
     // Caller decides final error wording; rethrow for upstream mapping.
     throw new Error(
