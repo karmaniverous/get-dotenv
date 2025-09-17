@@ -1,20 +1,23 @@
 # Development Plan — get-dotenv
 
-When updated: 2025-09-17T22:55:00Z
+When updated: 2025-09-17T23:10:00Z
 NOTE: Update timestamp on commit.
 
 ## Next up
-
 - Init scaffolding (finalize & docs)
 
 - Perform publish dry-run and confirm tarball includes templates and subpath exports.
 
 ## Completed (recent)
 
+- CLI default command via plugin
+  - Implemented cmd as a plugin and mounted it as the default command in the
+    shipped CLI. Root-only invocations with flags now resolve context and
+    no-op when no positional args are supplied (preSubcommand runs; cmd returns).
+
 - API hardening: resolveCliOptions
   - Accept `unknown` for `rawCliOptions` and perform the single cast inside
-    the normalizer. Eliminates call-site casts (e.g., preSubcommandHook) and
-    avoids lint “auto-fix undo” loops.
+    the normalizer. Eliminates call-site casts (e.g., preSubcommandHook) and    avoids lint “auto-fix undo” loops.
 - Final type/lint cleanup
   - Cast opts() to Partial<T> in preSubcommandHook and pass defaults directly (no nullish coalescing).
   - Removed unused ScriptsTable import in batch resolve module.

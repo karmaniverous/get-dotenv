@@ -9,10 +9,12 @@ import type { GetDotenvCliOptions } from '../../generateGetDotenvCli/GetDotenvCl
 import type { GetDotenvOptions } from '../../GetDotenvOptions';
 import { getDotenvCliOptions2Options } from '../../GetDotenvOptions';
 import { batchPlugin } from '../../plugins/batch';
+import { cmdPlugin } from '../../plugins/cmd';
 import { initPlugin } from '../../plugins/init';
 
 // Shipped CLI rebased on plugin-first host.
 const program: GetDotenvCli = new GetDotenvCli<GetDotenvOptions>('getdotenv')
+  .use(cmdPlugin({ asDefault: true }))
   .use(batchPlugin())
   .use(initPlugin());
 
