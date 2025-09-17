@@ -1,19 +1,23 @@
 # Development Plan — get-dotenv
 
-When updated: 2025-09-17T23:10:00Z
+When updated: 2025-09-17T23:28:00Z
 NOTE: Update timestamp on commit.
 
-## Next up
-- Init scaffolding (finalize & docs)
+## Next up- Init scaffolding (finalize & docs)
 
 - Perform publish dry-run and confirm tarball includes templates and subpath exports.
 
 ## Completed (recent)
 
+- CLI macros: chainable attachRootOptions/passOptions
+  - Added adapter-layer augmentation (src/cliCore/enhanceGetDotenvCli.ts) that
+    decorates GetDotenvCli with fluent attachRootOptions() and passOptions()
+    methods without coupling the host to cliCore. Shipped CLI now uses the
+    chainable style.
+
 - CLI default command via plugin
   - Implemented cmd as a plugin and mounted it as the default command in the
-    shipped CLI. Root-only invocations with flags now resolve context and
-    no-op when no positional args are supplied (preSubcommand runs; cmd returns).
+    shipped CLI. Root-only invocations with flags now resolve context and    no-op when no positional args are supplied (preSubcommand runs; cmd returns).
 
 - API hardening: resolveCliOptions
   - Accept `unknown` for `rawCliOptions` and perform the single cast inside

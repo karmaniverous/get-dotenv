@@ -33,10 +33,9 @@ export const cmdPlugin = (options: CmdPluginOptions = {}) =>
         .enablePositionalOptions()
         .passThroughOptions()
         .action(async (_opts: unknown, thisCommand: Command) => {
-          const args = (thisCommand.args ?? []) as unknown[];
+          const args = thisCommand.args as unknown[];
           // No-op when invoked as the default command with no args.
           if (args.length === 0) return;
-
           const parent = thisCommand.parent;
           if (!parent) throw new Error('parent command not found');
 
