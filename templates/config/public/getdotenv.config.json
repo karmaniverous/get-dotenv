@@ -1,0 +1,13 @@
+{
+  "dotenvToken": ".env",
+  "privateToken": "local",
+  "paths": "./",
+  "loadProcess": true,
+  "log": false,
+  "vars": {
+    "APP_NAME": "my-app"
+  },
+  "envVars": {
+    "dev": { "DEV_ONLY": "1" }
+  }
+}

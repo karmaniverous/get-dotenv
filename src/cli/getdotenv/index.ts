@@ -4,13 +4,15 @@ import type { Command } from 'commander';
 
 import { GetDotenvCli } from '../../cliHost/GetDotenvCli';
 import { batchPlugin } from '../../plugins/batch';
+import { initPlugin } from '../../plugins/init';
 
 // Shipped CLI rebased on plugin-first host.
-const program: Command = new GetDotenvCli('getdotenv').use(batchPlugin());
+const program: Command = new GetDotenvCli('getdotenv')
+  .use(batchPlugin())
+  .use(initPlugin());
 
 // Guarded config loader flag (default OFF to preserve legacy unless opted-in).
-program.option(
-  '--use-config-loader',
+program.option(  '--use-config-loader',
   'enable config loader/overlay path (guarded; default OFF)',
 );
 

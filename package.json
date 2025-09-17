@@ -98,10 +98,19 @@
         "default": "./dist/plugins-batch.cjs"
       }
     },
+    "./plugins/init": {
+      "import": {
+        "types": "./dist/plugins-init.d.mts",
+        "default": "./dist/plugins-init.mjs"
+      },
+      "require": {
+        "types": "./dist/plugins-init.d.cts",
+        "default": "./dist/plugins-init.cjs"
+      }
+    },
     "./config": {
       "import": {
-        "types": "./dist/config.d.mts",
-        "default": "./dist/config.mjs"
+        "types": "./dist/config.d.mts",        "default": "./dist/config.mjs"
       },
       "require": {
         "types": "./dist/config.d.cts",
@@ -121,9 +130,9 @@
   },
   "files": [
     "dist",
-    "getdotenv.config.json"
-  ],
-  "homepage": "https://github.com/karmaniverous/get-dotenv#readme",
+    "getdotenv.config.json",
+    "templates"
+  ],  "homepage": "https://github.com/karmaniverous/get-dotenv#readme",
   "keywords": [
     "cli",
     "configuration",
