@@ -1,0 +1,10 @@
+dotenvToken: ".env"
+privateToken: "local"
+paths: "./"
+vars:
+  APP_SETTING: "app_value"
+envVars:
+  dev:
+    ENV_SETTING: "dev_value"
+  test:
+    ENV_SETTING: "test_value"

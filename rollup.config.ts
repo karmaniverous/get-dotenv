@@ -98,6 +98,21 @@ const config: RollupOptions[] = [
       { extend: true, file: `${outputPath}/plugins-batch.cjs`, format: 'cjs' },
     ],
   },
+  // plugins/init subpath
+  {
+    ...commonInputOptions,
+    input: 'src/plugins/init/index.ts',
+    output: [
+      { extend: true, file: `${outputPath}/plugins-init.mjs`, format: 'esm' },
+    ],
+  },
+  {
+    ...commonInputOptions,
+    input: 'src/plugins/init/index.ts',
+    output: [
+      { extend: true, file: `${outputPath}/plugins-init.cjs`, format: 'cjs' },
+    ],
+  },
   // config loader subpath
   {
     ...commonInputOptions,
@@ -187,6 +202,21 @@ const config: RollupOptions[] = [
         file: `${outputPath}/plugins-batch.d.cts`,
         format: 'cjs',
       },
+    ],
+  },
+  // Types: plugins-init
+  {
+    ...commonInputOptions,
+    input: 'src/plugins/init/index.ts',
+    plugins: [
+      aliasPlugin({ entries: commonAliases }),
+      ...commonPlugins,
+      dtsPlugin(),
+    ],
+    output: [
+      { extend: true, file: `${outputPath}/plugins-init.d.ts`, format: 'esm' },
+      { extend: true, file: `${outputPath}/plugins-init.d.mts`, format: 'esm' },
+      { extend: true, file: `${outputPath}/plugins-init.d.cts`, format: 'cjs' },
     ],
   },
   // Types: config

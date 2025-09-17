@@ -1,0 +1,7 @@
+vars:
+  APP_SECRET: "secret_value"
+envVars:
+  dev:
+    ENV_SECRET: "dev_secret"
+  test:
+    ENV_SECRET: "test_secret"

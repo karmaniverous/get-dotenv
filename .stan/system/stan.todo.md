@@ -1,6 +1,6 @@
 # Development Plan — get-dotenv
 
-When updated: 2025-09-17T13:20:00Z
+When updated: 2025-09-17T14:00:00Z
 NOTE: Update timestamp on commit.
 
 ## Next up
@@ -135,7 +135,7 @@ NOTE: Update timestamp on commit.
     - Overlay with config sources (packaged → project public → project local), then apply
       dynamic layers in order: programmatic dynamic > config dynamic (packaged → project public
       → project local) > file dynamicPath.
-    - Write outputPath (multiline quoting), log to logger when enabled, and merge into process.env
+    - Write outputPath (multiline quoting), log to logger when enabled, and merge into `process.env`
       when loadProcess is true.
   - Legacy behavior unchanged by default; the flag is off unless explicitly set.
   - Note: loadDynamicFromPath-style logic is duplicated locally in host; plan to factor into
@@ -188,22 +188,27 @@ NOTE: Update timestamp on commit.
 - Docs: reflect guarded config loader flag in README
   - Add --use-config-loader line to the CLI help section so the README
     matches the current CLI options.
-- Docs: initial guides for config and plugins
   - Add ./guides/config.md describing discovery, formats, privacy, overlay
     precedence, and dynamic ordering for the guarded path.
   - Add ./guides/plugins.md covering the GetDotenvCli host quickstart,
     plugin composition, afterResolve lifecycle, and subprocess env advice.
   - Update typedoc.json projectDocuments and README links so the new
     guides are published and discoverable.
+- Init scaffolding (plugin + templates + wiring)
+  - Implemented src/plugins/init with guarded collision flow (o/e/s; O/E/S),
+    --force/--yes precedence, and non-TTY treated as --yes.
+  - Added templates matrix:
+    - Config public/local for json and yaml; JS/TS dynamic examples included.
+    - Host CLI skeleton (TS) with hello plugin; **CLI_NAME** token substitution.
+  - Tests: sandboxed writes under .tsbuild/, idempotence with --yes (skip),
+    JSON + TS config content expectations, CLI skeleton token substitution.
+  - Mounted init in shipped CLI and exported ./plugins/init; updated rollup
+    outputs (ESM/CJS + .d.ts) and package.files to include templates.
 
 ## Next up (focused)
 
-- Init scaffolding (host-only)
-  - Implement initPlugin (only host-type CLIs; drop --cli-kind).
-  - Options: --path, --config-format <json|yaml|js|ts>, --with-local, --dynamic,
-    --cli-name, --force, --yes.
-  - Collision handling: (o)verwrite, (e)xample, (s)kip, (O)verwrite All,
-    (E)Example All, (S)kip All. Non-interactive: --force => Overwrite All;
-    --yes => Skip All (unless --force).
-  - Mount in shipped CLI; export at ./plugins/init.
-  - Tests: sandboxed write, idempotence, contents per format, hello plugin wiring.
+- Init scaffolding (finalize & docs)
+  - Strengthen non-interactive detection across CI shells and document precedence (--force > --yes).
+  - Expand templates as needed (additional examples), and validate token substitution coverage.
+  - README/docs: Scaffold section (config + CLI scaffolds; collision flow); expand Plugins guide with scaffolding notes.
+  - Verify package files include templates and subpath exports across publish dry-run.
