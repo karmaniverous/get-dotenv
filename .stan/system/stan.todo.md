@@ -1,6 +1,6 @@
 # Development Plan — get-dotenv
 
-When updated: 2025-09-17T14:00:00Z
+When updated: 2025-09-17T17:30:00Z
 NOTE: Update timestamp on commit.
 
 ## Next up
@@ -204,6 +204,16 @@ NOTE: Update timestamp on commit.
     JSON + TS config content expectations, CLI skeleton token substitution.
   - Mounted init in shipped CLI and exported ./plugins/init; updated rollup
     outputs (ESM/CJS + .d.ts) and package.files to include templates.
+- Init scaffolding (stabilization & tests passing)
+  - Stabilized action handler by capturing the subcommand instance and using
+    cmd.opts() directly (no reliance on trailing action param).
+  - Introduced CopySpec optional `subs` typing and tightened return types;
+    added targeted eslint-disable pragmas for deliberate while(true) and
+    validation checks.
+  - Excluded templates/\*\* from TypeScript and ESLint to avoid diagnostics on
+    scaffold-only files; maintained publication via package.files.
+  - All init plugin tests now pass; typecheck/lint/build remain green across
+    root and subpaths.
 
 ## Next up (focused)
 
