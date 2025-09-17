@@ -2,17 +2,17 @@ import type { Command } from 'commander';
 import { Option } from 'commander';
 
 import { dotenvExpandFromProcessEnv } from '../dotenvExpand';
+import type { RootOptionsShape } from './types';
 
 /**
  * Attach legacy root flags to a Commander program.
  * Uses provided defaults to render help labels without coupling to generators.
  */
-export const attachRootOptions = (
+export const attachRootOptions = <TDefaults extends Partial<RootOptionsShape>>(
   program: Command,
-  defaults: Record<string, unknown> = {},
+  defaults?: TDefaults,
 ) => {
   const {
-    debug,
     defaultEnv,
     dotenvToken,
     dynamicPath,
@@ -35,10 +35,18 @@ export const attachRootOptions = (
     varsAssignorPattern,
     varsDelimiter,
     varsDelimiterPattern,
-  } = defaults;
+  } = (defaults ?? {}) as Partial<RootOptionsShape>;
 
-  const va = (varsAssignor as string) ?? '=';
-  const vd = (varsDelimiter as string) ?? ' ';
+  const va =
+    typeof (defaults as Partial<RootOptionsShape> | undefined)?.varsAssignor ===
+    'string'
+      ? (defaults as Partial<RootOptionsShape>).varsAssignor!
+      : '=';
+  const vd =
+    typeof (defaults as Partial<RootOptionsShape> | undefined)
+      ?.varsDelimiter === 'string'
+      ? (defaults as Partial<RootOptionsShape>).varsDelimiter!
+      : ' ';
 
   program
     .enablePositionalOptions()
@@ -47,7 +55,7 @@ export const attachRootOptions = (
       '-e, --env <string>',
       `target environment (dotenv-expanded)`,
       dotenvExpandFromProcessEnv,
-      env as string | undefined,
+      env,
     )
     .option(
       '-v, --vars <string>',
@@ -68,15 +76,22 @@ export const attachRootOptions = (
       '-o, --output-path <string>',
       'consolidated output file  (dotenv-expanded)',
       dotenvExpandFromProcessEnv,
-      outputPath as string | undefined,
+      outputPath,
     )
     .addOption(
       new Option(
         '-s, --shell [string]',
         (() => {
-          const defaultLabel = shell
-            ? ` (default ${typeof shell === 'boolean' ? 'OS shell' : shell})`
-            : '';
+          let defaultLabel = '';
+          if (shell !== undefined) {
+            if (typeof shell === 'boolean') {
+              defaultLabel = ' (default OS shell)';
+            } else if (typeof shell === 'string') {
+              // Safe string interpolation
+              defaultLabel = ` (default ${shell})`;
+            }
+          }
+
           return `command execution shell, no argument for default OS shell or provide shell string${defaultLabel}`;
         })(),
       ).conflicts('shellOff'),
@@ -212,61 +227,57 @@ export const attachRootOptions = (
       '--default-env <string>',
       'default target environment',
       dotenvExpandFromProcessEnv,
-      defaultEnv as string | undefined,
+      defaultEnv,
     )
     .option(
       '--dotenv-token <string>',
       'dotenv-expanded token indicating a dotenv file',
       dotenvExpandFromProcessEnv,
-      dotenvToken as string | undefined,
+      dotenvToken,
     )
     .option(
       '--dynamic-path <string>',
       'dynamic variables path (.js or .ts; .ts is auto-compiled when esbuild is available, otherwise precompile)',
       dotenvExpandFromProcessEnv,
-      dynamicPath as string | undefined,
+      dynamicPath,
     )
     .option(
       '--paths <string>',
       'dotenv-expanded delimited list of paths to dotenv directory',
       dotenvExpandFromProcessEnv,
-      paths as string | undefined,
+      paths,
     )
     .option(
       '--paths-delimiter <string>',
       'paths delimiter string',
-      pathsDelimiter as string | undefined,
+      pathsDelimiter,
     )
     .option(
       '--paths-delimiter-pattern <string>',
       'paths delimiter regex pattern',
-      pathsDelimiterPattern as string | undefined,
+      pathsDelimiterPattern,
     )
     .option(
       '--private-token <string>',
       'dotenv-expanded token indicating private variables',
       dotenvExpandFromProcessEnv,
-      privateToken as string | undefined,
+      privateToken,
     )
-    .option(
-      '--vars-delimiter <string>',
-      'vars delimiter string',
-      varsDelimiter as string | undefined,
-    )
+    .option('--vars-delimiter <string>', 'vars delimiter string', varsDelimiter)
     .option(
       '--vars-delimiter-pattern <string>',
       'vars delimiter regex pattern',
-      varsDelimiterPattern as string | undefined,
+      varsDelimiterPattern,
     )
     .option(
       '--vars-assignor <string>',
       'vars assignment operator string',
-      varsAssignor as string | undefined,
+      varsAssignor,
     )
     .option(
       '--vars-assignor-pattern <string>',
       'vars assignment operator regex pattern',
-      varsAssignorPattern as string | undefined,
+      varsAssignorPattern,
     )
     // Hidden scripts pipe-through (stringified)
     .addOption(

@@ -34,7 +34,7 @@ export const resolveExclusion = (
  * @param excludeAllOff - Global "exclude-all-off" flag.
  *
  * @example
- * resolveExclusionAll(undefined, undefined, false, true, undefined) => true
+ * resolveExclusionAll(undefined, undefined, false, true, undefined) \=> true
  */
 export const resolveExclusionAll = (
   exclude: boolean | undefined,

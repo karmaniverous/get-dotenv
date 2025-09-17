@@ -4,20 +4,23 @@ import {
   resolveExclusionAll,
   setOptionalFlag,
 } from './flagUtils';
+import type { RootOptionsShape, ScriptsTable } from './types';
 
 /**
  * Merge and normalize raw Commander options (current + parent + defaults)
  * into a GetDotenvCliOptions-like object. Types are intentionally wide to
  * avoid cross-layer coupling; callers may cast as needed.
  */
-export const resolveCliOptions = (
-  rawCliOptions: Record<string, unknown>,
-  defaults: Record<string, unknown>,
+export const resolveCliOptions = <
+  T extends RootOptionsShape & { scripts?: ScriptsTable },
+>(
+  rawCliOptions: Partial<T>,
+  defaults: Partial<T>,
   parentJson?: string,
-): { merged: Record<string, unknown>; command?: string } => {
-  const parent =
+): { merged: T; command?: string } => {
+  const parent: Partial<T> | undefined =
     typeof parentJson === 'string' && parentJson.length > 0
-      ? (JSON.parse(parentJson) as Record<string, unknown>)
+      ? (JSON.parse(parentJson) as Partial<T>)
       : undefined;
 
   const {
@@ -35,18 +38,25 @@ export const resolveCliOptions = (
     scripts,
     shellOff,
     ...rest
-  } = rawCliOptions ?? {};
+  } = (rawCliOptions ?? {}) as Partial<T> & Record<string, unknown>;
 
-  const current: Record<string, unknown> = { ...rest };
-  if (typeof scripts === 'string') {
+  const current: Partial<T> = { ...(rest as Partial<T>) };
+  if (typeof (scripts as unknown) === 'string') {
     try {
-      current.scripts = JSON.parse(scripts);
+      (current as Record<string, unknown>).scripts = JSON.parse(
+        scripts as unknown as string,
+      ) as ScriptsTable;
     } catch {
       // ignore parse errors; leave scripts undefined
     }
   }
 
-  const merged = defaultsDeep(parent ?? {}, current) as Record<string, unknown>;
+  const merged = defaultsDeep<Required<T>>(
+    {} as Required<T>,
+    defaults,
+    parent ?? ({} as Partial<T>),
+    current,
+  ) as T;
 
   const d = defaults;
   const boolOrUndef = (v: unknown) => (typeof v === 'boolean' ? v : undefined);
@@ -54,19 +64,15 @@ export const resolveCliOptions = (
   setOptionalFlag(
     merged,
     'debug',
-    resolveExclusion(
-      merged.debug as boolean | undefined,
-      debugOff as true | undefined,
-      boolOrUndef(d.debug),
-    ),
+    resolveExclusion(merged.debug, debugOff as true | undefined, d.debug),
   );
   setOptionalFlag(
     merged,
     'excludeDynamic',
     resolveExclusionAll(
-      merged.excludeDynamic as boolean | undefined,
+      merged.excludeDynamic,
       excludeDynamicOff as true | undefined,
-      boolOrUndef(d.excludeDynamic),
+      d.excludeDynamic,
       excludeAll as true | undefined,
       excludeAllOff as true | undefined,
     ),
@@ -75,9 +81,9 @@ export const resolveCliOptions = (
     merged,
     'excludeEnv',
     resolveExclusionAll(
-      merged.excludeEnv as boolean | undefined,
+      merged.excludeEnv,
       excludeEnvOff as true | undefined,
-      boolOrUndef(d.excludeEnv),
+      d.excludeEnv,
       excludeAll as true | undefined,
       excludeAllOff as true | undefined,
     ),
@@ -86,9 +92,9 @@ export const resolveCliOptions = (
     merged,
     'excludeGlobal',
     resolveExclusionAll(
-      merged.excludeGlobal as boolean | undefined,
+      merged.excludeGlobal,
       excludeGlobalOff as true | undefined,
-      boolOrUndef(d.excludeGlobal),
+      d.excludeGlobal,
       excludeAll as true | undefined,
       excludeAllOff as true | undefined,
     ),
@@ -97,9 +103,9 @@ export const resolveCliOptions = (
     merged,
     'excludePrivate',
     resolveExclusionAll(
-      merged.excludePrivate as boolean | undefined,
+      merged.excludePrivate,
       excludePrivateOff as true | undefined,
-      boolOrUndef(d.excludePrivate),
+      d.excludePrivate,
       excludeAll as true | undefined,
       excludeAllOff as true | undefined,
     ),
@@ -108,9 +114,9 @@ export const resolveCliOptions = (
     merged,
     'excludePublic',
     resolveExclusionAll(
-      merged.excludePublic as boolean | undefined,
+      merged.excludePublic,
       excludePublicOff as true | undefined,
-      boolOrUndef(d.excludePublic),
+      d.excludePublic,
       excludeAll as true | undefined,
       excludeAllOff as true | undefined,
     ),
@@ -118,19 +124,15 @@ export const resolveCliOptions = (
   setOptionalFlag(
     merged,
     'log',
-    resolveExclusion(
-      merged.log as boolean | undefined,
-      logOff as true | undefined,
-      boolOrUndef(d.log),
-    ),
+    resolveExclusion(merged.log, logOff as true | undefined, d.log),
   );
   setOptionalFlag(
     merged,
     'loadProcess',
     resolveExclusion(
-      merged.loadProcess as boolean | undefined,
+      merged.loadProcess,
       loadProcessOff as true | undefined,
-      boolOrUndef(d.loadProcess),
+      d.loadProcess,
     ),
   );
 
@@ -149,8 +151,6 @@ export const resolveCliOptions = (
   }
   merged.shell = resolvedShell;
 
-  return {
-    merged,
-    command: typeof command === 'string' ? command : undefined,
-  };
+  const cmd = typeof command === 'string' ? command : undefined;
+  return cmd !== undefined ? { merged, command: cmd } : { merged };
 };

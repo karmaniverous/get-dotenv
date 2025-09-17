@@ -3,15 +3,13 @@
  * Shared by the generator path and the batch plugin to avoid circular deps.
  */
 
-// Minimal Scripts shape (kept local to avoid generator coupling).
-export type Scripts = Record<
-  string,
-  string | { cmd: string; shell?: string | boolean | undefined }
->;
+// Minimal Scripts shape aliased to shared type.
+import type { ScriptsTable } from '../../cliCore/types';
+
+export type Scripts = ScriptsTable<string | boolean | undefined>;
 
 /**
- * Resolve a command string from the {@link Scripts} table. * A script may be expressed as a string or an object with a `cmd` property.
- *
+ * Resolve a command string from the {@link Scripts} table. * A script may be expressed as a string or an object with a `cmd` property. *
  * @param scripts - Optional scripts table.
  * @param command - User-provided command name or string.
  * @returns Resolved command string (falls back to the provided command).

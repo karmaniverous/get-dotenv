@@ -1,6 +1,12 @@
+import type { Command } from 'commander';
 import { execaCommand } from 'execa';
 
 import { resolveCliOptions } from '../cliCore/resolveCliOptions';
+import type {
+  CommandWithOptions,
+  RootOptionsShape,
+  ScriptsTable,
+} from '../cliCore/types';
 import { resolveDotenvWithConfigLoader } from '../config/resolveWithLoader';
 import {
   getDotenvCliOptions2Options,
@@ -16,8 +22,7 @@ import type { GetDotenvCliOptions } from './GetDotenvCliOptions';
 import { resolveCommand, resolveShell } from './resolve';
 
 /**
- * Context for composing the Commander `preSubcommand` hook. *
- * @property logger - Logger compatible with `console` (must support `log`, optional `error`).
+ * Context for composing the Commander `preSubcommand` hook. * * @property logger - Logger compatible with `console` (must support `log`, optional `error`).
  * @property preHook - Optional async pre-hook called before command execution; may mutate options.
  * @property postHook - Optional async post-hook called after `getDotenv` has run.
  * @property defaults - Generator defaults used to resolve tri-state flags with exact-optional semantics.
@@ -48,8 +53,7 @@ export type PreSubHookContext = {
 };
 /**
  * Build the Commander preSubcommand hook using the provided context.
- *
- * Responsibilities:
+ * * Responsibilities:
  * - Merge parent CLI options with current invocation (parent \< current).
  * - Resolve tri-state flags, including `--exclude-all` overrides.
  * - Normalize the shell setting to a concrete value (string | boolean).
@@ -61,18 +65,29 @@ export type PreSubHookContext = {
  * @returns An async hook suitable for Commander’s `preSubcommand`.
  *
  * @example `program.hook('preSubcommand', makePreSubcommandHook(ctx));`
- */ export const makePreSubcommandHook =
-  ({ logger, preHook, postHook, defaults }: PreSubHookContext) =>
-  async (thisCommand: unknown) => {
+ */
+export const makePreSubcommandHook = <
+  T extends RootOptionsShape & { scripts?: ScriptsTable } = GetDotenvCliOptions,
+>({
+  logger,
+  preHook,
+  postHook,
+  defaults,
+}: {
+  logger: Logger;
+  preHook?: GetDotenvCliPreHookCallback;
+  postHook?: GetDotenvCliPostHookCallback;
+  defaults: Partial<T>;
+}) => {
+  return async (thisCommand: CommandWithOptions<T> | Command) => {
     // Get raw CLI options from commander.
-    const rawCliOptions = (
-      thisCommand as { opts: () => Record<string, unknown> }
-    ).opts();
+    const rawCliOptions =
+      (thisCommand as CommandWithOptions<T>).opts?.() ?? ({} as Partial<T>);
 
     const { merged: mergedGetDotenvCliOptions, command: commandOpt } =
-      resolveCliOptions(
+      resolveCliOptions<T>(
         rawCliOptions,
-        (defaults ?? {}) as Record<string, unknown>,
+        defaults ?? {},
         process.env.getDotenvCliOptions,
       );
 
@@ -80,7 +95,9 @@ export type PreSubHookContext = {
 
     // Execute pre-hook.
     if (preHook) {
-      await preHook(mergedGetDotenvCliOptions);
+      await preHook(
+        mergedGetDotenvCliOptions as unknown as GetDotenvCliOptions,
+      );
       if (mergedGetDotenvCliOptions.debug)
         logger.debug(
           '\n*** GetDotenvCliOptions after pre-hook ***\n',
@@ -89,20 +106,18 @@ export type PreSubHookContext = {
     }
 
     // Persist GetDotenvCliOptions in command for subcommand access.
-    (
-      thisCommand as { getDotenvCliOptions: GetDotenvCliOptions }
-    ).getDotenvCliOptions = mergedGetDotenvCliOptions;
+    (thisCommand as CommandWithOptions<T>).getDotenvCliOptions =
+      mergedGetDotenvCliOptions as unknown as T;
 
     // Execute getdotenv via always-on config loader/overlay path.
-    let dotenv: ProcessEnv;
     const serviceOptions = getDotenvCliOptions2Options(
-      mergedGetDotenvCliOptions,
+      mergedGetDotenvCliOptions as unknown as GetDotenvCliOptions,
     );
-    dotenv = await resolveDotenvWithConfigLoader(serviceOptions);
+    const dotenv: ProcessEnv =
+      await resolveDotenvWithConfigLoader(serviceOptions);
 
     // Execute post-hook.
-    if (postHook) await postHook(dotenv);
-    // Execute command.
+    if (postHook) await postHook(dotenv); // Execute command.
     const args = (thisCommand as { args?: unknown[] }).args ?? [];
     const isCommand = typeof commandOpt === 'string' && commandOpt.length > 0;
     if (isCommand && args.length > 0) {
@@ -115,21 +130,22 @@ export type PreSubHookContext = {
     }
 
     if (typeof commandOpt === 'string' && commandOpt.length > 0) {
-      const cmd = resolveCommand(mergedGetDotenvCliOptions.scripts, commandOpt);
+      const cmd = resolveCommand(
+        mergedGetDotenvCliOptions.scripts as ScriptsTable | undefined,
+        commandOpt,
+      );
       if (mergedGetDotenvCliOptions.debug)
         logger.debug('\n*** command ***\n', cmd);
 
-      const envSafe = {
-        ...(mergedGetDotenvCliOptions as unknown as Record<string, unknown>),
-      };
+      const envSafe = { ...(mergedGetDotenvCliOptions as object) } as Omit<
+        GetDotenvCliOptions,
+        'logger'
+      >;
       delete (envSafe as Record<string, unknown>).logger;
       await execaCommand(cmd, {
-        env: {
-          ...process.env,
-          getDotenvCliOptions: JSON.stringify(envSafe),
-        },
+        env: { ...process.env, getDotenvCliOptions: JSON.stringify(envSafe) },
         shell: resolveShell(
-          mergedGetDotenvCliOptions.scripts,
+          mergedGetDotenvCliOptions.scripts as ScriptsTable | undefined,
           commandOpt,
           mergedGetDotenvCliOptions.shell,
         ) as unknown as string | boolean | URL,
@@ -137,3 +153,4 @@ export type PreSubHookContext = {
       });
     }
   };
+};

@@ -3,6 +3,7 @@ import { globby } from 'globby';
 import { packageDirectory } from 'package-directory';
 import path from 'path';
 
+import type { RootOptionsShape } from '../../cliCore/types';
 import type { Logger } from '../../GetDotenvOptions';
 
 type ExecShellCommandBatchOptions = {
@@ -50,7 +51,9 @@ const globPaths = async ({
   return { absRootPath, paths };
 };
 
-export const execShellCommandBatch = async ({
+export const execShellCommandBatch = async <
+  TOptions extends RootOptionsShape = RootOptionsShape,
+>({
   command,
   getDotenvCliOptions,
   globs,
@@ -62,7 +65,7 @@ export const execShellCommandBatch = async ({
   shell,
 }: {
   command?: string;
-  getDotenvCliOptions?: Record<string, unknown>;
+  getDotenvCliOptions?: TOptions;
   globs: string;
   ignoreErrors?: boolean;
   list?: boolean;
