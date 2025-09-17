@@ -9,19 +9,28 @@ NOTE: Update timestamp on commit.
 
 ## Completed (recent)
 
+- CLI log duplication fix
+  - Suppressed logging/effects in the base getDotenv step inside the config
+    loader path (computeContext and resolveWithLoader). With `-l`, logging now
+    occurs exactly once after overlays/dynamics are applied.
+
+- CLI log duplication fix
+  - Suppressed logging/effects in the base getDotenv step inside the config
+    loader path (computeContext and resolveWithLoader). With `-l`, logging now
+    occurs exactly once after overlays/dynamics are applied.
+
 - CLI macros: chainable attachRootOptions/passOptions
   - Added adapter-layer augmentation (src/cliCore/enhanceGetDotenvCli.ts) that
-    decorates GetDotenvCli with fluent attachRootOptions() and passOptions()
-    methods without coupling the host to cliCore. Shipped CLI now uses the
+    decorates GetDotenvCli with fluent attachRootOptions() and passOptions() methods without coupling the host to cliCore. Shipped CLI now uses the
     chainable style.
 
 - CLI default command via plugin
   - Implemented cmd as a plugin and mounted it as the default command in the
-    shipped CLI. Root-only invocations with flags now resolve context and    no-op when no positional args are supplied (preSubcommand runs; cmd returns).
+    shipped CLI. Root-only invocations with flags now resolve context and no-op when no positional args are supplied (preSubcommand runs; cmd returns).
 
 - API hardening: resolveCliOptions
   - Accept `unknown` for `rawCliOptions` and perform the single cast inside
-    the normalizer. Eliminates call-site casts (e.g., preSubcommandHook) and    avoids lint “auto-fix undo” loops.
+    the normalizer. Eliminates call-site casts (e.g., preSubcommandHook) and avoids lint “auto-fix undo” loops.
 - Final type/lint cleanup
   - Cast opts() to Partial<T> in preSubcommandHook and pass defaults directly (no nullish coalescing).
   - Removed unused ScriptsTable import in batch resolve module.

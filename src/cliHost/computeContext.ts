@@ -39,8 +39,12 @@ export const computeContext = async <
   // 1) Base from files only (no dynamic, no programmatic vars)
   const base = await getDotenv({
     ...validated,
+    // Build a pure base without side effects or logging.
     excludeDynamic: true,
     vars: {},
+    log: false,
+    loadProcess: false,
+    outputPath: undefined,
   } as unknown as Partial<GetDotenvOptions>);
   // 2) Discover config sources and overlay
   const sources = await resolveGetDotenvConfigSources(hostMetaUrl);

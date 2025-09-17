@@ -31,13 +31,16 @@ export const resolveDotenvWithConfigLoader = async (
   // 1) Base from files, no dynamic, no programmatic vars
   const base = await getDotenv({
     ...validated,
+    // Build a pure base without side effects or logging.
     excludeDynamic: true,
     vars: {},
+    log: false,
+    loadProcess: false,
+    outputPath: undefined,
   } as unknown as Partial<GetDotenvOptions>);
 
   // 2) Discover config sources (packaged via this module's import.meta.url)
   const sources = await resolveGetDotenvConfigSources(import.meta.url);
-
   const dotenv = overlayEnv({
     base,
     env: validated.env ?? validated.defaultEnv,

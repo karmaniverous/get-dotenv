@@ -1,3 +1,5 @@
+import type { Command as CommanderCommand } from 'commander';
+
 import { GetDotenvCli } from '../cliHost/GetDotenvCli';
 import type { GetDotenvCliOptions } from '../generateGetDotenvCli/GetDotenvCliOptions';
 import {
@@ -15,11 +17,12 @@ import type { CommandWithOptions, RootOptionsShape } from './types';
  * it extends the prototype and merges types for consumers.
  */
 declare module '../cliHost/GetDotenvCli' {
-  interface GetDotenvCli<TOptions extends GetDotenvOptions = GetDotenvOptions> {
+  interface GetDotenvCli<
+    _TOptions extends GetDotenvOptions = GetDotenvOptions,
+  > {
     /**
      * Attach legacy root flags to this CLI instance. Defaults come from
-     * baseRootOptionDefaults when none are provided.
-     */
+     * baseRootOptionDefaults when none are provided.     */
     attachRootOptions(defaults?: Partial<RootOptionsShape>): this;
     /**
      * Install a preSubcommand hook that merges CLI flags (including parent
@@ -35,10 +38,9 @@ GetDotenvCli.prototype.attachRootOptions = function (
   defaults?: Partial<RootOptionsShape>,
 ) {
   const d = (defaults ?? baseRootOptionDefaults) as Partial<RootOptionsShape>;
-  attachRootOptions(this as unknown as import('commander').Command, d);
+  attachRootOptions(this as unknown as CommanderCommand, d);
   return this;
 };
-
 GetDotenvCli.prototype.passOptions = function (
   this: GetDotenvCli,
   defaults?: Partial<RootOptionsShape>,
