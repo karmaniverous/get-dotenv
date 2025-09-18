@@ -1,10 +1,9 @@
 # Development Plan — get-dotenv
 
-When updated: 2025-09-18T23:58:00Z
+When updated: 2025-09-19T00:08:00Z
 NOTE: Update timestamp on commit.
 
-## Next up- Optional programmatic safeties (stage, do not implement yet)- Consider `--cmd-file <path>` to avoid outer-shell interpolation entirely.- Consider env-backed alias `GETDOTENV_CMD` if alias flag is omitted.- Optional programmatic safeties (stage, do not implement yet)- Consider `--cmd-file <path>` to avoid outer-shell interpolation entirely.
-- Consider env-backed alias `GETDOTENV_CMD` if alias flag is omitted.
+## Next up- Optional programmatic safeties (stage, do not implement yet)- Consider `--cmd-file <path>` to avoid outer-shell interpolation entirely.- Consider env-backed alias `GETDOTENV_CMD` if alias flag is omitted.- Optional programmatic safeties (stage, do not implement yet)- Consider `--cmd-file <path>` to avoid outer-shell interpolation entirely.- Consider env-backed alias `GETDOTENV_CMD` if alias flag is omitted.
 ## Completed (recent)
 
 - Capture toggle for child process stdio
@@ -39,9 +38,15 @@ NOTE: Update timestamp on commit.
   - Guarded exitCode reads with optional chaining to prevent unit tests from
     throwing when execa is mocked to return undefined.
 
+- Batch list with default subcommand (Windows-friendly)
+  - In the batch default `cmd` subcommand, detect local `-l/--list` flags
+    supplied alongside positional tokens and treat those tokens as additional
+    globs. Execute list mode instead of treating tokens as a command.
+  - Fixes “partial -l” being executed as a command when `-l` appears after
+    positional tokens without an explicit `cmd` token.
+
 - Batch list bridging with default subcommand
-  - In the batch default 'cmd' subcommand, honor the parent -l/--list flag even    when positional tokens are present by treating tokens as additional globs and    running list mode (merging into -g). Prevents accidental execution of    "partial -l" on Windows when the -l flag appears after positional tokens.
-- Shell-off execution (cmd + batch)
+  - In the batch default 'cmd' subcommand, honor the parent -l/--list flag even    when positional tokens are present by treating tokens as additional globs and    running list mode (merging into -g). Prevents accidental execution of    "partial -l" on Windows when the -l flag appears after positional tokens.- Shell-off execution (cmd + batch)
   - For --shell-off and script-level shell=false, execute using
     execa(file, args) with a simple quoted-token parser instead of
     execaCommand. Prevents timeouts and ensures node -e commands run

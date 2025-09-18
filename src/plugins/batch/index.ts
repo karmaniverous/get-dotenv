@@ -102,9 +102,15 @@ export const batchPlugin = (opts: BatchPluginOptions = {}) =>
               ) => {
                 // Guard: when invoked without positional args (e.g., `batch --list`),
                 // defer entirely to the parent action handler.
-                const args = Array.isArray(commandParts)
+                const argsRaw = Array.isArray(commandParts)
                   ? commandParts
                   : ([] as string[]);
+                // Detect local list flags (-l/--list) provided alongside positional tokens and strip them.
+                const localList =
+                  argsRaw.includes('-l') || argsRaw.includes('--list');
+                const args = localList
+                  ? argsRaw.filter((t) => t !== '-l' && t !== '--list')
+                  : argsRaw;
 
                 // Access merged per-plugin config from host context (if any).
                 const ctx = cli.getCtx();
@@ -127,16 +133,16 @@ export const batchPlugin = (opts: BatchPluginOptions = {}) =>
                     : (cfg.rootPath ?? './');
 
                 // Resolve scripts/shell with precedence:
-                // plugin opts → plugin config → merged root CLI options (passOptions)
+                // plugin opts → plugin config → merged root CLI options
                 const mergedBag = ((
-                  batchCmd.parent as
+                  (batchCmd.parent as
                     | (GetDotenvCli & {
                         getDotenvCliOptions?: {
                           scripts?: Scripts;
                           shell?: string | boolean;
                         };
                       })
-                    | null
+                    | null) ?? null
                 )?.getDotenvCliOptions ?? {}) as {
                   scripts?: Scripts;
                   shell?: string | boolean;
@@ -168,7 +174,7 @@ export const batchPlugin = (opts: BatchPluginOptions = {}) =>
                     });
                     return;
                   }
-                  if (raw.list) {
+                  if (raw.list || localList) {
                     await execShellCommandBatch({
                       globs,
                       ignoreErrors,
@@ -194,6 +200,36 @@ export const batchPlugin = (opts: BatchPluginOptions = {}) =>
                   process.exit(0);
                 }
 
+                // If a local list flag was supplied with positional tokens (and no --command),
+                // treat tokens as additional globs and execute list mode.
+                if (localList && typeof raw.command !== 'string') {
+                  const extraGlobs = args.map(String).join(' ').trim();
+                  const mergedGlobs = [globs, extraGlobs]
+                    .filter(Boolean)
+                    .join(' ');
+                  const shellBag = ((
+                    (batchCmd.parent as
+                      | (GetDotenvCli & {
+                          getDotenvCliOptions?: { shell?: string | boolean };
+                        })
+                      | undefined) ?? undefined
+                  )?.getDotenvCliOptions ?? {}) as { shell?: string | boolean };
+
+                  await execShellCommandBatch({
+                    globs: mergedGlobs,
+                    ignoreErrors,
+                    list: true,
+                    logger: loggerLocal,
+                    ...(pkgCwd ? { pkgCwd } : {}),
+                    rootPath,
+                    shell: (shell ?? shellBag.shell ?? false) as unknown as
+                      | string
+                      | boolean
+                      | URL,
+                  });
+                  return;
+                }
+
                 // If parent list flag is set and positional tokens are present,
                 // treat tokens as additional globs for list-only mode. This allows
                 // usage like: getdotenv batch -r ./test -g full partial -l
@@ -206,11 +242,11 @@ export const batchPlugin = (opts: BatchPluginOptions = {}) =>
                   const extra = args.map(String).join(' ').trim();
                   const mergedGlobs = [globs, extra].filter(Boolean).join(' ');
                   const mergedBag = ((
-                    batchCmd.parent as
+                    (batchCmd.parent as
                       | (GetDotenvCli & {
                           getDotenvCliOptions?: { shell?: string | boolean };
                         })
-                      | undefined
+                      | undefined) ?? undefined
                   )?.getDotenvCliOptions ?? {}) as { shell?: string | boolean };
                   await execShellCommandBatch({
                     globs: mergedGlobs,
@@ -231,22 +267,22 @@ export const batchPlugin = (opts: BatchPluginOptions = {}) =>
                 const input = args.map(String).join(' ');
                 // Optional: round-trip parent merged options if present (shipped CLI).
                 const envBag = (
-                  batchCmd.parent as
+                  (batchCmd.parent as
                     | (GetDotenvCli & {
                         getDotenvCliOptions?: Record<string, unknown>;
                       })
-                    | undefined
+                    | undefined) ?? undefined
                 )?.getDotenvCliOptions;
 
                 const mergedExec = ((
-                  batchCmd.parent as
+                  (batchCmd.parent as
                     | (GetDotenvCli & {
                         getDotenvCliOptions?: {
                           scripts?: Scripts;
                           shell?: string | boolean;
                         };
                       })
-                    | undefined
+                    | undefined) ?? undefined
                 )?.getDotenvCliOptions ?? {}) as {
                   scripts?: Scripts;
                   shell?: string | boolean;
@@ -302,14 +338,14 @@ export const batchPlugin = (opts: BatchPluginOptions = {}) =>
 
               // Prefer plugin opts → config → merged root CLI options for scripts/shell.
               const mergedBag = ((
-                thisCommand.parent as
+                (thisCommand.parent as
                   | (GetDotenvCli & {
                       getDotenvCliOptions?: {
                         scripts?: Scripts;
                         shell?: string | boolean;
                       };
                     })
-                  | null
+                  | null) ?? null
               )?.getDotenvCliOptions ?? {}) as {
                 scripts?: Scripts;
                 shell?: string | boolean;
@@ -341,11 +377,11 @@ export const batchPlugin = (opts: BatchPluginOptions = {}) =>
               if (extra.length > 0)
                 globs = [globs, extra].filter(Boolean).join(' ');
               const mergedBag = ((
-                thisCommand.parent as
+                (thisCommand.parent as
                   | (GetDotenvCli & {
                       getDotenvCliOptions?: { shell?: string | boolean };
                     })
-                  | null
+                  | null) ?? null
               )?.getDotenvCliOptions ?? {}) as { shell?: string | boolean };
               await execShellCommandBatch({
                 globs,
@@ -368,14 +404,14 @@ export const batchPlugin = (opts: BatchPluginOptions = {}) =>
             }
             if (typeof commandOpt === 'string') {
               const mergedBag = ((
-                thisCommand.parent as
+                (thisCommand.parent as
                   | (GetDotenvCli & {
                       getDotenvCliOptions?: {
                         scripts?: Scripts;
                         shell?: string | boolean;
                       };
                     })
-                  | null
+                  | null) ?? null
               )?.getDotenvCliOptions ?? {}) as {
                 scripts?: Scripts;
                 shell?: string | boolean;
@@ -401,14 +437,14 @@ export const batchPlugin = (opts: BatchPluginOptions = {}) =>
             } else {
               // list only (explicit --list without --command)
               const mergedBag = ((
-                thisCommand.parent as
+                (thisCommand.parent as
                   | (GetDotenvCli & {
                       getDotenvCliOptions?: {
                         scripts?: Scripts;
                         shell?: string | boolean;
                       };
                     })
-                  | null
+                  | null) ?? null
               )?.getDotenvCliOptions ?? {}) as {
                 scripts?: Scripts;
                 shell?: string | boolean;
