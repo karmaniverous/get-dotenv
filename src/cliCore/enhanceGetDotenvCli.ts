@@ -7,7 +7,6 @@ import { attachRootOptions } from './attachRootOptions';
 import { baseRootOptionDefaults } from './defaults';
 import { resolveCliOptions } from './resolveCliOptions';
 import type { CommandWithOptions, RootOptionsShape } from './types';
-
 /**
  * Adapter-layer augmentation: add chainable helpers to GetDotenvCli without
  * coupling the core host to cliCore. Importing this module has side effects:
@@ -58,6 +57,26 @@ GetDotenvCli.prototype.passOptions = function (
       // Build service options and compute context (always-on config loader path).
       const serviceOptions = getDotenvCliOptions2Options(merged);
       await this.resolveAndLoad(serviceOptions);
+    },
+  );
+  // Also handle root-level flows (no subcommand) so option-aliases can run
+  // with the same merged options and context without duplicating logic.
+  this.hook(
+    'preAction',
+    async (thisCommand: CommandWithOptions<GetDotenvCliOptions>) => {
+      const raw = thisCommand.opts();
+      const { merged } = resolveCliOptions<GetDotenvCliOptions>(
+        raw as unknown,
+        d as Partial<GetDotenvCliOptions>,
+        process.env.getDotenvCliOptions,
+      );
+      thisCommand.getDotenvCliOptions =
+        merged as unknown as GetDotenvCliOptions;
+      // Avoid duplicate heavy work if a context is already present.
+      if (!this.getCtx()) {
+        const serviceOptions = getDotenvCliOptions2Options(merged);
+        await this.resolveAndLoad(serviceOptions);
+      }
     },
   );
   return this;

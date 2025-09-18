@@ -296,10 +296,37 @@ Meanwhile, [this issue](https://github.com/karmaniverous/get-dotenv/issues/7) do
 
 ---
 
+### Authoring npm scripts and the `-c`/`--cmd` alias
+
+When you run commands via `npm run`, flags after `--` are forwarded to your script
+and may be applied to the inner shell command instead of `getdotenv` unless you
+structure your script carefully.
+
+- Anti-pattern:
+  ```json
+  { "scripts": { "script": "getdotenv echo $APP_SETTING" } }
+  ```
+  Then `npm run script -- -e dev` applies `-e` to `echo`, not to `getdotenv`.
+
+- Recommended:
+  ```json
+  { "scripts": { "script": "getdotenv -c 'echo $APP_SETTING'" } }
+  ```
+  Now `npm run script -- -e dev` applies `-e` to `getdotenv`, which loads and expands
+  variables before executing the inner command.
+
+Notes:
+- `-c`/`--cmd` is an alias of the `cmd` subcommand; do not use both in a single invocation.
+- On POSIX shells, prefer single quotes to prevent the outer shell from expanding `$VAR`
+  before Node sees it. On PowerShell, single quotes are also literal.
+- Script-level shell overrides (`scripts[name].shell`) still take precedence over the global
+  `--shell`.
+
+---
+
 ## Guides
 
-- Cascade and precedence:
-  - ./guides/cascade.md
+- Cascade and precedence:  - ./guides/cascade.md
 - Shell execution behavior and quoting:
   - ./guides/shell.md
 

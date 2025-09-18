@@ -1,8 +1,14 @@
 import { Command } from 'commander';
 import { execaCommand } from 'execa';
 
+import { baseRootOptionDefaults } from '../../cliCore/defaults';
+import { resolveCliOptions } from '../../cliCore/resolveCliOptions';
 import { definePlugin } from '../../cliHost/definePlugin';
+import type { GetDotenvCli } from '../../cliHost/GetDotenvCli';
+import { dotenvExpandFromProcessEnv } from '../../dotenvExpand';
+import type { GetDotenvCliOptions } from '../../generateGetDotenvCli/GetDotenvCliOptions';
 import type { Logger } from '../../GetDotenvOptions';
+import { getDotenvCliOptions2Options } from '../../GetDotenvOptions';
 import { resolveCommand, resolveShell } from '../../services/batch/resolve';
 
 export type CmdPluginOptions = {
@@ -10,10 +16,16 @@ export type CmdPluginOptions = {
    * When true, register as the default subcommand at the root.
    */
   asDefault?: boolean;
+  /**
+   * Optional alias option attached to the parent command to invoke the cmd
+   * behavior without specifying the subcommand explicitly.
+   */
+  optionAlias?:
+    | string
+    | { flags: string; description?: string; expand?: boolean };
 };
 
-/**
-+ Cmd plugin: executes a command using the current getdotenv CLI context.
+/**+ Cmd plugin: executes a command using the current getdotenv CLI context.
  *
  * - Joins positional args into a single command string.
  * - Resolves scripts and shell settings using shared helpers.
@@ -24,6 +36,17 @@ export const cmdPlugin = (options: CmdPluginOptions = {}) =>
   definePlugin({
     id: 'cmd',
     setup(cli) {
+      const aliasSpec =
+        typeof options.optionAlias === 'string'
+          ? { flags: options.optionAlias, description: undefined, expand: true }
+          : options.optionAlias;
+      const deriveKey = (flags: string) => {
+        const long =
+          flags.split(/[ ,|]+/).find((f) => f.startsWith('--')) ?? '--cmd';
+        const name = long.replace(/^--/, '');
+        return name.replace(/-([a-z])/g, (_m, c: string) => c.toUpperCase());
+      };
+      const aliasKey = aliasSpec ? deriveKey(aliasSpec.flags) : undefined;
       const cmd = new Command()
         .name('cmd')
         .description(
@@ -38,6 +61,32 @@ export const cmdPlugin = (options: CmdPluginOptions = {}) =>
           if (args.length === 0) return;
           const parent = thisCommand.parent;
           if (!parent) throw new Error('parent command not found');
+          // Conflict detection: if an alias option is present on parent, do not
+          // also accept positional cmd args.
+          if (aliasKey) {
+            const ov = parent.opts()[aliasKey];
+            if (ov !== undefined) {
+              const merged =
+                (
+                  parent as unknown as {
+                    getDotenvCliOptions?: Record<string, unknown>;
+                  }
+                ).getDotenvCliOptions ?? {};
+              const logger: Logger =
+                (merged as { logger?: Logger }).logger ?? console;
+              (
+                logger as unknown as {
+                  error?: (...a: unknown[]) => void;
+                  log: (...a: unknown[]) => void;
+                }
+              )[
+                (logger as { error?: (...a: unknown[]) => void }).error
+                  ? 'error'
+                  : 'log'
+              ](`--${aliasKey} option conflicts with cmd subcommand.`);
+              process.exit(0);
+            }
+          }
 
           // Merged CLI options are persisted by the shipped CLI preSubcommand hook.
           const merged =
@@ -92,5 +141,91 @@ export const cmdPlugin = (options: CmdPluginOptions = {}) =>
 
       if (options.asDefault) cli.addCommand(cmd, { isDefault: true });
       else cli.addCommand(cmd);
+
+      // Parent-attached option alias (optional).
+      if (aliasSpec) {
+        // Attach option to the parent (cli) with optional description.
+        const desc =
+          aliasSpec.description ??
+          'alias of cmd subcommand; provide command tokens (variadic)';
+        cli.option(aliasSpec.flags, desc);
+
+        // Parent preAction: execute alias when no subcommand is invoked.
+        cli.hook('preAction', async (thisCommand: Command) => {
+          // Determine if any known subcommand is present in raw argv.
+          const raw =
+            (thisCommand as unknown as { rawArgs?: string[] }).rawArgs ?? [];
+          const childNames = thisCommand.commands.flatMap((c) => [
+            c.name(),
+            ...c.aliases(),
+          ]);
+          const hasSub = childNames.some((n) => raw.includes(n));
+
+          // Read alias value from parent opts.
+          const o = thisCommand.opts();
+          const val = aliasKey ? o[aliasKey] : undefined;
+          const provided =
+            typeof val === 'string'
+              ? val.length > 0
+              : Array.isArray(val)
+                ? val.length > 0
+                : false;
+
+          if (!provided) return; // alias not present
+
+          // If a subcommand is specified, ignore alias here. The cmd action will
+          // handle conflict if the subcommand is 'cmd'.
+          if (hasSub) return;
+
+          // Merge CLI options and resolve dotenv context (independent of passOptions order).
+          const { merged } = resolveCliOptions<GetDotenvCliOptions>(
+            o as unknown,
+            baseRootOptionDefaults as Partial<GetDotenvCliOptions>,
+            process.env.getDotenvCliOptions,
+          );
+          const logger: Logger =
+            (merged as { logger?: Logger }).logger ?? console;
+          // Ensure context computed before executing.
+          const serviceOptions = getDotenvCliOptions2Options(merged);
+          await (cli as unknown as GetDotenvCli).resolveAndLoad(serviceOptions);
+
+          // Normalize alias value: join variadic into a single string.
+          const joined =
+            typeof val === 'string'
+              ? val
+              : Array.isArray(val)
+                ? (val as unknown[]).map(String).join(' ')
+                : '';
+          const input =
+            aliasSpec.expand === false
+              ? joined
+              : (dotenvExpandFromProcessEnv(joined) ?? joined);
+
+          const resolved = resolveCommand(merged.scripts, input);
+          const lg = logger as unknown as {
+            debug?: (...a: unknown[]) => void;
+            log: (...a: unknown[]) => void;
+          };
+          if ((merged as { debug?: boolean }).debug) {
+            (lg.debug ?? lg.log)('\n*** command ***\n', `'${resolved}'`);
+          }
+          const { logger: _omit, ...envBag } = merged as Record<
+            string,
+            unknown
+          >;
+          await execaCommand(resolved, {
+            env: {
+              ...process.env,
+              getDotenvCliOptions: JSON.stringify(envBag),
+            },
+            shell: resolveShell(
+              merged.scripts,
+              input,
+              merged.shell,
+            ) as unknown as string | boolean | URL,
+            stdio: 'inherit',
+          });
+        });
+      }
     },
   });

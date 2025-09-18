@@ -71,6 +71,32 @@ and behaviors is required.
      - Outer context is passed to inner commands via `process.env.getDotenvCliOptions` (JSON).
      - Within a single process tree (Commander), the current merged options are placed
        on the command instance as `getDotenvCliOptions` for subcommands.
+  - Command alias on parent (cmd):
+    - The CLI MUST support two equivalent ways to execute a command:
+      1) Subcommand: `cmd [args...]` (positional arguments are joined verbatim),
+      2) Option alias on the parent: `-c, --cmd <command...>` (variadic, joined with spaces).
+    - The option alias is an ergonomic convenience to ensure npm-run flag routing applies
+      to getdotenv rather than the inner shell command. Recommended authoring pattern:
+      - Anti-pattern: `"script": "getdotenv echo $FOO"` (flags passed to `npm run script -- ...`
+        are applied to `echo`, not `getdotenv`).
+      - Recommended: `"script": "getdotenv -c 'echo $FOO'"`, then
+        `npm run script -- -e dev` applies `-e` to getdotenv itself.
+    - Conflict detection: if both the alias and the `cmd` subcommand are supplied in a single
+      invocation, print a helpful message and exit with code 0 (legacy-parity graceful exit).
+    - Expansion semantics:
+      - Alias value is dotenv-expanded at parse time (unless explicitly disabled in a future
+        option); `cmd` positional args are joined verbatim and then resolved via scripts/shell.
+    - Scripts and shell precedence is unchanged:
+      - `scripts[name].shell` (object form) overrides the global `shell` for that script.
+    - Scope: For the new plugin-first CLI, the alias is owned by the cmd plugin and attaches
+      to the parent; the old generated CLI retains its original `-c, --command` until a
+      deliberate breaking change is published.
+  - Shell expansion guidance (procedural):
+    - Outer shells (e.g., bash, PowerShell) may expand variables before Node receives argv.
+      Document quoting rules and recommend single quotes for `$FOO` on POSIX and single quotes
+      on PowerShell to suppress outer expansion. Prefer `"getdotenv -c '...'"` in npm scripts.
+    - Future optional safety nets may include `--cmd-file <path>` (read command from file) or
+      env-backed alias (`GETDOTENV_CMD`) to avoid outer-shell expansion entirely.
 
 ## vNext (additive) — Plugin-first CLI host and Schema-driven config
 

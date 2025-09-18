@@ -96,7 +96,11 @@ export const batchPlugin = (opts: BatchPluginOptions = {}) =>
             .action(async (_subOpts: unknown, thisCommand: Command) => {
               // Guard: when invoked without positional args (e.g., `batch --list`),
               // defer entirely to the parent action handler.
-              const args = thisCommand.args as unknown[];
+              const args = Array.isArray(
+                (thisCommand as unknown as { args?: unknown[] }).args,
+              )
+                ? (thisCommand as unknown as { args: unknown[] }).args
+                : ([] as unknown[]);
               if (args.length === 0) return;
 
               // Access merged per-plugin config from host context (if any).
@@ -106,7 +110,6 @@ export const batchPlugin = (opts: BatchPluginOptions = {}) =>
 
               // Resolve batch flags from the captured parent (batch) command.
               const raw = batchCmd.opts();
-
               const ignoreErrors = !!raw.ignoreErrors;
               const globs =
                 typeof raw.globs === 'string' ? raw.globs : (cfg.globs ?? '*');
@@ -118,9 +121,7 @@ export const batchPlugin = (opts: BatchPluginOptions = {}) =>
                   : (cfg.rootPath ?? './');
 
               // Resolve scripts/shell and logger from opts→config precedence.
-              const scripts = (opts.scripts ?? cfg.scripts) as
-                | Scripts
-                | undefined;
+              const scripts = opts.scripts ?? cfg.scripts;
               const shell = opts.shell ?? cfg.shell;
               const loggerLocal: Logger = opts.logger ?? console;
 
@@ -155,8 +156,9 @@ export const batchPlugin = (opts: BatchPluginOptions = {}) =>
         )
         .action(async (_options: unknown, thisCommand: Command) => {
           // Ensure context exists (host preSubcommand on root creates if missing).
-          const ctx = cli.getCtx(); // Read merged per-plugin config (host-populated when guarded loader is enabled).          const cfgRaw = (ctx?.pluginConfigs?.['batch'] ?? {}) as unknown;
-          // Best-effort typing; host already validated when loader path is on.
+          const ctx = cli.getCtx();
+          // Read merged per-plugin config (host-populated when guarded loader is enabled).
+          const cfgRaw = (ctx?.pluginConfigs?.['batch'] ?? {}) as unknown;
           const cfg = (cfgRaw || {}) as BatchConfig;
 
           const raw = thisCommand.opts();

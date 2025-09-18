@@ -1,6 +1,6 @@
 # Development Plan — get-dotenv
 
-When updated: 2025-09-18T00:15:00Z
+When updated: 2025-09-18T01:40:00Z
 NOTE: Update timestamp on commit.
 
 ## Next up- Init scaffolding (finalize & docs)
@@ -8,10 +8,18 @@ NOTE: Update timestamp on commit.
 
 ## Completed (recent)
 
+- Cmd plugin: parent-attached option alias and root preAction support
+  - Added optional parent-level alias (`-c, --cmd <command...>`) in cmd plugin.
+  - Implemented root `preAction` in passOptions to merge options and compute
+    context for no-subcommand flows (alias path).
+  - E2E tests: alias execution (variadic join), dotenv expansion on alias, and
+    conflict with `cmd` subcommand.
+  - Requirements/README updated: npm-run routing rationale; quoting guidance;
+    alias semantics and conflict behavior; scripts/shell precedence unchanged.
+
 - Batch default cmd positional-args fix (Commander v14)
   - Default subcommand now captures the parent “batch” command in a closure and
-    reads flags via batchCmd.opts() instead of relying on thisCommand.parent.
-  - Added an early return when no positional args are supplied so `batch --list`
+    reads flags via batchCmd.opts() instead of relying on thisCommand.parent.  - Added an early return when no positional args are supplied so `batch --list`
     and `batch --command` paths are handled exclusively by the parent action.
   - Tests in src/plugins/batch/index.test.ts no longer throw “unable to resolve batch command”.
 
