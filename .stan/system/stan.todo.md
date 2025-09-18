@@ -4,6 +4,7 @@ When updated: 2025-09-18T15:30:00Z
 NOTE: Update timestamp on commit.
 
 ## Next up
+
 - Verify the batch list default-subcommand fix - Re-run E2E; confirm “batch list (-l)” passes on Windows. If not, add debug to print merged globs and list flag resolution in the default subcommand.
 
 - Stabilize alias (--cmd) capture on Windows (E2E timeouts)
@@ -26,12 +27,16 @@ NOTE: Update timestamp on commit.
 
 ## Completed (recent)
 
+- E2E flags: supply dataset-specific tokens for ./test/full flows:
+  add "--dotenv-token .testenv" and "--private-token secret" to the three
+  path-based tests (env print, output file, exclude private).
+
 - Alias (--cmd) handler deduped and hook typings fixed:
   run alias once via a guard when both preSubcommand and preAction fire; use
   proper Commander hook signatures; remove unnecessary opts() optional chain.
 
 - Alias (--cmd) fallback exit for capture/pipe:
-  force process.exit(0) when exitCode is not numeric but GETDOTENV_STDIO=pipe  (or --capture) is set, to avoid E2E timeouts on Windows.
+  force process.exit(0) when exitCode is not numeric but GETDOTENV_STDIO=pipe (or --capture) is set, to avoid E2E timeouts on Windows.
 
 - Fix ESLint violations in alias/run debug helpers to keep lint clean:
   adjust dbg helper shape and simplify debug shell label.
