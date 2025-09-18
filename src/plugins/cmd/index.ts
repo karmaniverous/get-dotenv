@@ -64,12 +64,10 @@ const runCommand = async (
         result.stdout + (result.stdout.endsWith('\n') ? '' : '\n'),
       );
     }
-    // Guard exitCode in test/mocked scenarios where execa may be stubbed to return void.
-    const code =
-      result && typeof (result as { exitCode?: unknown }).exitCode === 'number'
-        ? ((result as { exitCode?: number }).exitCode as number)
-        : 0;
-    return code;
+    // In unit tests, execa may be mocked to return a void/undefined result.
+    // Read exitCode defensively; return NaN to signal "mocked/no real exit code".
+    const exit = (result as { exitCode?: unknown }).exitCode;
+    return typeof exit === 'number' ? exit : Number.NaN;
   } else {
     const result = await execaCommand(command, { shell, ...opts });
     if (opts.stdio === 'pipe' && result.stdout) {
@@ -77,16 +75,16 @@ const runCommand = async (
         result.stdout + (result.stdout.endsWith('\n') ? '' : '\n'),
       );
     }
-    const code =
-      result && typeof (result as { exitCode?: unknown }).exitCode === 'number'
-        ? ((result as { exitCode?: number }).exitCode as number)
-        : 0;
-    return code;
+    const exit = (result as { exitCode?: unknown }).exitCode;
+    return typeof exit === 'number' ? exit : Number.NaN;
   }
 };
 /**+ Cmd plugin: executes a command using the current getdotenv CLI context.
  *
- * - Joins positional args into a single command string. * - Resolves scripts and shell settings using shared helpers. * - Forwards merged CLI options to subprocesses via *   process.env.getDotenvCliOptions for nested CLI behavior. */
+ * - Joins positional args into a single command string.
+ * - Resolves scripts and shell settings using shared helpers.
+ * - Forwards merged CLI options to subprocesses via
+ *   process.env.getDotenvCliOptions for nested CLI behavior. */
 export const cmdPlugin = (options: CmdPluginOptions = {}) =>
   definePlugin({
     id: 'cmd',
@@ -304,19 +302,11 @@ export const cmdPlugin = (options: CmdPluginOptions = {}) =>
                 stdio: capture ? 'pipe' : 'inherit',
               },
             );
-            // Ensure prompt, deterministic termination for alias path (especially on Windows)
-            // while preserving unit-testability. Do not terminate the process under test runners.
-            const isUnderTest =
-              Boolean(process.env.VITEST) ||
-              Boolean(process.env.JEST_WORKER_ID);
-            if (!isUnderTest) {
-              // Propagate child exit code for CI/test parity.
+            // Exit deterministically for real CLI runs; skip when mocked (NaN).
+            if (!Number.isNaN(exitCode)) {
+              // Propagate child exit code for CI/automation parity.
 
-              process.exit(
-                typeof exitCode === 'number' && Number.isFinite(exitCode)
-                  ? exitCode
-                  : 0,
-              );
+              process.exit(exitCode);
             }
           },
         );
