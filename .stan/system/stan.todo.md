@@ -1,6 +1,6 @@
 # Development Plan — get-dotenv
 
-When updated: 2025-09-18T13:05:00Z
+When updated: 2025-09-18T13:30:00Z
 NOTE: Update timestamp on commit.
 
 ## Next up- Init scaffolding (finalize & docs)- Perform publish dry-run and confirm tarball includes templates and subpath exports.
@@ -9,10 +9,14 @@ NOTE: Update timestamp on commit.
 - Cmd plugin: fix ESLint no-unsafe-assignment by typing opts() usage
   (CommandWithOptions<GetDotenvCliOptions>) and reading the alias option
   via a Record<string, unknown> view. No behavior change.
+- Packaging verification (dry-run)
+  - Added tools/verify-tarball.mjs to assert npm pack --dry-run includes
+    dist outputs and templates (config and CLI skeleton).
+  - Added npm scripts: verify:tarball and pack:dry; wired verify:tarball into
+    release-it after:init hooks following build and verify:package.
 
 - Cmd/batch polish for TS/lint/test
-  - Batch default-subcommand: safe logger invocation to satisfy TS2722 when    emitting “No command provided” (exact-optional logger).
-  - Cmd plugin: typed parent/thisCommand opts to remove unsafe-any and satisfy
+  - Batch default-subcommand: safe logger invocation to satisfy TS2722 when    emitting “No command provided” (exact-optional logger).  - Cmd plugin: typed parent/thisCommand opts to remove unsafe-any and satisfy
     strict typing; no behavior changes.
   - Alias conflict test: add “--” before subcommand to prevent the variadic
     alias from swallowing “cmd”, ensuring conflict path is exercised.

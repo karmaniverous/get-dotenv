@@ -175,7 +175,8 @@
         "npm run lint",
         "npm run test",
         "npm run build",
-        "npm run verify:package"
+        "npm run verify:package",
+        "npm run verify:tarball"
       ],
       "after:release": [
         "git switch -c release/${version}",
@@ -198,6 +199,8 @@
     "changelog": "auto-changelog",
     "docs": "typedoc",
     "verify:package": "node tools/verify-package.mjs",
+    "verify:tarball": "node tools/verify-tarball.mjs",
+    "pack:dry": "npm pack --dry-run",
     "knip": "knip",
     "lint": "eslint . eslint.config.ts",
     "lint:fix": "eslint --fix . eslint.config.ts",
