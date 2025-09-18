@@ -63,12 +63,11 @@ export const cmdPlugin = (options: CmdPluginOptions = {}) =>
           // Conflict detection: if an alias option is present on parent, do not
           // also accept positional cmd args.
           if (aliasKey) {
-            const pv = parent.opts();
+            const pv = parent.opts() as Record<string, unknown>;
             const ov = aliasKey ? pv[aliasKey] : undefined;
             if (ov !== undefined) {
               const merged =
-                (
-                  parent as unknown as {
+                (                  parent as unknown as {
                     getDotenvCliOptions?: Record<string, unknown>;
                   }
                 ).getDotenvCliOptions ?? {};
@@ -160,12 +159,11 @@ export const cmdPlugin = (options: CmdPluginOptions = {}) =>
           const hasSub = childNames.some((n) => raw.includes(n));
 
           // Read alias value from parent opts.
-          const o = thisCommand.opts();
+          const o = thisCommand.opts() as Record<string, unknown>;
           const val = aliasKey ? o[aliasKey] : undefined;
           const provided =
             typeof val === 'string'
-              ? val.length > 0
-              : Array.isArray(val)
+              ? val.length > 0              : Array.isArray(val)
                 ? val.length > 0
                 : false;
 

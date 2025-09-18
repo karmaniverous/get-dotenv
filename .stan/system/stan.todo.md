@@ -1,22 +1,28 @@
 # Development Plan — get-dotenv
 
-When updated: 2025-09-18T12:05:00Z
+When updated: 2025-09-18T12:20:00Z
 NOTE: Update timestamp on commit.
 
 ## Next up- Init scaffolding (finalize & docs)- Perform publish dry-run and confirm tarball includes templates and subpath exports.
 
 ## Completed (recent)
 
+- Cmd/batch polish for TS/lint/test
+  - Batch default-subcommand: safe logger invocation to satisfy TS2722 when
+    emitting “No command provided” (exact-optional logger).
+  - Cmd plugin: typed parent/thisCommand opts to remove unsafe-any and satisfy
+    strict typing; no behavior changes.
+  - Alias conflict test: add “--” before subcommand to prevent the variadic
+    alias from swallowing “cmd”, ensuring conflict path is exercised.
 - Cmd alias TS/lint fixes and batch default-subcommand bridging
   - Fixed TypeScript issues in cmd plugin (logger invocation narrowing and
-    env-bag typing) and unsafe-any lint with typed opts/env-bag casts.
-  - Adjusted cmd alias tests to use a non-conflicting long flag (`--cmd`) to
+    env-bag typing) and unsafe-any lint with typed opts/env-bag casts. - Adjusted cmd alias tests to use a non-conflicting long flag (`--cmd`) to
     avoid root `-c` collision.
   - Bridged batch default `cmd` subcommand to execute list/--command paths when
     invoked implicitly with no positional args so E2E tests pass.
 - Cmd plugin: parent-attached option alias and root preAction support
   - Added optional parent-level alias (`-c, --cmd <command...>`) in cmd plugin.
-  - Implemented root `preAction` in passOptions to merge options and compute    context for no-subcommand flows (alias path).
+  - Implemented root `preAction` in passOptions to merge options and compute context for no-subcommand flows (alias path).
   - E2E tests: alias execution (variadic join), dotenv expansion on alias, and
     conflict with `cmd` subcommand.
   - Requirements/README updated: npm-run routing rationale; quoting guidance;
@@ -24,13 +30,13 @@ NOTE: Update timestamp on commit.
 
 - Batch default cmd positional-args fix (Commander v14)
   - Default subcommand now captures the parent “batch” command in a closure and
-    reads flags via batchCmd.opts() instead of relying on thisCommand.parent.  - Added an early return when no positional args are supplied so `batch --list`
+    reads flags via batchCmd.opts() instead of relying on thisCommand.parent. - Added an early return when no positional args are supplied so `batch --list`
     and `batch --command` paths are handled exclusively by the parent action.
   - Tests in src/plugins/batch/index.test.ts no longer throw “unable to resolve batch command”.
 
 - CLI log duplication fix
   - Suppressed logging/effects in the base getDotenv step inside the config
-    loader path (computeContext and resolveWithLoader). With `-l`, logging now    occurs exactly once after overlays/dynamics are applied.
+    loader path (computeContext and resolveWithLoader). With `-l`, logging now occurs exactly once after overlays/dynamics are applied.
 
 - CLI log duplication fix
   - Suppressed logging/effects in the base getDotenv step inside the config
@@ -43,7 +49,7 @@ NOTE: Update timestamp on commit.
     “too many arguments for 'cmd'” and preserves type safety.
 
 - CLI macros: chainable attachRootOptions/passOptions
-  - Added adapter-layer augmentation (src/cliCore/enhanceGetDotenvCli.ts) that    decorates GetDotenvCli with fluent attachRootOptions() and passOptions() methods without coupling the host to cliCore. Shipped CLI now uses the
+  - Added adapter-layer augmentation (src/cliCore/enhanceGetDotenvCli.ts) that decorates GetDotenvCli with fluent attachRootOptions() and passOptions() methods without coupling the host to cliCore. Shipped CLI now uses the
     chainable style.
 
 - CLI default command via plugin

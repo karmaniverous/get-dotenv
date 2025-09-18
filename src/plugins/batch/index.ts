@@ -161,22 +161,19 @@ export const batchPlugin = (opts: BatchPluginOptions = {}) =>
                   });
                   return;
                 }
-                (
-                  loggerLocal as unknown as {
+                {
+                  const lr = loggerLocal as unknown as {
                     error?: (...a: unknown[]) => void;
                     log: (...a: unknown[]) => void;
-                  }
-                )[
-                  (loggerLocal as { error?: (...a: unknown[]) => void }).error
-                    ? 'error'
-                    : 'log'
-                ](`No command provided. Use --command or --list.`);
+                  };
+                  const emit = lr.error ?? lr.log;
+                  emit(`No command provided. Use --command or --list.`);
+                }
                 process.exit(0);
               }
 
               // Join positional args as the command to execute.
               const input = args.map(String).join(' ');
-
               // Optional: round-trip parent merged options if present (shipped CLI).
               const envBag = (
                 batchCmd.parent as

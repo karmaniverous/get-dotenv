@@ -72,6 +72,7 @@ describe('plugins/cmd option alias', () => {
         '--cmd',
         'echo',
         'OK',
+        '--',
         'cmd',
         'echo',
         'X',
