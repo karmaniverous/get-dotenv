@@ -1,11 +1,14 @@
 # Development Plan — get-dotenv
 
-When updated: 2025-09-18T13:30:00Z
+When updated: 2025-09-18T13:45:00Z
 NOTE: Update timestamp on commit.
 
-## Next up- Init scaffolding (finalize & docs)- Perform publish dry-run and confirm tarball includes templates and subpath exports.
+## Next up
+
+- Init scaffolding (finalize & docs)- Perform publish dry-run and confirm tarball includes templates and subpath exports.
 
 ## Completed (recent)
+
 - Cmd plugin: fix ESLint no-unsafe-assignment by typing opts() usage
   (CommandWithOptions<GetDotenvCliOptions>) and reading the alias option
   via a Record<string, unknown> view. No behavior change.
@@ -14,10 +17,12 @@ NOTE: Update timestamp on commit.
     dist outputs and templates (config and CLI skeleton).
   - Added npm scripts: verify:tarball and pack:dry; wired verify:tarball into
     release-it after:init hooks following build and verify:package.
+- knip configuration refinement
+  - Broadened analysis scope to include subpath entry points and src/\*_/_.ts
+    in knip.json, eliminating false “unused dependencies” (commander, yaml, zod).
 
 - Cmd/batch polish for TS/lint/test
-  - Batch default-subcommand: safe logger invocation to satisfy TS2722 when    emitting “No command provided” (exact-optional logger).  - Cmd plugin: typed parent/thisCommand opts to remove unsafe-any and satisfy
-    strict typing; no behavior changes.
+  - Batch default-subcommand: safe logger invocation to satisfy TS2722 when emitting “No command provided” (exact-optional logger). - Cmd plugin: typed parent/thisCommand opts to remove unsafe-any and satisfy strict typing; no behavior changes.
   - Alias conflict test: add “--” before subcommand to prevent the variadic
     alias from swallowing “cmd”, ensuring conflict path is exercised.
 - Cmd alias TS/lint fixes and batch default-subcommand bridging

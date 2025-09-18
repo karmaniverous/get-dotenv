@@ -1,6 +1,13 @@
 {
-  "entry": ["src/index.ts"],
-  "project": [],
+  "entry": [
+    "src/index.ts",
+    "src/cliHost/index.ts",
+    "src/plugins/batch/index.ts",
+    "src/plugins/init/index.ts",
+    "src/config/index.ts",
+    "src/env/overlay.ts"
+  ],
+  "project": ["src/**/*.ts"],
   "ignore": [],
   "ignoreBinaries": [],
   "ignoreDependencies": ["execa", "globby", "nanoid", "package-directory"],
