@@ -1,10 +1,9 @@
 # Development Plan — get-dotenv
 
-When updated: 2025-09-19T12:35:00Z
+When updated: 2025-09-19T12:45:00Z
 NOTE: Update timestamp on commit.
 
-## Next up- Verify the batch list default-subcommand fix
-  - Re-run E2E; confirm “batch list (-l)” passes on Windows. If not, add
+## Next up- Verify the batch list default-subcommand fix  - Re-run E2E; confirm “batch list (-l)” passes on Windows. If not, add
     debug to print merged globs and list flag resolution in the default
     subcommand.
 
@@ -28,9 +27,11 @@ NOTE: Update timestamp on commit.
 
 ## Completed (recent)
 
+- Fix ESLint violations in alias/run debug helpers to keep lint clean:
+  adjust dbg helper shape and simplify debug shell label.
+
 - Instrument alias/run path with GETDOTENV_DEBUG markers:
-  preAction start/end, resolved input, run start/done, and exitCode to
-  diagnose Windows E2E timeouts under capture.
+  preAction start/end, resolved input, run start/done, and exitCode to  diagnose Windows E2E timeouts under capture.
 
 - Capture toggle for subprocess stdio; cmd and batch honor capture; buffered
   stdout re-emitted after completion.

@@ -1,7 +1,11 @@
 import '../../cliCore/enhanceGetDotenvCli'; // ensure helpers are available in host CLIs
 
-const dbg = (...args: unknown[]) =>
-  process.env.GETDOTENV_DEBUG && console.error('[getdotenv:alias]', ...args);
+const dbg = (...args: unknown[]) => {
+  if (process.env.GETDOTENV_DEBUG) {
+    // Use stderr to avoid interfering with stdout assertions
+    console.error('[getdotenv:alias]', ...args);
+  }
+};
 import type { Command } from 'commander';
 
 import { baseRootOptionDefaults } from '../../cliCore/defaults';

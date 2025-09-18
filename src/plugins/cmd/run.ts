@@ -31,7 +31,7 @@ export const runCommand = async (
     return typeof exit === 'number' ? exit : Number.NaN;
   } else {
     dbg('exec (shell)', {
-      shell: typeof shell === 'string' ? shell : shell ? 'custom' : false,
+      shell: typeof shell === 'string' ? shell : 'custom',
       stdio: opts.stdio,
       command,
     });
