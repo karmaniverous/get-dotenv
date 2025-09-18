@@ -1,11 +1,18 @@
 # Development Plan — get-dotenv
 
-When updated: 2025-09-18T14:20:00Z
+When updated: 2025-09-18T14:35:00Z
 NOTE: Update timestamp on commit.
 
 ## Next up
 
-- Init scaffolding (finalize & docs)- Perform publish dry-run and confirm tarball includes templates and subpath exports.
+- E2E quoting tests (platform-guarded)
+  - POSIX: compare `-c echo $APP_SETTING` vs `-c 'echo $APP_SETTING'` to show
+    outer-shell expansion hazard vs correct behavior (single quotes).
+  - PowerShell: single-quoted literal vs double-quoted interpolation.
+  - Ensure tests are skipped on non-matching platforms to keep CI green.
+- Optional programmatic safeties (stage, do not implement yet)
+  - Consider `--cmd-file <path>` to avoid outer-shell interpolation entirely.
+  - Consider env-backed alias `GETDOTENV_CMD` if alias flag is omitted.
 
 ## Completed (recent)
 
@@ -305,8 +312,3 @@ NOTE: Update timestamp on commit.
 * - Added tools/verify-package.mjs and npm script "verify:package".
 * - Wired verify step into release-it after:init (post-build) to sanity-check
 * "files" entries, subpath exports, and dist outputs when present.
-
-## Next up (focused)
-
-- Init scaffolding (finalize & docs)
-  - Perform publish dry-run and confirm tarball
