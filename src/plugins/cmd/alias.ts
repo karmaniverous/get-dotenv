@@ -46,98 +46,107 @@ export const attachParentAlias = (
     'alias of cmd subcommand; provide command tokens (variadic)';
   cli.option(aliasSpec.flags, desc);
 
-  // Execute alias-only invocations at the parent level.
-  cli.hook(
-    'preAction',
-    async (thisCommand: CommandWithOptions<GetDotenvCliOptions>) => {
-      dbg('preAction:start');
-      const raw =
-        (thisCommand as unknown as { rawArgs?: string[] }).rawArgs ?? [];
-      const childNames = thisCommand.commands.flatMap((c) => [
-        c.name(),
-        ...c.aliases(),
-      ]);
-      const hasSub = childNames.some((n) => raw.includes(n));
+  // Shared alias executor for either preAction or preSubcommand hooks.
+  const maybeRunAlias = async (
+    thisCommand: CommandWithOptions<GetDotenvCliOptions> | Command,
+  ) => {
+    dbg('alias:maybe:start');
+    const raw =
+      (thisCommand as unknown as { rawArgs?: string[] }).rawArgs ?? [];
+    const childNames = (thisCommand as Command).commands.flatMap((c) => [
+      c.name(),
+      ...c.aliases(),
+    ]);
+    const hasSub = childNames.some((n) => raw.includes(n));
 
-      // Read alias value from parent opts.
-      const o = thisCommand.opts();
-      const val = (o as unknown as Record<string, unknown>)[aliasKey];
-      const provided =
-        typeof val === 'string'
+    // Read alias value from parent opts.
+    const o = (thisCommand as CommandWithOptions<GetDotenvCliOptions>).opts?.()
+      ? (thisCommand as CommandWithOptions<GetDotenvCliOptions>).opts()
+      : ({} as Partial<GetDotenvCliOptions>);
+    const val = (o as unknown as Record<string, unknown>)[aliasKey];
+    const provided =
+      typeof val === 'string'
+        ? val.length > 0
+        : Array.isArray(val)
           ? val.length > 0
-          : Array.isArray(val)
-            ? val.length > 0
-            : false;
-      if (!provided || hasSub) return; // not an alias-only invocation
+          : false;
+    if (!provided || hasSub) {
+      dbg('alias:maybe:skip', { provided, hasSub });
+      return; // not an alias-only invocation
+    }
 
-      dbg('alias-only invocation detected');
-      // Merge CLI options and resolve dotenv context.
-      const { merged } = resolveCliOptions<GetDotenvCliOptions>(
-        o as unknown,
-        baseRootOptionDefaults as Partial<GetDotenvCliOptions>,
-        process.env.getDotenvCliOptions,
-      );
-      const logger: Logger = (merged as { logger?: Logger }).logger ?? console;
-      const serviceOptions = getDotenvCliOptions2Options(merged);
-      await (cli as unknown as GetDotenvCli).resolveAndLoad(serviceOptions);
+    dbg('alias-only invocation detected');
+    // Merge CLI options and resolve dotenv context.
+    const { merged } = resolveCliOptions<GetDotenvCliOptions>(
+      o as unknown,
+      baseRootOptionDefaults as Partial<GetDotenvCliOptions>,
+      process.env.getDotenvCliOptions,
+    );
+    const logger: Logger = (merged as { logger?: Logger }).logger ?? console;
+    const serviceOptions = getDotenvCliOptions2Options(merged);
+    await (cli as unknown as GetDotenvCli).resolveAndLoad(serviceOptions);
 
-      // Normalize alias value.
-      const joined =
-        typeof val === 'string'
-          ? val
-          : Array.isArray(val)
-            ? (val as unknown[]).map(String).join(' ')
-            : '';
-      const input =
-        aliasSpec.expand === false
-          ? joined
-          : (dotenvExpandFromProcessEnv(joined) ?? joined);
+    // Normalize alias value.
+    const joined =
+      typeof val === 'string'
+        ? val
+        : Array.isArray(val)
+          ? (val as unknown[]).map(String).join(' ')
+          : '';
+    const input =
+      aliasSpec.expand === false
+        ? joined
+        : (dotenvExpandFromProcessEnv(joined) ?? joined);
 
-      dbg('resolved input', { input });
-      const resolved = resolveCommand(merged.scripts, input);
-      const lg = logger as unknown as {
-        debug?: (...a: unknown[]) => void;
-        log: (...a: unknown[]) => void;
-      };
-      if ((merged as { debug?: boolean }).debug) {
-        (lg.debug ?? lg.log)('\n*** command ***\n', `'${resolved}'`);
-      }
-      const { logger: _omit, ...envBag } = merged as unknown as Record<
-        string,
-        unknown
-      >;
-      const capture =
-        process.env.GETDOTENV_STDIO === 'pipe' ||
-        Boolean((merged as unknown as { capture?: boolean }).capture);
-      dbg('run:start', { capture, shell: merged.shell });
-      const exitCode = await runCommand(
-        resolved,
-        resolveShell(merged.scripts, input, merged.shell) as unknown as
-          | string
-          | boolean
-          | URL,
-        {
-          env: {
-            ...process.env,
-            getDotenvCliOptions: JSON.stringify(envBag),
-          },
-          stdio: capture ? 'pipe' : 'inherit',
+    dbg('resolved input', { input });
+    const resolved = resolveCommand(merged.scripts, input);
+    const lg = logger as unknown as {
+      debug?: (...a: unknown[]) => void;
+      log: (...a: unknown[]) => void;
+    };
+    if ((merged as { debug?: boolean }).debug) {
+      (lg.debug ?? lg.log)('\n*** command ***\n', `'${resolved}'`);
+    }
+    const { logger: _omit, ...envBag } = merged as unknown as Record<
+      string,
+      unknown
+    >;
+    const capture =
+      process.env.GETDOTENV_STDIO === 'pipe' ||
+      Boolean((merged as unknown as { capture?: boolean }).capture);
+    dbg('run:start', { capture, shell: merged.shell });
+    const exitCode = await runCommand(
+      resolved,
+      resolveShell(merged.scripts, input, merged.shell) as unknown as
+        | string
+        | boolean
+        | URL,
+      {
+        env: {
+          ...process.env,
+          getDotenvCliOptions: JSON.stringify(envBag),
         },
-      );
-      dbg('run:done', { exitCode });
-      if (!Number.isNaN(exitCode)) {
-        dbg('process.exit', { exitCode });
-        process.exit(exitCode);
-      }
-      // Fallback: Some environments may not surface a numeric exitCode even on success.
-      // When capture/pipe is requested, force a clean exit to avoid hanging the process.
-      const shouldForceExit =
-        process.env.GETDOTENV_STDIO === 'pipe' ||
-        Boolean((merged as unknown as { capture?: boolean }).capture);
-      if (shouldForceExit) {
-        dbg('process.exit (fallback)', { exitCode: 0 });
-        process.exit(0);
-      }
-    },
-  );
+        stdio: capture ? 'pipe' : 'inherit',
+      },
+    );
+    dbg('run:done', { exitCode });
+    if (!Number.isNaN(exitCode)) {
+      dbg('process.exit', { exitCode });
+      process.exit(exitCode);
+    }
+    // Fallback: Some environments may not surface a numeric exitCode even on success.
+    // When capture/pipe is requested, force a clean exit to avoid hanging the process.
+    const shouldForceExit =
+      process.env.GETDOTENV_STDIO === 'pipe' ||
+      Boolean((merged as unknown as { capture?: boolean }).capture);
+    if (shouldForceExit) {
+      dbg('process.exit (fallback)', { exitCode: 0 });
+      process.exit(0);
+    }
+  };
+
+  // Execute alias-only invocations whether the root handles the action
+  // itself (preAction) or Commander routes to a default subcommand (preSubcommand).
+  cli.hook('preAction', maybeRunAlias as (c: Command) => unknown);
+  cli.hook('preSubcommand', maybeRunAlias as (c: Command) => unknown);
 };
