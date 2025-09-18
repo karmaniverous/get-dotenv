@@ -1,3 +1,4 @@
+// src/e2e/cli.core.test.ts
 import { parse as parseDotenv } from 'dotenv';
 import { execaCommand } from 'execa';
 import fs from 'fs-extra';
@@ -62,8 +63,10 @@ describe('E2E CLI (core options and plugins)', () => {
       '.testenv',
       '--private-token',
       'secret',
-      '--cmd',
-      nodePrintEnv('ENV_SETTING'),
+      'cmd',
+      'node',
+      '-e',
+      JSON.stringify("console.log(process.env.ENV_SETTING ?? '')"),
     ].join(' ');
     const { stdout, exitCode } = await execaCommand(cmd, {
       env: { ...process.env, GETDOTENV_STDIO: 'pipe' },
@@ -78,8 +81,10 @@ describe('E2E CLI (core options and plugins)', () => {
       '--shell-off',
       '-v',
       'FOO=bar',
-      // '--cmd',
-      nodePrintEnv('FOO'),
+      'cmd',
+      'node',
+      '-e',
+      JSON.stringify("console.log(process.env.FOO ?? '')"),
     ].join(' ');
     const { stdout, exitCode } = await execaCommand(cmd, {
       env: { ...process.env, GETDOTENV_STDIO: 'pipe' },
@@ -104,9 +109,12 @@ describe('E2E CLI (core options and plugins)', () => {
       'secret',
       '-o',
       out,
-      '--cmd',
-      // No-op child; just ensure the CLI runs and writes output.
-      'node -e ""',
+      // No-op child via positional cmd; just ensure the CLI runs and writes output.
+      'cmd',
+      'node',
+      '-e',
+      // An empty program literal
+      JSON.stringify(''),
     ].join(' ');
     const { exitCode } = await execaCommand(cmd, {
       env: { ...process.env, GETDOTENV_STDIO: 'pipe' },
@@ -137,8 +145,10 @@ describe('E2E CLI (core options and plugins)', () => {
       '--private-token',
       'secret',
       '-r', // exclude private
-      '--cmd',
-      nodePrintEnv('APP_SECRET'),
+      'cmd',
+      'node',
+      '-e',
+      JSON.stringify("console.log(process.env.APP_SECRET ?? '')"),
     ].join(' ');
     const { stdout, exitCode } = await execaCommand(cmd, {
       env: { ...process.env, GETDOTENV_STDIO: 'pipe' },
@@ -147,6 +157,7 @@ describe('E2E CLI (core options and plugins)', () => {
     // When excluded, secret should be blank.
     expect(stdout.trim()).toBe('');
   }, 20000);
+
   it('executes positional cmd subcommand with --shell-off', async () => {
     const cmd = [
       CLI,
@@ -162,6 +173,7 @@ describe('E2E CLI (core options and plugins)', () => {
     expect(exitCode).toBe(0);
     expect(stdout.trim()).toBe('OK');
   }, 20000);
+
   it('batch list (-l) prints working directories', async () => {
     const cmd = [CLI, 'batch', '-r', './test', '-g', 'full partial', '-l'].join(
       ' ',
