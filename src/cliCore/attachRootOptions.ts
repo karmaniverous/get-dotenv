@@ -11,12 +11,15 @@ import type { RootOptionsShape } from './types';
 export const attachRootOptions = (
   program: Command,
   defaults?: Partial<RootOptionsShape>,
+  opts?: {
+    // When false, omit the legacy "-c, --command" flag at the root.
+    includeCommandOption?: boolean;
+  },
 ) => {
   const {
     defaultEnv,
     dotenvToken,
-    dynamicPath,
-    env,
+    dynamicPath,    env,
     excludeDynamic,
     excludeEnv,
     excludeGlobal,
@@ -61,17 +64,22 @@ export const attachRootOptions = (
         .join(vd)}`,
       dotenvExpandFromProcessEnv,
     )
-    .option(
-      '-c, --command <string>',
-      'command executed according to the --shell option, conflicts with cmd subcommand (dotenv-expanded)',
-      dotenvExpandFromProcessEnv,
-    )
+    // Optional legacy root command flag (kept for generated CLI compatibility).
+    // The plugin-first shipped CLI disables this and uses the cmd plugin's alias instead.
+    ...(opts?.includeCommandOption === false
+      ? []
+      : [
+          program.option(
+            '-c, --command <string>',
+            'command executed according to the --shell option, conflicts with cmd subcommand (dotenv-expanded)',
+            dotenvExpandFromProcessEnv,
+          ),
+        ])
     .option(
       '-o, --output-path <string>',
       'consolidated output file  (dotenv-expanded)',
       dotenvExpandFromProcessEnv,
-      outputPath,
-    )
+      outputPath,    )
     .addOption(
       new Option(
         '-s, --shell [string]',

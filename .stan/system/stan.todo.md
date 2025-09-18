@@ -1,6 +1,6 @@
 # Development Plan — get-dotenv
 
-When updated: 2025-09-18T15:25:00Z
+When updated: 2025-09-18T16:05:00Z
 NOTE: Update timestamp on commit.
 
 ## Next up
@@ -15,6 +15,15 @@ NOTE: Update timestamp on commit.
 
 ## Completed (recent)
 
+- Batch parent positional args
+  - Declared `batch` parent `.argument([command...])` and updated its action to
+    accept variadic `commandParts`. Now `getdotenv batch <args…>` executes the
+    command without requiring an explicit `cmd` token.
+- Shipped CLI cmd alias standardization
+  - Enabled the cmd plugin’s parent alias `-c, --cmd <command...>` and removed
+    the legacy root `-c, --command` flag via `attachRootOptions(..., { includeCommandOption: false })`.
+  - Requirements updated: plugin-first CLI may change; only the legacy generated
+    CLI is held to backward compatibility.
 - Batch default cmd subcommand (Commander args capture)
   - Fixed action handler signature to accept the variadic `[command...]`
     argument list, ensuring `getdotenv batch … cmd <args…>` executes.

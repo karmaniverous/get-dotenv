@@ -9,10 +9,18 @@ explicit variables, optionally expand variables recursively, optionally inject
 into `process.env`, and expose a flexible CLI that can act standalone or as the
 foundation for child CLIs. Backward compatibility with the existing public API
 and behaviors is required.
+
+## Compatibility policy (plugin-first vs generated CLI)
+
+- The plugin-first shipped CLI may evolve without strict backward compatibility.
+- The legacy generated CLI (via generateGetDotenvCli) MUST preserve existing
+  flags/behavior for consumers. Changes to flag names or behavior in the
+  plugin-first CLI do not imply changes to the generated CLI unless explicitly
+  coordinated as a breaking change for that surface.
+
 ## Supported Node/Runtime
 
-- Node: >= 22.19
-- ESM-first package with dual exports:
+- Node: >= 22.19- ESM-first package with dual exports:
   - import: dist/index.mjs (types: dist/index.d.mts)
   - require: dist/index.cjs (types: dist/index.d.cts)
 
@@ -71,6 +79,12 @@ and behaviors is required.
      - Outer context is passed to inner commands via `process.env.getDotenvCliOptions` (JSON).
      - Within a single process tree (Commander), the current merged options are placed
        on the command instance as `getDotenvCliOptions` for subcommands.
+  - CLI flag standardization (plugin-first host):
+    - Use “-c, --cmd <command...>” provided by the cmd plugin as the parent-level
+      option alias. The shipped CLI does not include a root “-c, --command” flag.
+    - The legacy generated CLI retains “-c, --command <string>” for compatibility
+      and uses its own command wiring as documented in the generator entry.
+
   - Command alias on parent (cmd):
     - The CLI MUST support two equivalent ways to execute a command:
       1) Subcommand: `cmd [args...]` (positional arguments are joined verbatim),

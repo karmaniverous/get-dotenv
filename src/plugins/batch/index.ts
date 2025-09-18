@@ -82,6 +82,7 @@ export const batchPlugin = (opts: BatchPluginOptions = {}) =>
           '-e, --ignore-errors',
           'ignore errors and continue with next path',
         )
+        .argument('[command...]')
         // Default subcommand: accept positional args as the command to run.
         // Mirrors legacy behavior so `batch <args...>` works without --command.
         .addCommand(
@@ -200,82 +201,88 @@ export const batchPlugin = (opts: BatchPluginOptions = {}) =>
             }),
           { isDefault: true },
         )
-        .action(async (_options: unknown, thisCommand: Command) => {
-          // Ensure context exists (host preSubcommand on root creates if missing).
-          const ctx = cli.getCtx();
-          // Read merged per-plugin config (host-populated when guarded loader is enabled).
-          const cfgRaw = (ctx?.pluginConfigs?.['batch'] ?? {}) as unknown;
-          const cfg = (cfgRaw || {}) as BatchConfig;
+        .action(
+          async (commandParts: string[] | undefined, thisCommand: Command) => {
+            // Ensure context exists (host preSubcommand on root creates if missing).
+            const ctx = cli.getCtx();
+            // Read merged per-plugin config (host-populated when guarded loader is enabled).
+            const cfgRaw = (ctx?.pluginConfigs?.['batch'] ?? {}) as unknown;
+            const cfg = (cfgRaw || {}) as BatchConfig;
 
-          const raw = thisCommand.opts();
-          const commandOpt =
-            typeof raw.command === 'string' ? raw.command : undefined;
-          const ignoreErrors = !!raw.ignoreErrors;
-          const globs =
-            typeof raw.globs === 'string' ? raw.globs : (cfg.globs ?? '*');
-          const list = !!raw.list;
-          const pkgCwd = raw.pkgCwd !== undefined ? !!raw.pkgCwd : !!cfg.pkgCwd;
-          const rootPath =
-            typeof raw.rootPath === 'string'
-              ? raw.rootPath
-              : (cfg.rootPath ?? './');
+            const raw = thisCommand.opts();
+            const commandOpt =
+              typeof raw.command === 'string' ? raw.command : undefined;
+            const ignoreErrors = !!raw.ignoreErrors;
+            const globs =
+              typeof raw.globs === 'string' ? raw.globs : (cfg.globs ?? '*');
+            const list = !!raw.list;
+            const pkgCwd =
+              raw.pkgCwd !== undefined ? !!raw.pkgCwd : !!cfg.pkgCwd;
+            const rootPath =
+              typeof raw.rootPath === 'string'
+                ? raw.rootPath
+                : (cfg.rootPath ?? './');
 
-          // If invoked without explicit 'cmd' subcommand, treat remaining positional
-          // tokens as the command to execute (implicit default-subcommand behavior).
-          const argsParent =
-            (thisCommand as unknown as { args?: unknown[] }).args ?? [];
-          if (Array.isArray(argsParent) && argsParent.length > 0) {
-            const input = argsParent.map(String).join(' ');
-            await execShellCommandBatch({
-              command: resolveCommand(opts.scripts ?? cfg.scripts, input),
-              globs,
-              ignoreErrors,
-              list: false,
-              logger,
-              ...(pkgCwd ? { pkgCwd } : {}),
-              rootPath,
-              shell: resolveShell(
-                opts.scripts ?? cfg.scripts,
-                input,
-                opts.shell ?? cfg.shell,
-              ) as unknown as string | boolean | URL,
-            });
-            return;
-          }
-          if (!commandOpt && !list) {
-            logger.error(`No command provided. Use --command or --list.`);
-            process.exit(0);
-          }
-          if (typeof commandOpt === 'string') {
-            await execShellCommandBatch({
-              command: resolveCommand(opts.scripts ?? cfg.scripts, commandOpt),
-              globs,
-              ignoreErrors,
-              list,
-              logger,
-              ...(pkgCwd ? { pkgCwd } : {}),
-              rootPath,
-              shell: resolveShell(
-                opts.scripts ?? cfg.scripts,
-                commandOpt,
-                opts.shell ?? cfg.shell,
-              ) as unknown as string | boolean | URL,
-            });
-          } else {
-            // list only (explicit --list without --command)
-            await execShellCommandBatch({
-              globs,
-              ignoreErrors,
-              list: true,
-              logger,
-              ...(pkgCwd ? { pkgCwd } : {}),
-              rootPath,
-              shell: (opts.shell ?? cfg.shell ?? false) as unknown as
-                | string
-                | boolean
-                | URL,
-            });
-          }
-        });
+            // If invoked without explicit 'cmd' subcommand, treat declared positional
+            // tokens as the command to execute (implicit default-subcommand behavior).
+            const argsParent = Array.isArray(commandParts) ? commandParts : [];
+            if (argsParent.length > 0) {
+              const input = argsParent.map(String).join(' ');
+              await execShellCommandBatch({
+                command: resolveCommand(opts.scripts ?? cfg.scripts, input),
+                globs,
+                ignoreErrors,
+                list: false,
+                logger,
+                ...(pkgCwd ? { pkgCwd } : {}),
+                rootPath,
+                shell: resolveShell(
+                  opts.scripts ?? cfg.scripts,
+                  input,
+                  opts.shell ?? cfg.shell,
+                ) as unknown as string | boolean | URL,
+              });
+              return;
+            }
+
+            if (!commandOpt && !list) {
+              logger.error(`No command provided. Use --command or --list.`);
+              process.exit(0);
+            }
+            if (typeof commandOpt === 'string') {
+              await execShellCommandBatch({
+                command: resolveCommand(
+                  opts.scripts ?? cfg.scripts,
+                  commandOpt,
+                ),
+                globs,
+                ignoreErrors,
+                list,
+                logger,
+                ...(pkgCwd ? { pkgCwd } : {}),
+                rootPath,
+                shell: resolveShell(
+                  opts.scripts ?? cfg.scripts,
+                  commandOpt,
+                  opts.shell ?? cfg.shell,
+                ) as unknown as string | boolean | URL,
+              });
+            } else {
+              // list only (explicit --list without --command)
+              await execShellCommandBatch({
+                globs,
+                ignoreErrors,
+                list: true,
+                logger,
+                ...(pkgCwd ? { pkgCwd } : {}),
+                rootPath,
+                shell: (opts.shell ?? cfg.shell ?? false) as unknown as
+                  | string
+                  | boolean
+                  | URL,
+              });
+            }
+          },
+        );
     },
   });

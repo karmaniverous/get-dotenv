@@ -17,22 +17,25 @@ declare module '../cliHost/GetDotenvCli' {
     /**
      * Attach legacy root flags to this CLI instance. Defaults come from
      * baseRootOptionDefaults when none are provided.     */
-    attachRootOptions(defaults?: Partial<RootOptionsShape>): this;
+    attachRootOptions(
+      defaults?: Partial<RootOptionsShape>,
+      opts?: { includeCommandOption?: boolean },
+    ): this;
     /**
      * Install a preSubcommand hook that merges CLI flags (including parent
      * round-trip) and resolves the dotenv context before executing actions.
      * Defaults come from baseRootOptionDefaults when none are provided.
-     */
-    passOptions(defaults?: Partial<RootOptionsShape>): this;
+     */ passOptions(defaults?: Partial<RootOptionsShape>): this;
   }
 }
 
 GetDotenvCli.prototype.attachRootOptions = function (
   this: GetDotenvCli,
   defaults?: Partial<RootOptionsShape>,
+  opts?: { includeCommandOption?: boolean },
 ) {
   const d = (defaults ?? baseRootOptionDefaults) as Partial<RootOptionsShape>;
-  attachRootOptions(this as unknown as CommanderCommand, d);
+  attachRootOptions(this as unknown as CommanderCommand, d, opts);
   return this;
 };
 GetDotenvCli.prototype.passOptions = function (

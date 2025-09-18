@@ -10,8 +10,8 @@ import { initPlugin } from '../../plugins/init';
 
 // Shipped CLI rebased on plugin-first host.
 const program: GetDotenvCli = new GetDotenvCli<GetDotenvOptions>('getdotenv')
-  .attachRootOptions()
-  .use(cmdPlugin({ asDefault: true }))
+  .attachRootOptions(undefined, { includeCommandOption: false })
+  .use(cmdPlugin({ asDefault: true, optionAlias: '--cmd <command...>' }))
   .use(batchPlugin())
   .use(initPlugin())
   .passOptions();
