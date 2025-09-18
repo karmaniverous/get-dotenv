@@ -220,11 +220,32 @@ export const batchPlugin = (opts: BatchPluginOptions = {}) =>
               ? raw.rootPath
               : (cfg.rootPath ?? './');
 
+          // If invoked without explicit 'cmd' subcommand, treat remaining positional
+          // tokens as the command to execute (implicit default-subcommand behavior).
+          const argsParent =
+            (thisCommand as unknown as { args?: unknown[] }).args ?? [];
+          if (Array.isArray(argsParent) && argsParent.length > 0) {
+            const input = argsParent.map(String).join(' ');
+            await execShellCommandBatch({
+              command: resolveCommand(opts.scripts ?? cfg.scripts, input),
+              globs,
+              ignoreErrors,
+              list: false,
+              logger,
+              ...(pkgCwd ? { pkgCwd } : {}),
+              rootPath,
+              shell: resolveShell(
+                opts.scripts ?? cfg.scripts,
+                input,
+                opts.shell ?? cfg.shell,
+              ) as unknown as string | boolean | URL,
+            });
+            return;
+          }
           if (!commandOpt && !list) {
             logger.error(`No command provided. Use --command or --list.`);
             process.exit(0);
           }
-
           if (typeof commandOpt === 'string') {
             await execShellCommandBatch({
               command: resolveCommand(opts.scripts ?? cfg.scripts, commandOpt),
