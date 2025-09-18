@@ -1,10 +1,9 @@
 # Development Plan — get-dotenv
 
-When updated: 2025-09-18T23:20:00Z
+When updated: 2025-09-18T23:35:00Z
 NOTE: Update timestamp on commit.
 
 ## Next up- Optional programmatic safeties (stage, do not implement yet)
-
 - Consider `--cmd-file <path>` to avoid outer-shell interpolation entirely.
 - Consider env-backed alias `GETDOTENV_CMD` if alias flag is omitted.- Optional programmatic safeties (stage, do not implement yet)- Consider `--cmd-file <path>` to avoid outer-shell interpolation entirely.
 - Consider env-backed alias `GETDOTENV_CMD` if alias flag is omitted.
@@ -29,10 +28,15 @@ NOTE: Update timestamp on commit.
   - Behavior of subcommand flows (cmd ...) is unchanged; alias path is intended
     for ergonomic npm-run usage and now terminates deterministically.
 
+- Alias unit tests and lint stabilization
+  - Guarded reading of execa/execaCommand exitCode to tolerate mocked void returns.
+  - Avoid calling process.exit during tests (Vitest/Jest) to prevent terminating
+    the test runner; still exit promptly in real CLI execution.
+  - Adjusted ESLint directive to core `no-process-exit` (unicorn plugin not used).
+
 - Batch list bridging with default subcommand
   - In the batch default 'cmd' subcommand, honor the parent -l/--list flag even
-    when positional tokens are present by treating tokens as additional globs and
-    running list mode (merging into -g). Prevents accidental execution of    "partial -l" on Windows when the -l flag appears after positional tokens.
+    when positional tokens are present by treating tokens as additional globs and    running list mode (merging into -g). Prevents accidental execution of    "partial -l" on Windows when the -l flag appears after positional tokens.
 
 - Shell-off execution (cmd + batch)
   - For --shell-off and script-level shell=false, execute using
