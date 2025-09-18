@@ -98,7 +98,7 @@ export const batchPlugin = (opts: BatchPluginOptions = {}) =>
               async (
                 commandParts: string[] | undefined,
                 _subOpts: unknown,
-                thisCommand: Command,
+                _thisCommand: Command,
               ) => {
                 // Guard: when invoked without positional args (e.g., `batch --list`),
                 // defer entirely to the parent action handler.
@@ -125,9 +125,25 @@ export const batchPlugin = (opts: BatchPluginOptions = {}) =>
                     ? raw.rootPath
                     : (cfg.rootPath ?? './');
 
-                // Resolve scripts/shell and logger from opts→config precedence.
-                const scripts = opts.scripts ?? cfg.scripts;
-                const shell = opts.shell ?? cfg.shell;
+                // Resolve scripts/shell with precedence:
+                // plugin opts → plugin config → merged root CLI options (passOptions)
+                const mergedBag = ((
+                  batchCmd.parent as
+                    | (GetDotenvCli & {
+                        getDotenvCliOptions?: {
+                          scripts?: Scripts;
+                          shell?: string | boolean;
+                        };
+                      })
+                    | null
+                )?.getDotenvCliOptions ?? {}) as {
+                  scripts?: Scripts;
+                  shell?: string | boolean;
+                };
+                const scripts = (opts.scripts ??
+                  cfg.scripts ??
+                  mergedBag.scripts) as Scripts | undefined;
+                const shell = opts.shell ?? cfg.shell ?? mergedBag.shell;
                 const loggerLocal: Logger = opts.logger ?? console;
 
                 // If no positional args were given, bridge to --command/--list paths here
@@ -189,8 +205,24 @@ export const batchPlugin = (opts: BatchPluginOptions = {}) =>
                     | undefined
                 )?.getDotenvCliOptions;
 
+                const mergedExec = ((
+                  batchCmd.parent as
+                    | (GetDotenvCli & {
+                        getDotenvCliOptions?: {
+                          scripts?: Scripts;
+                          shell?: string | boolean;
+                        };
+                      })
+                    | undefined
+                )?.getDotenvCliOptions ?? {}) as {
+                  scripts?: Scripts;
+                  shell?: string | boolean;
+                };
+                const scriptsExec = scripts ?? mergedExec.scripts;
+                const shellExec = shell ?? mergedExec.shell;
+
                 await execShellCommandBatch({
-                  command: resolveCommand(scripts, input),
+                  command: resolveCommand(scriptsExec, input),
                   ...(envBag ? { getDotenvCliOptions: envBag } : {}),
                   globs,
                   ignoreErrors,
@@ -198,10 +230,11 @@ export const batchPlugin = (opts: BatchPluginOptions = {}) =>
                   logger: loggerLocal,
                   ...(pkgCwd ? { pkgCwd } : {}),
                   rootPath,
-                  shell: resolveShell(scripts, input, shell) as unknown as
-                    | string
-                    | boolean
-                    | URL,
+                  shell: resolveShell(
+                    scriptsExec,
+                    input,
+                    shellExec,
+                  ) as unknown as string | boolean | URL,
                 });
               },
             ),
@@ -234,19 +267,38 @@ export const batchPlugin = (opts: BatchPluginOptions = {}) =>
             const argsParent = Array.isArray(commandParts) ? commandParts : [];
             if (argsParent.length > 0) {
               const input = argsParent.map(String).join(' ');
+
+              // Prefer plugin opts → config → merged root CLI options for scripts/shell.
+              const mergedBag = ((
+                thisCommand.parent as
+                  | (GetDotenvCli & {
+                      getDotenvCliOptions?: {
+                        scripts?: Scripts;
+                        shell?: string | boolean;
+                      };
+                    })
+                  | null
+              )?.getDotenvCliOptions ?? {}) as {
+                scripts?: Scripts;
+                shell?: string | boolean;
+              };
+              const scriptsAll = (opts.scripts ??
+                cfg.scripts ??
+                mergedBag.scripts) as Scripts | undefined;
+              const shellAll = opts.shell ?? cfg.shell ?? mergedBag.shell;
+
               await execShellCommandBatch({
-                command: resolveCommand(opts.scripts ?? cfg.scripts, input),
+                command: resolveCommand(scriptsAll, input),
                 globs,
                 ignoreErrors,
                 list: false,
                 logger,
                 ...(pkgCwd ? { pkgCwd } : {}),
                 rootPath,
-                shell: resolveShell(
-                  opts.scripts ?? cfg.scripts,
-                  input,
-                  opts.shell ?? cfg.shell,
-                ) as unknown as string | boolean | URL,
+                shell: resolveShell(scriptsAll, input, shellAll) as unknown as
+                  | string
+                  | boolean
+                  | URL,
               });
               return;
             }
@@ -256,11 +308,26 @@ export const batchPlugin = (opts: BatchPluginOptions = {}) =>
               process.exit(0);
             }
             if (typeof commandOpt === 'string') {
+              const mergedBag = ((
+                thisCommand.parent as
+                  | (GetDotenvCli & {
+                      getDotenvCliOptions?: {
+                        scripts?: Scripts;
+                        shell?: string | boolean;
+                      };
+                    })
+                  | null
+              )?.getDotenvCliOptions ?? {}) as {
+                scripts?: Scripts;
+                shell?: string | boolean;
+              };
+              const scriptsOpt = (opts.scripts ??
+                cfg.scripts ??
+                mergedBag.scripts) as Scripts | undefined;
+              const shellOpt = opts.shell ?? cfg.shell ?? mergedBag.shell;
+
               await execShellCommandBatch({
-                command: resolveCommand(
-                  opts.scripts ?? cfg.scripts,
-                  commandOpt,
-                ),
+                command: resolveCommand(scriptsOpt, commandOpt),
                 globs,
                 ignoreErrors,
                 list,
@@ -268,13 +335,31 @@ export const batchPlugin = (opts: BatchPluginOptions = {}) =>
                 ...(pkgCwd ? { pkgCwd } : {}),
                 rootPath,
                 shell: resolveShell(
-                  opts.scripts ?? cfg.scripts,
+                  scriptsOpt,
                   commandOpt,
-                  opts.shell ?? cfg.shell,
+                  shellOpt,
                 ) as unknown as string | boolean | URL,
               });
             } else {
               // list only (explicit --list without --command)
+              const mergedBag = ((
+                thisCommand.parent as
+                  | (GetDotenvCli & {
+                      getDotenvCliOptions?: {
+                        scripts?: Scripts;
+                        shell?: string | boolean;
+                      };
+                    })
+                  | null
+              )?.getDotenvCliOptions ?? {}) as {
+                scripts?: Scripts;
+                shell?: string | boolean;
+              };
+              const shellOnly = (opts.shell ??
+                cfg.shell ??
+                mergedBag.shell ??
+                false) as string | boolean | undefined;
+
               await execShellCommandBatch({
                 globs,
                 ignoreErrors,
@@ -282,7 +367,7 @@ export const batchPlugin = (opts: BatchPluginOptions = {}) =>
                 logger,
                 ...(pkgCwd ? { pkgCwd } : {}),
                 rootPath,
-                shell: (opts.shell ?? cfg.shell ?? false) as unknown as
+                shell: (shellOnly ?? false) as unknown as
                   | string
                   | boolean
                   | URL,

@@ -1,10 +1,9 @@
 # Development Plan — get-dotenv
 
-When updated: 2025-09-18T16:25:00Z
+When updated: 2025-09-18T17:05:00Z
 NOTE: Update timestamp on commit.
 
 ## Next up
-
 - E2E quoting tests (platform-guarded)
   - POSIX: compare `-c echo $APP_SETTING` vs `-c 'echo $APP_SETTING'` to show outer-shell expansion hazard vs correct behavior (single quotes).
   - PowerShell: single-quoted literal vs double-quoted interpolation.
@@ -15,11 +14,18 @@ NOTE: Update timestamp on commit.
 
 ## Completed (recent)
 
+- Batch plugin: resolve scripts/shell from merged root CLI options
+  - When plugin opts/config do not provide scripts/shell, fall back to the
+    merged GetDotenv CLI options attached by passOptions. This enables
+    packaged defaults like "git-status" to resolve without per-plugin config.
+- Lint: batch default-subcommand unused param
+  - Renamed the unused action parameter to _thisCommand to satisfy
+    @typescript-eslint/no-unused-vars.
+
 - Batch cmd subcommand variadic capture
   - Default subcommand now accepts `(commandParts, _opts, thisCommand)` and uses
     the variadic list to build the command string. Prevents empty-args path and
-    false “No command provided” exits when using `batch <positional>` flows.
-- Root flags: conditional legacy command flag
+    false “No command provided” exits when using `batch <positional>` flows.- Root flags: conditional legacy command flag
   - Replaced invalid spread in attachRootOptions with a simple conditional. The
     includeCommandOption toggle is temporary and will be removed once -c/--cmd
     is standardized across surfaces.
