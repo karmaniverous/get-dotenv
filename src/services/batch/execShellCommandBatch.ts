@@ -1,4 +1,4 @@
-import { execaCommand } from 'execa';
+import { execa, execaCommand } from 'execa';
 import { globby } from 'globby';
 import { packageDirectory } from 'package-directory';
 import path from 'path';
@@ -10,6 +10,43 @@ type ExecShellCommandBatchOptions = {
   logger: Logger;
   pkgCwd?: boolean;
   rootPath: string;
+};
+
+// Tokenize a shell-free command string into argv tokens (preserve quoted segments).
+const tokenize = (command: string): string[] => {
+  const out: string[] = [];
+  let cur = '';
+  let quote: '"' | "'" | null = null;
+  for (let i = 0; i < command.length; i++) {
+    const c = command[i]!;
+    if (quote) {
+      if (c === quote) quote = null;
+      else cur += c;
+    } else {
+      if (c === '"' || c === "'") quote = c;
+      else if (/\s/.test(c)) {
+        if (cur) {
+          out.push(cur);
+          cur = '';
+        }
+      } else cur += c;
+    }
+  }
+  if (cur) out.push(cur);
+  return out;
+};
+const runCommand = async (
+  command: string,
+  shell: string | boolean | URL,
+  opts: { cwd: string; env: Record<string, unknown>; stdio: 'inherit' },
+) => {
+  if (shell === false) {
+    const tokens = tokenize(command);
+    if (tokens.length === 0) return;
+    await execa(tokens[0]!, tokens.slice(1), opts);
+  } else {
+    await execaCommand(command, { shell, ...opts });
+  }
 };
 
 const globPaths = async ({
@@ -128,7 +165,7 @@ export const execShellCommandBatch = async ({
     // Execute command.
     try {
       if (typeof command === 'string' && command.length > 0) {
-        await execaCommand(command, {
+        await runCommand(command, shell, {
           cwd: path,
           env: {
             ...process.env,
@@ -137,7 +174,6 @@ export const execShellCommandBatch = async ({
               : undefined,
           },
           stdio: 'inherit',
-          shell, // already normalized to string | boolean | URL
         });
       } else {
         // Should not occur due to the early guard; retain for type safety.

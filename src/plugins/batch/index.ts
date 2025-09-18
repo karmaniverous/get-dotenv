@@ -66,9 +66,9 @@ export const batchPlugin = (opts: BatchPluginOptions = {}) =>
           './',
         )
         .option(
-          '-g, --globs <patterns...>',
-          'space-delimited globs from root path (variadic)',
-          ['*'],
+          '-g, --globs <string>',
+          'space-delimited globs from root path',
+          '*',
         )
         .option(
           '-c, --command <string>',
@@ -114,9 +114,8 @@ export const batchPlugin = (opts: BatchPluginOptions = {}) =>
                 const raw = batchCmd.opts();
 
                 const ignoreErrors = !!raw.ignoreErrors;
-                const globs = Array.isArray(raw.globs)
-                  ? (raw.globs as string[]).join(' ')
-                  : typeof raw.globs === 'string'
+                const globs =
+                  typeof raw.globs === 'string'
                     ? raw.globs
                     : (cfg.globs ?? '*');
                 const pkgCwd =
@@ -252,11 +251,8 @@ export const batchPlugin = (opts: BatchPluginOptions = {}) =>
             const commandOpt =
               typeof raw.command === 'string' ? raw.command : undefined;
             const ignoreErrors = !!raw.ignoreErrors;
-            const globs = Array.isArray(raw.globs)
-              ? (raw.globs as string[]).join(' ')
-              : typeof raw.globs === 'string'
-                ? raw.globs
-                : (cfg.globs ?? '*');
+            let globs =
+              typeof raw.globs === 'string' ? raw.globs : (cfg.globs ?? '*');
             const list = !!raw.list;
             const pkgCwd =
               raw.pkgCwd !== undefined ? !!raw.pkgCwd : !!cfg.pkgCwd;
@@ -267,7 +263,7 @@ export const batchPlugin = (opts: BatchPluginOptions = {}) =>
             // If invoked without explicit 'cmd' subcommand, treat declared positional
             // tokens as the command to execute (implicit default-subcommand behavior).
             const argsParent = Array.isArray(commandParts) ? commandParts : [];
-            if (argsParent.length > 0) {
+            if (argsParent.length > 0 && !list) {
               const input = argsParent.map(String).join(' ');
 
               // Prefer plugin opts → config → merged root CLI options for scripts/shell.
@@ -300,6 +296,34 @@ export const batchPlugin = (opts: BatchPluginOptions = {}) =>
                   | string
                   | boolean
                   | URL,
+              });
+              return;
+            }
+
+            // List-only flow: merge any extra positional tokens into globs
+            // so users can write: -g full partial -l
+            if (list && argsParent.length > 0 && !commandOpt) {
+              const extra = argsParent.map(String).join(' ').trim();
+              if (extra.length > 0)
+                globs = [globs, extra].filter(Boolean).join(' ');
+              const mergedBag = ((
+                thisCommand.parent as
+                  | (GetDotenvCli & {
+                      getDotenvCliOptions?: { shell?: string | boolean };
+                    })
+                  | null
+              )?.getDotenvCliOptions ?? {}) as { shell?: string | boolean };
+              await execShellCommandBatch({
+                globs,
+                ignoreErrors,
+                list: true,
+                logger,
+                ...(pkgCwd ? { pkgCwd } : {}),
+                rootPath,
+                shell: (opts.shell ??
+                  cfg.shell ??
+                  mergedBag.shell ??
+                  false) as unknown as string | boolean | URL,
               });
               return;
             }

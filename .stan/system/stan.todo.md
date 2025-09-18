@@ -1,6 +1,6 @@
 # Development Plan — get-dotenv
 
-When updated: 2025-09-18T21:15:00Z
+When updated: 2025-09-18T21:45:00Z
 NOTE: Update timestamp on commit.
 
 ## Next up- Optional programmatic safeties (stage, do not implement yet)
@@ -12,11 +12,19 @@ NOTE: Update timestamp on commit.
 
 ## Completed (recent)
 
+- Shell-off execution (cmd + batch)
+  - For --shell-off and script-level shell=false, execute using
+    execa(file, args) with a simple quoted-token parser instead of
+    execaCommand. Prevents timeouts and ensures node -e commands run
+    consistently across platforms.
+- Batch list globs merge (no variadic greediness)
+  - Keep -g/--globs as a single string to avoid swallowing the 'cmd'
+    subcommand; when list mode is used with extra positional tokens,
+    merge them into globs so -g full partial -l behaves as intended.
 - Cmd plugin: robust variadic arg handling
   - Switched default cmd subcommand action to accept `commandParts`
     parameter and guard safely when invoked with no args. Fixes
-    “Cannot read properties of undefined (reading 'length')” and
-    prevents default-subcommand crashes when only the parent alias is used.
+    “Cannot read properties of undefined (reading 'length')” and prevents default-subcommand crashes when only the parent alias is used.
 - Batch plugin: variadic globs
   - Made `-g, --globs` variadic and normalized to a single string,
     preventing stray tokens (e.g., `partial`) from being captured as a

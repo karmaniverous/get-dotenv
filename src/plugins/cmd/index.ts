@@ -1,5 +1,5 @@
 import { Command } from 'commander';
-import { execaCommand } from 'execa';
+import { execa, execaCommand } from 'execa';
 
 import { baseRootOptionDefaults } from '../../cliCore/defaults';
 import { resolveCliOptions } from '../../cliCore/resolveCliOptions';
@@ -25,10 +25,46 @@ export type CmdPluginOptions = {
     | { flags: string; description?: string; expand?: boolean };
 };
 
+// Minimal tokenizer for shell-off execution:
+// Splits by whitespace while preserving quoted segments (single or double quotes).
+const tokenize = (command: string): string[] => {
+  const out: string[] = [];
+  let cur = '';
+  let quote: '"' | "'" | null = null;
+  for (let i = 0; i < command.length; i++) {
+    const c = command[i]!;
+    if (quote) {
+      if (c === quote) quote = null;
+      else cur += c;
+    } else {
+      if (c === '"' || c === "'") quote = c;
+      else if (/\s/.test(c)) {
+        if (cur) {
+          out.push(cur);
+          cur = '';
+        }
+      } else cur += c;
+    }
+  }
+  if (cur) out.push(cur);
+  return out;
+};
+const runCommand = async (
+  command: string,
+  shell: string | boolean | URL | undefined,
+  opts: { env?: Record<string, unknown>; stdio?: 'inherit' | 'pipe' },
+) => {
+  if (shell === false) {
+    const tokens = tokenize(command);
+    if (tokens.length === 0) return;
+    await execa(tokens[0]!, tokens.slice(1), { ...opts });
+  } else {
+    await execaCommand(command, { shell, ...opts });
+  }
+};
 /**+ Cmd plugin: executes a command using the current getdotenv CLI context.
  *
- * - Joins positional args into a single command string.
- * - Resolves scripts and shell settings using shared helpers.
+ * - Joins positional args into a single command string. * - Resolves scripts and shell settings using shared helpers.
  * - Forwards merged CLI options to subprocesses via
  *   process.env.getDotenvCliOptions for nested CLI behavior.
  */
@@ -134,21 +170,22 @@ export const cmdPlugin = (options: CmdPluginOptions = {}) =>
               string,
               unknown
             >;
-
-            await execaCommand(resolved, {
-              env: {
-                ...process.env,
-                getDotenvCliOptions: JSON.stringify(envBag),
-              },
-              shell: resolveShell(scripts, input, shell) as unknown as
+            await runCommand(
+              resolved,
+              resolveShell(scripts, input, shell) as unknown as
                 | string
                 | boolean
                 | URL,
-              stdio: 'inherit',
-            });
+              {
+                env: {
+                  ...process.env,
+                  getDotenvCliOptions: JSON.stringify(envBag),
+                },
+                stdio: 'inherit',
+              },
+            );
           },
         );
-
       if (options.asDefault) cli.addCommand(cmd, { isDefault: true });
       else cli.addCommand(cmd);
 
@@ -228,18 +265,20 @@ export const cmdPlugin = (options: CmdPluginOptions = {}) =>
               string,
               unknown
             >;
-            await execaCommand(resolved, {
-              env: {
-                ...process.env,
-                getDotenvCliOptions: JSON.stringify(envBag),
+            await runCommand(
+              resolved,
+              resolveShell(merged.scripts, input, merged.shell) as unknown as
+                | string
+                | boolean
+                | URL,
+              {
+                env: {
+                  ...process.env,
+                  getDotenvCliOptions: JSON.stringify(envBag),
+                },
+                stdio: 'inherit',
               },
-              shell: resolveShell(
-                merged.scripts,
-                input,
-                merged.shell,
-              ) as unknown as string | boolean | URL,
-              stdio: 'inherit',
-            });
+            );
           },
         );
       }
