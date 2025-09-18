@@ -8,7 +8,11 @@ import { describe, expect, it } from 'vitest';
 // Where possible, prefer --shell-off to avoid OS shell quoting variance
 // and run a plain node subprocess to assert behavior.
 
-const CLI = 'tsx src/cli/getdotenv';
+// Avoid npx indirection (can hang on Windows/non-interactive). Invoke the CLI
+// via the current Node binary and preload the tsx loader so TypeScript sources
+// run directly.
+const CLI = `node --import tsx src/cli/getdotenv`;
+
 const TROOT = path.posix.join('.tsbuild', 'e2e-cli');
 
 // Build a cross-platform node -e command that prints a single env key.
@@ -17,6 +21,15 @@ const nodePrintEnv = (key: string) =>
   `node -e ${JSON.stringify(`console.log(process.env.${key} ?? '')`)}`;
 
 describe('E2E CLI (core options and plugins)', () => {
+  it('displays cli help', async () => {
+    const cmd = [CLI, '-h'].join(' ');
+    const { stdout, exitCode } = await execaCommand(cmd, {
+      env: { ...process.env, GETDOTENV_STDIO: 'pipe' },
+    });
+    expect(exitCode).toBe(0);
+    expect(stdout.trim()).toContain('Usage: getdotenv [options] [command]');
+  }, 20000);
+
   it('loads env from paths and prints via subprocess (ENV_SETTING)', async () => {
     const cmd = [
       CLI,
