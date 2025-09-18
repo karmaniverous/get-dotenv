@@ -1,4 +1,5 @@
 import type { Command } from 'commander';
+import { Command as Commander } from 'commander';
 import { z } from 'zod';
 
 import { definePlugin } from '../../cliHost/definePlugin';
@@ -80,10 +81,65 @@ export const batchPlugin = (opts: BatchPluginOptions = {}) =>
           '-e, --ignore-errors',
           'ignore errors and continue with next path',
         )
+        // Default subcommand: accept positional args as the command to run.
+        // Mirrors legacy behavior so `batch <args...>` works without --command.
+        .addCommand(
+          new Commander()
+            .name('cmd')
+            .description(
+              'execute command, conflicts with --command option (default subcommand)',
+            )
+            .enablePositionalOptions()
+            .passThroughOptions()
+            .action(async (_subOpts: unknown, thisCommand: Command) => {
+              if (!thisCommand.parent)
+                throw new Error(`unable to resolve parent command`);
+              if (!thisCommand.parent.parent)
+                throw new Error(`unable to resolve root command`);
+
+              const root = thisCommand.parent.parent as GetDotenvCli;
+              const {
+                getDotenvCliOptions: {
+                  logger = console,
+                  ...getDotenvCliOptions
+                },
+              } = root as unknown as GetDotenvCli & {
+                getDotenvCliOptions: {
+                  logger?: Logger;
+                } & Record<string, unknown>;
+              };
+
+              const raw = thisCommand.parent.opts();
+              const ignoreErrors = !!raw.ignoreErrors;
+              const globs = typeof raw.globs === 'string' ? raw.globs : '*';
+              const pkgCwd = !!raw.pkgCwd;
+              const rootPath =
+                typeof raw.rootPath === 'string' ? raw.rootPath : './';
+
+              const args = thisCommand.args as unknown[];
+              const input = args.map(String).join(' ');
+
+              await execShellCommandBatch({
+                command: resolveCommand(getDotenvCliOptions.scripts, input),
+                getDotenvCliOptions,
+                globs,
+                ignoreErrors,
+                list: false,
+                logger,
+                ...(pkgCwd ? { pkgCwd } : {}),
+                rootPath,
+                shell: resolveShell(
+                  getDotenvCliOptions.scripts,
+                  input,
+                  getDotenvCliOptions.shell,
+                ) as unknown as string | boolean | URL,
+              });
+            }),
+          { isDefault: true },
+        )
         .action(async (_options: unknown, thisCommand: Command) => {
           // Ensure context exists (host preSubcommand on root creates if missing).
-          const ctx = cli.getCtx();
-          // Read merged per-plugin config (host-populated when guarded loader is enabled).
+          const ctx = cli.getCtx(); // Read merged per-plugin config (host-populated when guarded loader is enabled).
           const cfgRaw = (ctx?.pluginConfigs?.['batch'] ?? {}) as unknown;
           // Best-effort typing; host already validated when loader path is on.
           const cfg = (cfgRaw || {}) as BatchConfig;
@@ -122,7 +178,7 @@ export const batchPlugin = (opts: BatchPluginOptions = {}) =>
               ) as unknown as string | boolean | URL,
             });
           } else {
-            // list only
+            // list only (explicit --list without --command)
             await execShellCommandBatch({
               globs,
               ignoreErrors,

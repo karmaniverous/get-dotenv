@@ -2,10 +2,7 @@ import type { Command as CommanderCommand } from 'commander';
 
 import { GetDotenvCli } from '../cliHost/GetDotenvCli';
 import type { GetDotenvCliOptions } from '../generateGetDotenvCli/GetDotenvCliOptions';
-import {
-  getDotenvCliOptions2Options,
-  type GetDotenvOptions,
-} from '../GetDotenvOptions';
+import { getDotenvCliOptions2Options } from '../GetDotenvOptions';
 import { attachRootOptions } from './attachRootOptions';
 import { baseRootOptionDefaults } from './defaults';
 import { resolveCliOptions } from './resolveCliOptions';
@@ -17,9 +14,7 @@ import type { CommandWithOptions, RootOptionsShape } from './types';
  * it extends the prototype and merges types for consumers.
  */
 declare module '../cliHost/GetDotenvCli' {
-  interface GetDotenvCli<
-    _TOptions extends GetDotenvOptions = GetDotenvOptions,
-  > {
+  interface GetDotenvCli {
     /**
      * Attach legacy root flags to this CLI instance. Defaults come from
      * baseRootOptionDefaults when none are provided.     */
