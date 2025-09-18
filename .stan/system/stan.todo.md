@@ -1,28 +1,37 @@
 # Development Plan — get-dotenv
 
-When updated: 2025-09-18T20:41:00Z
+When updated: 2025-09-18T21:15:00Z
 NOTE: Update timestamp on commit.
 
 ## Next up- Optional programmatic safeties (stage, do not implement yet)
-  - Consider `--cmd-file <path>` to avoid outer-shell interpolation entirely.
-  - Consider env-backed alias `GETDOTENV_CMD` if alias flag is omitted.- Optional programmatic safeties (stage, do not implement yet)
-  - Consider `--cmd-file <path>` to avoid outer-shell interpolation entirely.
-  - Consider env-backed alias `GETDOTENV_CMD` if alias flag is omitted.
+
+- Consider `--cmd-file <path>` to avoid outer-shell interpolation entirely.
+- Consider env-backed alias `GETDOTENV_CMD` if alias flag is omitted.- Optional programmatic safeties (stage, do not implement yet)
+- Consider `--cmd-file <path>` to avoid outer-shell interpolation entirely.
+- Consider env-backed alias `GETDOTENV_CMD` if alias flag is omitted.
 
 ## Completed (recent)
 
+- Cmd plugin: robust variadic arg handling
+  - Switched default cmd subcommand action to accept `commandParts`
+    parameter and guard safely when invoked with no args. Fixes
+    “Cannot read properties of undefined (reading 'length')” and
+    prevents default-subcommand crashes when only the parent alias is used.
+- Batch plugin: variadic globs
+  - Made `-g, --globs` variadic and normalized to a single string,
+    preventing stray tokens (e.g., `partial`) from being captured as a
+    command in list-only mode; fixes “partial -l” misparse.
 - Cmd plugin: accept positional tokens
   - Declared variadic positional argument `[command...]` on the `cmd`
-    subcommand to eliminate Commander “too many arguments for 'cmd'”
-    errors seen in E2E (alias and subcommand flows).
+    subcommand to eliminate Commander “too many arguments for 'cmd'” errors seen in E2E (alias and subcommand flows).
 - E2E CLI core coverage (options, cmd, batch)
   - Validated env/vars/output/exclusion and cmd alias/subcommand with
-    --shell-off for portability. Covered batch list and a simple exec    across a target directory.
+    --shell-off for portability. Covered batch list and a simple exec across a target directory.
 - E2E quoting tests (platform-guarded)
   - POSIX (/bin/bash): unquoted and double-quoted `$APP_SETTING` expand; single-quoted is literal.
   - PowerShell (powershell.exe): double-quoted `$env:APP_SETTING` interpolates; single-quoted is literal. Tests are skipped on non-matching platforms.- Batch services: TS narrowing for exec command
   - Narrow execaCommand invocation with a typeof guard and render the
-    header command via a safe string label to satisfy typecheck and    ESLint template restrictions.
+    header command via a safe string label to satisfy typecheck and ESLint template restrictions.
 - Batch services: list-only path in execShellCommandBatch
   - Allow list mode to run without a command; align error guidance to
     “No command provided. Use --command or --list.” and label header

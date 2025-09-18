@@ -58,17 +58,18 @@ export const cmdPlugin = (options: CmdPluginOptions = {}) =>
         .argument('[command...]')
         .action(
           async (
+            commandParts: string[] | undefined,
             _opts: unknown,
             thisCommand: CommandWithOptions<GetDotenvCliOptions>,
           ) => {
-            const args = thisCommand.args as unknown[];
+            // Commander passes positional tokens as the first action argument
+            const args = Array.isArray(commandParts) ? commandParts : [];
             // No-op when invoked as the default command with no args.
             if (args.length === 0) return;
             const parent = thisCommand.parent as
               | (CommandWithOptions<GetDotenvCliOptions> & Command)
               | null;
-            if (!parent) throw new Error('parent command not found');
-            // Conflict detection: if an alias option is present on parent, do not
+            if (!parent) throw new Error('parent command not found'); // Conflict detection: if an alias option is present on parent, do not
             // also accept positional cmd args.
             if (aliasKey) {
               const pv = (

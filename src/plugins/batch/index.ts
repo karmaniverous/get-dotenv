@@ -66,9 +66,9 @@ export const batchPlugin = (opts: BatchPluginOptions = {}) =>
           './',
         )
         .option(
-          '-g, --globs <string>',
-          'space-delimited globs from root path',
-          '*',
+          '-g, --globs <patterns...>',
+          'space-delimited globs from root path (variadic)',
+          ['*'],
         )
         .option(
           '-c, --command <string>',
@@ -114,8 +114,9 @@ export const batchPlugin = (opts: BatchPluginOptions = {}) =>
                 const raw = batchCmd.opts();
 
                 const ignoreErrors = !!raw.ignoreErrors;
-                const globs =
-                  typeof raw.globs === 'string'
+                const globs = Array.isArray(raw.globs)
+                  ? (raw.globs as string[]).join(' ')
+                  : typeof raw.globs === 'string'
                     ? raw.globs
                     : (cfg.globs ?? '*');
                 const pkgCwd =
@@ -251,8 +252,11 @@ export const batchPlugin = (opts: BatchPluginOptions = {}) =>
             const commandOpt =
               typeof raw.command === 'string' ? raw.command : undefined;
             const ignoreErrors = !!raw.ignoreErrors;
-            const globs =
-              typeof raw.globs === 'string' ? raw.globs : (cfg.globs ?? '*');
+            const globs = Array.isArray(raw.globs)
+              ? (raw.globs as string[]).join(' ')
+              : typeof raw.globs === 'string'
+                ? raw.globs
+                : (cfg.globs ?? '*');
             const list = !!raw.list;
             const pkgCwd =
               raw.pkgCwd !== undefined ? !!raw.pkgCwd : !!cfg.pkgCwd;
@@ -260,7 +264,6 @@ export const batchPlugin = (opts: BatchPluginOptions = {}) =>
               typeof raw.rootPath === 'string'
                 ? raw.rootPath
                 : (cfg.rootPath ?? './');
-
             // If invoked without explicit 'cmd' subcommand, treat declared positional
             // tokens as the command to execute (implicit default-subcommand behavior).
             const argsParent = Array.isArray(commandParts) ? commandParts : [];
