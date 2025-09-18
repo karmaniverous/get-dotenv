@@ -49,6 +49,7 @@ export const batchPlugin = (opts: BatchPluginOptions = {}) =>
     setup(cli: GetDotenvCli) {
       const logger = opts.logger ?? console;
       const ns = cli.ns('batch');
+      const batchCmd = ns; // capture the parent "batch" command for default-subcommand context
 
       ns.description(
         'Batch command execution across multiple working directories.',
@@ -93,20 +94,24 @@ export const batchPlugin = (opts: BatchPluginOptions = {}) =>
             .passThroughOptions()
             .argument('[command...]')
             .action(async (_subOpts: unknown, thisCommand: Command) => {
+              // Guard: when invoked without positional args (e.g., `batch --list`),
+              // defer entirely to the parent action handler.
+              const args = thisCommand.args as unknown[];
+              if (args.length === 0) return;
+
               // Access merged per-plugin config from host context (if any).
               const ctx = cli.getCtx();
               const cfgRaw = (ctx?.pluginConfigs?.['batch'] ?? {}) as unknown;
               const cfg = (cfgRaw || {}) as BatchConfig;
 
-              // Resolve batch flags from the parent (batch) command.
-              const parent = thisCommand.parent;
-              if (!parent) throw new Error(`unable to resolve batch command`);
+              // Resolve batch flags from the captured parent (batch) command.
+              const raw = batchCmd.opts();
 
-              const raw = parent.opts();
               const ignoreErrors = !!raw.ignoreErrors;
               const globs =
                 typeof raw.globs === 'string' ? raw.globs : (cfg.globs ?? '*');
-              const pkgCwd = !!raw.pkgCwd;
+              const pkgCwd =
+                raw.pkgCwd !== undefined ? !!raw.pkgCwd : !!cfg.pkgCwd;
               const rootPath =
                 typeof raw.rootPath === 'string'
                   ? raw.rootPath
@@ -120,13 +125,11 @@ export const batchPlugin = (opts: BatchPluginOptions = {}) =>
               const loggerLocal: Logger = opts.logger ?? console;
 
               // Join positional args as the command to execute.
-              const input = (thisCommand.args as unknown[])
-                .map(String)
-                .join(' ');
+              const input = args.map(String).join(' ');
 
               // Optional: round-trip parent merged options if present (shipped CLI).
               const envBag = (
-                parent.parent as
+                batchCmd.parent as
                   | (GetDotenvCli & {
                       getDotenvCliOptions?: Record<string, unknown>;
                     })
@@ -152,8 +155,7 @@ export const batchPlugin = (opts: BatchPluginOptions = {}) =>
         )
         .action(async (_options: unknown, thisCommand: Command) => {
           // Ensure context exists (host preSubcommand on root creates if missing).
-          const ctx = cli.getCtx(); // Read merged per-plugin config (host-populated when guarded loader is enabled).
-          const cfgRaw = (ctx?.pluginConfigs?.['batch'] ?? {}) as unknown;
+          const ctx = cli.getCtx(); // Read merged per-plugin config (host-populated when guarded loader is enabled).          const cfgRaw = (ctx?.pluginConfigs?.['batch'] ?? {}) as unknown;
           // Best-effort typing; host already validated when loader path is on.
           const cfg = (cfgRaw || {}) as BatchConfig;
 

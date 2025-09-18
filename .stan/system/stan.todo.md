@@ -1,18 +1,23 @@
 # Development Plan — get-dotenv
 
-When updated: 2025-09-17T23:28:00Z
+When updated: 2025-09-18T00:15:00Z
 NOTE: Update timestamp on commit.
 
 ## Next up- Init scaffolding (finalize & docs)
-
 - Perform publish dry-run and confirm tarball includes templates and subpath exports.
 
 ## Completed (recent)
 
+- Batch default cmd positional-args fix (Commander v14)
+  - Default subcommand now captures the parent “batch” command in a closure and
+    reads flags via batchCmd.opts() instead of relying on thisCommand.parent.
+  - Added an early return when no positional args are supplied so `batch --list`
+    and `batch --command` paths are handled exclusively by the parent action.
+  - Tests in src/plugins/batch/index.test.ts no longer throw “unable to resolve batch command”.
+
 - CLI log duplication fix
   - Suppressed logging/effects in the base getDotenv step inside the config
-    loader path (computeContext and resolveWithLoader). With `-l`, logging now
-    occurs exactly once after overlays/dynamics are applied.
+    loader path (computeContext and resolveWithLoader). With `-l`, logging now    occurs exactly once after overlays/dynamics are applied.
 
 - CLI log duplication fix
   - Suppressed logging/effects in the base getDotenv step inside the config
