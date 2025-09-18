@@ -30,6 +30,26 @@ describe('E2E CLI (core options and plugins)', () => {
     expect(stdout.trim()).toContain('Usage: getdotenv [options] [command]');
   }, 20000);
 
+  it('logs env vars', async () => {
+    const cmd = [
+      CLI,
+      '--paths',
+      './test/full',
+      '-e',
+      'test',
+      '--dotenv-token',
+      '.testenv',
+      '-l',
+    ].join(' ');
+    const { stdout, exitCode } = await execaCommand(cmd, {
+      env: { ...process.env, GETDOTENV_STDIO: 'pipe' },
+    });
+    expect(exitCode).toBe(0);
+    expect(stdout.trim()).toContain(
+      "{ APP_SETTING: 'deep_app_setting', ENV_SETTING: 'deep_test_setting' }",
+    );
+  }, 20000);
+
   it('loads env from paths and prints via subprocess (ENV_SETTING)', async () => {
     const cmd = [
       CLI,
