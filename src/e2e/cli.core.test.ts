@@ -13,13 +13,7 @@ import { describe, expect, it } from 'vitest';
 // via the current Node binary and preload the tsx loader so TypeScript sources
 // run directly.
 const CLI = `node --import tsx src/cli/getdotenv`;
-
 const TROOT = path.posix.join('.tsbuild', 'e2e-cli');
-
-// Build a cross-platform node -e command that prints a single env key.
-// The code string is JSON-stringified to preserve quoting reliably.
-const nodePrintEnv = (key: string) =>
-  `node -e ${JSON.stringify(`console.log(process.env.${key} ?? '')`)}`;
 
 describe('E2E CLI (core options and plugins)', () => {
   it('displays cli help', async () => {
@@ -113,8 +107,8 @@ describe('E2E CLI (core options and plugins)', () => {
       'cmd',
       'node',
       '-e',
-      // An empty program literal
-      JSON.stringify(''),
+      // Trivial no-op program
+      JSON.stringify('0'),
     ].join(' ');
     const { exitCode } = await execaCommand(cmd, {
       env: { ...process.env, GETDOTENV_STDIO: 'pipe' },
@@ -151,13 +145,12 @@ describe('E2E CLI (core options and plugins)', () => {
       JSON.stringify("console.log(process.env.APP_SECRET ?? '')"),
     ].join(' ');
     const { stdout, exitCode } = await execaCommand(cmd, {
-      env: { ...process.env, GETDOTENV_STDIO: 'pipe' },
+      env: { ...process.env, APP_SECRET: '', GETDOTENV_STDIO: 'pipe' },
     });
     expect(exitCode).toBe(0);
     // When excluded, secret should be blank.
     expect(stdout.trim()).toBe('');
   }, 20000);
-
   it('executes positional cmd subcommand with --shell-off', async () => {
     const cmd = [
       CLI,
