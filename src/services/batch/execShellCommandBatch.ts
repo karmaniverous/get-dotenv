@@ -18,7 +18,7 @@ const tokenize = (command: string): string[] => {
   let cur = '';
   let quote: '"' | "'" | null = null;
   for (let i = 0; i < command.length; i++) {
-    const c = command[i]!;
+    const c = command.charAt(i);
     if (quote) {
       if (c === quote) quote = null;
       else cur += c;
@@ -38,14 +38,25 @@ const tokenize = (command: string): string[] => {
 const runCommand = async (
   command: string,
   shell: string | boolean | URL,
-  opts: { cwd: string; env: Record<string, unknown>; stdio: 'inherit' },
+  opts: { cwd: string; env: NodeJS.ProcessEnv; stdio: 'inherit' | 'pipe' },
 ) => {
   if (shell === false) {
     const tokens = tokenize(command);
-    if (tokens.length === 0) return;
-    await execa(tokens[0]!, tokens.slice(1), opts);
+    const file = tokens[0];
+    if (!file) return;
+    const result = await execa(file, tokens.slice(1), opts);
+    if (opts.stdio === 'pipe' && result.stdout) {
+      process.stdout.write(
+        result.stdout + (result.stdout.endsWith('\n') ? '' : '\n'),
+      );
+    }
   } else {
-    await execaCommand(command, { shell, ...opts });
+    const result = await execaCommand(command, { shell, ...opts });
+    if (opts.stdio === 'pipe' && result.stdout) {
+      process.stdout.write(
+        result.stdout + (result.stdout.endsWith('\n') ? '' : '\n'),
+      );
+    }
   }
 };
 
@@ -108,6 +119,11 @@ export const execShellCommandBatch = async ({
   rootPath: string;
   shell: string | boolean | URL;
 }) => {
+  const capture =
+    process.env.GETDOTENV_STDIO === 'pipe' ||
+    Boolean(
+      (getDotenvCliOptions as { capture?: boolean } | undefined)?.capture,
+    );
   // Require a command only when not listing. In list mode, a command is optional.
   if (!command && !list) {
     logger.error(`No command provided. Use --command or --list.`);
@@ -173,7 +189,7 @@ export const execShellCommandBatch = async ({
               ? JSON.stringify(getDotenvCliOptions)
               : undefined,
           },
-          stdio: 'inherit',
+          stdio: capture ? 'pipe' : 'inherit',
         });
       } else {
         // Should not occur due to the early guard; retain for type safety.

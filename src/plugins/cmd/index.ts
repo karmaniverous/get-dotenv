@@ -32,7 +32,7 @@ const tokenize = (command: string): string[] => {
   let cur = '';
   let quote: '"' | "'" | null = null;
   for (let i = 0; i < command.length; i++) {
-    const c = command[i]!;
+    const c = command.charAt(i);
     if (quote) {
       if (c === quote) quote = null;
       else cur += c;
@@ -51,21 +51,31 @@ const tokenize = (command: string): string[] => {
 };
 const runCommand = async (
   command: string,
-  shell: string | boolean | URL | undefined,
-  opts: { env?: Record<string, unknown>; stdio?: 'inherit' | 'pipe' },
+  shell: string | boolean | URL,
+  opts: { env?: NodeJS.ProcessEnv; stdio?: 'inherit' | 'pipe' },
 ) => {
   if (shell === false) {
     const tokens = tokenize(command);
-    if (tokens.length === 0) return;
-    await execa(tokens[0]!, tokens.slice(1), { ...opts });
+    const file = tokens[0];
+    if (!file) return;
+    const result = await execa(file, tokens.slice(1), { ...opts });
+    if (opts.stdio === 'pipe' && result.stdout) {
+      process.stdout.write(
+        result.stdout + (result.stdout.endsWith('\n') ? '' : '\n'),
+      );
+    }
   } else {
-    await execaCommand(command, { shell, ...opts });
+    const result = await execaCommand(command, { shell, ...opts });
+    if (opts.stdio === 'pipe' && result.stdout) {
+      process.stdout.write(
+        result.stdout + (result.stdout.endsWith('\n') ? '' : '\n'),
+      );
+    }
   }
 };
 /**+ Cmd plugin: executes a command using the current getdotenv CLI context.
  *
- * - Joins positional args into a single command string. * - Resolves scripts and shell settings using shared helpers.
- * - Forwards merged CLI options to subprocesses via
+ * - Joins positional args into a single command string. * - Resolves scripts and shell settings using shared helpers. * - Forwards merged CLI options to subprocesses via
  *   process.env.getDotenvCliOptions for nested CLI behavior.
  */
 export const cmdPlugin = (options: CmdPluginOptions = {}) =>
@@ -170,6 +180,9 @@ export const cmdPlugin = (options: CmdPluginOptions = {}) =>
               string,
               unknown
             >;
+            const capture =
+              process.env.GETDOTENV_STDIO === 'pipe' ||
+              Boolean((merged as { capture?: boolean }).capture);
             await runCommand(
               resolved,
               resolveShell(scripts, input, shell) as unknown as
@@ -181,7 +194,7 @@ export const cmdPlugin = (options: CmdPluginOptions = {}) =>
                   ...process.env,
                   getDotenvCliOptions: JSON.stringify(envBag),
                 },
-                stdio: 'inherit',
+                stdio: capture ? 'pipe' : 'inherit',
               },
             );
           },
@@ -265,6 +278,9 @@ export const cmdPlugin = (options: CmdPluginOptions = {}) =>
               string,
               unknown
             >;
+            const capture =
+              process.env.GETDOTENV_STDIO === 'pipe' ||
+              Boolean((merged as unknown as { capture?: boolean }).capture);
             await runCommand(
               resolved,
               resolveShell(merged.scripts, input, merged.shell) as unknown as
@@ -276,7 +292,7 @@ export const cmdPlugin = (options: CmdPluginOptions = {}) =>
                   ...process.env,
                   getDotenvCliOptions: JSON.stringify(envBag),
                 },
-                stdio: 'inherit',
+                stdio: capture ? 'pipe' : 'inherit',
               },
             );
           },

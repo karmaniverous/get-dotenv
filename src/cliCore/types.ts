@@ -20,6 +20,7 @@ export type RootOptionsShape = {
   excludePublic?: boolean;
   log?: boolean;
   debug?: boolean;
+  capture?: boolean;
 
   defaultEnv?: string;
   dotenvToken?: string;

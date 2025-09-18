@@ -28,7 +28,9 @@ describe('E2E CLI (core options and plugins)', () => {
       '--cmd',
       nodePrintEnv('ENV_SETTING'),
     ].join(' ');
-    const { stdout, exitCode } = await execaCommand(cmd);
+    const { stdout, exitCode } = await execaCommand(cmd, {
+      env: { ...process.env, GETDOTENV_STDIO: 'pipe' },
+    });
     expect(exitCode).toBe(0);
     expect(stdout.trim()).toBe('deep_test_setting');
   }, 20000);
@@ -42,7 +44,9 @@ describe('E2E CLI (core options and plugins)', () => {
       '--cmd',
       nodePrintEnv('FOO'),
     ].join(' ');
-    const { stdout, exitCode } = await execaCommand(cmd);
+    const { stdout, exitCode } = await execaCommand(cmd, {
+      env: { ...process.env, GETDOTENV_STDIO: 'pipe' },
+    });
     expect(exitCode).toBe(0);
     expect(stdout.trim()).toBe('bar');
   }, 20000);
@@ -63,7 +67,9 @@ describe('E2E CLI (core options and plugins)', () => {
       // No-op child; just ensure the CLI runs and writes output.
       'node -e ""',
     ].join(' ');
-    const { exitCode } = await execaCommand(cmd);
+    const { exitCode } = await execaCommand(cmd, {
+      env: { ...process.env, GETDOTENV_STDIO: 'pipe' },
+    });
     expect(exitCode).toBe(0);
     const exists = await fs.pathExists(out);
     expect(exists).toBe(true);
@@ -89,12 +95,13 @@ describe('E2E CLI (core options and plugins)', () => {
       '--cmd',
       nodePrintEnv('APP_SECRET'),
     ].join(' ');
-    const { stdout, exitCode } = await execaCommand(cmd);
+    const { stdout, exitCode } = await execaCommand(cmd, {
+      env: { ...process.env, GETDOTENV_STDIO: 'pipe' },
+    });
     expect(exitCode).toBe(0);
     // When excluded, secret should be blank.
     expect(stdout.trim()).toBe('');
   }, 20000);
-
   it('executes positional cmd subcommand with --shell-off', async () => {
     const cmd = [
       CLI,
@@ -104,11 +111,12 @@ describe('E2E CLI (core options and plugins)', () => {
       '-e',
       JSON.stringify("console.log('OK')"),
     ].join(' ');
-    const { stdout, exitCode } = await execaCommand(cmd);
+    const { stdout, exitCode } = await execaCommand(cmd, {
+      env: { ...process.env, GETDOTENV_STDIO: 'pipe' },
+    });
     expect(exitCode).toBe(0);
     expect(stdout.trim()).toBe('OK');
   }, 20000);
-
   it('batch list (-l) prints working directories', async () => {
     const cmd = [CLI, 'batch', '-r', './test', '-g', 'full partial', '-l'].join(
       ' ',
@@ -134,7 +142,9 @@ describe('E2E CLI (core options and plugins)', () => {
       '-e',
       JSON.stringify("console.log(process.cwd().includes('test'))"),
     ].join(' ');
-    const { stdout, exitCode } = await execaCommand(cmd);
+    const { stdout, exitCode } = await execaCommand(cmd, {
+      env: { ...process.env, GETDOTENV_STDIO: 'pipe' },
+    });
     expect(exitCode).toBe(0);
     // The child prints "true" once (for the single matched path)
     expect(stdout).toMatch(/true/);

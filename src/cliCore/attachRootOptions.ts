@@ -230,6 +230,7 @@ export const attachRootOptions = (
         `console log loaded variables OFF${!log ? ' (default)' : ''}`,
       ).conflicts('log'),
     )
+    .option('--capture', 'capture child process stdio for commands (tests/CI)')
     .option(
       '--default-env <string>',
       'default target environment',

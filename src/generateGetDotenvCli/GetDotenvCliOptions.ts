@@ -5,7 +5,6 @@ export type Scripts = Record<
   string,
   string | { cmd: string; shell?: string | boolean }
 >;
-
 /**
  * Options passed programmatically to `getDotenvCli`.
  */
@@ -15,12 +14,16 @@ export interface GetDotenvCliOptions
    * Logs CLI internals when true.
    */
   debug?: boolean;
+  /**
+   * When true, capture child stdout/stderr and re-emit after completion.
+   * Useful for tests/CI. Default behavior is streaming via stdio: 'inherit'.
+   */
+  capture?: boolean;
 
   /**
    * A delimited string of paths to dotenv files.
    */
   paths?: string;
-
   /**
    * A delimiter string with which to split `paths`. Only used if
    * `pathsDelimiterPattern` is not provided.

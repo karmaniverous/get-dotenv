@@ -1,23 +1,33 @@
 # Development Plan — get-dotenv
 
-When updated: 2025-09-18T21:45:00Z
+When updated: 2025-09-18T22:30:00Z
 NOTE: Update timestamp on commit.
 
 ## Next up- Optional programmatic safeties (stage, do not implement yet)
 
 - Consider `--cmd-file <path>` to avoid outer-shell interpolation entirely.
-- Consider env-backed alias `GETDOTENV_CMD` if alias flag is omitted.- Optional programmatic safeties (stage, do not implement yet)
-- Consider `--cmd-file <path>` to avoid outer-shell interpolation entirely.
+- Consider env-backed alias `GETDOTENV_CMD` if alias flag is omitted.- Optional programmatic safeties (stage, do not implement yet)- Consider `--cmd-file <path>` to avoid outer-shell interpolation entirely.
 - Consider env-backed alias `GETDOTENV_CMD` if alias flag is omitted.
 
 ## Completed (recent)
+
+- Capture toggle for child process stdio
+  - Implemented --capture flag and honored GETDOTENV_STDIO=pipe to switch
+    child process stdio from 'inherit' to 'pipe' in cmd and batch execution.
+  - When captured, the CLI re-emits child stdout after completion so test
+    harnesses capture deterministic output.
+  - Fixed execa Option.env typing by using NodeJS.ProcessEnv and removed
+    non-null assertions in tokenizers (use charAt / explicit guards).
+  - Updated E2E core CLI tests to set GETDOTENV_STDIO=pipe where stdout
+    assertions are made (Windows-friendly).
+  - No behavior change for normal users by default (still streams to terminal
+    when --capture is not set).
 
 - Shell-off execution (cmd + batch)
   - For --shell-off and script-level shell=false, execute using
     execa(file, args) with a simple quoted-token parser instead of
     execaCommand. Prevents timeouts and ensures node -e commands run
-    consistently across platforms.
-- Batch list globs merge (no variadic greediness)
+    consistently across platforms.- Batch list globs merge (no variadic greediness)
   - Keep -g/--globs as a single string to avoid swallowing the 'cmd'
     subcommand; when list mode is used with extra positional tokens,
     merge them into globs so -g full partial -l behaves as intended.
