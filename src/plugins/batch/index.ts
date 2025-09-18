@@ -91,48 +91,61 @@ export const batchPlugin = (opts: BatchPluginOptions = {}) =>
             )
             .enablePositionalOptions()
             .passThroughOptions()
+            .argument('[command...]')
             .action(async (_subOpts: unknown, thisCommand: Command) => {
-              if (!thisCommand.parent)
-                throw new Error(`unable to resolve parent command`);
-              if (!thisCommand.parent.parent)
-                throw new Error(`unable to resolve root command`);
+              // Access merged per-plugin config from host context (if any).
+              const ctx = cli.getCtx();
+              const cfgRaw = (ctx?.pluginConfigs?.['batch'] ?? {}) as unknown;
+              const cfg = (cfgRaw || {}) as BatchConfig;
 
-              const root = thisCommand.parent.parent as GetDotenvCli;
-              const {
-                getDotenvCliOptions: {
-                  logger = console,
-                  ...getDotenvCliOptions
-                },
-              } = root as unknown as GetDotenvCli & {
-                getDotenvCliOptions: {
-                  logger?: Logger;
-                } & Record<string, unknown>;
-              };
+              // Resolve batch flags from the parent (batch) command.
+              const parent = thisCommand.parent;
+              if (!parent) throw new Error(`unable to resolve batch command`);
 
-              const raw = thisCommand.parent.opts();
+              const raw = parent.opts();
               const ignoreErrors = !!raw.ignoreErrors;
-              const globs = typeof raw.globs === 'string' ? raw.globs : '*';
+              const globs =
+                typeof raw.globs === 'string' ? raw.globs : (cfg.globs ?? '*');
               const pkgCwd = !!raw.pkgCwd;
               const rootPath =
-                typeof raw.rootPath === 'string' ? raw.rootPath : './';
+                typeof raw.rootPath === 'string'
+                  ? raw.rootPath
+                  : (cfg.rootPath ?? './');
 
-              const args = thisCommand.args as unknown[];
-              const input = args.map(String).join(' ');
+              // Resolve scripts/shell and logger from opts→config precedence.
+              const scripts = (opts.scripts ?? cfg.scripts) as
+                | Scripts
+                | undefined;
+              const shell = opts.shell ?? cfg.shell;
+              const loggerLocal: Logger = opts.logger ?? console;
+
+              // Join positional args as the command to execute.
+              const input = (thisCommand.args as unknown[])
+                .map(String)
+                .join(' ');
+
+              // Optional: round-trip parent merged options if present (shipped CLI).
+              const envBag = (
+                parent.parent as
+                  | (GetDotenvCli & {
+                      getDotenvCliOptions?: Record<string, unknown>;
+                    })
+                  | undefined
+              )?.getDotenvCliOptions;
 
               await execShellCommandBatch({
-                command: resolveCommand(getDotenvCliOptions.scripts, input),
-                getDotenvCliOptions,
+                command: resolveCommand(scripts, input),
+                ...(envBag ? { getDotenvCliOptions: envBag } : {}),
                 globs,
                 ignoreErrors,
                 list: false,
-                logger,
+                logger: loggerLocal,
                 ...(pkgCwd ? { pkgCwd } : {}),
                 rootPath,
-                shell: resolveShell(
-                  getDotenvCliOptions.scripts,
-                  input,
-                  getDotenvCliOptions.shell,
-                ) as unknown as string | boolean | URL,
+                shell: resolveShell(scripts, input, shell) as unknown as
+                  | string
+                  | boolean
+                  | URL,
               });
             }),
           { isDefault: true },

@@ -19,9 +19,13 @@ NOTE: Update timestamp on commit.
     loader path (computeContext and resolveWithLoader). With `-l`, logging now
     occurs exactly once after overlays/dynamics are applied.
 
+- Batch default cmd positional-args
+  - Declared a variadic positional argument on the batch default `cmd`
+    subcommand and resolved scripts/shell via plugin opts/config. Fixes
+    “too many arguments for 'cmd'” and preserves type safety.
+
 - CLI macros: chainable attachRootOptions/passOptions
-  - Added adapter-layer augmentation (src/cliCore/enhanceGetDotenvCli.ts) that
-    decorates GetDotenvCli with fluent attachRootOptions() and passOptions() methods without coupling the host to cliCore. Shipped CLI now uses the
+  - Added adapter-layer augmentation (src/cliCore/enhanceGetDotenvCli.ts) that    decorates GetDotenvCli with fluent attachRootOptions() and passOptions() methods without coupling the host to cliCore. Shipped CLI now uses the
     chainable style.
 
 - CLI default command via plugin
