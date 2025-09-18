@@ -1,10 +1,9 @@
 # Development Plan — get-dotenv
 
-When updated: 2025-09-18T17:55:00Z
+When updated: 2025-09-18T20:41:00Z
 NOTE: Update timestamp on commit.
 
-## Next up
-- Optional programmatic safeties (stage, do not implement yet)
+## Next up- Optional programmatic safeties (stage, do not implement yet)
   - Consider `--cmd-file <path>` to avoid outer-shell interpolation entirely.
   - Consider env-backed alias `GETDOTENV_CMD` if alias flag is omitted.- Optional programmatic safeties (stage, do not implement yet)
   - Consider `--cmd-file <path>` to avoid outer-shell interpolation entirely.
@@ -12,10 +11,13 @@ NOTE: Update timestamp on commit.
 
 ## Completed (recent)
 
+- Cmd plugin: accept positional tokens
+  - Declared variadic positional argument `[command...]` on the `cmd`
+    subcommand to eliminate Commander “too many arguments for 'cmd'”
+    errors seen in E2E (alias and subcommand flows).
 - E2E CLI core coverage (options, cmd, batch)
   - Validated env/vars/output/exclusion and cmd alias/subcommand with
-    --shell-off for portability. Covered batch list and a simple exec
-    across a target directory.
+    --shell-off for portability. Covered batch list and a simple exec    across a target directory.
 - E2E quoting tests (platform-guarded)
   - POSIX (/bin/bash): unquoted and double-quoted `$APP_SETTING` expand; single-quoted is literal.
   - PowerShell (powershell.exe): double-quoted `$env:APP_SETTING` interpolates; single-quoted is literal. Tests are skipped on non-matching platforms.- Batch services: TS narrowing for exec command

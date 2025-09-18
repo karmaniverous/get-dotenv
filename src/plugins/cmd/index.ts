@@ -55,6 +55,7 @@ export const cmdPlugin = (options: CmdPluginOptions = {}) =>
         .configureHelp({ showGlobalOptions: true })
         .enablePositionalOptions()
         .passThroughOptions()
+        .argument('[command...]')
         .action(
           async (
             _opts: unknown,
