@@ -1,23 +1,24 @@
 # Development Plan — get-dotenv
 
-When updated: 2025-09-18T17:40:00Z
+When updated: 2025-09-18T17:55:00Z
 NOTE: Update timestamp on commit.
 
 ## Next up
-
 - Optional programmatic safeties (stage, do not implement yet)
   - Consider `--cmd-file <path>` to avoid outer-shell interpolation entirely.
-  - Consider env-backed alias `GETDOTENV_CMD` if alias flag is omitted.
-- Optional programmatic safeties (stage, do not implement yet)
+  - Consider env-backed alias `GETDOTENV_CMD` if alias flag is omitted.- Optional programmatic safeties (stage, do not implement yet)
   - Consider `--cmd-file <path>` to avoid outer-shell interpolation entirely.
   - Consider env-backed alias `GETDOTENV_CMD` if alias flag is omitted.
 
 ## Completed (recent)
 
+- E2E CLI core coverage (options, cmd, batch)
+  - Validated env/vars/output/exclusion and cmd alias/subcommand with
+    --shell-off for portability. Covered batch list and a simple exec
+    across a target directory.
 - E2E quoting tests (platform-guarded)
   - POSIX (/bin/bash): unquoted and double-quoted `$APP_SETTING` expand; single-quoted is literal.
-  - PowerShell (powershell.exe): double-quoted `$env:APP_SETTING` interpolates; single-quoted is literal. Tests are skipped on non-matching platforms.
-- Batch services: TS narrowing for exec command
+  - PowerShell (powershell.exe): double-quoted `$env:APP_SETTING` interpolates; single-quoted is literal. Tests are skipped on non-matching platforms.- Batch services: TS narrowing for exec command
   - Narrow execaCommand invocation with a typeof guard and render the
     header command via a safe string label to satisfy typecheck and    ESLint template restrictions.
 - Batch services: list-only path in execShellCommandBatch

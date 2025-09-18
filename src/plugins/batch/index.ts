@@ -140,9 +140,8 @@ export const batchPlugin = (opts: BatchPluginOptions = {}) =>
                   scripts?: Scripts;
                   shell?: string | boolean;
                 };
-                const scripts = (opts.scripts ??
-                  cfg.scripts ??
-                  mergedBag.scripts) as Scripts | undefined;
+                const scripts =
+                  opts.scripts ?? cfg.scripts ?? mergedBag.scripts;
                 const shell = opts.shell ?? cfg.shell ?? mergedBag.shell;
                 const loggerLocal: Logger = opts.logger ?? console;
 
@@ -282,9 +281,8 @@ export const batchPlugin = (opts: BatchPluginOptions = {}) =>
                 scripts?: Scripts;
                 shell?: string | boolean;
               };
-              const scriptsAll = (opts.scripts ??
-                cfg.scripts ??
-                mergedBag.scripts) as Scripts | undefined;
+              const scriptsAll =
+                opts.scripts ?? cfg.scripts ?? mergedBag.scripts;
               const shellAll = opts.shell ?? cfg.shell ?? mergedBag.shell;
 
               await execShellCommandBatch({
@@ -321,9 +319,8 @@ export const batchPlugin = (opts: BatchPluginOptions = {}) =>
                 scripts?: Scripts;
                 shell?: string | boolean;
               };
-              const scriptsOpt = (opts.scripts ??
-                cfg.scripts ??
-                mergedBag.scripts) as Scripts | undefined;
+              const scriptsOpt =
+                opts.scripts ?? cfg.scripts ?? mergedBag.scripts;
               const shellOpt = opts.shell ?? cfg.shell ?? mergedBag.shell;
 
               await execShellCommandBatch({
