@@ -71,8 +71,9 @@ export const execShellCommandBatch = async ({
   rootPath: string;
   shell: string | boolean | URL;
 }) => {
-  if (!command) {
-    logger.error(`No command provided.`);
+  // Require a command only when not listing. In list mode, a command is optional.
+  if (!command && !list) {
+    logger.error(`No command provided. Use --command or --list.`);
     process.exit(0);
   }
 
@@ -90,7 +91,7 @@ export const execShellCommandBatch = async ({
   logger.info('');
   const headerRootPath = `ROOT:  ${absRootPath}`;
   const headerGlobs = `GLOBS: ${globs}`;
-  const headerCommand = `CMD:   ${command}`;
+  const headerCommand = list ? `CMD:   (list only)` : `CMD:   ${command}`;
 
   logger.info(
     '*'.repeat(
