@@ -76,7 +76,6 @@ export const execShellCommandBatch = async ({
     logger.error(`No command provided. Use --command or --list.`);
     process.exit(0);
   }
-
   const { absRootPath, paths } = await globPaths({
     globs,
     logger,
@@ -91,7 +90,10 @@ export const execShellCommandBatch = async ({
   logger.info('');
   const headerRootPath = `ROOT:  ${absRootPath}`;
   const headerGlobs = `GLOBS: ${globs}`;
-  const headerCommand = list ? `CMD:   (list only)` : `CMD:   ${command}`;
+  // Prepare a safe label for the header (avoid undefined in template)
+  const commandLabel =
+    typeof command === 'string' && command.length > 0 ? command : '';
+  const headerCommand = list ? `CMD:   (list only)` : `CMD:   ${commandLabel}`;
 
   logger.info(
     '*'.repeat(
@@ -125,17 +127,23 @@ export const execShellCommandBatch = async ({
 
     // Execute command.
     try {
-      await execaCommand(command, {
-        cwd: path,
-        env: {
-          ...process.env,
-          getDotenvCliOptions: getDotenvCliOptions
-            ? JSON.stringify(getDotenvCliOptions)
-            : undefined,
-        },
-        stdio: 'inherit',
-        shell, // already normalized to string | boolean | URL
-      });
+      if (typeof command === 'string' && command.length > 0) {
+        await execaCommand(command, {
+          cwd: path,
+          env: {
+            ...process.env,
+            getDotenvCliOptions: getDotenvCliOptions
+              ? JSON.stringify(getDotenvCliOptions)
+              : undefined,
+          },
+          stdio: 'inherit',
+          shell, // already normalized to string | boolean | URL
+        });
+      } else {
+        // Should not occur due to the early guard; retain for type safety.
+        logger.error(`No command provided. Use --command or --list.`);
+        process.exit(0);
+      }
     } catch (error) {
       if (!ignoreErrors) {
         throw error;

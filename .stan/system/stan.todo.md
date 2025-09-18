@@ -1,11 +1,11 @@
 # Development Plan — get-dotenv
 
-When updated: 2025-09-18T17:18:00Z
+When updated: 2025-09-18T17:28:00Z
 NOTE: Update timestamp on commit.
 
 ## Next up
-- E2E quoting tests (platform-guarded)  - POSIX: compare `-c echo $APP_SETTING` vs `-c 'echo $APP_SETTING'` to show outer-shell expansion hazard vs correct behavior (single quotes).
-  - PowerShell: single-quoted literal vs double-quoted interpolation.
+
+- E2E quoting tests (platform-guarded) - POSIX: compare `-c echo $APP_SETTING` vs `-c 'echo $APP_SETTING'` to show outer-shell expansion hazard vs correct behavior (single quotes). - PowerShell: single-quoted literal vs double-quoted interpolation.
   - Ensure tests are skipped on non-matching platforms to keep CI green.
 - Optional programmatic safeties (stage, do not implement yet)
   - Consider `--cmd-file <path>` to avoid outer-shell interpolation entirely.
@@ -13,15 +13,18 @@ NOTE: Update timestamp on commit.
 
 ## Completed (recent)
 
+- Batch services: TS narrowing for exec command
+  - Narrow execaCommand invocation with a typeof guard and render the
+    header command via a safe string label to satisfy typecheck and
+    ESLint template restrictions.
 - Batch services: list-only path in execShellCommandBatch
   - Allow list mode to run without a command; align error guidance to
     “No command provided. Use --command or --list.” and label header
-    as “CMD: (list only)” during listing.
-- Batch plugin: resolve scripts/shell from merged root CLI options
+    as “CMD: (list only)” during listing.- Batch plugin: resolve scripts/shell from merged root CLI options
   - When plugin opts/config do not provide scripts/shell, fall back to the
     merged GetDotenv CLI options attached by passOptions. This enables
     packaged defaults like "git-status" to resolve without per-plugin config.- Lint: batch default-subcommand unused param
-  - Renamed the unused action parameter to _thisCommand to satisfy
+  - Renamed the unused action parameter to \_thisCommand to satisfy
     @typescript-eslint/no-unused-vars.
 
 - Batch cmd subcommand variadic capture
