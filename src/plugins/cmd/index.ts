@@ -66,7 +66,7 @@ const runCommand = async (
     }
     // In unit tests, execa may be mocked to return a void/undefined result.
     // Read exitCode defensively; return NaN to signal "mocked/no real exit code".
-    const exit = (result as { exitCode?: unknown }).exitCode;
+    const exit = (result as { exitCode?: unknown } | undefined)?.exitCode;
     return typeof exit === 'number' ? exit : Number.NaN;
   } else {
     const result = await execaCommand(command, { shell, ...opts });
@@ -75,11 +75,10 @@ const runCommand = async (
         result.stdout + (result.stdout.endsWith('\n') ? '' : '\n'),
       );
     }
-    const exit = (result as { exitCode?: unknown }).exitCode;
+    const exit = (result as { exitCode?: unknown } | undefined)?.exitCode;
     return typeof exit === 'number' ? exit : Number.NaN;
   }
-};
-/**+ Cmd plugin: executes a command using the current getdotenv CLI context.
+}; /**+ Cmd plugin: executes a command using the current getdotenv CLI context.
  *
  * - Joins positional args into a single command string.
  * - Resolves scripts and shell settings using shared helpers.
