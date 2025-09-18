@@ -1,13 +1,12 @@
 # Development Plan — get-dotenv
 
-When updated: 2025-09-18T14:35:00Z
+When updated: 2025-09-18T15:25:00Z
 NOTE: Update timestamp on commit.
 
 ## Next up
 
 - E2E quoting tests (platform-guarded)
-  - POSIX: compare `-c echo $APP_SETTING` vs `-c 'echo $APP_SETTING'` to show
-    outer-shell expansion hazard vs correct behavior (single quotes).
+  - POSIX: compare `-c echo $APP_SETTING` vs `-c 'echo $APP_SETTING'` to show outer-shell expansion hazard vs correct behavior (single quotes).
   - PowerShell: single-quoted literal vs double-quoted interpolation.
   - Ensure tests are skipped on non-matching platforms to keep CI green.
 - Optional programmatic safeties (stage, do not implement yet)
@@ -16,10 +15,15 @@ NOTE: Update timestamp on commit.
 
 ## Completed (recent)
 
+- Batch default cmd subcommand (Commander args capture)
+  - Fixed action handler signature to accept the variadic `[command...]`
+    argument list, ensuring `getdotenv batch … cmd <args…>` executes.
+  - Previously, the handler received options instead of the Command
+    instance, saw zero positional args, and emitted “No command provided”.
+  - Added a unit test to cover the positional `cmd` subcommand flow.
 - Cmd plugin: fix ESLint no-unsafe-assignment by typing opts() usage
   (CommandWithOptions<GetDotenvCliOptions>) and reading the alias option
-  via a Record<string, unknown> view. No behavior change.
-- Packaging verification (dry-run)
+  via a Record<string, unknown> view. No behavior change.- Packaging verification (dry-run)
   - Added tools/verify-tarball.mjs to assert npm pack --dry-run includes
     dist outputs and templates (config and CLI skeleton).
   - Added npm scripts: verify:tarball and pack:dry; wired verify:tarball into
