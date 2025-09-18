@@ -1,3 +1,7 @@
+/**
+ * Requirements: Init scaffolding plugin with collision flow and CI detection.
+ * Note: Large file scheduled for decomposition; tracked in stan.todo.md.
+ */
 import { stdin as input, stdout as output } from 'node:process';
 
 // NOTE: pay attention to non-interactive detection and precedence
