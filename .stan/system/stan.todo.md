@@ -1,10 +1,9 @@
 # Development Plan — get-dotenv
 
-When updated: 2025-09-19T12:00:00Z
+When updated: 2025-09-19T12:20:00Z
 NOTE: Update timestamp on commit.
 
 ## Next up
-
 - Verify the batch list default-subcommand fix
   - Re-run E2E; confirm “batch list (-l)” passes on Windows. If not, add
     debug to print merged globs and list flag resolution in the default
@@ -40,3 +39,8 @@ NOTE: Update timestamp on commit.
 - Batch list default-subcommand fix: when -l/--list appears with positional
   tokens, treat tokens as extra globs and run list mode (prevents executing
   “partial -l” as a command on Windows).
+
+- Begin decomposition of oversized plugin modules:
+  - batch: extracted handlers/types and wired.
+  - cmd: extracted tokenize/run/alias and wired.
+  - init: extracted io/prompts/plan/constants and wired into index.ts.

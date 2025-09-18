@@ -17,7 +17,7 @@ import { runCommand } from './run';
 export const attachParentAlias = (
   cli: GetDotenvCli,
   options: CmdPluginOptions,
-  cmd: Command,
+  _cmd: Command,
 ) => {
   const aliasSpec =
     typeof options.optionAlias === 'string'

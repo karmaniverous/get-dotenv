@@ -1,5 +1,4 @@
 import { Command as Commander } from 'commander';
-import { z } from 'zod';
 
 import { definePlugin } from '../../cliHost/definePlugin';
 import type { GetDotenvCli } from '../../cliHost/GetDotenvCli';

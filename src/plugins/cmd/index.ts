@@ -1,18 +1,13 @@
 import { Command } from 'commander';
 
-import { baseRootOptionDefaults } from '../../cliCore/defaults';
-import { resolveCliOptions } from '../../cliCore/resolveCliOptions';
 import type { CommandWithOptions } from '../../cliCore/types';
 import { definePlugin } from '../../cliHost/definePlugin';
 import type { GetDotenvCli } from '../../cliHost/GetDotenvCli';
-import { dotenvExpandFromProcessEnv } from '../../dotenvExpand';
 import type { GetDotenvCliOptions } from '../../generateGetDotenvCli/GetDotenvCliOptions';
 import type { Logger } from '../../GetDotenvOptions';
-import { getDotenvCliOptions2Options } from '../../GetDotenvOptions';
 import { resolveCommand, resolveShell } from '../../services/batch/resolve';
 import { attachParentAlias } from './alias';
 import { runCommand } from './run';
-
 export type CmdPluginOptions = {
   /**
    * When true, register as the default subcommand at the root.
