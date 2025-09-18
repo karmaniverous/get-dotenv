@@ -112,6 +112,7 @@ export const batchPlugin = (opts: BatchPluginOptions = {}) =>
                 const cfg = (cfgRaw || {}) as BatchConfig;
                 // Resolve batch flags from the captured parent (batch) command.
                 const raw = batchCmd.opts();
+                const listFromParent = !!raw.list;
 
                 const ignoreErrors = !!raw.ignoreErrors;
                 const globs =
@@ -191,6 +192,39 @@ export const batchPlugin = (opts: BatchPluginOptions = {}) =>
                     emit(`No command provided. Use --command or --list.`);
                   }
                   process.exit(0);
+                }
+
+                // If parent list flag is set and positional tokens are present,
+                // treat tokens as additional globs for list-only mode. This allows
+                // usage like: getdotenv batch -r ./test -g full partial -l
+                // under the default subcommand without accidentally executing "partial -l".
+                if (
+                  listFromParent &&
+                  args.length > 0 &&
+                  typeof raw.command !== 'string'
+                ) {
+                  const extra = args.map(String).join(' ').trim();
+                  const mergedGlobs = [globs, extra].filter(Boolean).join(' ');
+                  const mergedBag = ((
+                    batchCmd.parent as
+                      | (GetDotenvCli & {
+                          getDotenvCliOptions?: { shell?: string | boolean };
+                        })
+                      | undefined
+                  )?.getDotenvCliOptions ?? {}) as { shell?: string | boolean };
+                  await execShellCommandBatch({
+                    globs: mergedGlobs,
+                    ignoreErrors,
+                    list: true,
+                    logger: loggerLocal,
+                    ...(pkgCwd ? { pkgCwd } : {}),
+                    rootPath,
+                    shell: (shell ?? mergedBag.shell ?? false) as unknown as
+                      | string
+                      | boolean
+                      | URL,
+                  });
+                  return;
                 }
 
                 // Join positional args as the command to execute.

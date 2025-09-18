@@ -1,6 +1,6 @@
 # Development Plan — get-dotenv
 
-When updated: 2025-09-18T22:30:00Z
+When updated: 2025-09-18T22:55:00Z
 NOTE: Update timestamp on commit.
 
 ## Next up- Optional programmatic safeties (stage, do not implement yet)
@@ -22,6 +22,12 @@ NOTE: Update timestamp on commit.
     assertions are made (Windows-friendly).
   - No behavior change for normal users by default (still streams to terminal
     when --capture is not set).
+
+- Batch list bridging with default subcommand
+  - In the batch default 'cmd' subcommand, honor the parent -l/--list flag even
+    when positional tokens are present by treating tokens as additional globs and
+    running list mode (merging into -g). Prevents accidental execution of
+    "partial -l" on Windows when the -l flag appears after positional tokens.
 
 - Shell-off execution (cmd + batch)
   - For --shell-off and script-level shell=false, execute using
