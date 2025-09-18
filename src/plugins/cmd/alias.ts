@@ -129,6 +129,15 @@ export const attachParentAlias = (
         dbg('process.exit', { exitCode });
         process.exit(exitCode);
       }
+      // Fallback: Some environments may not surface a numeric exitCode even on success.
+      // When capture/pipe is requested, force a clean exit to avoid hanging the process.
+      const shouldForceExit =
+        process.env.GETDOTENV_STDIO === 'pipe' ||
+        Boolean((merged as unknown as { capture?: boolean }).capture);
+      if (shouldForceExit) {
+        dbg('process.exit (fallback)', { exitCode: 0 });
+        process.exit(0);
+      }
     },
   );
 };
