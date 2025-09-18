@@ -1,6 +1,6 @@
 # Development Plan — get-dotenv
 
-When updated: 2025-09-18T22:55:00Z
+When updated: 2025-09-18T23:20:00Z
 NOTE: Update timestamp on commit.
 
 ## Next up- Optional programmatic safeties (stage, do not implement yet)
@@ -8,7 +8,6 @@ NOTE: Update timestamp on commit.
 - Consider `--cmd-file <path>` to avoid outer-shell interpolation entirely.
 - Consider env-backed alias `GETDOTENV_CMD` if alias flag is omitted.- Optional programmatic safeties (stage, do not implement yet)- Consider `--cmd-file <path>` to avoid outer-shell interpolation entirely.
 - Consider env-backed alias `GETDOTENV_CMD` if alias flag is omitted.
-
 ## Completed (recent)
 
 - Capture toggle for child process stdio
@@ -23,11 +22,17 @@ NOTE: Update timestamp on commit.
   - No behavior change for normal users by default (still streams to terminal
     when --capture is not set).
 
+- Alias (--cmd) capture and prompt exit on Windows
+  - Parent alias path now returns the child process exit code and explicitly
+    exits the CLI after completion. This prevents hangs/timeouts observed in
+    Windows E2E alias flows when GETDOTENV_STDIO=pipe is used.
+  - Behavior of subcommand flows (cmd ...) is unchanged; alias path is intended
+    for ergonomic npm-run usage and now terminates deterministically.
+
 - Batch list bridging with default subcommand
   - In the batch default 'cmd' subcommand, honor the parent -l/--list flag even
     when positional tokens are present by treating tokens as additional globs and
-    running list mode (merging into -g). Prevents accidental execution of
-    "partial -l" on Windows when the -l flag appears after positional tokens.
+    running list mode (merging into -g). Prevents accidental execution of    "partial -l" on Windows when the -l flag appears after positional tokens.
 
 - Shell-off execution (cmd + batch)
   - For --shell-off and script-level shell=false, execute using

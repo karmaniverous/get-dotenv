@@ -53,17 +53,18 @@ const runCommand = async (
   command: string,
   shell: string | boolean | URL,
   opts: { env?: NodeJS.ProcessEnv; stdio?: 'inherit' | 'pipe' },
-) => {
+): Promise<number> => {
   if (shell === false) {
     const tokens = tokenize(command);
     const file = tokens[0];
-    if (!file) return;
+    if (!file) return 0;
     const result = await execa(file, tokens.slice(1), { ...opts });
     if (opts.stdio === 'pipe' && result.stdout) {
       process.stdout.write(
         result.stdout + (result.stdout.endsWith('\n') ? '' : '\n'),
       );
     }
+    return result.exitCode ?? 0;
   } else {
     const result = await execaCommand(command, { shell, ...opts });
     if (opts.stdio === 'pipe' && result.stdout) {
@@ -71,12 +72,12 @@ const runCommand = async (
         result.stdout + (result.stdout.endsWith('\n') ? '' : '\n'),
       );
     }
+    return result.exitCode ?? 0;
   }
 };
 /**+ Cmd plugin: executes a command using the current getdotenv CLI context.
  *
- * - Joins positional args into a single command string. * - Resolves scripts and shell settings using shared helpers. * - Forwards merged CLI options to subprocesses via
- *   process.env.getDotenvCliOptions for nested CLI behavior.
+ * - Joins positional args into a single command string. * - Resolves scripts and shell settings using shared helpers. * - Forwards merged CLI options to subprocesses via *   process.env.getDotenvCliOptions for nested CLI behavior.
  */
 export const cmdPlugin = (options: CmdPluginOptions = {}) =>
   definePlugin({
@@ -281,7 +282,7 @@ export const cmdPlugin = (options: CmdPluginOptions = {}) =>
             const capture =
               process.env.GETDOTENV_STDIO === 'pipe' ||
               Boolean((merged as unknown as { capture?: boolean }).capture);
-            await runCommand(
+            const exitCode = await runCommand(
               resolved,
               resolveShell(merged.scripts, input, merged.shell) as unknown as
                 | string
@@ -295,6 +296,10 @@ export const cmdPlugin = (options: CmdPluginOptions = {}) =>
                 stdio: capture ? 'pipe' : 'inherit',
               },
             );
+            // Ensure prompt, deterministic termination for alias path (especially on Windows).
+            // Propagate child exit code for CI/test parity.
+            // eslint-disable-next-line unicorn/no-process-exit
+            process.exit(typeof exitCode === 'number' ? exitCode : 0);
           },
         );
       }
