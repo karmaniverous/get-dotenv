@@ -1,6 +1,6 @@
 # Development Plan — get-dotenv
 
-When updated: 2025-09-18T16:05:00Z
+When updated: 2025-09-18T16:25:00Z
 NOTE: Update timestamp on commit.
 
 ## Next up
@@ -15,6 +15,14 @@ NOTE: Update timestamp on commit.
 
 ## Completed (recent)
 
+- Batch cmd subcommand variadic capture
+  - Default subcommand now accepts `(commandParts, _opts, thisCommand)` and uses
+    the variadic list to build the command string. Prevents empty-args path and
+    false “No command provided” exits when using `batch <positional>` flows.
+- Root flags: conditional legacy command flag
+  - Replaced invalid spread in attachRootOptions with a simple conditional. The
+    includeCommandOption toggle is temporary and will be removed once -c/--cmd
+    is standardized across surfaces.
 - Batch parent positional args
   - Declared `batch` parent `.argument([command...])` and updated its action to
     accept variadic `commandParts`. Now `getdotenv batch <args…>` executes the

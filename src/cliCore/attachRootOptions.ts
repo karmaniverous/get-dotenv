@@ -19,7 +19,8 @@ export const attachRootOptions = (
   const {
     defaultEnv,
     dotenvToken,
-    dynamicPath,    env,
+    dynamicPath,
+    env,
     excludeDynamic,
     excludeEnv,
     excludeGlobal,
@@ -45,7 +46,8 @@ export const attachRootOptions = (
   const vd =
     typeof defaults?.varsDelimiter === 'string' ? defaults.varsDelimiter : ' ';
 
-  program
+  // Build initial chain.
+  let p = program
     .enablePositionalOptions()
     .passThroughOptions()
     .option(
@@ -53,33 +55,36 @@ export const attachRootOptions = (
       `target environment (dotenv-expanded)`,
       dotenvExpandFromProcessEnv,
       env,
-    )
-    .option(
-      '-v, --vars <string>',
-      `extra variables expressed as delimited key-value pairs (dotenv-expanded): ${[
-        ['KEY1', 'VAL1'],
-        ['KEY2', 'VAL2'],
-      ]
-        .map((v) => v.join(va))
-        .join(vd)}`,
+    );
+
+  p = p.option(
+    '-v, --vars <string>',
+    `extra variables expressed as delimited key-value pairs (dotenv-expanded): ${[
+      ['KEY1', 'VAL1'],
+      ['KEY2', 'VAL2'],
+    ]
+      .map((v) => v.join(va))
+      .join(vd)}`,
+    dotenvExpandFromProcessEnv,
+  );
+
+  // Optional legacy root command flag (kept for generated CLI compatibility).
+  // The plugin-first shipped CLI disables this and uses the cmd plugin's alias instead.
+  if (opts?.includeCommandOption !== false) {
+    p = p.option(
+      '-c, --command <string>',
+      'command executed according to the --shell option, conflicts with cmd subcommand (dotenv-expanded)',
       dotenvExpandFromProcessEnv,
-    )
-    // Optional legacy root command flag (kept for generated CLI compatibility).
-    // The plugin-first shipped CLI disables this and uses the cmd plugin's alias instead.
-    ...(opts?.includeCommandOption === false
-      ? []
-      : [
-          program.option(
-            '-c, --command <string>',
-            'command executed according to the --shell option, conflicts with cmd subcommand (dotenv-expanded)',
-            dotenvExpandFromProcessEnv,
-          ),
-        ])
+    );
+  }
+
+  p = p
     .option(
       '-o, --output-path <string>',
       'consolidated output file  (dotenv-expanded)',
       dotenvExpandFromProcessEnv,
-      outputPath,    )
+      outputPath,
+    )
     .addOption(
       new Option(
         '-s, --shell [string]',
@@ -288,5 +293,5 @@ export const attachRootOptions = (
         .hideHelp(),
     );
 
-  return program;
+  return p;
 };
