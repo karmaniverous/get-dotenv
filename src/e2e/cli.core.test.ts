@@ -78,7 +78,7 @@ describe('E2E CLI (core options and plugins)', () => {
       '--shell-off',
       '-v',
       'FOO=bar',
-      '--cmd',
+      // '--cmd',
       nodePrintEnv('FOO'),
     ].join(' ');
     const { stdout, exitCode } = await execaCommand(cmd, {
