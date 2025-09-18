@@ -2,6 +2,7 @@
   "entry": [
     "src/index.ts",
     "src/cliHost/index.ts",
+    "src/cli/getdotenv-host/index.ts",
     "src/plugins/batch/index.ts",
     "src/plugins/init/index.ts",
     "src/config/index.ts",
@@ -10,6 +11,6 @@
   "project": ["src/**/*.ts"],
   "ignore": [],
   "ignoreBinaries": [],
-  "ignoreDependencies": ["execa", "globby", "nanoid", "package-directory"],
-  "rules": { "exports": "off", "types": "off" }
+  "ignoreDependencies": [],
+  "rules": { "exports": "off", "types": "off", "duplicates": "off" }
 }

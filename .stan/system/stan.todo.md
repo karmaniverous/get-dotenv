@@ -1,6 +1,6 @@
 # Development Plan — get-dotenv
 
-When updated: 2025-09-18T13:45:00Z
+When updated: 2025-09-18T14:20:00Z
 NOTE: Update timestamp on commit.
 
 ## Next up
@@ -20,6 +20,11 @@ NOTE: Update timestamp on commit.
 - knip configuration refinement
   - Broadened analysis scope to include subpath entry points and src/\*_/_.ts
     in knip.json, eliminating false “unused dependencies” (commander, yaml, zod).
+- knip configuration polish
+  - Added demo host CLI to entry to avoid “Unused files”.
+  - Disabled duplicates rule to silence intentional Raw/Resolved alias exports
+    in schema modules.
+  - Emptied ignoreDependencies per config hints.
 
 - Cmd/batch polish for TS/lint/test
   - Batch default-subcommand: safe logger invocation to satisfy TS2722 when emitting “No command provided” (exact-optional logger). - Cmd plugin: typed parent/thisCommand opts to remove unsafe-any and satisfy strict typing; no behavior changes.
