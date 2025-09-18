@@ -1,5 +1,7 @@
 import '../../cliCore/enhanceGetDotenvCli'; // ensure helpers are available in host CLIs
 
+const dbg = (...args: unknown[]) =>
+  process.env.GETDOTENV_DEBUG && console.error('[getdotenv:alias]', ...args);
 import type { Command } from 'commander';
 
 import { baseRootOptionDefaults } from '../../cliCore/defaults';
@@ -26,6 +28,7 @@ export const attachParentAlias = (
   if (!aliasSpec) return;
 
   const deriveKey = (flags: string) => {
+    dbg('install alias option', flags);
     const long =
       flags.split(/[ ,|]+/).find((f) => f.startsWith('--')) ?? '--cmd';
     const name = long.replace(/^--/, '');
@@ -43,6 +46,7 @@ export const attachParentAlias = (
   cli.hook(
     'preAction',
     async (thisCommand: CommandWithOptions<GetDotenvCliOptions>) => {
+      dbg('preAction:start');
       const raw =
         (thisCommand as unknown as { rawArgs?: string[] }).rawArgs ?? [];
       const childNames = thisCommand.commands.flatMap((c) => [
@@ -62,6 +66,7 @@ export const attachParentAlias = (
             : false;
       if (!provided || hasSub) return; // not an alias-only invocation
 
+      dbg('alias-only invocation detected');
       // Merge CLI options and resolve dotenv context.
       const { merged } = resolveCliOptions<GetDotenvCliOptions>(
         o as unknown,
@@ -84,6 +89,7 @@ export const attachParentAlias = (
           ? joined
           : (dotenvExpandFromProcessEnv(joined) ?? joined);
 
+      dbg('resolved input', { input });
       const resolved = resolveCommand(merged.scripts, input);
       const lg = logger as unknown as {
         debug?: (...a: unknown[]) => void;
@@ -99,6 +105,7 @@ export const attachParentAlias = (
       const capture =
         process.env.GETDOTENV_STDIO === 'pipe' ||
         Boolean((merged as unknown as { capture?: boolean }).capture);
+      dbg('run:start', { capture, shell: merged.shell });
       const exitCode = await runCommand(
         resolved,
         resolveShell(merged.scripts, input, merged.shell) as unknown as
@@ -113,7 +120,9 @@ export const attachParentAlias = (
           stdio: capture ? 'pipe' : 'inherit',
         },
       );
+      dbg('run:done', { exitCode });
       if (!Number.isNaN(exitCode)) {
+        dbg('process.exit', { exitCode });
         process.exit(exitCode);
       }
     },
