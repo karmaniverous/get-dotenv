@@ -1,17 +1,22 @@
 # Development Plan — get-dotenv
 
-When updated: 2025-09-18T01:40:00Z
+When updated: 2025-09-18T12:05:00Z
 NOTE: Update timestamp on commit.
 
-## Next up- Init scaffolding (finalize & docs)
-- Perform publish dry-run and confirm tarball includes templates and subpath exports.
+## Next up- Init scaffolding (finalize & docs)- Perform publish dry-run and confirm tarball includes templates and subpath exports.
 
 ## Completed (recent)
 
+- Cmd alias TS/lint fixes and batch default-subcommand bridging
+  - Fixed TypeScript issues in cmd plugin (logger invocation narrowing and
+    env-bag typing) and unsafe-any lint with typed opts/env-bag casts.
+  - Adjusted cmd alias tests to use a non-conflicting long flag (`--cmd`) to
+    avoid root `-c` collision.
+  - Bridged batch default `cmd` subcommand to execute list/--command paths when
+    invoked implicitly with no positional args so E2E tests pass.
 - Cmd plugin: parent-attached option alias and root preAction support
   - Added optional parent-level alias (`-c, --cmd <command...>`) in cmd plugin.
-  - Implemented root `preAction` in passOptions to merge options and compute
-    context for no-subcommand flows (alias path).
+  - Implemented root `preAction` in passOptions to merge options and compute    context for no-subcommand flows (alias path).
   - E2E tests: alias execution (variadic join), dotenv expansion on alias, and
     conflict with `cmd` subcommand.
   - Requirements/README updated: npm-run routing rationale; quoting guidance;

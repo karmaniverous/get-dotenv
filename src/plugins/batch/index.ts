@@ -101,8 +101,6 @@ export const batchPlugin = (opts: BatchPluginOptions = {}) =>
               )
                 ? (thisCommand as unknown as { args: unknown[] }).args
                 : ([] as unknown[]);
-              if (args.length === 0) return;
-
               // Access merged per-plugin config from host context (if any).
               const ctx = cli.getCtx();
               const cfgRaw = (ctx?.pluginConfigs?.['batch'] ?? {}) as unknown;
@@ -110,6 +108,7 @@ export const batchPlugin = (opts: BatchPluginOptions = {}) =>
 
               // Resolve batch flags from the captured parent (batch) command.
               const raw = batchCmd.opts();
+
               const ignoreErrors = !!raw.ignoreErrors;
               const globs =
                 typeof raw.globs === 'string' ? raw.globs : (cfg.globs ?? '*');
@@ -124,6 +123,56 @@ export const batchPlugin = (opts: BatchPluginOptions = {}) =>
               const scripts = opts.scripts ?? cfg.scripts;
               const shell = opts.shell ?? cfg.shell;
               const loggerLocal: Logger = opts.logger ?? console;
+
+              // If no positional args were given, bridge to --command/--list paths here
+              // because a default subcommand prevents the parent action from running.
+              if (args.length === 0) {
+                const commandOpt =
+                  typeof raw.command === 'string' ? raw.command : undefined;
+                if (typeof commandOpt === 'string') {
+                  await execShellCommandBatch({
+                    command: resolveCommand(scripts, commandOpt),
+                    globs,
+                    ignoreErrors,
+                    list: false,
+                    logger: loggerLocal,
+                    ...(pkgCwd ? { pkgCwd } : {}),
+                    rootPath,
+                    shell: resolveShell(
+                      scripts,
+                      commandOpt,
+                      shell,
+                    ) as unknown as string | boolean | URL,
+                  });
+                  return;
+                }
+                if (raw.list) {
+                  await execShellCommandBatch({
+                    globs,
+                    ignoreErrors,
+                    list: true,
+                    logger: loggerLocal,
+                    ...(pkgCwd ? { pkgCwd } : {}),
+                    rootPath,
+                    shell: (shell ?? false) as unknown as
+                      | string
+                      | boolean
+                      | URL,
+                  });
+                  return;
+                }
+                (
+                  loggerLocal as unknown as {
+                    error?: (...a: unknown[]) => void;
+                    log: (...a: unknown[]) => void;
+                  }
+                )[
+                  (loggerLocal as { error?: (...a: unknown[]) => void }).error
+                    ? 'error'
+                    : 'log'
+                ](`No command provided. Use --command or --list.`);
+                process.exit(0);
+              }
 
               // Join positional args as the command to execute.
               const input = args.map(String).join(' ');

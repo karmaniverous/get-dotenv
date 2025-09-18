@@ -17,8 +17,7 @@ export type CmdPluginOptions = {
    */
   asDefault?: boolean;
   /**
-   * Optional alias option attached to the parent command to invoke the cmd
-   * behavior without specifying the subcommand explicitly.
+   * Optional alias option attached to the parent command to invoke the cmd   * behavior without specifying the subcommand explicitly.
    */
   optionAlias?:
     | string
@@ -64,7 +63,8 @@ export const cmdPlugin = (options: CmdPluginOptions = {}) =>
           // Conflict detection: if an alias option is present on parent, do not
           // also accept positional cmd args.
           if (aliasKey) {
-            const ov = parent.opts()[aliasKey];
+            const pv = parent.opts();
+            const ov = aliasKey ? pv[aliasKey] : undefined;
             if (ov !== undefined) {
               const merged =
                 (
@@ -74,16 +74,12 @@ export const cmdPlugin = (options: CmdPluginOptions = {}) =>
                 ).getDotenvCliOptions ?? {};
               const logger: Logger =
                 (merged as { logger?: Logger }).logger ?? console;
-              (
-                logger as unknown as {
-                  error?: (...a: unknown[]) => void;
-                  log: (...a: unknown[]) => void;
-                }
-              )[
-                (logger as { error?: (...a: unknown[]) => void }).error
-                  ? 'error'
-                  : 'log'
-              ](`--${aliasKey} option conflicts with cmd subcommand.`);
+              const lr = logger as unknown as {
+                error?: (...a: unknown[]) => void;
+                log: (...a: unknown[]) => void;
+              };
+              const emit = lr.error ?? lr.log;
+              emit(`--${aliasKey} option conflicts with cmd subcommand.`);
               process.exit(0);
             }
           }
@@ -98,7 +94,6 @@ export const cmdPlugin = (options: CmdPluginOptions = {}) =>
 
           const logger: Logger =
             (merged as { logger?: Logger }).logger ?? console;
-
           // Join positional args into the command string.
           const input = args.map(String).join(' ');
 
@@ -124,7 +119,10 @@ export const cmdPlugin = (options: CmdPluginOptions = {}) =>
 
           // Round-trip CLI options for nested getdotenv invocations.
           // Omit logger (functions are not serializable).
-          const { logger: _omit, ...envBag } = merged;
+          const { logger: _omit, ...envBag } = merged as unknown as Record<
+            string,
+            unknown
+          >;
 
           await execaCommand(resolved, {
             env: {
@@ -172,7 +170,6 @@ export const cmdPlugin = (options: CmdPluginOptions = {}) =>
                 : false;
 
           if (!provided) return; // alias not present
-
           // If a subcommand is specified, ignore alias here. The cmd action will
           // handle conflict if the subcommand is 'cmd'.
           if (hasSub) return;
@@ -209,7 +206,7 @@ export const cmdPlugin = (options: CmdPluginOptions = {}) =>
           if ((merged as { debug?: boolean }).debug) {
             (lg.debug ?? lg.log)('\n*** command ***\n', `'${resolved}'`);
           }
-          const { logger: _omit, ...envBag } = merged as Record<
+          const { logger: _omit, ...envBag } = merged as unknown as Record<
             string,
             unknown
           >;
