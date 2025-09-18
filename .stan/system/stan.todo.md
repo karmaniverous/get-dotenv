@@ -1,15 +1,17 @@
 # Development Plan — get-dotenv
 
-When updated: 2025-09-18T12:20:00Z
+When updated: 2025-09-18T13:05:00Z
 NOTE: Update timestamp on commit.
 
 ## Next up- Init scaffolding (finalize & docs)- Perform publish dry-run and confirm tarball includes templates and subpath exports.
 
 ## Completed (recent)
+- Cmd plugin: fix ESLint no-unsafe-assignment by typing opts() usage
+  (CommandWithOptions<GetDotenvCliOptions>) and reading the alias option
+  via a Record<string, unknown> view. No behavior change.
 
 - Cmd/batch polish for TS/lint/test
-  - Batch default-subcommand: safe logger invocation to satisfy TS2722 when
-    emitting “No command provided” (exact-optional logger).
+  - Batch default-subcommand: safe logger invocation to satisfy TS2722 when    emitting “No command provided” (exact-optional logger).
   - Cmd plugin: typed parent/thisCommand opts to remove unsafe-any and satisfy
     strict typing; no behavior changes.
   - Alias conflict test: add “--” before subcommand to prevent the variadic
