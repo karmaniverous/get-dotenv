@@ -47,22 +47,20 @@ export const attachParentAlias = (
   cli.option(aliasSpec.flags, desc);
 
   // Shared alias executor for either preAction or preSubcommand hooks.
-  const maybeRunAlias = async (
-    thisCommand: CommandWithOptions<GetDotenvCliOptions> | Command,
-  ) => {
+  // Ensure we only execute once even if both hooks fire in a single parse.
+  let aliasHandled = false;
+  const maybeRunAlias = async (thisCommand: Command) => {
     dbg('alias:maybe:start');
     const raw =
       (thisCommand as unknown as { rawArgs?: string[] }).rawArgs ?? [];
-    const childNames = (thisCommand as Command).commands.flatMap((c) => [
+    const childNames = thisCommand.commands.flatMap((c) => [
       c.name(),
       ...c.aliases(),
     ]);
     const hasSub = childNames.some((n) => raw.includes(n));
 
     // Read alias value from parent opts.
-    const o = (thisCommand as CommandWithOptions<GetDotenvCliOptions>).opts?.()
-      ? (thisCommand as CommandWithOptions<GetDotenvCliOptions>).opts()
-      : ({} as Partial<GetDotenvCliOptions>);
+    const o = (thisCommand as CommandWithOptions<GetDotenvCliOptions>).opts();
     const val = (o as unknown as Record<string, unknown>)[aliasKey];
     const provided =
       typeof val === 'string'
@@ -74,6 +72,12 @@ export const attachParentAlias = (
       dbg('alias:maybe:skip', { provided, hasSub });
       return; // not an alias-only invocation
     }
+
+    if (aliasHandled) {
+      dbg('alias:maybe:already-handled');
+      return;
+    }
+    aliasHandled = true;
 
     dbg('alias-only invocation detected');
     // Merge CLI options and resolve dotenv context.
@@ -147,6 +151,13 @@ export const attachParentAlias = (
 
   // Execute alias-only invocations whether the root handles the action
   // itself (preAction) or Commander routes to a default subcommand (preSubcommand).
-  cli.hook('preAction', maybeRunAlias as (c: Command) => unknown);
-  cli.hook('preSubcommand', maybeRunAlias as (c: Command) => unknown);
+  cli.hook(
+    'preAction',
+    async (thisCommand: Command, _actionCommand: Command) => {
+      await maybeRunAlias(thisCommand);
+    },
+  );
+  cli.hook('preSubcommand', async (thisCommand: Command) => {
+    await maybeRunAlias(thisCommand);
+  });
 };
