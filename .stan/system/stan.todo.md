@@ -1,10 +1,9 @@
 # Development Plan — get-dotenv
 
-When updated: 2025-09-19T05:10:00Z
+When updated: 2025-09-19T05:25:00Z
 NOTE: Update timestamp on commit.
 
-## Next up
-- Verify the batch list default-subcommand fix
+## Next up- Verify the batch list default-subcommand fix
 
 - Re-run E2E; confirm “batch list (-l)” passes on Windows. If not, add
   debug to print merged globs and list flag resolution in the default
@@ -40,10 +39,14 @@ NOTE: Update timestamp on commit.
 
 ## Completed (recent)
 
+- Alias (--cmd) tests: default stdio to 'inherit' under tests and suppress
+  capture even when GETDOTENV_STDIO=pipe is present. Compute an underTests flag
+  once and reuse for both stdio and fallback-exit gating to keep unit tests
+  deterministic without changing real CLI behavior.
+
 - Alias (--cmd) tests: gate fallback process.exit(0) under tests to avoid
   terminating the runner. Suppress when GETDOTENV_TEST=1 or VITEST_WORKER_ID
   is present; real CLI behavior for users remains unchanged.
-
 - Decompose batch handlers module:
   - Split src/plugins/batch/handlers.ts into:
     - src/plugins/batch/actions/defaultCmdAction.ts    - src/plugins/batch/actions/parentAction.ts

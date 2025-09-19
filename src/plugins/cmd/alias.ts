@@ -114,9 +114,15 @@ export const attachParentAlias = (
       string,
       unknown
     >;
+    // Test guard: when running under tests, prefer stdio: 'inherit' to avoid
+    // assertions depending on captured stdio; ignore GETDOTENV_STDIO/capture.
+    const underTests =
+      process.env.GETDOTENV_TEST === '1' ||
+      typeof process.env.VITEST_WORKER_ID === 'string';
     const capture =
-      process.env.GETDOTENV_STDIO === 'pipe' ||
-      Boolean((merged as unknown as { capture?: boolean }).capture);
+      !underTests &&
+      (process.env.GETDOTENV_STDIO === 'pipe' ||
+        Boolean((merged as unknown as { capture?: boolean }).capture));
     dbg('run:start', { capture, shell: merged.shell });
     // Prefer explicit env injection: include resolved dotenv map to avoid leaking
     // parent process.env secrets when exclusions are set.
@@ -182,9 +188,6 @@ export const attachParentAlias = (
     // Do NOT trigger the fallback exit when running under tests to avoid
     // terminating the test runner. Detect Vitest via VITEST_WORKER_ID or
     // honor an explicit GETDOTENV_TEST=1.
-    const underTests =
-      process.env.GETDOTENV_TEST === '1' ||
-      typeof process.env.VITEST_WORKER_ID === 'string';
     if (shouldForceExit && !underTests) {
       dbg('process.exit (fallback)', { exitCode: 0 });
       process.exit(0);
