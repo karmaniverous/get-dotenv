@@ -1,9 +1,10 @@
 # Development Plan — get-dotenv
 
-When updated: 2025-09-19T01:20:00Z
+When updated: 2025-09-19T02:45:00Z
 NOTE: Update timestamp on commit.
 
 ## Next up
+
 - Verify the batch list default-subcommand fix
 
 - Re-run E2E; confirm “batch list (-l)” passes on Windows. If not, add
@@ -37,7 +38,18 @@ NOTE: Update timestamp on commit.
 - Documentation
   - Document --capture and GETDOTENV_STDIO=pipe; clarify CI/test usage and
   - Recommend npm-run best practice: use --cmd alias so flags apply to getdotenv.
+
 ## Completed (recent)
+
+- Smoke: make the trace step explicit by invoking the default “cmd”
+  subcommand before the positional node command. This prevents the root
+  option “--trace [keys…]” from greedily consuming the command tokens,
+  ensuring trace diagnostics are emitted to stderr in the smoke run.
+
+- Shell-off argv sanitization (Windows): collapse repeated symmetric
+  outer quotes until stable when spawning via execa with argv arrays.
+  This hardens PowerShell scenarios that produce stacked quotes (e.g.,
+  """…""") around node -e code while remaining safe for POSIX and cmd.
 
 - Diagnostics: add --trace with optional space-delimited keys. When enabled,
   cmd and parent --cmd print a child-env composition snapshot (parent, dotenv,
@@ -45,10 +57,10 @@ NOTE: Update timestamp on commit.
   only. This makes the source of each key explicit without altering behavior.
   Root option is wired through attachRootOptions; legacy generator remains
   backward compatible.
-- Shell-off robustness: when shell is OFF and no script alias remapping
-  occurred, pass the original argv array to execa instead of re-tokenizing a
-  joined string. This preserves PowerShell-quoted tokens (e.g., node -e "..."),
-  preventing SyntaxError in node -e on Windows without changing shell behavior.
+  - Shell-off robustness: when shell is OFF and no script alias remapping
+    occurred, pass the original argv array to execa instead of re-tokenizing a
+    joined string. This preserves PowerShell-quoted tokens (e.g., node -e "..."),
+    preventing SyntaxError in node -e on Windows without changing shell behavior.
 - Host skeleton: make GetDotenvCli default preSubcommand resolve with
   loadProcess=false to avoid mutating process.env before passOptions runs.
   Prevents private keys from leaking into the CLI process env and stabilizes the exclude-private E2E on Windows when combined with explicit ctx.dotenv injection.
@@ -73,7 +85,6 @@ NOTE: Update timestamp on commit.
 - E2E harness: replace "npx tsx src/cli/getdotenv" with
   "node --import tsx src/cli/getdotenv" to avoid npx stalls on Windows and
   ensure local loader resolution without network/interactive prompts.
-
 - Alias (--cmd) handler deduped and hook typings fixed:
   run alias once via a guard when both preSubcommand and preAction fire; use
   proper Commander hook signatures; remove unnecessary opts() optional chain.

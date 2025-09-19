@@ -10,17 +10,22 @@ const dbg = (...args: unknown[]) => {
   }
 };
 
-// Strip a single pair of surrounding quotes (single or double) if present.
+// Strip repeated symmetric outer quotes (single or double) until stable.
 // This is safe for argv arrays passed to execa (no quoting needed) and avoids
 // passing quote characters through to Node (e.g., for `node -e "<code>"`).
+// Handles stacked quotes from shells like PowerShell: """code""" -> code.
 const stripOuterQuotes = (s: string): string => {
-  if (s.length >= 2) {
-    const a = s.charAt(0);
-    const b = s.charAt(s.length - 1);
-    if ((a === '"' && b === '"') || (a === "'" && b === "'"))
-      return s.slice(1, -1);
+  let out = s;
+  // Repeatedly trim only when the entire string is wrapped in matching quotes.
+  // Stop as soon as the ends are asymmetric or no quotes remain.
+  while (out.length >= 2) {
+    const a = out.charAt(0);
+    const b = out.charAt(out.length - 1);
+    const symmetric = (a === '"' && b === '"') || (a === "'" && b === "'");
+    if (!symmetric) break;
+    out = out.slice(1, -1);
   }
-  return s;
+  return out;
 };
 
 export const runCommand = async (

@@ -157,12 +157,13 @@ const main = async () => {
       '--trace',
       'APP_SETTING',
       'ENV_SETTING',
+      // Explicit default subcommand to prevent --trace from greedily consuming tokens
+      'cmd',
       'node',
       '-e',
       '0',
     ),
   );
-
   // 5) Batch list
   failures += await run(
     '5) Batch list (full partial)',
