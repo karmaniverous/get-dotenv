@@ -1,10 +1,9 @@
 # Development Plan — get-dotenv
 
-When updated: 2025-09-19T05:32:00Z
+When updated: 2025-09-19T05:38:00Z
 NOTE: Update timestamp on commit.
 
 ## Next up
-
 - Unit tests
   - Expand coverage for argv sanitization and tokenize/run edge cases across
     platforms (no quotes, single, double, stacked quotes; PowerShell specifics).
@@ -17,10 +16,13 @@ NOTE: Update timestamp on commit.
 
 ## Completed (recent)
 
+- Alias (--cmd): ensure termination even when exitCode is not surfaced and
+  capture is off. Always exit outside tests (exit 0 fallback); continue to
+  suppress fallback exit under tests to keep the runner alive.
+
 - Batch list default-subcommand fix verified on Windows (E2E and smoke green).
 - Full E2E suite green across platforms; alias (--cmd) capture behavior
   validated under tests (fallback exit gated; stdio inherit enforced).
-
 - Alias (--cmd) tests: default stdio to 'inherit' under tests and suppress
   capture even when GETDOTENV_STDIO=pipe is present. Compute an underTests flag
   once and reuse for both stdio and fallback-exit gating to keep unit tests

@@ -181,18 +181,16 @@ export const attachParentAlias = (
       process.exit(exitCode);
     }
     // Fallback: Some environments may not surface a numeric exitCode even on success.
-    // When capture/pipe is requested, force a clean exit to avoid hanging the process.
-    const shouldForceExit =
-      process.env.GETDOTENV_STDIO === 'pipe' ||
-      Boolean((merged as unknown as { capture?: boolean }).capture);
-    // Do NOT trigger the fallback exit when running under tests to avoid
-    // terminating the test runner. Detect Vitest via VITEST_WORKER_ID or
-    // honor an explicit GETDOTENV_TEST=1.
-    if (shouldForceExit && !underTests) {
-      dbg('process.exit (fallback)', { exitCode: 0 });
+    // Always terminate alias-only invocations outside tests to avoid hanging the process,
+    // regardless of capture/GETDOTENV_STDIO. Under tests, suppress to keep the runner alive.
+    if (!underTests) {
+      dbg('process.exit (fallback: non-numeric exitCode)', { exitCode: 0 });
       process.exit(0);
-    } else if (shouldForceExit && underTests) {
-      dbg('process.exit (fallback suppressed for tests)', { exitCode: 0 });
+    } else {
+      dbg(
+        'process.exit (fallback suppressed for tests: non-numeric exitCode)',
+        { exitCode: 0 },
+      );
     }
   };
 
