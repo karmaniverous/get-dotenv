@@ -44,13 +44,19 @@ NOTE: Update timestamp on commit.
   executor and bypass tokenize for arrays. This preserves embedded quotes in
   Node -e code and fixes the E2E “batch exec” case on Windows.
 
+- Batch executor TS fix and parent-path behavior:
+  - Coerce array → string when using execaCommand (shell branch) to satisfy
+    typing (TS2769) and runtime expectations.
+  - Keep parent positional path passing a string (resolved) to preserve
+    existing unit test assertions; default subcommand retains argv arrays for shell-off.
+
 - E2E harness: switch CLI invocations to argv arrays via execa (no shell)
-  to avoid Windows shell quoting issues (e.g., “??” and stacked quotes).  Build argv as [ '--import','tsx','src/cli/getdotenv', ... ] with
+  to avoid Windows shell quoting issues (e.g., “??” and stacked quotes). Build argv as [ '--import','tsx','src/cli/getdotenv', ... ] with
   process.execPath; pass Node -e code as a single argv token without
   extra quoting. Stabilizes failing E2E tests on Windows.
 - Smoke: make the trace step explicit by invoking the default “cmd”
   subcommand before the positional node command. This prevents the root
-  option “--trace [keys…]” from greedily consuming the command tokens,  ensuring trace diagnostics are emitted to stderr in the smoke run.
+  option “--trace [keys…]” from greedily consuming the command tokens, ensuring trace diagnostics are emitted to stderr in the smoke run.
 
 - Shell-off argv sanitization (Windows): collapse repeated symmetric
   outer quotes until stable when spawning via execa with argv arrays.

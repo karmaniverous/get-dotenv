@@ -58,7 +58,9 @@ const runCommand = async (
       );
     }
   } else {
-    const result = await execaCommand(command, { shell, ...opts });
+    // execaCommand expects a string; coerce array by joining with spaces.
+    const cmdStr = Array.isArray(command) ? command.join(' ') : command;
+    const result = await execaCommand(cmdStr, { shell, ...opts });
     if (opts.stdio === 'pipe' && result.stdout) {
       process.stdout.write(
         result.stdout + (result.stdout.endsWith('\n') ? '' : '\n'),
@@ -150,8 +152,11 @@ export const execShellCommandBatch = async ({
   const headerRootPath = `ROOT:  ${absRootPath}`;
   const headerGlobs = `GLOBS: ${globs}`;
   // Prepare a safe label for the header (avoid undefined in template)
-  const commandLabel =
-    typeof command === 'string' && command.length > 0 ? command : '';
+  const commandLabel = Array.isArray(command)
+    ? command.join(' ')
+    : typeof command === 'string' && command.length > 0
+      ? command
+      : '';
   const headerCommand = list ? `CMD:   (list only)` : `CMD:   ${commandLabel}`;
 
   logger.info(

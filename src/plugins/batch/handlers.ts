@@ -262,11 +262,8 @@ export const buildParentAction =
         input,
         shellAll,
       ) as unknown as string | boolean | URL;
-      // Preserve original argv array when shell is OFF and no script remap occurred.
-      const commandArg =
-        shellSetting === false && resolved === input
-          ? argsParent.map(String)
-          : resolved;
+      // Parent path: pass a string; executor handles shell-specific details.
+      const commandArg = resolved;
 
       await execShellCommandBatch({
         command: commandArg,
