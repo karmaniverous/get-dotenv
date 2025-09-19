@@ -1,10 +1,10 @@
 import { execa } from 'execa';
 import { describe, expect, it } from 'vitest';
 
-// NOTE: The alias path suppresses process.exit() under tests when VITEST_WORKER_ID
 // Windows-only alias termination check with capture enabled.
 // Ensures the alias path (--cmd) terminates within a bounded time and
-// produces the expected output. Uses execa's timeout to guarantee the test// never hangs the runner; on failure, partial stdout/stderr are printed.
+// produces the expected output. Uses execa's timeout to guarantee the test
+// never hangs the runner; on failure, partial stdout/stderr are printed.
 describe('E2E alias termination (Windows)', () => {
   const isWindows = process.platform === 'win32';
 
@@ -23,6 +23,9 @@ describe('E2E alias termination (Windows)', () => {
         'console.log(JSON.stringify({APP:process.env.APP_SETTING ?? "",ENV:process.env.ENV_SETTING ?? "",SECRET:process.env.APP_SECRET ?? ""}))';
 
       // Build argv using the alias on the parent (--cmd), not the cmd subcommand.
+      // IMPORTANT: quote the entire alias payload as a single token so Commander
+      // does not treat "-e" as the parent --env flag.
+      const aliasPayload = `node -e "${codeJson}"`;
       const argv = CLI(
         '--shell-off',
         '--paths',
@@ -35,9 +38,7 @@ describe('E2E alias termination (Windows)', () => {
         'secret',
         '-r',
         '--cmd',
-        'node',
-        '-e',
-        codeJson,
+        aliasPayload,
       );
 
       // 5s step timeout; adjust via env if needed (CI variance).
@@ -46,13 +47,9 @@ describe('E2E alias termination (Windows)', () => {
         10,
       );
 
-      // Important: ensure the child CLI is NOT treated as "under tests".
-      // The alias executor suppresses process.exit when underTests=true
-      // (VITEST_WORKER_ID or GETDOTENV_TEST set), which would cause the
-      // child process to linger and this test to time out.
+      // Ensure the child CLI is NOT treated as "under tests" so the alias
+      // path is free to call process.exit normally. Keep capture ON.
       const childEnv = {
-        GETDOTENV_FORCE_EXIT: '1',
-        GETDOTENV_DEBUG: '1',
         ...process.env,
         GETDOTENV_STDIO: 'pipe',
         VITEST_WORKER_ID: undefined,
@@ -64,7 +61,6 @@ describe('E2E alias termination (Windows)', () => {
         timeout: STEP_TIMEOUT_MS,
         killSignal: 'SIGKILL',
       });
-
       // If we timed out, fail hard with context; Vitest will print stdout/stderr.
       expect(timedOut).toBeFalsy();
       expect(exitCode).toBe(0);

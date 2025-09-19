@@ -1,10 +1,9 @@
 # Development Plan — get-dotenv
 
-When updated: 2025-09-19T17:35:00Z
+When updated: 2025-09-19T18:55:00Z
 NOTE: Update timestamp on commit.
 
 ## Next up- E2E (Vitest) migration:
-
 - Introduce a small execa wrapper with per-step timeouts (AbortController/timeout)
   and partial stdout/stderr capture; convert smoke scenarios into Vitest tests, including a Windows-only alias test with GETDOTENV_STDIO=pipe.
 - Port remaining smoke steps (dynamic, trace, batch) into Vitest using the same helper.
@@ -19,9 +18,14 @@ NOTE: Update timestamp on commit.
 
 ## Completed (recent)
 
+- Windows alias E2E termination
+  - Quote the parent --cmd payload as a single token (`--cmd 'node -e "..."'`)
+    to prevent Commander from capturing `-e` as the parent --env flag. Removes
+    reliance on GETDOTENV_FORCE_EXIT for this test; termination succeeds under
+    capture with execa timeouts as the safety net.
+
 - Vitest alias test env sanitization
-  - Unset VITEST_WORKER_ID and GETDOTENV_TEST in the child env so the alias
-    path is allowed to call process.exit; keep GETDOTENV_STDIO=pipe to exercise
+  - Unset VITEST_WORKER_ID and GETDOTENV_TEST in the child env so the alias    path is allowed to call process.exit; keep GETDOTENV_STDIO=pipe to exercise
     capture. Prevents execa timeouts while retaining deterministic termination.
 - Alias forced-exit guard (diagnostics)
   - Add GETDOTENV_FORCE_EXIT=1 support in the alias executor to schedule a
