@@ -47,16 +47,19 @@ export class GetDotenvCli<
     // Commander requires parent commands to enable positional options when a
     // child uses passThroughOptions.
     this.enablePositionalOptions();
-    // Skeleton preSubcommand hook: produce context if absent.
+    // Skeleton preSubcommand hook: produce a context if absent, without
+    // mutating process.env. The passOptions hook (when installed) will
+    // compute the final context using merged CLI options; keeping
+    // loadProcess=false here avoids leaking dotenv values into the parent
+    // process env before subcommands execute.
     this.hook('preSubcommand', async () => {
       if (this.getCtx()) return;
-      await this.resolveAndLoad({} as Partial<TOptions>);
+      await this.resolveAndLoad({ loadProcess: false } as Partial<TOptions>);
     });
   }
 
   /**
-   * Resolve options (strict) and compute dotenv context.
-   * Stores the context on the instance under a symbol.
+   * Resolve options (strict) and compute dotenv context.   * Stores the context on the instance under a symbol.
    */
   async resolveAndLoad(
     customOptions: Partial<TOptions> = {},
