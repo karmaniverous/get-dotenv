@@ -1,23 +1,35 @@
 # Development Plan — get-dotenv
 
-When updated: 2025-09-19T20:20:00Z
+When updated: 2025-09-19T21:10:00Z
 NOTE: Update timestamp on commit.
 
-## Next up- E2E (Vitest) migration:- Introduce a small execa wrapper with per-step timeouts (AbortController/timeout)  and partial stdout/stderr capture; convert smoke scenarios into Vitest tests, including a Windows-only alias test with GETDOTENV_STDIO=pipe.- Port remaining smoke steps (dynamic, trace, batch) into Vitest using the same helper.- Unit tests
-  - Expand coverage for argv sanitization and tokenize/run edge cases across
-    platforms (no quotes, single, double, stacked quotes; PowerShell specifics).- Documentation
-  - Update guides/README with --trace usage, GETDOTENV_STDIO=pipe and --capture
-    for CI, and npm-run guidance to prefer the --cmd alias in scripts.
+## Next up
+
+- Tests
+  - Add unit tests for tokenize to cover doubled quotes inside quoted segments,
+    ensuring node -e payloads remain intact across platforms.
+- Documentation/help
+  - Update README and CLI help to emphasize quoting: when passing getdotenv flags
+    after --cmd, quote the entire alias payload
+    (PowerShell and POSIX examples). Prefer the cmd subcommand if trailing parent
+    flags aren’t needed.
 - Release prep
   - Run lint/typecheck/build; verify:package and verify:tarball; bump version
     when ready.
 
 ## Completed (recent)
 
+- Windows alias E2E termination (PowerShell/Windows)
+  - Special-case alias --cmd payload under shell-off: when resolved===input and
+    payload is a node -e/--eval snippet, pass argv array ["node","-e","<code>"]
+    to runCommand. Avoids lossy re-tokenization and fixes the Windows E2E hang.
+
+- Remove dead file
+  - Deleted src/plugins/cmd/run.ts (superseded by src/cliCore/exec.ts).
+
 - Shared exec helper (env/stdio exact-optional, sanitization)
   - Only include cwd/env/stdio in execa options when defined to satisfy
-    exactOptionalPropertyTypes. Sanitize env by dropping undefined-valued
-    entries and coercing to strings to match execa’s expected type
+    exactOptionalPropertyTypes. Sanitize env by dropping undefined-valued    entries and coercing to strings to match execa’s expected type
     (Readonly<Partial<Record<string, string>>>).
 
 - Shared exec helper (cwd exact-optional fix)
@@ -33,11 +45,6 @@ NOTE: Update timestamp on commit.
   - Hardened tokenizer to support Windows-style doubled quotes inside quoted
     segments (e.g., "" -> ") to preserve Node -e payload integrity when the
     alias payload is passed as a single token.
-
-- Windows alias E2E termination
-  - Quote the parent --cmd payload as a single token (`--cmd 'node -e "..."'`)
-    to prevent Commander from capturing `-e` as the parent --env flag. Removes    reliance on GETDOTENV_FORCE_EXIT for this test; termination succeeds under
-    capture with execa timeouts as the safety net.
 
 - Vitest alias test env sanitization
   - Unset VITEST_WORKER_ID and GETDOTENV_TEST in the child env so the alias    path is allowed to call process.exit; keep GETDOTENV_STDIO=pipe to exercise

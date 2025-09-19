@@ -164,21 +164,52 @@ export const attachParentAlias = (
     }
     let exitCode = Number.NaN;
     try {
-      exitCode = await runCommand(
-        resolved,
-        resolveShell(merged.scripts, input, merged.shell) as unknown as
-          | string
-          | boolean
-          | URL,
-        {
-          env: {
-            ...process.env,
-            ...dotenv,
-            getDotenvCliOptions: JSON.stringify(envBag),
-          },
-          stdio: capture ? 'pipe' : 'inherit',
+      // Resolve shell and preserve argv for Node -e snippets under shell-off.
+      const shellSetting = resolveShell(
+        merged.scripts,
+        input,
+        merged.shell,
+      ) as unknown as string | boolean | URL;
+
+      let commandArg: string | string[] = resolved;
+      /**
+       * Special-case: when shell is OFF and no script alias remap occurred
+       * (resolved === input), treat a Node eval payload as an argv array to
+       * avoid lossy re-tokenization of the code string.
+       *
+       * Examples handled:
+       *   "node -e \"console.log(JSON.stringify(...))\""
+       *   "node --eval 'console.log(...)'"
+       *
+       * We peel exactly one pair of symmetric outer quotes from the code
+       * argument when present; inner quotes remain untouched.
+       */
+      if (shellSetting === false && resolved === input) {
+        const m = /^\s*node\s+(--eval|-e)\s+([\s\S]+)$/i.exec(input);
+        if (m) {
+          const evalFlag = m[1];
+          let codeArg = m[2].trim();
+          const a = codeArg.charAt(0);
+          const b = codeArg.charAt(codeArg.length - 1);
+          const symmetric =
+            (a === '"' && b === '"') || (a === "'" && b === "'");
+          if (symmetric && codeArg.length >= 2) {
+            codeArg = codeArg.slice(1, -1);
+          }
+          // Normalize flag casing to the original form
+          const flag = evalFlag.startsWith('--') ? '--eval' : '-e';
+          commandArg = ['node', flag, codeArg];
+        }
+      }
+
+      exitCode = await runCommand(commandArg, shellSetting, {
+        env: {
+          ...process.env,
+          ...dotenv,
+          getDotenvCliOptions: JSON.stringify(envBag),
         },
-      );
+        stdio: capture ? 'pipe' : 'inherit',
+      });
       dbg('run:done', { exitCode });
     } catch (err) {
       const code =
