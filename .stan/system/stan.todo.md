@@ -3,7 +3,12 @@
 When updated: 2025-09-19T05:45:00Z
 NOTE: Update timestamp on commit.
 
-## Next up- Unit tests
+## Next up
+
+- E2E (Vitest) migration:
+  - Introduce a small execa wrapper with per-step timeouts (AbortController/timeout)
+    and partial stdout/stderr capture; convert smoke scenarios into Vitest tests, including a Windows-only alias test with GETDOTENV_STDIO=pipe.
+- Unit tests
   - Expand coverage for argv sanitization and tokenize/run edge cases across
     platforms (no quotes, single, double, stacked quotes; PowerShell specifics).
 - Documentation
@@ -15,10 +20,15 @@ NOTE: Update timestamp on commit.
 
 ## Completed (recent)
 
+- Smoke harness: step-level timeout and global watchdog
+  - Per-step timeout (default 5s) via GETDOTENV_SMOKE_STEP_TIMEOUT_MS, passed to
+    execa; on timeout, capture partial stdout/stderr and return exit 124.
+  - Global watchdog (default 60s) via GETDOTENV_SMOKE_GLOBAL_TIMEOUT_MS to hard-exit
+    if something evades the step timeout.
+
 - Alias (--cmd): robust termination on all paths. Wrap runCommand in try/catch
   and always exit outside tests using the surfaced exitCode (or 1 on error).
-  Keep success fallback (non-numeric code) and test gating intact to prevent
-  killing the test runner.
+  Keep success fallback (non-numeric code) and test gating intact to prevent killing the test runner.
 
 - Alias (--cmd): ensure termination even when exitCode is not surfaced and
   capture is off. Always exit outside tests (exit 0 fallback); continue to

@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 /**
  * Smoke suite for get-dotenv (manual scenarios not fully covered by E2E on Windows).
+ * Adds step-level timeouts and a global watchdog to guarantee termination.
  *
  * Runs:
- *  1) Core positional cmd with --shell-off (JSON print of APP/ENV/SECRET)
- *  2) Dynamic module (DYNAMIC_DOUBLE)
+ *  1) Core positional cmd with --shell-off (JSON print of APP/ENV/SECRET) *  2) Dynamic module (DYNAMIC_DOUBLE)
  *  3) Output file write/read (-o)
  *  4) Trace subset (--trace APP_SETTING ENV_SETTING)
  *  5) Batch list (globs: full partial)
@@ -19,12 +19,28 @@ import fs from 'fs-extra';
 import path from 'node:path';
 
 const nodeBin = process.execPath; // current Node
+// Timeout configuration:
+// - Per-step timeout defaults to 5s; override via GETDOTENV_SMOKE_STEP_TIMEOUT_MS.
+// - Global watchdog defaults to 60s; override via GETDOTENV_SMOKE_GLOBAL_TIMEOUT_MS.
+const STEP_TIMEOUT_MS = Number.parseInt(
+  process.env.GETDOTENV_SMOKE_STEP_TIMEOUT_MS ?? '5000',
+  10,
+);
+const GLOBAL_TIMEOUT_MS = Number.parseInt(
+  process.env.GETDOTENV_SMOKE_GLOBAL_TIMEOUT_MS ?? '60000',
+  10,
+);
 const baseEnv = {
   ...process.env,
   GETDOTENV_STDIO: 'pipe',
 };
 
 const cli = (...args) => ['--import', 'tsx', 'src/cli/getdotenv', ...args];
+// Global watchdog (belt & suspenders)
+const globalWatchdog = setTimeout(() => {
+  console.error(`[watchdog] Smoke global timeout (${GLOBAL_TIMEOUT_MS} ms)`);
+  process.exit(124);
+}, GLOBAL_TIMEOUT_MS);
 
 const hr = () => console.log('-'.repeat(72));
 const section = (title) => {
@@ -38,6 +54,8 @@ const run = async (title, argv, opts = {}) => {
   try {
     const { stdout, stderr, exitCode } = await execa(nodeBin, argv, {
       env: baseEnv,
+      timeout: STEP_TIMEOUT_MS,
+      killSignal: 'SIGKILL',
       ...opts,
     });
     if (stderr && stderr.trim()) {
@@ -52,9 +70,22 @@ const run = async (title, argv, opts = {}) => {
     return exitCode ?? 0;
   } catch (err) {
     const e = err;
-    const code = typeof e?.exitCode === 'number' ? e.exitCode : 1;
+    const code =
+      typeof e?.exitCode === 'number' ? e.exitCode : e?.timedOut ? 124 : 1;
+    if (e?.timedOut) {
+      console.error(`[timeout] step exceeded ${STEP_TIMEOUT_MS} ms`);
+    }
+    // Print any captured stderr/stdout for diagnostics.
+    if (e?.stderr && String(e.stderr).trim()) {
+      console.error('[stderr]');
+      console.error(String(e.stderr).trim());
+    }
+    if (e?.stdout && String(e.stdout).trim()) {
+      console.log('[stdout]');
+      console.log(String(e.stdout).trim());
+    }
     console.error('[error]');
-    console.error(e?.stderr ?? String(e));
+    console.error(String(e));
     console.log(`[exit] ${code}`);
     return code;
   }
@@ -62,7 +93,6 @@ const run = async (title, argv, opts = {}) => {
 
 const main = async () => {
   let failures = 0;
-
   // 1) Core positional cmd (shell-off), expect SECRET is blank due to -r
   const codeJson =
     'console.log(JSON.stringify({APP:process.env.APP_SETTING ?? "",ENV:process.env.ENV_SETTING ?? "",SECRET:process.env.APP_SECRET ?? ""}))';
@@ -172,10 +202,12 @@ const main = async () => {
 
   hr();
   console.log(failures > 0 ? `Smoke: FAIL (${failures} step(s))` : 'Smoke: OK');
+  clearTimeout(globalWatchdog);
   process.exit(failures > 0 ? 1 : 0);
 };
 
 main().catch((e) => {
   console.error(e?.stack ?? String(e));
+  clearTimeout(globalWatchdog);
   process.exit(1);
 });
