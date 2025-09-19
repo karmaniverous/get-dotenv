@@ -1,19 +1,21 @@
 # Development Plan — get-dotenv
 
-When updated: 2025-09-19T00:15:00Z
+When updated: 2025-09-19T00:40:00Z
 NOTE: Update timestamp on commit.
 
 ## Next up
-
 - Verify the batch list default-subcommand fix
 
 - Re-run E2E; confirm “batch list (-l)” passes on Windows. If not, add
   debug to print merged globs and list flag resolution in the default
   subcommand.
 
+- Shell-off argv passthrough (cmd):
+  pass original argv array to execa when shell=false and no script remap,
+  to preserve node -e code tokens on Windows/PowerShell.
+
 - Re-run full E2E after flag fix; confirm:
-  - excludes private (-r) now blanks APP_SECRET
-  - no regressions across core flows
+  - excludes private (-r) now blanks APP_SECRET  - no regressions across core flows
 
 - Stabilize alias (--cmd) capture on Windows (E2E timeouts)
   - Confirm preAction executes in alias-only invocations (no subcommand present).

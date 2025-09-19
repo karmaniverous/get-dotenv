@@ -176,7 +176,21 @@ export const cmdPlugin = (options: CmdPluginOptions = {}) =>
               input,
               shell,
             ) as unknown as string | boolean | URL;
-            await runCommand(resolved, shellSetting, {
+            /**
+             * Preserve original argv array when:
+             * - shell is OFF (plain execa), and
+             * - no script alias remap occurred (resolved === input).
+             *
+             * This avoids lossy re-tokenization of code snippets such as:
+             *   node -e "console.log(process.env.APP_SECRET ?? '')"
+             * where quotes may have been stripped by the parent shell and
+             * spaces inside the code must remain a single argument.
+             */
+            const commandArg =
+              shellSetting === false && resolved === input
+                ? args.map(String)
+                : resolved;
+            await runCommand(commandArg, shellSetting, {
               env: {
                 ...process.env,
                 ...dotenv,
