@@ -1,10 +1,9 @@
 # Development Plan — get-dotenv
 
-When updated: 2025-09-19T19:45:00Z
+When updated: 2025-09-19T20:05:00Z
 NOTE: Update timestamp on commit.
 
-## Next up- E2E (Vitest) migration:- Introduce a small execa wrapper with per-step timeouts (AbortController/timeout)  and partial stdout/stderr capture; convert smoke scenarios into Vitest tests, including a Windows-only alias test with GETDOTENV_STDIO=pipe.
-- Port remaining smoke steps (dynamic, trace, batch) into Vitest using the same helper.
+## Next up- E2E (Vitest) migration:- Introduce a small execa wrapper with per-step timeouts (AbortController/timeout)  and partial stdout/stderr capture; convert smoke scenarios into Vitest tests, including a Windows-only alias test with GETDOTENV_STDIO=pipe.- Port remaining smoke steps (dynamic, trace, batch) into Vitest using the same helper.
 - Unit tests
   - Expand coverage for argv sanitization and tokenize/run edge cases across
     platforms (no quotes, single, double, stacked quotes; PowerShell specifics).- Documentation
@@ -16,10 +15,14 @@ NOTE: Update timestamp on commit.
 
 ## Completed (recent)
 
+- Shared exec helper (cwd exact-optional fix)
+  - Updated exec helper to include `cwd` in options only when defined and
+    typed it as `string | URL`, satisfying execa’s types under
+    exactOptionalPropertyTypes and removing TS2769 build/typecheck errors.
+
 - Shared exec helper options (cwd)
   - Updated src/cliCore/exec.ts runCommand signature to accept an optional
     cwd and forwarded it to execa/execaCommand. Fixes TS2353 in batch exec.
-
 - Shared exec helper and tokenizer hardening
   - Introduced src/cliCore/exec.ts exporting runCommand as a shared helper for
     all “exec surfaces” (cmd, alias, batch). Refactored cmd/alias and batch to    use it, removing duplicated implementations.
