@@ -2,7 +2,6 @@
   "entry": [
     "src/index.ts",
     "src/cliHost/index.ts",
-    "src/cli/getdotenv-host/index.ts",
     "src/plugins/batch/index.ts",
     "src/plugins/init/index.ts",
     "src/config/index.ts",

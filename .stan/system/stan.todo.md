@@ -1,22 +1,28 @@
 # Development Plan — get-dotenv
 
-When updated: 2025-09-19T21:55:00Z
+When updated: 2025-09-19T23:30:00Z
 NOTE: Update timestamp on commit.
 
-## Next up- Tests
-  - Add unit tests for tokenize to cover doubled quotes inside quoted segments,
-    ensuring node -e payloads remain intact across platforms.
-- Documentation/help
-  - Update README and CLI help to emphasize quoting: when passing getdotenv flags
-    after --cmd, quote the entire alias payload
-    (PowerShell and POSIX examples). Prefer the cmd subcommand if trailing parent
-    flags aren’t needed.
+## Next up
 - Release prep
   - Run lint/typecheck/build; verify:package and verify:tarball; bump version
     when ready.
 
 ## Completed (recent)
+-
+  - Docs/help: README updated to emphasize quoting the entire `--cmd` payload
+    (POSIX and PowerShell examples), diagnostics via `--trace`, and CI output
+    capture using `--capture` / `GETDOTENV_STDIO=pipe`.
+  - Knip: removed obsolete demo CLI entry from knip.json (`src/cli/getdotenv-host/index.ts`).
 
+- Tokenize unit tests (refinement)
+  - Updated tests to use Windows/PowerShell doubled-quote semantics inside    double-quoted eval payloads ("" → ") and adjusted JSON payload case to
+    assert the collapsed single quote correctly.
+- Tokenize unit tests (Windows/PowerShell doubled quotes)
+  - Added tests covering:
+    - Unquoted splits and quoted segments (single/double) as single tokens.    - Windows-style doubled quotes inside quoted segments ("" -> " and '' -> ').
+    - Representative node -e payload with nested JSON braces to ensure
+      single-token preservation for eval code.
 - Alias --cmd node -e robustness (Windows/PowerShell)
   - Fixed TypeScript strict errors around regex group access in alias handler.
   - Strip symmetric outer quotes on the entire alias payload before regex.
@@ -26,31 +32,31 @@ NOTE: Update timestamp on commit.
   - Removed unnecessary nullish coalescing and narrowed tokenized parts to satisfy lint and noUncheckedIndexedAccess.
 - Windows alias E2E termination (PowerShell/Windows)
   - Special-case alias --cmd payload under shell-off: when resolved===input and
-    payload is a node -e/--eval snippet, pass argv array ["node","-e","<code>"]    to runCommand. Avoids lossy re-tokenization and fixes the Windows E2E hang.
+    payload is a node -e/--eval snippet, pass argv array ["node","-e","<code>"] to runCommand. Avoids lossy re-tokenization and fixes the Windows E2E hang.
 - Remove dead file
   - Deleted src/plugins/cmd/run.ts (superseded by src/cliCore/exec.ts).
 
 - Shared exec helper (env/stdio exact-optional, sanitization)
   - Only include cwd/env/stdio in execa options when defined to satisfy
-    exactOptionalPropertyTypes. Sanitize env by dropping undefined-valued    entries and coercing to strings to match execa’s expected type
+    exactOptionalPropertyTypes. Sanitize env by dropping undefined-valued entries and coercing to strings to match execa’s expected type
     (Readonly<Partial<Record<string, string>>>).
 
 - Shared exec helper (cwd exact-optional fix)
   - Updated exec helper to include `cwd` in options only when defined and
-    typed it as `string | URL`, satisfying execa’s types under    exactOptionalPropertyTypes and removing TS2769 build/typecheck errors.
+    typed it as `string | URL`, satisfying execa’s types under exactOptionalPropertyTypes and removing TS2769 build/typecheck errors.
 
 - Shared exec helper options (cwd)
   - Updated src/cliCore/exec.ts runCommand signature to accept an optional
     cwd and forwarded it to execa/execaCommand. Fixes TS2353 in batch exec.
 - Shared exec helper and tokenizer hardening
   - Introduced src/cliCore/exec.ts exporting runCommand as a shared helper for
-    all “exec surfaces” (cmd, alias, batch). Refactored cmd/alias and batch to    use it, removing duplicated implementations.
+    all “exec surfaces” (cmd, alias, batch). Refactored cmd/alias and batch to use it, removing duplicated implementations.
   - Hardened tokenizer to support Windows-style doubled quotes inside quoted
     segments (e.g., "" -> ") to preserve Node -e payload integrity when the
     alias payload is passed as a single token.
 
 - Vitest alias test env sanitization
-  - Unset VITEST_WORKER_ID and GETDOTENV_TEST in the child env so the alias    path is allowed to call process.exit; keep GETDOTENV_STDIO=pipe to exercise
+  - Unset VITEST_WORKER_ID and GETDOTENV_TEST in the child env so the alias path is allowed to call process.exit; keep GETDOTENV_STDIO=pipe to exercise
     capture. Prevents execa timeouts while retaining deterministic termination.
 - Alias forced-exit guard (diagnostics)
   - Add GETDOTENV_FORCE_EXIT=1 support in the alias executor to schedule a

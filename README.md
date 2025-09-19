@@ -322,10 +322,37 @@ Notes:
 - Script-level shell overrides (`scripts[name].shell`) still take precedence over the global
   `--shell`.
 
+Important:
+- When using the parent alias `--cmd` with a Node eval payload, quote the entire
+  payload as a single token so Commander does not treat `-e/--eval` as
+  getdotenv’s `-e, --env` flag.
+  - POSIX example:
+    ```
+    getdotenv --cmd 'node -e "console.log(process.env.APP_SETTING ?? \"\")"'
+    ```
+  - PowerShell example (single quotes are literal in PowerShell):
+    ```
+    getdotenv --cmd 'node -e "console.log(process.env.APP_SETTING ?? \"\")"'
+    ```
+- If you do not need to pass additional parent flags after the command, you can
+  prefer the subcommand form instead:
+  ```
+  getdotenv --shell-off cmd node -e "console.log(process.env.APP_SETTING ?? '')"
+  ```
+
+Diagnostics and CI capture:
+- To capture child stdout/stderr deterministically (e.g., in CI), either set
+  the environment variable `GETDOTENV_STDIO=pipe` or pass `--capture`. Outputs
+  are buffered and re-emitted after completion.
+- For debugging environment composition, use:
+  ```
+  getdotenv --trace [keys...] cmd node -e "0"
+  ```
+  When provided without keys, `--trace` emits a concise origin line for every
+  key (parent | dotenv | unset) to stderr before the child process launches.
 ---
 
 ## Guides
-
 - Cascade and precedence:  - ./guides/cascade.md
 - Shell execution behavior and quoting:
   - ./guides/shell.md
