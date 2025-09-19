@@ -1,10 +1,9 @@
 # Development Plan — get-dotenv
 
-When updated: 2025-09-19T18:55:00Z
+When updated: 2025-09-19T19:25:00Z
 NOTE: Update timestamp on commit.
 
-## Next up- E2E (Vitest) migration:
-- Introduce a small execa wrapper with per-step timeouts (AbortController/timeout)
+## Next up- E2E (Vitest) migration:- Introduce a small execa wrapper with per-step timeouts (AbortController/timeout)
   and partial stdout/stderr capture; convert smoke scenarios into Vitest tests, including a Windows-only alias test with GETDOTENV_STDIO=pipe.
 - Port remaining smoke steps (dynamic, trace, batch) into Vitest using the same helper.
 - Unit tests
@@ -18,10 +17,17 @@ NOTE: Update timestamp on commit.
 
 ## Completed (recent)
 
+- Shared exec helper and tokenizer hardening
+  - Introduced src/cliCore/exec.ts exporting runCommand as a shared helper for
+    all “exec surfaces” (cmd, alias, batch). Refactored cmd/alias and batch to
+    use it, removing duplicated implementations.
+  - Hardened tokenizer to support Windows-style doubled quotes inside quoted
+    segments (e.g., "" -> ") to preserve Node -e payload integrity when the
+    alias payload is passed as a single token.
+
 - Windows alias E2E termination
   - Quote the parent --cmd payload as a single token (`--cmd 'node -e "..."'`)
-    to prevent Commander from capturing `-e` as the parent --env flag. Removes
-    reliance on GETDOTENV_FORCE_EXIT for this test; termination succeeds under
+    to prevent Commander from capturing `-e` as the parent --env flag. Removes    reliance on GETDOTENV_FORCE_EXIT for this test; termination succeeds under
     capture with execa timeouts as the safety net.
 
 - Vitest alias test env sanitization

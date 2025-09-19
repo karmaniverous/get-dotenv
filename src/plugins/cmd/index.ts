@@ -1,5 +1,6 @@
 import { Command } from 'commander';
 
+import { runCommand } from '../../cliCore/exec';
 import type { CommandWithOptions } from '../../cliCore/types';
 import { definePlugin } from '../../cliHost/definePlugin';
 import type { GetDotenvCli } from '../../cliHost/GetDotenvCli';
@@ -7,11 +8,9 @@ import type { GetDotenvCliOptions } from '../../generateGetDotenvCli/GetDotenvCl
 import type { Logger } from '../../GetDotenvOptions';
 import { resolveCommand, resolveShell } from '../../services/batch/resolve';
 import { attachParentAlias } from './alias';
-import { runCommand } from './run';
 export type CmdPluginOptions = {
   /**
-   * When true, register as the default subcommand at the root.
-   */
+   * When true, register as the default subcommand at the root.   */
   asDefault?: boolean;
   /**
    * Optional alias option attached to the parent command to invoke the cmd   * behavior without specifying the subcommand explicitly.

@@ -1,72 +1,14 @@
-import { execa, execaCommand } from 'execa';
 import { globby } from 'globby';
 import { packageDirectory } from 'package-directory';
 import path from 'path';
 
+import { runCommand } from '../../cliCore/exec';
 import type { Logger } from '../../GetDotenvOptions';
 type ExecShellCommandBatchOptions = {
   globs: string;
   logger: Logger;
   pkgCwd?: boolean;
   rootPath: string;
-};
-
-// Tokenize a shell-free command string into argv tokens (preserve quoted segments).
-const tokenize = (command: string): string[] => {
-  const out: string[] = [];
-  let cur = '';
-  let quote: '"' | "'" | null = null;
-  for (let i = 0; i < command.length; i++) {
-    const c = command.charAt(i);
-    if (quote) {
-      if (c === quote) quote = null;
-      else cur += c;
-    } else {
-      if (c === '"' || c === "'") quote = c;
-      else if (/\s/.test(c)) {
-        if (cur) {
-          out.push(cur);
-          cur = '';
-        }
-      } else cur += c;
-    }
-  }
-  if (cur) out.push(cur);
-  return out;
-};
-const runCommand = async (
-  command: string | string[],
-  shell: string | boolean | URL,
-  opts: { cwd: string; env: NodeJS.ProcessEnv; stdio: 'inherit' | 'pipe' },
-) => {
-  if (shell === false) {
-    let file: string | undefined;
-    let args: string[] = [];
-    if (Array.isArray(command)) {
-      file = command[0];
-      args = command.slice(1);
-    } else {
-      const tokens = tokenize(command);
-      file = tokens[0];
-      args = tokens.slice(1);
-    }
-    if (!file) return;
-    const result = await execa(file, args, opts);
-    if (opts.stdio === 'pipe' && result.stdout) {
-      process.stdout.write(
-        result.stdout + (result.stdout.endsWith('\n') ? '' : '\n'),
-      );
-    }
-  } else {
-    // execaCommand expects a string; coerce array by joining with spaces.
-    const cmdStr = Array.isArray(command) ? command.join(' ') : command;
-    const result = await execaCommand(cmdStr, { shell, ...opts });
-    if (opts.stdio === 'pipe' && result.stdout) {
-      process.stdout.write(
-        result.stdout + (result.stdout.endsWith('\n') ? '' : '\n'),
-      );
-    }
-  }
 };
 
 const globPaths = async ({
