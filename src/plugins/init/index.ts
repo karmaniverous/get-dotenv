@@ -14,13 +14,12 @@ import { createInterface } from 'readline/promises';
 import { definePlugin } from '../../cliHost/definePlugin';
 import type { GetDotenvCli } from '../../cliHost/GetDotenvCli';
 import type { Logger } from '../../GetDotenvOptions';
-import { copyTextFile } from './io';
+import { copyTextFile, ensureLines } from './io';
 import { planCliCopies, planConfigCopies } from './plan';
 import { isNonInteractive, promptDecision } from './prompts';
 export type InitPluginOptions = {
   logger?: Logger;
 };
-
 type CopyDecision = 'overwrite' | 'example' | 'skip';
 
 export const initPlugin = (opts: InitPluginOptions = {}) =>
@@ -145,6 +144,18 @@ export const initPlugin = (opts: InitPluginOptions = {}) =>
               } else {
                 logger.log(`Skipped ${path.relative(cwd, item.dest)}`);
               }
+            }
+
+            // Ensure .gitignore includes local config patterns.
+            const giPath = path.join(destRoot, '.gitignore');
+            const { created, changed } = await ensureLines(giPath, [
+              'getdotenv.config.local.*',
+              '*.local',
+            ]);
+            if (created) {
+              logger.log(`Created ${path.relative(cwd, giPath)}`);
+            } else if (changed) {
+              logger.log(`Updated ${path.relative(cwd, giPath)}`);
             }
           } finally {
             rl.close();

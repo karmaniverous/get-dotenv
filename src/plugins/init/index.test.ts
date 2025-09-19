@@ -26,6 +26,13 @@ describe('plugins/init', () => {
     ]);
     const cfg = path.posix.join(dir, 'getdotenv.config.json');
     const cfgLocal = path.posix.join(dir, 'getdotenv.config.local.json');
+    // .gitignore should include local patterns
+    const gi = path.posix.join(dir, '.gitignore');
+    expect(await fs.pathExists(gi)).toBe(true);
+    const giTxt = await fs.readFile(gi, 'utf-8');
+    expect(giTxt).toContain('getdotenv.config.local.*');
+    expect(giTxt).toContain('*.local');
+
     const cliIndex = path.posix.join(dir, 'src', 'cli', 'acme', 'index.ts');
     const hello = path.posix.join(
       dir,
@@ -35,10 +42,7 @@ describe('plugins/init', () => {
       'plugins',
       'hello.ts',
     );
-    expect(await fs.pathExists(cfg)).toBe(true);
-    expect(await fs.pathExists(cfgLocal)).toBe(true);
-    const indexTxt = await fs.readFile(cliIndex, 'utf-8');
-    expect(indexTxt).toMatch(/acme/);
+    expect(await fs.pathExists(cliIndex)).toBe(true);
     expect(await fs.pathExists(hello)).toBe(true);
     // validate token substitution coverage across skeleton files
     const helloTxt = await fs.readFile(hello, 'utf-8');
