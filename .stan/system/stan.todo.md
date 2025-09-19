@@ -1,10 +1,9 @@
 # Development Plan — get-dotenv
 
-When updated: 2025-09-19T03:55:00Z
+When updated: 2025-09-19T05:10:00Z
 NOTE: Update timestamp on commit.
 
 ## Next up
-
 - Verify the batch list default-subcommand fix
 
 - Re-run E2E; confirm “batch list (-l)” passes on Windows. If not, add
@@ -41,10 +40,13 @@ NOTE: Update timestamp on commit.
 
 ## Completed (recent)
 
+- Alias (--cmd) tests: gate fallback process.exit(0) under tests to avoid
+  terminating the runner. Suppress when GETDOTENV_TEST=1 or VITEST_WORKER_ID
+  is present; real CLI behavior for users remains unchanged.
+
 - Decompose batch handlers module:
   - Split src/plugins/batch/handlers.ts into:
-    - src/plugins/batch/actions/defaultCmdAction.ts
-    - src/plugins/batch/actions/parentAction.ts
+    - src/plugins/batch/actions/defaultCmdAction.ts    - src/plugins/batch/actions/parentAction.ts
   - Updated batch index wiring; removed the old handlers.ts.
 - Batch shell-off argv arrays: when no script remap occurs, forward the
   original argv array to the batch executor. Accept string|string[] in the

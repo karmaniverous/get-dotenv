@@ -179,9 +179,17 @@ export const attachParentAlias = (
     const shouldForceExit =
       process.env.GETDOTENV_STDIO === 'pipe' ||
       Boolean((merged as unknown as { capture?: boolean }).capture);
-    if (shouldForceExit) {
+    // Do NOT trigger the fallback exit when running under tests to avoid
+    // terminating the test runner. Detect Vitest via VITEST_WORKER_ID or
+    // honor an explicit GETDOTENV_TEST=1.
+    const underTests =
+      process.env.GETDOTENV_TEST === '1' ||
+      typeof process.env.VITEST_WORKER_ID === 'string';
+    if (shouldForceExit && !underTests) {
       dbg('process.exit (fallback)', { exitCode: 0 });
       process.exit(0);
+    } else if (shouldForceExit && underTests) {
+      dbg('process.exit (fallback suppressed for tests)', { exitCode: 0 });
     }
   };
 
