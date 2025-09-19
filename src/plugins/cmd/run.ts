@@ -10,6 +10,19 @@ const dbg = (...args: unknown[]) => {
   }
 };
 
+// Strip a single pair of surrounding quotes (single or double) if present.
+// This is safe for argv arrays passed to execa (no quoting needed) and avoids
+// passing quote characters through to Node (e.g., for `node -e "<code>"`).
+const stripOuterQuotes = (s: string): string => {
+  if (s.length >= 2) {
+    const a = s.charAt(0);
+    const b = s.charAt(s.length - 1);
+    if ((a === '"' && b === '"') || (a === "'" && b === "'"))
+      return s.slice(1, -1);
+  }
+  return s;
+};
+
 export const runCommand = async (
   command: string | string[],
   shell: string | boolean | URL,
@@ -20,7 +33,7 @@ export const runCommand = async (
     let args: string[] = [];
     if (Array.isArray(command)) {
       file = command[0];
-      args = command.slice(1);
+      args = command.slice(1).map(stripOuterQuotes);
     } else {
       const tokens = tokenize(command);
       file = tokens[0];

@@ -1,21 +1,19 @@
 # Development Plan — get-dotenv
 
-When updated: 2025-09-19T00:40:00Z
+When updated: 2025-09-19T01:05:00Z
 NOTE: Update timestamp on commit.
 
 ## Next up
+
 - Verify the batch list default-subcommand fix
 
 - Re-run E2E; confirm “batch list (-l)” passes on Windows. If not, add
   debug to print merged globs and list flag resolution in the default
   subcommand.
 
-- Shell-off argv passthrough (cmd):
-  pass original argv array to execa when shell=false and no script remap,
-  to preserve node -e code tokens on Windows/PowerShell.
-
 - Re-run full E2E after flag fix; confirm:
-  - excludes private (-r) now blanks APP_SECRET  - no regressions across core flows
+  - excludes private (-r) now blanks APP_SECRET
+  - no regressions across core flows
 
 - Stabilize alias (--cmd) capture on Windows (E2E timeouts)
   - Confirm preAction executes in alias-only invocations (no subcommand present).
@@ -35,7 +33,6 @@ NOTE: Update timestamp on commit.
 
 - Documentation
   - Document --capture and GETDOTENV_STDIO=pipe; clarify CI/test usage and
-    interactivity trade-offs.
   - Recommend npm-run best practice: use --cmd alias so flags apply to getdotenv.
 
 ## Completed (recent)
@@ -106,3 +103,8 @@ NOTE: Update timestamp on commit.
   resolveExclusionAll now honors explicit individual toggles. This ensures
   -r/--exclude-private is respected end-to-end (prevents APP_SECRET from
   reappearing in ctx.dotenv when private files are meant to be excluded).
+
+- Shell-off argv sanitization:
+  for shell=false and argv arrays, strip a single pair of surrounding quotes
+  per argument before spawning (execa). This ensures node -e receives raw code
+  without extra quotes on Windows/PowerShell.
