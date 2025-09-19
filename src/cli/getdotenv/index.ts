@@ -10,10 +10,10 @@ import { initPlugin } from '../../plugins/init';
 
 // Shipped CLI rebased on plugin-first host.
 const program: GetDotenvCli = new GetDotenvCli<GetDotenvOptions>('getdotenv')
-  .attachRootOptions(undefined, { includeCommandOption: false })
+  .attachRootOptions({ loadProcess: false }, { includeCommandOption: false })
   .use(cmdPlugin({ asDefault: true, optionAlias: '--cmd <command...>' }))
   .use(batchPlugin())
   .use(initPlugin())
-  .passOptions();
+  .passOptions({ loadProcess: false });
 
 await program.parseAsync();

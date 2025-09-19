@@ -120,7 +120,7 @@ export const attachParentAlias = (
     dbg('run:start', { capture, shell: merged.shell });
     // Prefer explicit env injection: include resolved dotenv map to avoid leaking
     // parent process.env secrets when exclusions are set.
-    const ctx = (cli as unknown as GetDotenvCli).getCtx?.();
+    const ctx = (cli as unknown as GetDotenvCli).getCtx();
     const dotenv = (ctx?.dotenv ?? {}) as Record<string, string | undefined>;
     const exitCode = await runCommand(
       resolved,
