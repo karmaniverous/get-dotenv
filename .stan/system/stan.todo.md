@@ -4,9 +4,10 @@ When updated: 2025-09-19T17:35:00Z
 NOTE: Update timestamp on commit.
 
 ## Next up- E2E (Vitest) migration:
-  - Introduce a small execa wrapper with per-step timeouts (AbortController/timeout)
-    and partial stdout/stderr capture; convert smoke scenarios into Vitest tests, including a Windows-only alias test with GETDOTENV_STDIO=pipe.
-  - Port remaining smoke steps (dynamic, trace, batch) into Vitest using the same helper.
+
+- Introduce a small execa wrapper with per-step timeouts (AbortController/timeout)
+  and partial stdout/stderr capture; convert smoke scenarios into Vitest tests, including a Windows-only alias test with GETDOTENV_STDIO=pipe.
+- Port remaining smoke steps (dynamic, trace, batch) into Vitest using the same helper.
 - Unit tests
   - Expand coverage for argv sanitization and tokenize/run edge cases across
     platforms (no quotes, single, double, stacked quotes; PowerShell specifics).- Documentation
@@ -22,12 +23,17 @@ NOTE: Update timestamp on commit.
   - Unset VITEST_WORKER_ID and GETDOTENV_TEST in the child env so the alias
     path is allowed to call process.exit; keep GETDOTENV_STDIO=pipe to exercise
     capture. Prevents execa timeouts while retaining deterministic termination.
+- Alias forced-exit guard (diagnostics)
+  - Add GETDOTENV_FORCE_EXIT=1 support in the alias executor to schedule a
+    setImmediate(() => process.exit(codeOr0)) after normal success/error
+    handling. Disabled under tests. The Vitest alias test enables this to
+    guarantee termination while we investigate the underlying non-termination.
 - Vitest: Windows alias termination test with capture & timeout
   - Add src/e2e/alias.termination.test.ts to exercise the --cmd alias path with
-    GETDOTENV_STDIO=pipe; use execa timeout to guarantee test termination and    capture outputs on failure.
+    GETDOTENV_STDIO=pipe; use execa timeout to guarantee test termination and capture outputs on failure.
 - Smoke harness: step-level timeout and global watchdog
   - Per-step timeout (default 5s) via GETDOTENV_SMOKE_STEP_TIMEOUT_MS, passed to
-    execa; on timeout, capture partial stdout/stderr and return exit 124.  - Global watchdog (default 60s) via GETDOTENV_SMOKE_GLOBAL_TIMEOUT_MS to hard-exit
+    execa; on timeout, capture partial stdout/stderr and return exit 124. - Global watchdog (default 60s) via GETDOTENV_SMOKE_GLOBAL_TIMEOUT_MS to hard-exit
     if something evades the step timeout.
 
 - Alias (--cmd): robust termination on all paths. Wrap runCommand in try/catch

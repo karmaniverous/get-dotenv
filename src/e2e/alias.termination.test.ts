@@ -51,6 +51,8 @@ describe('E2E alias termination (Windows)', () => {
       // (VITEST_WORKER_ID or GETDOTENV_TEST set), which would cause the
       // child process to linger and this test to time out.
       const childEnv = {
+        GETDOTENV_FORCE_EXIT: '1',
+        GETDOTENV_DEBUG: '1',
         ...process.env,
         GETDOTENV_STDIO: 'pipe',
         VITEST_WORKER_ID: undefined,

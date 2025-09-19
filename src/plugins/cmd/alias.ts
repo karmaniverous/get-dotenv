@@ -120,6 +120,7 @@ export const attachParentAlias = (
     const underTests =
       process.env.GETDOTENV_TEST === '1' ||
       typeof process.env.VITEST_WORKER_ID === 'string';
+    const forceExit = process.env.GETDOTENV_FORCE_EXIT === '1';
     const capture =
       !underTests &&
       (process.env.GETDOTENV_STDIO === 'pipe' ||
@@ -211,10 +212,31 @@ export const attachParentAlias = (
         { exitCode: 0 },
       );
     }
+
+    // Optional last-resort guard: force an exit on the next tick when enabled.
+    // Intended for diagnosing environments where the process appears to linger
+    // despite reaching the success/error handlers above. Disabled under tests.
+    if (forceExit) {
+      try {
+        if (process.env.GETDOTENV_DEBUG_VERBOSE) {
+          const getHandles = (
+            process as unknown as { _getActiveHandles?: () => unknown[] }
+          )._getActiveHandles;
+          const handles = typeof getHandles === 'function' ? getHandles() : [];
+          dbg('active handles before forced exit', {
+            count: Array.isArray(handles) ? handles.length : undefined,
+          });
+        }
+      } catch {
+        // best-effort only
+      }
+      const code = Number.isNaN(exitCode) ? 0 : exitCode;
+      dbg('process.exit (forced)', { exitCode: code });
+      setImmediate(() => process.exit(code));
+    }
   };
 
-  // Execute alias-only invocations whether the root handles the action
-  // itself (preAction) or Commander routes to a default subcommand (preSubcommand).
+  // Execute alias-only invocations whether the root handles the action  // itself (preAction) or Commander routes to a default subcommand (preSubcommand).
   cli.hook(
     'preAction',
     async (thisCommand: Command, _actionCommand: Command) => {
