@@ -27,6 +27,18 @@ const stripOuterQuotes = (s: string): string => {
   return out;
 };
 
+// Convert NodeJS.ProcessEnv (string | undefined values) to the shape execa
+// expects (Readonly<Partial<Record<string, string>>>), dropping undefineds.
+const sanitizeEnv = (
+  env?: NodeJS.ProcessEnv,
+): Readonly<Partial<Record<string, string>>> | undefined => {
+  if (!env) return undefined;
+  const entries = Object.entries(env).filter(
+    (e): e is [string, string] => typeof e[1] === 'string',
+  );
+  return entries.length > 0 ? Object.fromEntries(entries) : undefined;
+};
+
 export const runCommand = async (
   command: string | string[],
   shell: string | boolean | URL,
@@ -49,13 +61,26 @@ export const runCommand = async (
     }
     if (!file) return 0;
     dbg('exec (plain)', { file, args, stdio: opts.stdio });
-    // Build options without injecting undefined-valued cwd (exactOptionalPropertyTypes).
-    const plainOpts = {
-      env: opts.env,
-      stdio: opts.stdio,
-      ...(opts.cwd !== undefined ? { cwd: opts.cwd } : {}),
-    };
-    const result = await execa(file, args, plainOpts);
+    // Build options without injecting undefined properties (exactOptionalPropertyTypes).
+    const envSan = sanitizeEnv(opts.env);
+    const plainOpts: {
+      cwd?: string | URL;
+      env?: Readonly<Partial<Record<string, string>>>;
+      stdio?: 'inherit' | 'pipe';
+    } = {};
+    if (opts.cwd !== undefined) plainOpts.cwd = opts.cwd;
+    if (envSan !== undefined) plainOpts.env = envSan;
+    if (opts.stdio !== undefined) plainOpts.stdio = opts.stdio;
+
+    const result = await execa(
+      file,
+      args,
+      plainOpts as {
+        cwd?: string | URL;
+        env?: Readonly<Partial<Record<string, string>>>;
+        stdio?: 'inherit' | 'pipe';
+      },
+    );
     if (opts.stdio === 'pipe' && result.stdout) {
       process.stdout.write(
         result.stdout + (result.stdout.endsWith('\n') ? '' : '\n'),
@@ -71,13 +96,26 @@ export const runCommand = async (
       stdio: opts.stdio,
       command: commandStr,
     });
-    const shellOpts = {
-      shell,
-      env: opts.env,
-      stdio: opts.stdio,
-      ...(opts.cwd !== undefined ? { cwd: opts.cwd } : {}),
-    };
-    const result = await execaCommand(commandStr, shellOpts);
+    const envSan = sanitizeEnv(opts.env);
+    const shellOpts: {
+      cwd?: string | URL;
+      shell: string | boolean | URL;
+      env?: Readonly<Partial<Record<string, string>>>;
+      stdio?: 'inherit' | 'pipe';
+    } = { shell };
+    if (opts.cwd !== undefined) shellOpts.cwd = opts.cwd;
+    if (envSan !== undefined) shellOpts.env = envSan;
+    if (opts.stdio !== undefined) shellOpts.stdio = opts.stdio;
+
+    const result = await execaCommand(
+      commandStr,
+      shellOpts as {
+        cwd?: string | URL;
+        shell: string | boolean | URL;
+        env?: Readonly<Partial<Record<string, string>>>;
+        stdio?: 'inherit' | 'pipe';
+      },
+    );
     const out = (result as { stdout?: string } | undefined)?.stdout;
     if (opts.stdio === 'pipe' && out) {
       process.stdout.write(out + (out.endsWith('\n') ? '' : '\n'));
