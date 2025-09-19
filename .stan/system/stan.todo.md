@@ -1,10 +1,9 @@
 # Development Plan — get-dotenv
 
-When updated: 2025-09-19T17:15:00Z
+When updated: 2025-09-19T17:35:00Z
 NOTE: Update timestamp on commit.
 
-## Next up
-- E2E (Vitest) migration:
+## Next up- E2E (Vitest) migration:
   - Introduce a small execa wrapper with per-step timeouts (AbortController/timeout)
     and partial stdout/stderr capture; convert smoke scenarios into Vitest tests, including a Windows-only alias test with GETDOTENV_STDIO=pipe.
   - Port remaining smoke steps (dynamic, trace, batch) into Vitest using the same helper.
@@ -19,10 +18,13 @@ NOTE: Update timestamp on commit.
 
 ## Completed (recent)
 
+- Vitest alias test env sanitization
+  - Unset VITEST_WORKER_ID and GETDOTENV_TEST in the child env so the alias
+    path is allowed to call process.exit; keep GETDOTENV_STDIO=pipe to exercise
+    capture. Prevents execa timeouts while retaining deterministic termination.
 - Vitest: Windows alias termination test with capture & timeout
   - Add src/e2e/alias.termination.test.ts to exercise the --cmd alias path with
-    GETDOTENV_STDIO=pipe; use execa timeout to guarantee test termination and
-    capture outputs on failure.
+    GETDOTENV_STDIO=pipe; use execa timeout to guarantee test termination and    capture outputs on failure.
 - Smoke harness: step-level timeout and global watchdog
   - Per-step timeout (default 5s) via GETDOTENV_SMOKE_STEP_TIMEOUT_MS, passed to
     execa; on timeout, capture partial stdout/stderr and return exit 124.  - Global watchdog (default 60s) via GETDOTENV_SMOKE_GLOBAL_TIMEOUT_MS to hard-exit

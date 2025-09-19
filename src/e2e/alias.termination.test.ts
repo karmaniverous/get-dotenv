@@ -1,10 +1,10 @@
 import { execa } from 'execa';
 import { describe, expect, it } from 'vitest';
 
+// NOTE: The alias path suppresses process.exit() under tests when VITEST_WORKER_ID
 // Windows-only alias termination check with capture enabled.
 // Ensures the alias path (--cmd) terminates within a bounded time and
-// produces the expected output. Uses execa's timeout to guarantee the test
-// never hangs the runner; on failure, partial stdout/stderr are printed.
+// produces the expected output. Uses execa's timeout to guarantee the test// never hangs the runner; on failure, partial stdout/stderr are printed.
 describe('E2E alias termination (Windows)', () => {
   const isWindows = process.platform === 'win32';
 
@@ -46,8 +46,19 @@ describe('E2E alias termination (Windows)', () => {
         10,
       );
 
+      // Important: ensure the child CLI is NOT treated as "under tests".
+      // The alias executor suppresses process.exit when underTests=true
+      // (VITEST_WORKER_ID or GETDOTENV_TEST set), which would cause the
+      // child process to linger and this test to time out.
+      const childEnv = {
+        ...process.env,
+        GETDOTENV_STDIO: 'pipe',
+        VITEST_WORKER_ID: undefined,
+        GETDOTENV_TEST: undefined,
+      } as NodeJS.ProcessEnv;
+
       const { stdout, exitCode, timedOut } = await execa(nodeBin, argv, {
-        env: { ...process.env, GETDOTENV_STDIO: 'pipe' },
+        env: childEnv,
         timeout: STEP_TIMEOUT_MS,
         killSignal: 'SIGKILL',
       });
