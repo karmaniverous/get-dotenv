@@ -13,10 +13,12 @@ NOTE: Update timestamp on commit.
 
 ## Completed (recent)
 
+- Tests/lint: fix ESLint unused vars in init scaffolding test by asserting
+  generated config files exist (`cfg`, `cfgLocal`).
+
 - Init: ensure destination .gitignore includes local patterns
   - Add/append: `getdotenv.config.local.*` and `*.local`.
-  - Log Created/Updated when changes are applied.
-- Config loader: enable JS/TS config files
+  - Log Created/Updated when changes are applied.- Config loader: enable JS/TS config files
   - Discover getdotenv.config.{js,ts} (and module variants) in packaged/project
     roots (public/local).  - Load JS/TS via robust pipeline (direct import → esbuild bundle → TS transpile).
   - Permit dynamic only in JS/TS; continue rejecting dynamic in JSON/YAML.

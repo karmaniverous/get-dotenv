@@ -26,6 +26,8 @@ describe('plugins/init', () => {
     ]);
     const cfg = path.posix.join(dir, 'getdotenv.config.json');
     const cfgLocal = path.posix.join(dir, 'getdotenv.config.local.json');
+    expect(await fs.pathExists(cfg)).toBe(true);
+    expect(await fs.pathExists(cfgLocal)).toBe(true);
     // .gitignore should include local patterns
     const gi = path.posix.join(dir, '.gitignore');
     expect(await fs.pathExists(gi)).toBe(true);
