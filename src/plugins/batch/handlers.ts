@@ -187,9 +187,20 @@ export const buildDefaultCmdAction =
     };
     const scriptsExec = scripts ?? mergedExec.scripts;
     const shellExec = shell ?? mergedExec.shell;
+    const resolved = resolveCommand(scriptsExec, input);
+    const shellSetting = resolveShell(
+      scriptsExec,
+      input,
+      shellExec,
+    ) as unknown as string | boolean | URL;
+    // Preserve original argv array when shell is OFF and no script remap occurred.
+    const commandArg =
+      shellSetting === false && resolved === input
+        ? args.map(String)
+        : resolved;
 
     await execShellCommandBatch({
-      command: resolveCommand(scriptsExec, input),
+      command: commandArg,
       ...(envBag ? { getDotenvCliOptions: envBag } : {}),
       globs,
       ignoreErrors,
@@ -197,13 +208,9 @@ export const buildDefaultCmdAction =
       logger: loggerLocal,
       ...(pkgCwd ? { pkgCwd } : {}),
       rootPath,
-      shell: resolveShell(scriptsExec, input, shellExec) as unknown as
-        | string
-        | boolean
-        | URL,
+      shell: shellSetting,
     });
   };
-
 /**
 + Build the parent "batch" action handler (no explicit subcommand).
 */
@@ -249,23 +256,30 @@ export const buildParentAction =
       };
       const scriptsAll = opts.scripts ?? cfg.scripts ?? mergedBag.scripts;
       const shellAll = opts.shell ?? cfg.shell ?? mergedBag.shell;
+      const resolved = resolveCommand(scriptsAll, input);
+      const shellSetting = resolveShell(
+        scriptsAll,
+        input,
+        shellAll,
+      ) as unknown as string | boolean | URL;
+      // Preserve original argv array when shell is OFF and no script remap occurred.
+      const commandArg =
+        shellSetting === false && resolved === input
+          ? argsParent.map(String)
+          : resolved;
 
       await execShellCommandBatch({
-        command: resolveCommand(scriptsAll, input),
+        command: commandArg,
         globs,
         ignoreErrors,
         list: false,
         logger,
         ...(pkgCwd ? { pkgCwd } : {}),
         rootPath,
-        shell: resolveShell(scriptsAll, input, shellAll) as unknown as
-          | string
-          | boolean
-          | URL,
+        shell: shellSetting,
       });
       return;
     }
-
     // List-only: merge extra positional tokens into globs when no --command is present.
     if (list && argsParent.length > 0 && !commandOpt) {
       const extra = argsParent.map(String).join(' ').trim();

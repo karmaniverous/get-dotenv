@@ -1,10 +1,9 @@
 # Development Plan — get-dotenv
 
-When updated: 2025-09-19T03:20:00Z
+When updated: 2025-09-19T03:55:00Z
 NOTE: Update timestamp on commit.
 
-## Next up
-- Verify the batch list default-subcommand fix
+## Next up- Verify the batch list default-subcommand fix
 
 - Re-run E2E; confirm “batch list (-l)” passes on Windows. If not, add
   debug to print merged globs and list flag resolution in the default
@@ -40,9 +39,13 @@ NOTE: Update timestamp on commit.
 
 ## Completed (recent)
 
+- Batch shell-off argv arrays: when no script remap occurs, forward the
+  original argv array to the batch executor. Accept string|string[] in the
+  executor and bypass tokenize for arrays. This preserves embedded quotes in
+  Node -e code and fixes the E2E “batch exec” case on Windows.
+
 - E2E harness: switch CLI invocations to argv arrays via execa (no shell)
-  to avoid Windows shell quoting issues (e.g., “??” and stacked quotes).
-  Build argv as [ '--import','tsx','src/cli/getdotenv', ... ] with
+  to avoid Windows shell quoting issues (e.g., “??” and stacked quotes).  Build argv as [ '--import','tsx','src/cli/getdotenv', ... ] with
   process.execPath; pass Node -e code as a single argv token without
   extra quoting. Stabilizes failing E2E tests on Windows.
 - Smoke: make the trace step explicit by invoking the default “cmd”

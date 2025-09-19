@@ -4,7 +4,6 @@ import { packageDirectory } from 'package-directory';
 import path from 'path';
 
 import type { Logger } from '../../GetDotenvOptions';
-
 type ExecShellCommandBatchOptions = {
   globs: string;
   logger: Logger;
@@ -36,15 +35,23 @@ const tokenize = (command: string): string[] => {
   return out;
 };
 const runCommand = async (
-  command: string,
+  command: string | string[],
   shell: string | boolean | URL,
   opts: { cwd: string; env: NodeJS.ProcessEnv; stdio: 'inherit' | 'pipe' },
 ) => {
   if (shell === false) {
-    const tokens = tokenize(command);
-    const file = tokens[0];
+    let file: string | undefined;
+    let args: string[] = [];
+    if (Array.isArray(command)) {
+      file = command[0];
+      args = command.slice(1);
+    } else {
+      const tokens = tokenize(command);
+      file = tokens[0];
+      args = tokens.slice(1);
+    }
     if (!file) return;
-    const result = await execa(file, tokens.slice(1), opts);
+    const result = await execa(file, args, opts);
     if (opts.stdio === 'pipe' && result.stdout) {
       process.stdout.write(
         result.stdout + (result.stdout.endsWith('\n') ? '' : '\n'),
@@ -109,7 +116,7 @@ export const execShellCommandBatch = async ({
   rootPath,
   shell,
 }: {
-  command?: string;
+  command?: string | string[];
   getDotenvCliOptions?: Record<string, unknown>;
   globs: string;
   ignoreErrors?: boolean;
@@ -123,8 +130,7 @@ export const execShellCommandBatch = async ({
     process.env.GETDOTENV_STDIO === 'pipe' ||
     Boolean(
       (getDotenvCliOptions as { capture?: boolean } | undefined)?.capture,
-    );
-  // Require a command only when not listing. In list mode, a command is optional.
+    ); // Require a command only when not listing. In list mode, a command is optional.
   if (!command && !list) {
     logger.error(`No command provided. Use --command or --list.`);
     process.exit(0);
