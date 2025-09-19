@@ -193,11 +193,17 @@ export const buildDefaultCmdAction =
       input,
       shellExec,
     ) as unknown as string | boolean | URL;
-    // Preserve original argv array when shell is OFF and no script remap occurred.
-    const commandArg =
-      shellSetting === false && resolved === input
-        ? args.map(String)
-        : resolved;
+    // Preserve argv array only for shell-off Node -e snippets to avoid
+    // lossy re-tokenization (Windows/PowerShell quoting). For simple
+    // commands (e.g., "echo OK") keep string form to satisfy unit tests.
+    let commandArg: string | string[] = resolved;
+    if (shellSetting === false && resolved === input) {
+      const first = (args[0] ?? '').toLowerCase();
+      const hasEval = args.includes('-e') || args.includes('--eval');
+      if (first === 'node' && hasEval) {
+        commandArg = args.map(String);
+      }
+    }
 
     await execShellCommandBatch({
       command: commandArg,
@@ -211,6 +217,7 @@ export const buildDefaultCmdAction =
       shell: shellSetting,
     });
   };
+
 /**
 + Build the parent "batch" action handler (no explicit subcommand).
 */

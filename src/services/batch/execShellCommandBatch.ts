@@ -191,7 +191,10 @@ export const execShellCommandBatch = async ({
 
     // Execute command.
     try {
-      if (typeof command === 'string' && command.length > 0) {
+      const hasCmd =
+        (typeof command === 'string' && command.length > 0) ||
+        (Array.isArray(command) && command.length > 0);
+      if (hasCmd) {
         await runCommand(command, shell, {
           cwd: path,
           env: {

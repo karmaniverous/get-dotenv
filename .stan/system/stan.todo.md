@@ -50,6 +50,12 @@ NOTE: Update timestamp on commit.
   - Keep parent positional path passing a string (resolved) to preserve
     existing unit test assertions; default subcommand retains argv arrays for shell-off.
 
+- Batch default-subcommand refinement:
+  - Only pass argv arrays when shell is OFF and the command matches a
+    Node -e snippet (first token 'node' and contains '-e'/'--eval'). For
+    simple commands (e.g., 'echo OK'), pass a string. This preserves E2E
+    quoting for eval snippets on Windows while keeping unit tests that assert
+    string commands stable.
 - E2E harness: switch CLI invocations to argv arrays via execa (no shell)
   to avoid Windows shell quoting issues (e.g., “??” and stacked quotes). Build argv as [ '--import','tsx','src/cli/getdotenv', ... ] with
   process.execPath; pass Node -e code as a single argv token without
