@@ -19,6 +19,7 @@ import type { Logger } from '../../GetDotenvOptions';
 import { getDotenvCliOptions2Options } from '../../GetDotenvOptions';
 import { resolveCommand, resolveShell } from '../../services/batch/resolve';
 import type { CmdPluginOptions } from './index';
+import { tokenize } from './tokenize';
 
 export const attachParentAlias = (
   cli: GetDotenvCli,
@@ -185,20 +186,36 @@ export const attachParentAlias = (
        * argument when present; inner quotes remain untouched.
        */
       if (shellSetting === false && resolved === input) {
-        const m = /^\s*node\s+(--eval|-e)\s+([\s\S]+)$/i.exec(input);
-        if (m) {
-          const evalFlag = m[1];
-          let codeArg = m[2].trim();
-          const a = codeArg.charAt(0);
-          const b = codeArg.charAt(codeArg.length - 1);
+        // Helper: strip one symmetric outer quote layer
+        const stripOne = (s: string) => {
+          if (s.length < 2) return s;
+          const a = s.charAt(0);
+          const b = s.charAt(s.length - 1);
           const symmetric =
             (a === '"' && b === '"') || (a === "'" && b === "'");
-          if (symmetric && codeArg.length >= 2) {
-            codeArg = codeArg.slice(1, -1);
-          }
-          // Normalize flag casing to the original form
+          return symmetric ? s.slice(1, -1) : s;
+        };
+        // Normalize whole input once for robust matching
+        const normalized = stripOne(input.trim());
+
+        // First try a lightweight regex on the normalized string
+        const m = /^\s*node\s+(--eval|-e)\s+([\s\S]+)$/i.exec(normalized);
+        if (m && typeof m[1] === 'string' && typeof m[2] === 'string') {
+          const evalFlag = m[1] ?? '-e';
+          let codeArg = (m[2] ?? '').trim();
+          codeArg = stripOne(codeArg);
           const flag = evalFlag.startsWith('--') ? '--eval' : '-e';
           commandArg = ['node', flag, codeArg];
+        } else {
+          // Fallback: tokenize and detect node -e/--eval form
+          const parts = tokenize(input);
+          if (
+            parts.length >= 3 &&
+            parts[0].toLowerCase() === 'node' &&
+            (parts[1] === '-e' || parts[1] === '--eval')
+          ) {
+            commandArg = parts;
+          }
         }
       }
 
