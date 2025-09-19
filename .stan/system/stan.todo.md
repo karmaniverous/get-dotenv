@@ -1,10 +1,9 @@
 # Development Plan — get-dotenv
 
-When updated: 2025-09-18T17:05:00Z
+When updated: 2025-09-18T17:40:00Z
 NOTE: Update timestamp on commit.
 
 ## Next up
-
 - Verify the batch list default-subcommand fix
   - Re-run E2E; confirm “batch list (-l)” passes on Windows. If not, add
     debug to print merged globs and list flag resolution in the default
@@ -33,10 +32,13 @@ NOTE: Update timestamp on commit.
 
 ## Completed (recent)
 
+- Inject ctx.dotenv into child env for cmd and alias so exclusions (e.g.,
+  --exclude-private) are honored even if the parent process.env contains prior
+  secrets; fixes the E2E exclude-private case on Windows.
+
 - E2E workaround: switch remaining alias-based flows in cli.core.test.ts to the
   positional 'cmd' subcommand to avoid Windows-specific alias capture timeouts.
-  Alias behavior remains covered by unit tests; continue investigating alias
-  capture with GETDOTENV_DEBUG markers.
+  Alias behavior remains covered by unit tests; continue investigating alias  capture with GETDOTENV_DEBUG markers.
 
 - E2E flags: supply dataset-specific tokens for ./test/full flows:
   add "--dotenv-token .testenv" and "--private-token secret" to the three

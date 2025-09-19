@@ -131,6 +131,14 @@ export const cmdPlugin = (options: CmdPluginOptions = {}) =>
             const capture =
               process.env.GETDOTENV_STDIO === 'pipe' ||
               Boolean((merged as { capture?: boolean }).capture);
+            // Prefer explicit env injection: pass the resolved dotenv map to the child.
+            // This avoids leaking prior secrets from the parent process.env when
+            // exclusions (e.g., --exclude-private) are in effect.
+            const ctx = (cli as unknown as GetDotenvCli).getCtx();
+            const dotenv = (ctx?.dotenv ?? {}) as Record<
+              string,
+              string | undefined
+            >;
             await runCommand(
               resolved,
               resolveShell(scripts, input, shell) as unknown as
@@ -140,6 +148,7 @@ export const cmdPlugin = (options: CmdPluginOptions = {}) =>
               {
                 env: {
                   ...process.env,
+                  ...dotenv,
                   getDotenvCliOptions: JSON.stringify(envBag),
                 },
                 stdio: capture ? 'pipe' : 'inherit',

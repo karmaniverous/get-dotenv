@@ -19,7 +19,6 @@ import { getDotenvCliOptions2Options } from '../../GetDotenvOptions';
 import { resolveCommand, resolveShell } from '../../services/batch/resolve';
 import type { CmdPluginOptions } from './index';
 import { runCommand } from './run';
-
 export const attachParentAlias = (
   cli: GetDotenvCli,
   options: CmdPluginOptions,
@@ -119,6 +118,10 @@ export const attachParentAlias = (
       process.env.GETDOTENV_STDIO === 'pipe' ||
       Boolean((merged as unknown as { capture?: boolean }).capture);
     dbg('run:start', { capture, shell: merged.shell });
+    // Prefer explicit env injection: include resolved dotenv map to avoid leaking
+    // parent process.env secrets when exclusions are set.
+    const ctx = (cli as unknown as GetDotenvCli).getCtx?.();
+    const dotenv = (ctx?.dotenv ?? {}) as Record<string, string | undefined>;
     const exitCode = await runCommand(
       resolved,
       resolveShell(merged.scripts, input, merged.shell) as unknown as
@@ -128,6 +131,7 @@ export const attachParentAlias = (
       {
         env: {
           ...process.env,
+          ...dotenv,
           getDotenvCliOptions: JSON.stringify(envBag),
         },
         stdio: capture ? 'pipe' : 'inherit',
