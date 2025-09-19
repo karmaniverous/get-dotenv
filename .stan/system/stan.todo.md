@@ -1,55 +1,36 @@
 # Development Plan — get-dotenv
 
-When updated: 2025-09-19T05:25:00Z
+When updated: 2025-09-19T05:32:00Z
 NOTE: Update timestamp on commit.
 
-## Next up- Verify the batch list default-subcommand fix
+## Next up
 
-- Re-run E2E; confirm “batch list (-l)” passes on Windows. If not, add
-  debug to print merged globs and list flag resolution in the default
-  subcommand.
-
-- Re-run full E2E after flag fix; confirm:
-  - excludes private (-r) now blanks APP_SECRET
-  - no regressions across core flows
-
-- Stabilize alias (--cmd) capture on Windows (E2E timeouts)
-  - Confirm preAction executes in alias-only invocations (no subcommand present).
-  - Ensure capture is honored (stdio: 'pipe') when GETDOTENV_STDIO=pipe is set
-    and that the code path always resolves and terminates.
-  - Add minimal debug markers (preAction start/end, before/after runCommand,
-    reported exitCode) guarded by GETDOTENV_DEBUG=1.
-  - Collect stderr markers for alias-only flows on Windows (GETDOTENV_DEBUG=1)
-    and confirm whether runCommand returns numeric exitCode or NaN; verify that
-    the fallback exit path runs under capture.
-
-- Re-run E2E core CLI
-  - Focus on: loads env from paths (ENV_SETTING), injects vars (-v), writes
-    output file (-o), excludes private (-r).
-  - If still timing out, temporarily force stdio: 'pipe' for alias path under
-    E2E and/or prefer --shell-off in tests.
-
-- Tooling
-  - Add smoke script (tools/smoke.mjs) and stan script wiring (“smoke”)
-    to run manual cross-platform scenarios each turn without interactive steps.
-
+- Unit tests
+  - Expand coverage for argv sanitization and tokenize/run edge cases across
+    platforms (no quotes, single, double, stacked quotes; PowerShell specifics).
 - Documentation
-  - Document --capture and GETDOTENV_STDIO=pipe; clarify CI/test usage and
-  - Recommend npm-run best practice: use --cmd alias so flags apply to getdotenv.
+  - Update guides/README with --trace usage, GETDOTENV_STDIO=pipe and --capture
+    for CI, and npm-run guidance to prefer the --cmd alias in scripts.
+- Release prep
+  - Run lint/typecheck/build; verify:package and verify:tarball; bump version
+    when ready.
 
 ## Completed (recent)
+
+- Batch list default-subcommand fix verified on Windows (E2E and smoke green).
+- Full E2E suite green across platforms; alias (--cmd) capture behavior
+  validated under tests (fallback exit gated; stdio inherit enforced).
 
 - Alias (--cmd) tests: default stdio to 'inherit' under tests and suppress
   capture even when GETDOTENV_STDIO=pipe is present. Compute an underTests flag
   once and reuse for both stdio and fallback-exit gating to keep unit tests
   deterministic without changing real CLI behavior.
-
 - Alias (--cmd) tests: gate fallback process.exit(0) under tests to avoid
   terminating the runner. Suppress when GETDOTENV_TEST=1 or VITEST_WORKER_ID
   is present; real CLI behavior for users remains unchanged.
 - Decompose batch handlers module:
   - Split src/plugins/batch/handlers.ts into:
-    - src/plugins/batch/actions/defaultCmdAction.ts    - src/plugins/batch/actions/parentAction.ts
+    - src/plugins/batch/actions/defaultCmdAction.ts - src/plugins/batch/actions/parentAction.ts
   - Updated batch index wiring; removed the old handlers.ts.
 - Batch shell-off argv arrays: when no script remap occurs, forward the
   original argv array to the batch executor. Accept string|string[] in the
