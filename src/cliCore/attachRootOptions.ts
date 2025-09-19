@@ -294,5 +294,10 @@ export const attachRootOptions = (
         .hideHelp(),
     );
 
+  // Diagnostics: opt-in tracing; optional variadic keys after the flag.
+  p = p.option(
+    '--trace [keys...]',
+    'emit diagnostics for child env composition (optional keys)',
+  );
   return p;
 };

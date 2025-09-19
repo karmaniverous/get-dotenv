@@ -26,6 +26,9 @@ export type RootOptionsShape = {
   dotenvToken?: string;
   dynamicPath?: string;
 
+  // Diagnostics: --trace [keys...]; true = all keys, string[] = selected keys
+  trace?: boolean | string[];
+
   paths?: string;
   pathsDelimiter?: string;
   pathsDelimiterPattern?: string;

@@ -1,10 +1,9 @@
 # Development Plan — get-dotenv
 
-When updated: 2025-09-18T18:20:00Z
+When updated: 2025-09-18T19:05:00Z
 NOTE: Update timestamp on commit.
 
 ## Next up
-
 - Verify the batch list default-subcommand fix
   - Re-run E2E; confirm “batch list (-l)” passes on Windows. If not, add
     debug to print merged globs and list flag resolution in the default
@@ -33,10 +32,15 @@ NOTE: Update timestamp on commit.
 
 ## Completed (recent)
 
+- Diagnostics: add --trace with optional space-delimited keys. When enabled,
+  cmd and parent --cmd print a child-env composition snapshot (parent, dotenv,
+  final, origin) to stderr before spawning the child. No redaction, opt-in
+  only. This makes the source of each key explicit without altering behavior.
+  Root option is wired through attachRootOptions; legacy generator remains
+  backward compatible.
 - Host skeleton: make GetDotenvCli default preSubcommand resolve with
   loadProcess=false to avoid mutating process.env before passOptions runs.
-  Prevents private keys from leaking into the CLI process env and stabilizes
-  the exclude-private E2E on Windows when combined with explicit ctx.dotenv injection.
+  Prevents private keys from leaking into the CLI process env and stabilizes  the exclude-private E2E on Windows when combined with explicit ctx.dotenv injection.
 
 - Shipped CLI: default loadProcess OFF to prevent process.env leakage into
   subprocesses. Combined with explicit ctx.dotenv injection, this stabilizes the

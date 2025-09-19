@@ -122,6 +122,38 @@ export const attachParentAlias = (
     // parent process.env secrets when exclusions are set.
     const ctx = (cli as unknown as GetDotenvCli).getCtx();
     const dotenv = (ctx?.dotenv ?? {}) as Record<string, string | undefined>;
+    // Diagnostics: --trace [keys...]
+    const traceOpt = (
+      merged as unknown as {
+        trace?: boolean | string[];
+      }
+    ).trace;
+    if (traceOpt) {
+      const parentKeys = Object.keys(process.env);
+      const dotenvKeys = Object.keys(dotenv);
+      const allKeys = Array.from(
+        new Set([...parentKeys, ...dotenvKeys]),
+      ).sort();
+      const keys = Array.isArray(traceOpt) ? traceOpt : allKeys;
+      const childEnvPreview: Record<string, string | undefined> = {
+        ...process.env,
+        ...dotenv,
+      };
+      for (const k of keys) {
+        const parent = process.env[k];
+        const dot = dotenv[k];
+        const final = childEnvPreview[k];
+        const origin =
+          dot !== undefined
+            ? 'dotenv'
+            : parent !== undefined
+              ? 'parent'
+              : 'unset';
+        process.stderr.write(
+          `[trace] key=${k} origin=${origin} parent=${parent ?? ''} dotenv=${dot ?? ''} final=${final ?? ''}\n`,
+        );
+      }
+    }
     const exitCode = await runCommand(
       resolved,
       resolveShell(merged.scripts, input, merged.shell) as unknown as

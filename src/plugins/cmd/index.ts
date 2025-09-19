@@ -134,11 +134,43 @@ export const cmdPlugin = (options: CmdPluginOptions = {}) =>
             // Prefer explicit env injection: pass the resolved dotenv map to the child.
             // This avoids leaking prior secrets from the parent process.env when
             // exclusions (e.g., --exclude-private) are in effect.
-            const ctx = (cli as unknown as GetDotenvCli).getCtx();
+            const host = cli as unknown as GetDotenvCli;
+            const ctx = host.getCtx();
             const dotenv = (ctx?.dotenv ?? {}) as Record<
               string,
               string | undefined
             >;
+            // Diagnostics: --trace [keys...] (space-delimited keys if provided; all keys when true)
+            const traceOpt = (merged as { trace?: boolean | string[] }).trace;
+            if (traceOpt) {
+              // Determine keys to trace: all keys (parent ∪ dotenv) or selected.
+              const parentKeys = Object.keys(process.env);
+              const dotenvKeys = Object.keys(dotenv);
+              const allKeys = Array.from(
+                new Set([...parentKeys, ...dotenvKeys]),
+              ).sort();
+              const keys = Array.isArray(traceOpt) ? traceOpt : allKeys;
+              // Child env preview (as composed below; excluding getDotenvCliOptions)
+              const childEnvPreview: Record<string, string | undefined> = {
+                ...process.env,
+                ...dotenv,
+              };
+              for (const k of keys) {
+                const parent = process.env[k];
+                const dot = dotenv[k];
+                const final = childEnvPreview[k];
+                const origin =
+                  dot !== undefined
+                    ? 'dotenv'
+                    : parent !== undefined
+                      ? 'parent'
+                      : 'unset';
+                // Emit concise diagnostic line to stderr.
+                process.stderr.write(
+                  `[trace] key=${k} origin=${origin} parent=${parent ?? ''} dotenv=${dot ?? ''} final=${final ?? ''}\n`,
+                );
+              }
+            }
             await runCommand(
               resolved,
               resolveShell(scripts, input, shell) as unknown as
