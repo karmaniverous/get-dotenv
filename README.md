@@ -227,11 +227,9 @@ You can also use `getdotenv` from the command line:
 #   --default-env <string>              default target environment
 #   --dotenv-token <string>             dotenv-expanded token indicating a dotenv file (default: ".env")
 #   --dynamic-path <string>             dynamic variables path (.js or .ts; .ts is auto-compiled when esbuild is available, otherwise precompile)
-#   --use-config-loader                 enable config loader/overlay path (guarded; default OFF)
 #   --paths <string>                    dotenv-expanded delimited list of paths to dotenv directory (default: "./")
 #   --paths-delimiter <string>          paths delimiter string (default: " ")
-#   --paths-delimiter-pattern <string>  paths delimiter regex pattern
-#   --private-token <string>            dotenv-expanded token indicating private variables (default: "local")
+#   --paths-delimiter-pattern <string>  paths delimiter regex pattern#   --private-token <string>            dotenv-expanded token indicating private variables (default: "local")
 #   --vars-delimiter <string>           vars delimiter string (default: " ")
 #   --vars-delimiter-pattern <string>   vars delimiter regex pattern
 #   --vars-assignor <string>            vars assignment operator string (default: "=")
@@ -358,12 +356,11 @@ Diagnostics and CI capture:
   - ./guides/shell.md
 
 The guides are also included in the hosted API docs.
-
 See more great templates & tools on [my GitHub Profile](https://github.com/karmaniverous)!
 
 ---
 
 Further reading:
 
-- Config files and overlays (guarded): ./guides/config.md
+- Config files and overlays: ./guides/config.md
 - Plugin-first host and plugins: ./guides/plugins.md

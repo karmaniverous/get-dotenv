@@ -8,7 +8,16 @@ NOTE: Update timestamp on commit.
 - Run lint/typecheck/build; verify:package and verify:tarball; bump version
   when ready.
 
+- Roadmap groundwork
+  - Design doc for batch `--concurrency` (pool, aggregate output, summary, bail policy).
+  - Add `--redact` masking for `--trace` and `-l/--log` (default mask list custom).
+  - Add required keys/schema validation of final env (JSON/YAML/TS source).
+
 ## Completed (recent)
+
+- Docs alignment: config loader is always-on (no-op when no files); removed
+  stale `--use-config-loader` references; updated guides and inline comments.
+- Added prioritized roadmap and concurrency policy to stan.project.md.
 
 - Added demo plugin to the shipped CLI (src/plugins/demo). Demonstrates:
   context access, child exec with env injection, and scripts/shell resolution,

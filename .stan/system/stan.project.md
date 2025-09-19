@@ -2,6 +2,43 @@
 
 When updated: 2025-09-16T12:40:00Z
 
+## Product positioning (summary)
+
+Where it shines:
+
+- Deterministic dotenv cascade across paths with public/private/global/env axes.
+- Progressive, recursive expansion with defaults; dynamic vars in JS/TS (safe).
+- Plugin-first host with once-per-invocation context and typed options.
+- Cross-platform command execution (argv-aware shell-off; normalized shells).
+- CI-friendly capture and `--trace` diagnostics.
+
+Who will love it:
+
+- Platform/DX/DevOps teams in monorepos.
+- Tooling/CLI authors composing domain plugins.
+- CI/CD engineers needing deterministic env and observability.
+- Cross-platform app teams (Windows + POSIX).
+
+## Prioritized roadmap (requirements)
+
+Must-have (near-term):
+
+1. Batch concurrency (opt-in)
+   - Flag: `--concurrency <n>` (default 1).
+   - Aggregate output by job; buffered flush; end-of-run summary.
+   - Optional `--live` for prefixed interleaved streaming.
+   - Respect per-script hints: `scripts[name].parallel?: boolean`, `concurrency?: number`.
+2. Redacted logging/tracing
+   - `--redact` with default masks (SECRET, TOKEN, KEY, PASSWORD); allow custom patterns.
+   - Apply to `-l/--log` and `--trace`.
+3. Required keys / schema checks
+   - Validate final env against a declared keys list or schema (JSON/YAML/TS).
+   - Fail-fast with helpful diagnostics.
+4. Shell completion
+   - Generate bash/zsh/pwsh completion for flags/subcommands.
+
+Nice-to-have (next): 5) First-party secrets provider plugins (AWS/GCP/Vault). 6) Watch mode for local dev (recompute on file changes; optional command rerun). 7) Enhanced `--trace` diff (origin/value/overridden-by). 8) Troubleshooting doc (common shell pitfalls and quoting recipes).
+
 ## Mission
 
 Load environment variables from a configurable cascade of dotenv files and/or
@@ -33,7 +70,7 @@ and behaviors is required.
 
 ## Core behaviors (must be preserved)
 
-1) Dotenv cascade and naming (public/private/global/env)
+1. Dotenv cascade and naming (public/private/global/env)
    - Public globals: `<token>` (e.g., `.env`)
    - Public env: `<token>.<env>`
    - Private globals: `<token>.<privateToken>`
@@ -43,7 +80,7 @@ and behaviors is required.
      - `privateToken`: `local`
      - Paths default to `["./"]` unless explicitly overridden (backward compatible).
 
-2) Option layering (defaults semantics, “custom overrides defaults”)
+2. Option layering (defaults semantics, “custom overrides defaults”)
    - CLI generator defaults resolution (`generateGetDotenvCli`):
      - Merge order (lowest precedence first): base < global < local < custom
    - getDotenv programmatic defaults (`resolveGetDotenvOptions`):
@@ -52,13 +89,13 @@ and behaviors is required.
      - Merge order: parent < current (current overrides).
    - Behavior: “defaults-deep” semantics for plain objects (no lodash required).
 
-3) Variable expansion
+3. Variable expansion
    - Recursive expansion with defaults:
      - `$VAR[:default]` and `${VAR[:default]}`
    - Unknown variables resolve to empty string.
    - Progressive expansion supported where later values may reference earlier results.
 
-4) Dynamic variables
+4. Dynamic variables
    - `dynamicPath` default-exports a map of:
      - key → function(dotenv, env?) => value, or
      - key → literal value
@@ -66,7 +103,7 @@ and behaviors is required.
    - Backward compatibility: JS modules remain the simplest path.
    - Optional TypeScript support (see “Dynamic TypeScript” below).
 
-5) CLI execution and nesting
+5. CLI execution and nesting
    - The base CLI can execute commands via `--command` or the default `cmd` subcommand.
    - Shell resolution:
      - If `shell === false`, use Execa plain (no shell).
@@ -79,48 +116,47 @@ and behaviors is required.
      - Outer context is passed to inner commands via `process.env.getDotenvCliOptions` (JSON).
      - Within a single process tree (Commander), the current merged options are placed
        on the command instance as `getDotenvCliOptions` for subcommands.
-  - CLI flag standardization (plugin-first host):
-    - Use “-c, --cmd <command...>” provided by the cmd plugin as the parent-level
-      option alias. The shipped CLI does not include a root “-c, --command” flag.
-    - The legacy generated CLI retains “-c, --command <string>” for compatibility
-      and uses its own command wiring as documented in the generator entry.
 
-  - Command alias on parent (cmd):
-    - The CLI MUST support two equivalent ways to execute a command:
-      1) Subcommand: `cmd [args...]` (positional arguments are joined verbatim),
-      2) Option alias on the parent: `-c, --cmd <command...>` (variadic, joined with spaces).
-    - The option alias is an ergonomic convenience to ensure npm-run flag routing applies
-      to getdotenv rather than the inner shell command. Recommended authoring pattern:
-      - Anti-pattern: `"script": "getdotenv echo $FOO"` (flags passed to `npm run script -- ...`
-        are applied to `echo`, not `getdotenv`).
-      - Recommended: `"script": "getdotenv -c 'echo $FOO'"`, then
-        `npm run script -- -e dev` applies `-e` to getdotenv itself.
-    - Conflict detection: if both the alias and the `cmd` subcommand are supplied in a single
-      invocation, print a helpful message and exit with code 0 (legacy-parity graceful exit).
-    - Expansion semantics:
-      - Alias value is dotenv-expanded at parse time (unless explicitly disabled in a future
-        option); `cmd` positional args are joined verbatim and then resolved via scripts/shell.
-    - Scripts and shell precedence is unchanged:
-      - `scripts[name].shell` (object form) overrides the global `shell` for that script.
-    - Scope: For the new plugin-first CLI, the alias is owned by the cmd plugin and attaches
-      to the parent; the old generated CLI retains its original `-c, --command` until a
-      deliberate breaking change is published.
-  - Shell expansion guidance (procedural):
-    - Outer shells (e.g., bash, PowerShell) may expand variables before Node receives argv.
-      Document quoting rules and recommend single quotes for `$FOO` on POSIX and single quotes
-      on PowerShell to suppress outer expansion. Prefer `"getdotenv -c '...'"` in npm scripts.
-    - Future optional safety nets may include `--cmd-file <path>` (read command from file) or
-      env-backed alias (`GETDOTENV_CMD`) to avoid outer-shell expansion entirely.
+- CLI flag standardization (plugin-first host):
+  - Use “-c, --cmd <command...>” provided by the cmd plugin as the parent-level
+    option alias. The shipped CLI does not include a root “-c, --command” flag.
+  - The legacy generated CLI retains “-c, --command <string>” for compatibility
+    and uses its own command wiring as documented in the generator entry.
+
+- Command alias on parent (cmd):
+  - The CLI MUST support two equivalent ways to execute a command:
+    1. Subcommand: `cmd [args...]` (positional arguments are joined verbatim),
+    2. Option alias on the parent: `-c, --cmd <command...>` (variadic, joined with spaces).
+  - The option alias is an ergonomic convenience to ensure npm-run flag routing applies
+    to getdotenv rather than the inner shell command. Recommended authoring pattern:
+    - Anti-pattern: `"script": "getdotenv echo $FOO"` (flags passed to `npm run script -- ...`
+      are applied to `echo`, not to `getdotenv`).
+    - Recommended: `"script": "getdotenv -c 'echo $FOO'"`, then
+      `npm run script -- -e dev` applies `-e` to getdotenv itself.
+  - Conflict detection: if both the alias and the `cmd` subcommand are supplied in a single
+    invocation, print a helpful message and exit with code 0 (legacy-parity graceful exit).
+  - Expansion semantics:
+    - Alias value is dotenv-expanded at parse time (unless explicitly disabled in a future
+      option); `cmd` positional args are joined verbatim and then resolved via scripts/shell.
+  - Scripts and shell precedence is unchanged:
+    - `scripts[name].shell` (object form) overrides the global `shell` for that script.
+  - Scope: For the new plugin-first CLI, the alias is owned by the cmd plugin and attaches
+    to the parent; the old generated CLI retains its original `-c, --command` until a
+    deliberate breaking change is published.
+- Shell expansion guidance (procedural):
+  - Outer shells (e.g., bash, PowerShell) may expand variables before Node receives argv.
+    Document quoting rules and recommend single quotes for `$FOO` on POSIX and single quotes
+    on PowerShell to suppress outer expansion. Prefer `"getdotenv -c '...'"` in npm scripts.
+  - Future optional safety nets may include `--cmd-file <path>` (read command from file) or
+    env-backed alias (`GETDOTENV_CMD`) to avoid outer-shell expansion entirely.
 
 ## vNext (additive) — Plugin-first CLI host and Schema-driven config
 
 Purpose
-- Introduce a plugin-first CLI host that composes environment-aware commands.
-- Centralize options and config validation with Zod schemas (types inferred).
-- Provide a richer config system (JSON/YAML/JS/TS + .local) that can serve as an alternative
-  to text .env files and optionally supply dynamic variables (JS/TS only).
-- Preserve full backward compatibility for getDotenv(), the shipped getdotenv CLI, and the
-  generator entrypoint; the new host is additive.
+
+- Introduce a plugin-first CLI host that composes environment-aware CLIs. It
+  validates options strictly, resolves dotenv context once per invocation, and
+  exposes lifecycle hooks for plugins.
 
 ### Architectural split
 
@@ -183,13 +219,13 @@ Purpose
   - JS/TS: may export `dynamic` (GetDotenvDynamic) and optional CLI-level hooks if retained.
 
 - Config-provided values as an alternative to .env files (pure data):
-  - vars?: Record<string, string>                (global, public)
+  - vars?: Record<string, string> (global, public)
   - envVars?: Record<string, Record<string,string>> (env-specific, public)
   - Private values live in .local configs with the same keys (privacy derives from filename).
   - These insert into env overlay with three axes:
-    1) kind: dynamic > env > global
-    2) privacy: local > public
-    3) source: config > file
+    1. kind: dynamic > env > global
+    2. privacy: local > public
+    3. source: config > file
   - Programmatic dynamic remains the top of the dynamic tier.
 
 - Dynamic from config (JS/TS only):
@@ -209,45 +245,19 @@ Purpose
 - Config formats:
   - Legacy path continues to accept current JSON; loader can be staged to accept YAML/JS/TS + .local as an additive improvement behind a guard.
 
-### Directory layout and exports (proposed)
+## Concurrency policy (design)
 
-- src/schema/…               (Zod schemas; raw/resolved pairs)
-- src/config/loader.ts       (config discovery: root + project global + .local; JSON/YAML/JS/TS)
-- src/env/resolveEnv.ts      (env overlay engine: kind/privacy/source axes; expansion; dynamic overlays)
-- src/cliHost/GetDotenvCli.ts (plugin host class; extends Command; context symbol; ns helper)
-- src/plugins/batch/…        (batch plugin; exported)
-- Exports (future subpaths):
-  - “./plugins/batch”: runtime plugin entry and types
-  - “./cliHost”: GetDotenvCli and definePlugin helper
-  - “./schema”: optional re-exports of schema constants/types for advanced users
-
-### Testing requirements
-
-- Schemas:
-  - Round-trip parse of valid configs; informative errors on invalid shapes.
-  - Raw → Resolved materialization (inheritance) unit tests.
-- Loader:
-  - JSON/YAML/JS/TS + .local discovery and precedence (root vs project).
-  - JS/TS config dynamic import (direct → esbuild → transpile) and error guidance.
-- Env overlay:
-  - Three-axis precedence (kind/privacy/source) across combinations (files vs config; public vs local; dynamic vs env vs global).
-  - Expansion correctness (progressive; escaped dollars; defaults).
-- Plugin host:
-  - preSubcommand lifecycle: context created; optional process.env merge respected.
-  - afterResolve hooks order (parent → children).
-  - Actions access ctx via accessor and operate deterministically.
-- Batch plugin:
-  - Behavior parity with current subcommand (listing, cwd selection, shell handling, errors).
-- Legacy CLI/generator:
-  - Behavior remains unchanged; test parity suite continues to pass.
-
-### Documentation requirements
-
-- Update README:
-  - Dynamic TS guidance (install esbuild; simple fallback for trivial TS without imports).
-  - “Build your own CLI with plugins” quickstart and examples.
-  - Explicit env usage in subprocesses (pass ctx.dotenv).
-- Add Plugin author guide:
-  - definePlugin; setup/afterResolve; composition via .use(); ctx access; namespacing helper.
-  - Config sections under config.plugins[pluginId] (optional future).
-- Clarify config formats and .local behavior; JSON/YAML vs JS/TS capabilities.
+- Default execution for `batch` is sequential for safety and legibility.
+- Concurrency is explicit and opt-in:
+  - `--concurrency <n>` enables a pool (n workers). Default remains 1.
+  - When `n > 1`, force capture and aggregate per-job output (buffer, then flush).
+  - Write full logs per job to `.tsbuild/batch/<run-id>/<sanitized-path>.{out,err}.log`.
+  - Provide `--live` to stream interleaved updates with `[cwd]` prefixes (optional).
+- Failure policy:
+  - Honor `--ignore-errors`. When false (default), bail early on first failure
+    or stop launching new jobs; print a summary.
+  - When true, run all and summarize at the end.
+- Per-script hints:
+  - Extend scripts entries with `parallel?: boolean` and `concurrency?: number`.
+  - When hints are present, they override the global concurrency for that script
+    (e.g., force sequential for heavy tasks like `npm install`).

@@ -18,14 +18,14 @@ import type { GetDotenvCliPlugin } from './definePlugin';
 import type { GetDotenvCliCtx } from './GetDotenvCli';
 
 /**
- * Compute the dotenv context for the host (guarded config loader path supported). * - Resolves and validates options strictly (host-only).
+ * Compute the dotenv context for the host (uses the config loader/overlay path).
+ * - Resolves and validates options strictly (host-only).
  * - Applies file cascade, overlays, dynamics, and optional effects.
  * - Merges and validates per-plugin config slices (when provided).
  *
  * @param customOptions - Partial options from the current invocation.
  * @param plugins - Installed plugins (for config validation).
- * @param hostMetaUrl - import.meta.url of the host module (for packaged root discovery).
- */
+ * @param hostMetaUrl - import.meta.url of the host module (for packaged root discovery). */
 export const computeContext = async <
   TOptions extends GetDotenvOptions = GetDotenvOptions,
 >(

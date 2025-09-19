@@ -1,19 +1,16 @@
-# Config files and overlays (guarded path)
+# Config files and overlays (always-on)
 
-The guarded config-loader path lets you specify environment values using JSON/YAML
-or JS/TS config files, then overlay them deterministically with privacy and
-source precedence. Enable it from the CLI using:
+The config loader lets you specify environment values using JSON/YAML or JS/TS
+config files, then overlay them deterministically with privacy and source
+precedence.
 
-- `--use-config-loader` (shipped CLI), or
-- passing `{ useConfigLoader: true }` to the plugin-first host
-  (`GetDotenvCli.resolveAndLoad`).
-
-By default this path is OFF to preserve legacy behavior.
+Behavior: In the shipped CLI (plugin-first host) and the generator path, the
+loader/overlay pipeline is always active and is a no-op when no config files are
+present.
 
 ## Discovery order
 
 When enabled, the loader discovers up to three configs in the following order:
-
 1) Packaged root (the library’s own package root, “public” only)
    - `getdotenv.config.json`
    - `getdotenv.config.yaml` / `.yml`
@@ -31,11 +28,10 @@ Notes:
 
 ## Formats
 
-JSON/YAML (data only):
+JSON/YAML (data only, always-on; no-op when no files are present):
 - Allowed keys:
   - `dotenvToken?: string`
-  - `privateToken?: string`
-  - `paths?: string | string[]`
+  - `privateToken?: string`  - `paths?: string | string[]`
   - `loadProcess?: boolean`
   - `log?: boolean`
   - `shell?: string | boolean`
@@ -50,8 +46,7 @@ JS/TS (data + dynamic):
     - A map where values are either strings or functions of the form
       `(vars: ProcessEnv, env?: string) => string | undefined`.
 
-TS support:
-- Direct import works if a TS loader is present.
+TS support:- Direct import works if a TS loader is present.
 - Otherwise, the loader auto-bundles via esbuild when available; if esbuild is
   not present, it falls back to a simple TypeScript transpile for single-file
   modules without imports.
@@ -87,8 +82,7 @@ The overlay flow:
    - `loadProcess`: merge into `process.env`.
 
 All expansions are progressive within each slice:
-- When applying a `vars` object, keys are expanded left-to-right so later values
-  may reference earlier results.
+- When applying a `vars` object, keys are expanded left-to-right so later values  may reference earlier results.
 
 ## Example
 
