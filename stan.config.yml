@@ -16,5 +16,6 @@ scripts:
   test: npm run test
   docs: npm run stan:docs
   build: npm run build
+  smoke: node tools/smoke.mjs
 stanPath: .stan
 includes: []

@@ -1,10 +1,9 @@
 # Development Plan — get-dotenv
 
-When updated: 2025-09-19T01:05:00Z
+When updated: 2025-09-19T01:20:00Z
 NOTE: Update timestamp on commit.
 
 ## Next up
-
 - Verify the batch list default-subcommand fix
 
 - Re-run E2E; confirm “batch list (-l)” passes on Windows. If not, add
@@ -31,10 +30,13 @@ NOTE: Update timestamp on commit.
   - If still timing out, temporarily force stdio: 'pipe' for alias path under
     E2E and/or prefer --shell-off in tests.
 
+- Tooling
+  - Add smoke script (tools/smoke.mjs) and stan script wiring (“smoke”)
+    to run manual cross-platform scenarios each turn without interactive steps.
+
 - Documentation
   - Document --capture and GETDOTENV_STDIO=pipe; clarify CI/test usage and
   - Recommend npm-run best practice: use --cmd alias so flags apply to getdotenv.
-
 ## Completed (recent)
 
 - Diagnostics: add --trace with optional space-delimited keys. When enabled,
