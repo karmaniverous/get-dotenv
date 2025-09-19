@@ -19,6 +19,7 @@ import { getDotenvCliOptions2Options } from '../../GetDotenvOptions';
 import { resolveCommand, resolveShell } from '../../services/batch/resolve';
 import type { CmdPluginOptions } from './index';
 import { runCommand } from './run';
+
 export const attachParentAlias = (
   cli: GetDotenvCli,
   options: CmdPluginOptions,
@@ -160,22 +161,40 @@ export const attachParentAlias = (
         );
       }
     }
-    const exitCode = await runCommand(
-      resolved,
-      resolveShell(merged.scripts, input, merged.shell) as unknown as
-        | string
-        | boolean
-        | URL,
-      {
-        env: {
-          ...process.env,
-          ...dotenv,
-          getDotenvCliOptions: JSON.stringify(envBag),
+    let exitCode = Number.NaN;
+    try {
+      exitCode = await runCommand(
+        resolved,
+        resolveShell(merged.scripts, input, merged.shell) as unknown as
+          | string
+          | boolean
+          | URL,
+        {
+          env: {
+            ...process.env,
+            ...dotenv,
+            getDotenvCliOptions: JSON.stringify(envBag),
+          },
+          stdio: capture ? 'pipe' : 'inherit',
         },
-        stdio: capture ? 'pipe' : 'inherit',
-      },
-    );
-    dbg('run:done', { exitCode });
+      );
+      dbg('run:done', { exitCode });
+    } catch (err) {
+      const code =
+        typeof (err as { exitCode?: unknown }).exitCode === 'number'
+          ? ((err as { exitCode?: number }).exitCode as number)
+          : 1;
+      dbg('run:error', { exitCode: code, error: String(err) });
+      if (!underTests) {
+        dbg('process.exit (error path)', { exitCode: code });
+        process.exit(code);
+      } else {
+        dbg('process.exit suppressed for tests (error path)', {
+          exitCode: code,
+        });
+      }
+      return;
+    }
     if (!Number.isNaN(exitCode)) {
       dbg('process.exit', { exitCode });
       process.exit(exitCode);

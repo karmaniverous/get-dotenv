@@ -1,10 +1,9 @@
 # Development Plan — get-dotenv
 
-When updated: 2025-09-19T05:38:00Z
+When updated: 2025-09-19T05:45:00Z
 NOTE: Update timestamp on commit.
 
-## Next up
-- Unit tests
+## Next up- Unit tests
   - Expand coverage for argv sanitization and tokenize/run edge cases across
     platforms (no quotes, single, double, stacked quotes; PowerShell specifics).
 - Documentation
@@ -16,10 +15,14 @@ NOTE: Update timestamp on commit.
 
 ## Completed (recent)
 
+- Alias (--cmd): robust termination on all paths. Wrap runCommand in try/catch
+  and always exit outside tests using the surfaced exitCode (or 1 on error).
+  Keep success fallback (non-numeric code) and test gating intact to prevent
+  killing the test runner.
+
 - Alias (--cmd): ensure termination even when exitCode is not surfaced and
   capture is off. Always exit outside tests (exit 0 fallback); continue to
   suppress fallback exit under tests to keep the runner alive.
-
 - Batch list default-subcommand fix verified on Windows (E2E and smoke green).
 - Full E2E suite green across platforms; alias (--cmd) capture behavior
   validated under tests (fallback exit gated; stdio inherit enforced).
