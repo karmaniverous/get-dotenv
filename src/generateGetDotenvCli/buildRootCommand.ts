@@ -16,10 +16,11 @@ export const createRootCommand = (
   const program = new Command().name(opts.alias).description(opts.description);
 
   // Attach legacy root flags using shared cliCore builder to keep parity.
-  attachRootOptions(program, opts as unknown as Record<string, unknown>);
+  attachRootOptions(program, opts as unknown as Record<string, unknown>, {
+    includeCommandOption: true,
+  });
 
   // Subcommands
   program.addCommand(batchCommand).addCommand(cmdCommand, { isDefault: true });
-
   return program;
 };

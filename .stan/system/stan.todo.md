@@ -1,18 +1,22 @@
 # Development Plan — get-dotenv
 
-When updated: 2025-09-19T23:30:00Z
+When updated: 2025-09-19T23:45:00Z
 NOTE: Update timestamp on commit.
 
-## Next up
-- Release prep
+## Next up- Release prep
   - Run lint/typecheck/build; verify:package and verify:tarball; bump version
     when ready.
 
 ## Completed (recent)
 -
+  - CLI root flag policy: includeCommandOption now defaults to false in
+    attachRootOptions. The generator explicitly opts in
+    (includeCommandOption: true) to retain the legacy -c/--command flag,
+    while the shipped CLI omits it by default (no explicit flag needed).
+
+-
   - Docs/help: README updated to emphasize quoting the entire `--cmd` payload
-    (POSIX and PowerShell examples), diagnostics via `--trace`, and CI output
-    capture using `--capture` / `GETDOTENV_STDIO=pipe`.
+    (POSIX and PowerShell examples), diagnostics via `--trace`, and CI output    capture using `--capture` / `GETDOTENV_STDIO=pipe`.
   - Knip: removed obsolete demo CLI entry from knip.json (`src/cli/getdotenv-host/index.ts`).
 
 - Tokenize unit tests (refinement)

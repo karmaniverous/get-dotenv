@@ -12,7 +12,8 @@ export const attachRootOptions = (
   program: Command,
   defaults?: Partial<RootOptionsShape>,
   opts?: {
-    // When false, omit the legacy "-c, --command" flag at the root.
+    // When true, include the legacy "-c, --command" flag at the root.
+    // Default: false (omitted).
     includeCommandOption?: boolean;
   },
 ) => {
@@ -69,15 +70,14 @@ export const attachRootOptions = (
   );
 
   // Optional legacy root command flag (kept for generated CLI compatibility).
-  // The plugin-first shipped CLI disables this and uses the cmd plugin's alias instead.
-  if (opts?.includeCommandOption !== false) {
+  // Default is OFF; the generator opts in explicitly.
+  if (opts?.includeCommandOption === true) {
     p = p.option(
       '-c, --command <string>',
       'command executed according to the --shell option, conflicts with cmd subcommand (dotenv-expanded)',
       dotenvExpandFromProcessEnv,
     );
   }
-
   p = p
     .option(
       '-o, --output-path <string>',
