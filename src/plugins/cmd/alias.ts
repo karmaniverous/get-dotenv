@@ -173,8 +173,7 @@ export const attachParentAlias = (
       ) as unknown as string | boolean | URL;
 
       let commandArg: string | string[] = resolved;
-      /**
-       * Special-case: when shell is OFF and no script alias remap occurred
+      /**       * Special-case: when shell is OFF and no script alias remap occurred
        * (resolved === input), treat a Node eval payload as an argv array to
        * avoid lossy re-tokenization of the code string.
        *
@@ -201,24 +200,27 @@ export const attachParentAlias = (
         // First try a lightweight regex on the normalized string
         const m = /^\s*node\s+(--eval|-e)\s+([\s\S]+)$/i.exec(normalized);
         if (m && typeof m[1] === 'string' && typeof m[2] === 'string') {
-          const evalFlag = m[1] ?? '-e';
-          let codeArg = (m[2] ?? '').trim();
+          const evalFlag = m[1];
+          let codeArg = m[2].trim();
           codeArg = stripOne(codeArg);
           const flag = evalFlag.startsWith('--') ? '--eval' : '-e';
           commandArg = ['node', flag, codeArg];
         } else {
           // Fallback: tokenize and detect node -e/--eval form
           const parts = tokenize(input);
-          if (
-            parts.length >= 3 &&
-            parts[0].toLowerCase() === 'node' &&
-            (parts[1] === '-e' || parts[1] === '--eval')
-          ) {
-            commandArg = parts;
+          if (parts.length >= 3) {
+            // Narrow under noUncheckedIndexedAccess
+            const p0 = parts[0];
+            const p1 = parts[1];
+            if (
+              p0?.toLowerCase() === 'node' &&
+              (p1 === '-e' || p1 === '--eval')
+            ) {
+              commandArg = parts;
+            }
           }
         }
       }
-
       exitCode = await runCommand(commandArg, shellSetting, {
         env: {
           ...process.env,

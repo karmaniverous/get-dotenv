@@ -1,10 +1,9 @@
 # Development Plan — get-dotenv
 
-When updated: 2025-09-19T21:34:00Z
+When updated: 2025-09-19T21:55:00Z
 NOTE: Update timestamp on commit.
 
-## Next up
-- Tests
+## Next up- Tests
   - Add unit tests for tokenize to cover doubled quotes inside quoted segments,
     ensuring node -e payloads remain intact across platforms.
 - Documentation/help
@@ -24,10 +23,10 @@ NOTE: Update timestamp on commit.
   - Added tokenizer-based fallback detection for node -e/--eval when regex
     doesn’t match, passing argv arrays under shell-off to avoid re-tokenizing
     code strings.
+  - Removed unnecessary nullish coalescing and narrowed tokenized parts to satisfy lint and noUncheckedIndexedAccess.
 - Windows alias E2E termination (PowerShell/Windows)
   - Special-case alias --cmd payload under shell-off: when resolved===input and
     payload is a node -e/--eval snippet, pass argv array ["node","-e","<code>"]    to runCommand. Avoids lossy re-tokenization and fixes the Windows E2E hang.
-
 - Remove dead file
   - Deleted src/plugins/cmd/run.ts (superseded by src/cliCore/exec.ts).
 
