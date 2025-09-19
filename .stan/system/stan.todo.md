@@ -3,7 +3,9 @@
 When updated: 2025-09-19T03:55:00Z
 NOTE: Update timestamp on commit.
 
-## Next up- Verify the batch list default-subcommand fix
+## Next up
+
+- Verify the batch list default-subcommand fix
 
 - Re-run E2E; confirm “batch list (-l)” passes on Windows. If not, add
   debug to print merged globs and list flag resolution in the default
@@ -39,10 +41,14 @@ NOTE: Update timestamp on commit.
 
 ## Completed (recent)
 
+- Decompose batch handlers module:
+  - Split src/plugins/batch/handlers.ts into:
+    - src/plugins/batch/actions/defaultCmdAction.ts
+    - src/plugins/batch/actions/parentAction.ts
+  - Updated batch index wiring; removed the old handlers.ts.
 - Batch shell-off argv arrays: when no script remap occurs, forward the
   original argv array to the batch executor. Accept string|string[] in the
-  executor and bypass tokenize for arrays. This preserves embedded quotes in
-  Node -e code and fixes the E2E “batch exec” case on Windows.
+  executor and bypass tokenize for arrays. This preserves embedded quotes in Node -e code and fixes the E2E “batch exec” case on Windows.
 
 - Batch executor TS fix and parent-path behavior:
   - Coerce array → string when using execaCommand (shell branch) to satisfy

@@ -2,14 +2,14 @@ import { Command as Commander } from 'commander';
 
 import { definePlugin } from '../../cliHost/definePlugin';
 import type { GetDotenvCli } from '../../cliHost/GetDotenvCli';
-import { buildDefaultCmdAction, buildParentAction } from './handlers';
+import { buildDefaultCmdAction } from './actions/defaultCmdAction';
+import { buildParentAction } from './actions/parentAction';
 import { BatchConfigSchema, type BatchPluginOptions } from './types';
 
 /**
  * Batch plugin for the GetDotenv CLI host.
  *
- * Mirrors the legacy batch subcommand behavior without altering the shipped CLI.
- * Options:
+ * Mirrors the legacy batch subcommand behavior without altering the shipped CLI. * Options:
  * - scripts/shell: used to resolve command and shell behavior per script or global default.
  * - logger: defaults to console.
  */
