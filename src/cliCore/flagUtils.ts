@@ -43,13 +43,24 @@ export const resolveExclusionAll = (
   excludeAll: true | undefined,
   excludeAllOff: true | undefined,
 ) =>
-  excludeAll && !excludeOff
-    ? true
-    : excludeAllOff && !exclude
-      ? undefined
-      : defaultValue
-        ? true
-        : undefined;
+  // Order of precedence:
+  // 1) Individual explicit "on" wins outright.
+  // 2) Individual explicit "off" wins over any global.
+  // 3) Global exclude-all forces true when not explicitly turned off.
+  // 4) Global exclude-all-off unsets when the individual wasn't explicitly enabled.
+  // 5) Fall back to the default (true => set; false/undefined => unset).
+  ((): boolean | undefined => {
+    // Individual "on"
+    if (exclude === true) return true;
+    // Individual "off"
+    if (excludeOff === true) return undefined;
+    // Global "exclude-all" ON (unless explicitly turned off)
+    if (excludeAll === true) return true;
+    // Global "exclude-all-off" (unless explicitly enabled)
+    if (excludeAllOff === true) return undefined;
+    // Default
+    return defaultValue ? true : undefined;
+  })();
 
 /**
  * exactOptionalPropertyTypes-safe setter for optional boolean flags:

@@ -1,6 +1,6 @@
 # Development Plan — get-dotenv
 
-When updated: 2025-09-18T19:35:00Z
+When updated: 2025-09-19T00:15:00Z
 NOTE: Update timestamp on commit.
 
 ## Next up
@@ -10,6 +10,10 @@ NOTE: Update timestamp on commit.
 - Re-run E2E; confirm “batch list (-l)” passes on Windows. If not, add
   debug to print merged globs and list flag resolution in the default
   subcommand.
+
+- Re-run full E2E after flag fix; confirm:
+  - excludes private (-r) now blanks APP_SECRET
+  - no regressions across core flows
 
 - Stabilize alias (--cmd) capture on Windows (E2E timeouts)
   - Confirm preAction executes in alias-only invocations (no subcommand present).
@@ -95,3 +99,8 @@ NOTE: Update timestamp on commit.
   - batch: extracted handlers/types and wired.
   - cmd: extracted tokenize/run/alias and wired.
   - init: extracted io/prompts/plan/constants and wired into index.ts.
+
+- Fix tri-state exclude flag normalization:
+  resolveExclusionAll now honors explicit individual toggles. This ensures
+  -r/--exclude-private is respected end-to-end (prevents APP_SECRET from
+  reappearing in ctx.dotenv when private files are meant to be excluded).

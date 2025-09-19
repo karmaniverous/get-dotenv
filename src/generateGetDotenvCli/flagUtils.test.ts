@@ -33,6 +33,11 @@ describe('flagUtils', () => {
         resolveExclusionAll(undefined, true, false, true, undefined),
       ).toBeUndefined();
     });
+    it('individual exclude=true forces true', () => {
+      expect(
+        resolveExclusionAll(true, undefined, false, undefined, undefined),
+      ).toBe(true);
+    });
     it('exclude-all-off unsets when individual not set', () => {
       expect(
         resolveExclusionAll(undefined, undefined, true, undefined, true),
