@@ -3,7 +3,32 @@
 When updated: 2025-09-20T00:05:00Z
 NOTE: Update timestamp on commit.
 
-## Next up- Release prep- Run lint/typecheck/build; verify:package and verify:tarball; bump version
+## Next up — AWS base plugin (host-only)
+
+- Implement base AWS plugin for the plugin-first host (no commands):
+  - afterResolve only; no AWS SDK dependency.
+  - Resolve profile/region from ctx.dotenv first, then plugins.aws overrides.
+  - Profile precedence: plugins.aws.profile > AWS_LOCAL_PROFILE > AWS_PROFILE.
+  - Region precedence: plugins.aws.region > AWS_REGION > aws configure get region (best-effort) > plugins.aws.defaultRegion.
+  - Credentials flow (env-first -> cli-export -> static-fallback):
+    1. If AWS_ACCESS_KEY_ID/SECRET in process.env, adopt and stop.
+    2. Try `aws configure export-credentials --profile <profile>` (argv array).
+    3. If export fails and profile appears SSO and `loginOnDemand` is true:
+       run `aws sso login --profile <profile>` then retry export once.
+    4. Else read static keys: `aws configure get aws_access_key_id/secret_access_key/session_token`.
+  - setEnv (default true): write AWS\_\* and region to process.env (also set AWS_DEFAULT_REGION).
+  - addCtx (default true): publish ctx.plugins.aws { profile, region, credentials }.
+  - Zod schema for plugins.aws: { profile?, region?, defaultRegion?, profileKey?, profileFallbackKey?, regionKey?, strategy?, loginOnDemand?, setEnv?, addCtx? }.
+- Tests:
+  - Env-first path (no CLI calls).
+  - Export path (mock execa; success).
+  - Static fallback (export fails; keys via configure get).
+  - loginOnDemand triggers only when export fails and SSO profile is detected.
+  - setEnv/addCtx toggles.
+
+## Next up- Release prep
+
+- Run lint/typecheck/build; verify:package and verify:tarball; bump version
   when ready.
 
 - Roadmap groundwork
@@ -20,7 +45,7 @@ NOTE: Update timestamp on commit.
   - Add/append: `getdotenv.config.local.*` and `*.local`.
   - Log Created/Updated when changes are applied.- Config loader: enable JS/TS config files
   - Discover getdotenv.config.{js,ts} (and module variants) in packaged/project
-    roots (public/local).  - Load JS/TS via robust pipeline (direct import → esbuild bundle → TS transpile).
+    roots (public/local). - Load JS/TS via robust pipeline (direct import → esbuild bundle → TS transpile).
   - Permit dynamic only in JS/TS; continue rejecting dynamic in JSON/YAML.
 - Docs alignment: config loader is always-on (no-op when no files); removed
   stale `--use-config-loader` references; updated guides and inline comments.

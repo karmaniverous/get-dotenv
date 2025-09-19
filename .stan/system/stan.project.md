@@ -1,6 +1,6 @@
 # Project Requirements — get-dotenv
 
-When updated: 2025-09-16T12:40:00Z
+When updated: 2025-09-20T01:05:00Z
 
 ## Product positioning (summary)
 
@@ -261,3 +261,112 @@ Purpose
   - Extend scripts entries with `parallel?: boolean` and `concurrency?: number`.
   - When hints are present, they override the global concurrency for that script
     (e.g., force sequential for heavy tasks like `npm install`).
+
+## AWS base plugin (plugin-first host)
+
+Purpose
+
+- Provide a minimal “auth context” for AWS that other plugins can rely on,
+  without bundling any domain logic (e.g., secrets, SQS, etc.) and without
+  adding an AWS SDK dependency here.
+- Works only with the plugin-first host (GetDotenvCli definePlugin). The
+  generated CLI path is explicitly out of scope; existing projects using it
+  will continue to own their AWS wiring until they migrate to the host.
+
+Behavior (no commands)
+
+- Implemented as a base plugin with no commands. It runs once per invocation
+  in `afterResolve`, after dotenv overlays/config have been applied.
+- It resolves profile/region, acquires credentials (supporting SSO and non‑SSO
+  profiles), publishes them to process.env when enabled, and mirrors them into
+  `ctx.plugins.aws` for programmatic consumers.
+
+Inputs and where they come from
+
+- Values may come from dotenv (public/local) or getdotenv config (JSON/YAML/TS/JS):
+  - Profiles typically live in local dotenv per environment (e.g., `.env.local`,
+    `.env.dev.local`), since they are developer‑machine specifics.
+  - Region is non‑secret and may live in public dotenv or config.
+  - The plugin reads the already‑resolved dotenv (`ctx.dotenv`) first, then
+    optional config overrides under `plugins.aws`.
+
+Resolution precedence
+
+- Profile:
+  1. `plugins.aws.profile` (explicit override in getdotenv config)
+  2. `ctx.dotenv['AWS_LOCAL_PROFILE']` (default key)
+  3. `ctx.dotenv['AWS_PROFILE']` (fallback key)
+  4. undefined (no profile; acquisition is skipped)
+- Region:
+  1. `plugins.aws.region` (explicit override)
+  2. `ctx.dotenv['AWS_REGION']` (default key)
+  3. If a profile was resolved and region is still missing, best‑effort
+     `aws configure get region --profile <profile>`
+  4. `plugins.aws.defaultRegion` (optional fallback)
+  5. undefined
+- Advanced (optional) key renames:
+  - `plugins.aws.profileKey` (default `'AWS_LOCAL_PROFILE'`)
+  - `plugins.aws.profileFallbackKey` (default `'AWS_PROFILE'`)
+  - `plugins.aws.regionKey` (default `'AWS_REGION'`)
+    Most teams can ignore these and use defaults.
+
+Credentials acquisition (SSO and non‑SSO)
+
+- Env‑first: if `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` are already set
+  in `process.env` (e.g., provided by CI or earlier tooling), use them and stop.
+- Otherwise, when a `profile` is present and strategy is enabled:
+  1. Try CLI export (works for SSO, role, and static profiles on modern AWS CLI):
+     `aws configure export-credentials --profile <profile>` (no shell; argv array).
+     If it succeeds, use the returned creds.
+  2. If export fails:
+     - Detect SSO hints for the profile (best‑effort, e.g., `sso_session`,
+       `sso_start_url`).
+     - If it appears SSO and `plugins.aws.loginOnDemand === true`, run
+       `aws sso login --profile <profile>` (once), then retry export once.
+     - If not SSO (static profile) or login is disabled, fall back to static reads:
+       `aws configure get aws_access_key_id/secret_access_key/session_token`
+       with `--profile <profile>`.
+- If none of the above produce credentials, leave env untouched and do not
+  publish a credentials bag (plugin is inert).
+
+Publishing outputs
+-- `setEnv` (default true): when enabled, the plugin writes the resolved values to
+`process.env`:
+
+- `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_SESSION_TOKEN?`
+- `AWS_REGION` (and optionally `AWS_DEFAULT_REGION` for broader compatibility)
+- `addCtx` (default true): publish a programmatic mirror under `ctx.plugins.aws`:
+  ```
+  {
+    profile?: string,
+    region?: string,
+    credentials?: {
+      accessKeyId: string,
+      secretAccessKey: string,
+      sessionToken?: string
+    }
+  }
+  ```
+
+Configuration schema (plugins.aws)
+
+- `profile?: string` (explicit override)
+- `region?: string` (explicit override)
+- `defaultRegion?: string`
+- `profileKey?: string` (default `'AWS_LOCAL_PROFILE'`)
+- `profileFallbackKey?: string` (default `'AWS_PROFILE'`)
+- `regionKey?: string` (default `'AWS_REGION'`)
+- `strategy?: 'cli-export' | 'none'` (default `'cli-export'`)
+- `loginOnDemand?: boolean` (default `false`): only attempts `aws sso login`
+  when export just failed and the profile appears to be SSO; never logs in when
+  creds are already valid.
+- `setEnv?: boolean` (default `true`)
+- `addCtx?: boolean` (default `true`)
+
+Notes
+
+- No commands are registered by this base plugin; domain plugins (e.g., a wrapped
+  Secrets Manager plugin) can be installed separately and will consume the env/ctx
+  provided by this base.
+- The plugin keeps no AWS SDK runtime dependency; downstream libraries may bring
+  SDKs as needed.
