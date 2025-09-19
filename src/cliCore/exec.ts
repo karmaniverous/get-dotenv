@@ -30,7 +30,7 @@ const stripOuterQuotes = (s: string): string => {
 export const runCommand = async (
   command: string | string[],
   shell: string | boolean | URL,
-  opts: { env?: NodeJS.ProcessEnv; stdio?: 'inherit' | 'pipe' },
+  opts: { cwd?: string; env?: NodeJS.ProcessEnv; stdio?: 'inherit' | 'pipe' },
 ): Promise<number> => {
   if (shell === false) {
     let file: string | undefined;
@@ -45,7 +45,7 @@ export const runCommand = async (
     }
     if (!file) return 0;
     dbg('exec (plain)', { file, args, stdio: opts.stdio });
-    const result = await execa(file, args, { ...opts });
+    const result = await execa(file, args, { ...opts, cwd: opts.cwd });
     if (opts.stdio === 'pipe' && result.stdout) {
       process.stdout.write(
         result.stdout + (result.stdout.endsWith('\n') ? '' : '\n'),
@@ -61,7 +61,11 @@ export const runCommand = async (
       stdio: opts.stdio,
       command: commandStr,
     });
-    const result = await execaCommand(commandStr, { shell, ...opts });
+    const result = await execaCommand(commandStr, {
+      shell,
+      ...opts,
+      cwd: opts.cwd,
+    });
     const out = (result as { stdout?: string } | undefined)?.stdout;
     if (opts.stdio === 'pipe' && out) {
       process.stdout.write(out + (out.endsWith('\n') ? '' : '\n'));

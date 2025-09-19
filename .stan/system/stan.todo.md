@@ -1,10 +1,9 @@
 # Development Plan — get-dotenv
 
-When updated: 2025-09-19T19:25:00Z
+When updated: 2025-09-19T19:45:00Z
 NOTE: Update timestamp on commit.
 
-## Next up- E2E (Vitest) migration:- Introduce a small execa wrapper with per-step timeouts (AbortController/timeout)
-  and partial stdout/stderr capture; convert smoke scenarios into Vitest tests, including a Windows-only alias test with GETDOTENV_STDIO=pipe.
+## Next up- E2E (Vitest) migration:- Introduce a small execa wrapper with per-step timeouts (AbortController/timeout)  and partial stdout/stderr capture; convert smoke scenarios into Vitest tests, including a Windows-only alias test with GETDOTENV_STDIO=pipe.
 - Port remaining smoke steps (dynamic, trace, batch) into Vitest using the same helper.
 - Unit tests
   - Expand coverage for argv sanitization and tokenize/run edge cases across
@@ -17,10 +16,13 @@ NOTE: Update timestamp on commit.
 
 ## Completed (recent)
 
+- Shared exec helper options (cwd)
+  - Updated src/cliCore/exec.ts runCommand signature to accept an optional
+    cwd and forwarded it to execa/execaCommand. Fixes TS2353 in batch exec.
+
 - Shared exec helper and tokenizer hardening
   - Introduced src/cliCore/exec.ts exporting runCommand as a shared helper for
-    all “exec surfaces” (cmd, alias, batch). Refactored cmd/alias and batch to
-    use it, removing duplicated implementations.
+    all “exec surfaces” (cmd, alias, batch). Refactored cmd/alias and batch to    use it, removing duplicated implementations.
   - Hardened tokenizer to support Windows-style doubled quotes inside quoted
     segments (e.g., "" -> ") to preserve Node -e payload integrity when the
     alias payload is passed as a single token.
