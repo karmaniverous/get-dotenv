@@ -11,16 +11,24 @@ const dbg = (...args: unknown[]) => {
 };
 
 export const runCommand = async (
-  command: string,
+  command: string | string[],
   shell: string | boolean | URL,
   opts: { env?: NodeJS.ProcessEnv; stdio?: 'inherit' | 'pipe' },
 ): Promise<number> => {
   if (shell === false) {
-    const tokens = tokenize(command);
-    const file = tokens[0];
+    let file: string | undefined;
+    let args: string[] = [];
+    if (Array.isArray(command)) {
+      file = command[0];
+      args = command.slice(1);
+    } else {
+      const tokens = tokenize(command);
+      file = tokens[0];
+      args = tokens.slice(1);
+    }
     if (!file) return 0;
-    dbg('exec (plain)', { file, args: tokens.slice(1), stdio: opts.stdio });
-    const result = await execa(file, tokens.slice(1), { ...opts });
+    dbg('exec (plain)', { file, args, stdio: opts.stdio });
+    const result = await execa(file, args, { ...opts });
     if (opts.stdio === 'pipe' && result.stdout) {
       process.stdout.write(
         result.stdout + (result.stdout.endsWith('\n') ? '' : '\n'),

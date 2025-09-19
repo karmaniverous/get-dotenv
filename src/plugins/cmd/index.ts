@@ -171,21 +171,23 @@ export const cmdPlugin = (options: CmdPluginOptions = {}) =>
                 );
               }
             }
-            await runCommand(
-              resolved,
-              resolveShell(scripts, input, shell) as unknown as
-                | string
-                | boolean
-                | URL,
-              {
-                env: {
-                  ...process.env,
-                  ...dotenv,
-                  getDotenvCliOptions: JSON.stringify(envBag),
-                },
-                stdio: capture ? 'pipe' : 'inherit',
+            const shellSetting = resolveShell(
+              scripts,
+              input,
+              shell,
+            ) as unknown as string | boolean | URL;
+            // When shell is OFF and no script alias remapping occurred,
+            // forward the original argv tokens to avoid lossy re-tokenization.
+            const commandArg =
+              shellSetting === false && resolved === input ? args : resolved;
+            await runCommand(commandArg, shellSetting, {
+              env: {
+                ...process.env,
+                ...dotenv,
+                getDotenvCliOptions: JSON.stringify(envBag),
               },
-            );
+              stdio: capture ? 'pipe' : 'inherit',
+            });
           },
         );
       if (options.asDefault) cli.addCommand(cmd, { isDefault: true });

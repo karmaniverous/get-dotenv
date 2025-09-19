@@ -1,13 +1,13 @@
 # Development Plan — get-dotenv
 
-When updated: 2025-09-18T19:05:00Z
+When updated: 2025-09-18T19:35:00Z
 NOTE: Update timestamp on commit.
 
-## Next up
-- Verify the batch list default-subcommand fix
-  - Re-run E2E; confirm “batch list (-l)” passes on Windows. If not, add
-    debug to print merged globs and list flag resolution in the default
-    subcommand.
+## Next up- Verify the batch list default-subcommand fix
+
+- Re-run E2E; confirm “batch list (-l)” passes on Windows. If not, add
+  debug to print merged globs and list flag resolution in the default
+  subcommand.
 
 - Stabilize alias (--cmd) capture on Windows (E2E timeouts)
   - Confirm preAction executes in alias-only invocations (no subcommand present).
@@ -38,9 +38,13 @@ NOTE: Update timestamp on commit.
   only. This makes the source of each key explicit without altering behavior.
   Root option is wired through attachRootOptions; legacy generator remains
   backward compatible.
+- Shell-off robustness: when shell is OFF and no script alias remapping
+  occurred, pass the original argv array to execa instead of re-tokenizing a
+  joined string. This preserves PowerShell-quoted tokens (e.g., node -e "..."),
+  preventing SyntaxError in node -e on Windows without changing shell behavior.
 - Host skeleton: make GetDotenvCli default preSubcommand resolve with
   loadProcess=false to avoid mutating process.env before passOptions runs.
-  Prevents private keys from leaking into the CLI process env and stabilizes  the exclude-private E2E on Windows when combined with explicit ctx.dotenv injection.
+  Prevents private keys from leaking into the CLI process env and stabilizes the exclude-private E2E on Windows when combined with explicit ctx.dotenv injection.
 
 - Shipped CLI: default loadProcess OFF to prevent process.env leakage into
   subprocesses. Combined with explicit ctx.dotenv injection, this stabilizes the
