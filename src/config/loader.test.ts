@@ -8,7 +8,6 @@ import {
   resolveGetDotenvConfigSources,
   toFileUrl,
 } from './loader';
-
 const TROOT = path.posix.join('.tsbuild', 'getdotenv-config-tests');
 const PP = path.posix.join(TROOT, 'packaged');
 const PR = path.posix.join(TROOT, 'project');
@@ -62,7 +61,7 @@ describe('config/loader (JSON/YAML)', () => {
     }
   });
 
-  it('parses JSON and YAML, rejects JS/TS and dynamic in JSON/YAML', async () => {
+  it('parses JSON, YAML, and JS/TS; dynamic allowed only in JS/TS; dynamic in JSON/YAML rejected', async () => {
     await fs.ensureDir(PR);
     await writeJson(path.posix.join(PR, 'package.json'), { name: 'proj' });
     const jsonPath = path.posix.join(PR, 'getdotenv.config.json');
@@ -75,10 +74,30 @@ describe('config/loader (JSON/YAML)', () => {
     const yamlCfg = await loadConfigFile(yamlPath);
     expect(yamlCfg.vars?.Y).toBe('2');
 
-    // Reject JS/TS
+    // JS config accepted (no dynamic)
     const jsPath = path.posix.join(PR, 'getdotenv.config.js');
-    await fs.writeFile(jsPath, 'export default {}', 'utf-8');
-    await expect(loadConfigFile(jsPath)).rejects.toThrow(/not supported/i);
+    await fs.writeFile(jsPath, 'export default { vars: { Z: "3" } };', 'utf-8');
+    const jsCfg = await loadConfigFile(jsPath);
+    expect(jsCfg.vars?.Z).toBe('3');
+
+    // TS config accepted; dynamic allowed
+    const tsPath = path.posix.join(PR, 'getdotenv.config.ts');
+    await fs.writeFile(
+      tsPath,
+      `
+        export default {
+          vars: { T: "4" },
+          dynamic: { DYN: (_vars) => "ok" }
+        }
+      `,
+      'utf-8',
+    );
+    const tsCfg = await loadConfigFile(tsPath);
+    expect(tsCfg.vars?.T).toBe('4');
+    // dynamic is retained in the resolved shape for JS/TS
+    expect(typeof (tsCfg as unknown as { dynamic?: unknown }).dynamic).toBe(
+      'object',
+    );
 
     // Reject dynamic in JSON/YAML for this step
     await writeJson(jsonPath, { dynamic: { KEY: 'VAL' } });

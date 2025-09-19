@@ -9,15 +9,29 @@ import {
   getDotenvConfigSchemaRaw,
   getDotenvConfigSchemaResolved,
 } from '../schema/getDotenvConfig';
+// Discovery candidates (first match wins per scope/privacy).
+// Order preserves historical JSON/YAML precedence; JS/TS added afterwards.
 const PUBLIC_FILENAMES = [
   'getdotenv.config.json',
   'getdotenv.config.yaml',
   'getdotenv.config.yml',
+  'getdotenv.config.js',
+  'getdotenv.config.mjs',
+  'getdotenv.config.cjs',
+  'getdotenv.config.ts',
+  'getdotenv.config.mts',
+  'getdotenv.config.cts',
 ] as const;
 const LOCAL_FILENAMES = [
   'getdotenv.config.local.json',
   'getdotenv.config.local.yaml',
   'getdotenv.config.local.yml',
+  'getdotenv.config.local.js',
+  'getdotenv.config.local.mjs',
+  'getdotenv.config.local.cjs',
+  'getdotenv.config.local.ts',
+  'getdotenv.config.local.mts',
+  'getdotenv.config.local.cts',
 ] as const;
 
 const isYaml = (p: string) =>
@@ -27,7 +41,6 @@ const isJsOrTs = (p: string) =>
   ['.js', '.mjs', '.cjs', '.ts', '.mts', '.cts'].includes(
     extname(p).toLowerCase(),
   );
-
 export type ConfigPrivacy = 'public' | 'local';
 export type ConfigScope = 'packaged' | 'project';
 export type ConfigFile = {
@@ -165,34 +178,25 @@ export const discoverConfigFiles = async (
  * Validates with Zod RAW schema, then normalizes to RESOLVED.
  *
  * For JSON/YAML: if a "dynamic" property is present, throws with guidance.
+ * For JS/TS: default export is loaded; "dynamic" is allowed.
  */
 export const loadConfigFile = async (
   filePath: string,
 ): Promise<GetDotenvConfigResolved> => {
-  if (isJsOrTs(filePath)) {
-    throw new Error(
-      `Config ${filePath} is JS/TS — not supported in this step. Use JSON/YAML or enable JS/TS support in a later version.`,
-    );
-  }
   let raw: unknown = {};
   try {
-    if (isJsOrTs(filePath)) {
-      // JS/TS support: load default export
-      const abs = path.resolve(filePath);
+    const abs = path.resolve(filePath);
+    if (isJsOrTs(abs)) {
+      // JS/TS support: load default export via robust pipeline.
       const mod = await loadJsTsDefault<unknown>(abs);
       raw = mod ?? {};
     } else {
-      const txt = await fs.readFile(filePath, 'utf-8');
-      raw = isJson(filePath)
-        ? JSON.parse(txt)
-        : isYaml(filePath)
-          ? YAML.parse(txt)
-          : {};
+      const txt = await fs.readFile(abs, 'utf-8');
+      raw = isJson(abs) ? JSON.parse(txt) : isYaml(abs) ? YAML.parse(txt) : {};
     }
   } catch (err) {
     throw new Error(`Failed to read/parse config: ${filePath}. ${String(err)}`);
   }
-
   // Validate RAW
   const parsed = getDotenvConfigSchemaRaw.safeParse(raw);
   if (!parsed.success) {
@@ -211,7 +215,6 @@ export const loadConfigFile = async (
 
   return getDotenvConfigSchemaResolved.parse(parsed.data);
 };
-
 export type ResolvedConfigSources = {
   packaged?: GetDotenvConfigResolved;
   project?: {
@@ -222,7 +225,7 @@ export type ResolvedConfigSources = {
 
 /**
  * Discover and load configs into resolved shapes, ordered by scope/privacy.
- * JSON/YAML only for this step.
+ * JSON/YAML/JS/TS supported; first match per scope/privacy applies.
  */
 export const resolveGetDotenvConfigSources = async (
   importMetaUrl?: string,

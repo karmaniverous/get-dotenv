@@ -1,10 +1,9 @@
 # Development Plan — get-dotenv
 
-When updated: 2025-09-19T23:45:00Z
+When updated: 2025-09-19T23:58:00Z
 NOTE: Update timestamp on commit.
 
 ## Next up- Release prep
-
 - Run lint/typecheck/build; verify:package and verify:tarball; bump version
   when ready.
 
@@ -15,10 +14,14 @@ NOTE: Update timestamp on commit.
 
 ## Completed (recent)
 
+- Config loader: enable JS/TS config files
+  - Discover getdotenv.config.{js,ts} (and module variants) in packaged/project
+    roots (public/local).
+  - Load JS/TS via robust pipeline (direct import → esbuild bundle → TS transpile).
+  - Permit dynamic only in JS/TS; continue rejecting dynamic in JSON/YAML.
 - Docs alignment: config loader is always-on (no-op when no files); removed
   stale `--use-config-loader` references; updated guides and inline comments.
 - Added prioritized roadmap and concurrency policy to stan.project.md.
-
 - Added demo plugin to the shipped CLI (src/plugins/demo). Demonstrates:
   context access, child exec with env injection, and scripts/shell resolution,
   with extensive inline comments. Wired into getdotenv CLI via .use(demoPlugin()).
