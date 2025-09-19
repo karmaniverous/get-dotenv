@@ -176,11 +176,7 @@ export const cmdPlugin = (options: CmdPluginOptions = {}) =>
               input,
               shell,
             ) as unknown as string | boolean | URL;
-            // When shell is OFF and no script alias remapping occurred,
-            // forward the original argv tokens to avoid lossy re-tokenization.
-            const commandArg =
-              shellSetting === false && resolved === input ? args : resolved;
-            await runCommand(commandArg, shellSetting, {
+            await runCommand(resolved, shellSetting, {
               env: {
                 ...process.env,
                 ...dotenv,

@@ -38,16 +38,16 @@ export const runCommand = async (
     dbg('exit (plain)', { exitCode: exit });
     return typeof exit === 'number' ? exit : Number.NaN;
   } else {
+    const commandStr = Array.isArray(command) ? command.join(' ') : command;
     dbg('exec (shell)', {
       shell: typeof shell === 'string' ? shell : 'custom',
       stdio: opts.stdio,
-      command,
+      command: commandStr,
     });
-    const result = await execaCommand(command, { shell, ...opts });
-    if (opts.stdio === 'pipe' && result.stdout) {
-      process.stdout.write(
-        result.stdout + (result.stdout.endsWith('\n') ? '' : '\n'),
-      );
+    const result = await execaCommand(commandStr, { shell, ...opts });
+    const out = (result as { stdout?: string } | undefined)?.stdout;
+    if (opts.stdio === 'pipe' && out) {
+      process.stdout.write(out + (out.endsWith('\n') ? '' : '\n'));
     }
     const exit = (result as { exitCode?: unknown } | undefined)?.exitCode;
     dbg('exit (shell)', { exitCode: exit });

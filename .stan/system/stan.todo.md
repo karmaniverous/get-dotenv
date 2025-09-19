@@ -3,7 +3,9 @@
 When updated: 2025-09-18T19:35:00Z
 NOTE: Update timestamp on commit.
 
-## Next up- Verify the batch list default-subcommand fix
+## Next up
+
+- Verify the batch list default-subcommand fix
 
 - Re-run E2E; confirm “batch list (-l)” passes on Windows. If not, add
   debug to print merged globs and list flag resolution in the default
@@ -45,7 +47,10 @@ NOTE: Update timestamp on commit.
 - Host skeleton: make GetDotenvCli default preSubcommand resolve with
   loadProcess=false to avoid mutating process.env before passOptions runs.
   Prevents private keys from leaking into the CLI process env and stabilizes the exclude-private E2E on Windows when combined with explicit ctx.dotenv injection.
-
+- Fix execaCommand typing and test robustness:
+  ensure we always pass a string to execaCommand and guard undefined result
+  from execa mocks. This prevents TypeScript errors and avoids crashes in
+  alias tests when stdio is captured under mocks.
 - Shipped CLI: default loadProcess OFF to prevent process.env leakage into
   subprocesses. Combined with explicit ctx.dotenv injection, this stabilizes the
   exclude-private E2E case on Windows (private keys do not bleed into child env).
