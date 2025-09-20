@@ -204,7 +204,8 @@ You can also use `getdotenv` from the command line:
 #   -v, --vars <string>                 extra variables expressed as delimited key-value pairs (dotenv-expanded): KEY1=VAL1 KEY2=VAL2
 #   -o, --output-path <string>          consolidated output file  (dotenv-expanded)
 #   -s, --shell [string]                command execution shell, no argument for default OS shell or provide shell string (default OS shell)
-#   -S, --shell-off                     command execution shell OFF#   -p, --load-process                  load variables to process.env ON (default)
+#   -S, --shell-off                     command execution shell OFF
+#   -p, --load-process                  load variables to process.env ON (default)
 #   -P, --load-process-off              load variables to process.env OFF
 #   -a, --exclude-all                   exclude all dotenv variables from loading ON
 #   -A, --exclude-all-off               exclude all dotenv variables from loading OFF (default)
@@ -299,9 +300,11 @@ and may be applied to the inner shell command instead of `getdotenv` unless you
 structure your script carefully.
 
 - Anti-pattern:
+
   ```json
   { "scripts": { "script": "getdotenv echo $APP_SETTING" } }
   ```
+
   Then `npm run script -- -e dev` applies `-e` to `echo`, not to `getdotenv`.
 
 - Recommended:
@@ -312,6 +315,7 @@ structure your script carefully.
   variables before executing the inner command.
 
 Notes:
+
 - `-c`/`--cmd` is an alias of the `cmd` subcommand; do not use both in a single invocation.
 - On POSIX shells, prefer single quotes to prevent the outer shell from expanding `$VAR`
   before Node sees it. On PowerShell, single quotes are also literal.
@@ -319,6 +323,7 @@ Notes:
   `--shell`.
 
 Important:
+
 - When using the parent alias `--cmd` with a Node eval payload, quote the entire
   payload as a single token so Commander does not treat `-e/--eval` as
   getdotenv’s `-e, --env` flag.
@@ -337,6 +342,7 @@ Important:
   ```
 
 Diagnostics and CI capture:
+
 - To capture child stdout/stderr deterministically (e.g., in CI), either set
   the environment variable `GETDOTENV_STDIO=pipe` or pass `--capture`. Outputs
   are buffered and re-emitted after completion.
@@ -346,19 +352,16 @@ Diagnostics and CI capture:
   ```
   When provided without keys, `--trace` emits a concise origin line for every
   key (parent | dotenv | unset) to stderr before the child process launches.
+
 ---
 
 ## Guides
-- Cascade and precedence:  - ./guides/cascade.md
-- Shell execution behavior and quoting:
-  - ./guides/shell.md
 
-The guides are also included in the hosted API docs.
-See more great templates & tools on [my GitHub Profile](https://github.com/karmaniverous)!
+- [Cascade and precedence](./guides/cascade.md)
+- [Shell execution behavior and quoting](./guides/shell.md)
+
+The guides are also included in the [hosted API docs](https://docs.karmanivero.us/get-dotenv).
 
 ---
 
-Further reading:
-
-- Config files and overlays: ./guides/config.md
-- Plugin-first host and plugins: ./guides/plugins.md
+See more great templates & tools on [my GitHub Profile](https://github.com/karmaniverous)!

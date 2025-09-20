@@ -29,9 +29,8 @@ import { resolveCommand, resolveShell } from './resolve';
  *
  * @remarks
  * Flags resolved here are set or deleted via
- * {@link generateGetDotenvCli/flagUtils.setOptionalFlag | setOptionalFlag} to
- * // fully-qualified link target for TypeDoc navigation
- * preserve exactOptionalPropertyTypes behavior.
+ * {@link generateGetDotenvCli/flagUtils#setOptionalFlag | setOptionalFlag}
+ * to preserve exactOptionalPropertyTypes behavior.
  */
 export type PreSubHookContext = {
   logger: Logger;
