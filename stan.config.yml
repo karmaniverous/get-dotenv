@@ -2,8 +2,8 @@ cliDefaults:
   run:
     sequential: true
 excludes:
-  - "**/.tsbuild/**"
-  - "**/*.tsbuildinfo"
+  - '**/.tsbuild/**'
+  - '**/*.tsbuildinfo'
   - assets
   - CHANGELOG.md
   - docs
@@ -16,6 +16,8 @@ scripts:
   test: npm run test
   docs: npm run stan:docs
   build: npm run build
-  smoke: node tools/smoke.mjs
+  smoke: node tools/smoke.js
+  verify-package: node tools/verify-package.js
+  verify-tarball: node tools/verify-tarball.js
 stanPath: .stan
 includes: []

@@ -208,8 +208,6 @@
     "cli:dist": "node dist/getdotenv.cli.mjs",
     "changelog": "auto-changelog",
     "docs": "typedoc",
-    "verify:package": "node tools/verify-package.mjs",
-    "verify:tarball": "node tools/verify-tarball.mjs",
     "pack:dry": "npm pack --dry-run",
     "knip": "knip",
     "lint": "eslint . eslint.config.ts",
