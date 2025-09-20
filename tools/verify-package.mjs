@@ -22,6 +22,7 @@ const main = async () => {
   const requiredExports = [
     '.',
     './cliHost',
+    './plugins/aws',
     './plugins/batch',
     './plugins/init',
     './config',
@@ -34,7 +35,6 @@ const main = async () => {
       `package.json: "exports" missing "${key}"`,
     );
   }
-
   // Optional: if dist exists, check main JS outputs exist
   const distExists = await fs.pathExists('dist');
   if (distExists) {

@@ -1,10 +1,9 @@
 # Development Plan — get-dotenv
 
-When updated: 2025-09-20T05:15:00Z
+When updated: 2025-09-20T05:55:00Z
 NOTE: Update timestamp on commit.
 
 ## Next up
-
 - Release preparation
   - npm run lint
   - npm run typecheck
@@ -26,7 +25,10 @@ NOTE: Update timestamp on commit.
 
 ## Completed (recent)
 
+- Docs/nav updates
+  - Added front matter titles to all guides and a guides index with children.
+  - Created “Generated CLI” guide and linked from README.
+  - Exposed "./plugins/aws" subpath (runtime/types), updated verify/build.
 - AWS subcommand stabilized (session-only region/default; forwarding with capture).
 - Windows alias E2E termination stabilized; smoke suite OK.
-- Full CI suite green (lint, typecheck, test, build, docs, knip, smoke).
-- Added AWS docs section to guides/plugins.md.
+- Full CI suite green (lint, typecheck, test, build, docs, knip, smoke).- Added AWS docs section to guides/plugins.md.
