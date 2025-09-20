@@ -8,10 +8,10 @@
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 import path from 'node:path';
+import process from 'node:process';
 const execFileAsync = promisify(execFile);
 
 const normalize = (p) => p.split(path.sep).join('/');
-
 const expected = [
   // Core dist runtime entries (ESM/CJS + CLI)
   'dist/index.mjs',
@@ -51,10 +51,43 @@ const main = async () => {
     ]);
     out = stdout;
   } catch (err) {
-    console.error('verify-tarball: ERROR\n', err?.stderr ?? err);
+    // Rich diagnostics when the npm pack invocation itself fails.
+    const code = err && typeof err.code !== 'undefined' ? String(err.code) : '';
+    const signal =
+      err && typeof err.signal !== 'undefined' ? String(err.signal) : '';
+    const msg = err && err.message ? String(err.message) : '';
+    const stderr = err && typeof err.stderr === 'string' ? err.stderr : '';
+    const stdout = err && typeof err.stdout === 'string' ? err.stdout : '';
+    console.error(
+      'verify-tarball: ERROR while running "npm pack --json --dry-run"',
+    );
+    console.error(`cwd: ${process.cwd()}`);
+    console.error(
+      `node: ${process.version} (${process.platform}/${process.arch})`,
+    );
+    try {
+      const { stdout: npmv } = await execFileAsync('npm', ['--version']);
+      console.error(`npm: ${npmv.trim()}`);
+    } catch {
+      console.error('npm: <unavailable>');
+    }
+    if (code || signal) console.error(`code: ${code} signal: ${signal}`);
+    if (msg) console.error(`message: ${msg}`);
+    if (stderr && stderr.trim()) console.error('[stderr]\n' + stderr.trim());
+    if (stdout && stdout.trim()) console.error('[stdout]\n' + stdout.trim());
+    // Best-effort fallback sample without --json to help diagnose older npm shapes.
+    try {
+      const { stdout: fallback } = await execFileAsync('npm', [
+        'pack',
+        '--dry-run',
+      ]);
+      const head = fallback.split(/\r?\n/).slice(0, 80).join('\n');
+      console.error('[fallback npm pack --dry-run output (head)]\n' + head);
+    } catch {
+      /* ignore */
+    }
     process.exit(1);
   }
-
   let list;
   try {
     list = JSON.parse(out);
@@ -82,16 +115,35 @@ const main = async () => {
   );
   const missing = expected.filter((p) => !names.has(p));
   if (missing.length > 0) {
+    // Emit detailed diagnostics to help pinpoint why entries are missing.
+    const sampleFound = Array.from(names).slice(0, 40);
+    console.error('verify-tarball: FAILED');
+    console.error('cwd: ' + process.cwd());
     console.error(
-      'verify-tarball: FAILED\nMissing from npm pack --dry-run listing:\n- ' +
-        missing.join('\n- '),
+      'node: ' + process.version + ` (${process.platform}/${process.arch})`,
+    );
+    try {
+      const { stdout: npmv } = await execFileAsync('npm', ['--version']);
+      console.error('npm: ' + npmv.trim());
+    } catch {
+      /* ignore */
+    }
+    console.error(
+      `pack files: ${filesArr.length}  unique paths: ${names.size}`,
+    );
+    if (sampleFound.length > 0) {
+      console.error('found (sample):\n- ' + sampleFound.join('\n- '));
+    } else {
+      console.error('found: <none>');
+    }
+    console.error(
+      'missing (' + missing.length + '):\n- ' + missing.join('\n- '),
     );
     process.exit(1);
   }
 
   console.log('verify-tarball: OK');
 };
-
 main().catch((err) => {
   console.error('verify-tarball: ERROR\n', err?.stderr ?? err);
   process.exit(1);
