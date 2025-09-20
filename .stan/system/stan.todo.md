@@ -3,26 +3,23 @@
 When updated: 2025-09-20T02:05:00Z
 NOTE: Update timestamp on commit.
 
-## Next up — AWS base plugin (host-only)- Implement base AWS plugin for the plugin-first host (no commands):
-  - afterResolve only; no AWS SDK dependency.
-  - Resolve profile/region from ctx.dotenv first, then plugins.aws overrides.
-  - Profile precedence: plugins.aws.profile > AWS_LOCAL_PROFILE > AWS_PROFILE.
-  - Region precedence: plugins.aws.region > AWS_REGION > aws configure get region (best-effort) > plugins.aws.defaultRegion.
-  - Credentials flow (env-first -> cli-export -> static-fallback):
-    1. If AWS_ACCESS_KEY_ID/SECRET in process.env, adopt and stop.
-    2. Try `aws configure export-credentials --profile <profile>` (argv array).
-    3. If export fails and profile appears SSO and `loginOnDemand` is true:
-       run `aws sso login --profile <profile>` then retry export once.
-    4. Else read static keys: `aws configure get aws_access_key_id/secret_access_key/session_token`.
-  - setEnv (default true): write AWS\_\* and region to process.env (also set AWS_DEFAULT_REGION).
-  - addCtx (default true): publish ctx.plugins.aws { profile, region, credentials }.
-  - Zod schema for plugins.aws: { profile?, region?, defaultRegion?, profileKey?, profileFallbackKey?, regionKey?, strategy?, loginOnDemand?, setEnv?, addCtx? }.
-- Tests:
-  - Env-first path (no CLI calls).
-  - Export path (mock execa; success).
-  - Static fallback (export fails; keys via configure get).
-  - loginOnDemand triggers only when export fails and SSO profile is detected.
-  - setEnv/addCtx toggles.
+## Next up
+
+- AWS base plugin (follow-ups)
+  - Consider adding package export subpath ("./plugins/aws") and Rollup outputs
+    when we decide to publish it for consumers; keep host-only for now.
+  - Documentation: add a short section to guides/plugins.md showing usage and
+    config snippets (`plugins.aws`).
+  - Optional: expose timeouts/profile/region overrides via plugin config docs.
+
+- Release prep
+  - Run lint/typecheck/build; verify:package and verify:tarball; bump version
+    when ready.
+
+- Roadmap groundwork
+  - Design doc for batch `--concurrency` (pool, aggregate output, summary, bail policy).
+  - Add `--redact` masking for `--trace` and `-l/--log` (default mask list custom).
+  - Add required keys/schema validation of final env (JSON/YAML/TS source).
 
 ## Next up- Release prep
 
@@ -35,6 +32,15 @@ NOTE: Update timestamp on commit.
   - Add required keys/schema validation of final env (JSON/YAML/TS source).
 
 ## Completed (recent)
+
+- Exec helper (captured): added runCommandResult (timeout, env sanitization,
+  argv preservation) to src/cliCore/exec.ts; kept runCommand non-breaking.
+- AWS base plugin (host-only): implemented in src/plugins/aws/
+  - types.ts: Zod schema for `plugins.aws`.
+  - service.ts: resolve profile/region and acquire credentials:
+    env-first -> export-credentials (JSON/env) -> SSO login retry -> static fallback.
+  - index.ts: afterResolve writes AWS\_\* and region per toggles and mirrors to ctx.plugins.aws.
+  - Tests: service parsers and flows; minimal exec test for runCommandResult.
 
 - TypeDoc/doc site:
   - Exported `DefineSpec` and re-exported public types from cliHost index;

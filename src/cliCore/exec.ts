@@ -1,3 +1,4 @@
+import type { ExecaReturnBase } from 'execa';
 import { execa, execaCommand } from 'execa';
 
 import { tokenize } from '../plugins/cmd/tokenize';
@@ -27,6 +28,14 @@ const stripOuterQuotes = (s: string): string => {
   return out;
 };
 
+// Extract exitCode/stdout/stderr from execa result or error in a typed/tolerant way.
+const pickResult = (
+  r: unknown,
+): { exitCode: number; stdout: string; stderr: string } => ({
+  exitCode: (r as { exitCode?: number })?.exitCode ?? Number.NaN,
+  stdout: String((r as { stdout?: unknown })?.stdout ?? ''),
+  stderr: String((r as { stderr?: unknown })?.stderr ?? ''),
+});
 // Convert NodeJS.ProcessEnv (string | undefined values) to the shape execa
 // expects (Readonly<Partial<Record<string, string>>>), dropping undefineds.
 const sanitizeEnv = (
@@ -37,6 +46,81 @@ const sanitizeEnv = (
     (e): e is [string, string] => typeof e[1] === 'string',
   );
   return entries.length > 0 ? Object.fromEntries(entries) : undefined;
+};
+
+/**
+ * Execute a command and capture stdout/stderr (buffered).
+ * - Preserves plain vs shell behavior and argv/string normalization.
+ * - Never re-emits stdout/stderr to parent; returns captured buffers.
+ * - Supports optional timeout (ms).
+ */
+export const runCommandResult = async (
+  command: string | string[],
+  shell: string | boolean | URL,
+  opts: {
+    cwd?: string | URL;
+    env?: NodeJS.ProcessEnv;
+    timeoutMs?: number;
+  } = {},
+): Promise<{ exitCode: number; stdout: string; stderr: string }> => {
+  const envSan = sanitizeEnv(opts.env);
+
+  if (shell === false) {
+    let file: string | undefined;
+    let args: string[] = [];
+    if (Array.isArray(command)) {
+      file = command[0];
+      args = command.slice(1).map(stripOuterQuotes);
+    } else {
+      const tokens = tokenize(command);
+      file = tokens[0];
+      args = tokens.slice(1);
+    }
+    if (!file) return { exitCode: 0, stdout: '', stderr: '' };
+
+    dbg('exec:capture (plain)', { file, args });
+    try {
+      const result = await execa(file, args, {
+        ...(opts.cwd !== undefined ? { cwd: opts.cwd } : {}),
+        ...(envSan !== undefined ? { env: envSan } : {}),
+        stdio: 'pipe',
+        ...(opts.timeoutMs !== undefined
+          ? { timeout: opts.timeoutMs, killSignal: 'SIGKILL' }
+          : {}),
+      });
+      const ok = pickResult(result as ExecaReturnBase<string>);
+      dbg('exit:capture (plain)', { exitCode: ok.exitCode });
+      return ok;
+    } catch (err) {
+      const out = pickResult(err);
+      dbg('exit:capture:error (plain)', { exitCode: out.exitCode });
+      return out;
+    }
+  } else {
+    const commandStr = Array.isArray(command) ? command.join(' ') : command;
+    dbg('exec:capture (shell)', {
+      command: commandStr,
+      shell: typeof shell === 'string' ? shell : 'custom',
+    });
+    try {
+      const result = await execaCommand(commandStr, {
+        shell,
+        ...(opts.cwd !== undefined ? { cwd: opts.cwd } : {}),
+        ...(envSan !== undefined ? { env: envSan } : {}),
+        stdio: 'pipe',
+        ...(opts.timeoutMs !== undefined
+          ? { timeout: opts.timeoutMs, killSignal: 'SIGKILL' }
+          : {}),
+      });
+      const ok = pickResult(result as ExecaReturnBase<string>);
+      dbg('exit:capture (shell)', { exitCode: ok.exitCode });
+      return ok;
+    } catch (err) {
+      const out = pickResult(err);
+      dbg('exit:capture:error (shell)', { exitCode: out.exitCode });
+      return out;
+    }
+  }
 };
 
 export const runCommand = async (
