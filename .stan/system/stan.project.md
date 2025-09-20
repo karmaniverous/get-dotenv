@@ -1,14 +1,13 @@
 # Project Requirements — get-dotenv
 
-When updated: 2025-09-20T01:05:00Z
+When updated: 2025-09-20T07:10:00Z
 
 ## Product positioning (summary)
 
 Where it shines:
 
 - Deterministic dotenv cascade across paths with public/private/global/env axes.
-- Progressive, recursive expansion with defaults; dynamic vars in JS/TS (safe).
-- Plugin-first host with once-per-invocation context and typed options.
+- Progressive, recursive expansion with defaults; dynamic vars in JS/TS (safe).- Plugin-first host with once-per-invocation context and typed options.
 - Cross-platform command execution (argv-aware shell-off; normalized shells).
 - CI-friendly capture and `--trace` diagnostics.
 
@@ -31,12 +30,50 @@ Must-have (near-term):
 2. Redacted logging/tracing
    - `--redact` with default masks (SECRET, TOKEN, KEY, PASSWORD); allow custom patterns.
    - Apply to `-l/--log` and `--trace`.
+   - Entropy warnings (warning-only; no masking):
+     - Purpose: Provide a low-risk signal for likely secrets without altering values or masking by default. Keeps observability high while nudging safer workflows.
+     - Surfaces:
+       - `--trace`: emit an extra stderr line per affected key (at most once per key per run).
+       - `-l/--log`: same behavior (since values are printed).
+     - Trigger gating:
+       - Only evaluate entropy when cheap prefilters pass:
+         - Length ≥ `minLen` (default 16).
+         - Character-class: printable ASCII (skip obvious low-entropy human text).
+       - Compute Shannon entropy (over character frequencies); warn when bits/char ≥ `threshold` (default 3.8).
+     - Warning format (no value preview to avoid leakage):
+       - Single concise stderr line:
+         ```
+         [entropy] key=<NAME> score=<X.XX> len=<N> origin=<dotenv|parent>
+         ```
+     - No redaction:
+       - Diagnostic-only. Never alters the environment or output; coexists with deterministic masking (names/regexes) as a separate, opt-in feature.
+     - Noise control:
+       - Once-per-key-per-run to avoid spam.
+       - Optional end-of-run summary (e.g., `[entropy] 3 keys warned (...)`) may be added later; not required for v1.
+     - CLI flags:
+       - `--entropy-warn` / `--no-entropy-warn` (default: on).
+       - `--entropy-threshold <bitsPerChar>` (default: 3.8).
+       - `--entropy-min-length <n>` (default: 16).
+       - `--entropy-whitelist <pattern>` (repeatable; regex or glob-like) to suppress warnings by key name.
+     - Config mirrors (merged like other options in the plugin-first host):
+       - JSON/YAML/JS/TS:
+         ```json
+         {
+           "warnEntropy": true,
+           "entropyThreshold": 3.8,
+           "entropyMinLength": 16,
+           "entropyWhitelist": ["^GIT_", "^npm_", "^CI$", "SHLVL"]
+         }
+         ```
+     - Performance:
+       - Compute entropy only after prefilters pass; omit base64 heuristics. Cost is tiny for a handful of keys.
+     - Safety defaults:
+       - Default warn ON for both `--trace` and `-l/--log`.
 3. Required keys / schema checks
    - Validate final env against a declared keys list or schema (JSON/YAML/TS).
    - Fail-fast with helpful diagnostics.
 4. Shell completion
    - Generate bash/zsh/pwsh completion for flags/subcommands.
-
 Nice-to-have (next): 5) First-party secrets provider plugins (AWS/GCP/Vault). 6) Watch mode for local dev (recompute on file changes; optional command rerun). 7) Enhanced `--trace` diff (origin/value/overridden-by). 8) Troubleshooting doc (common shell pitfalls and quoting recipes).
 
 ## Mission
@@ -46,7 +83,6 @@ explicit variables, optionally expand variables recursively, optionally inject
 into `process.env`, and expose a flexible CLI that can act standalone or as the
 foundation for child CLIs. Backward compatibility with the existing public API
 and behaviors is required.
-
 ## Compatibility policy (plugin-first vs generated CLI)
 
 - The plugin-first shipped CLI may evolve without strict backward compatibility.

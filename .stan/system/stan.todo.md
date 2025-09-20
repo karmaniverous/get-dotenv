@@ -1,16 +1,31 @@
 # Development Plan — get-dotenv
 
-When updated: 2025-09-20T06:15:00Z
+When updated: 2025-09-20T07:10:00Z
 NOTE: Update timestamp on commit.
 
-## Next up- Release preparation
+## Next up
+- Entropy warnings (warning-only; no masking)
+  - Add CLI flags:
+    - `--entropy-warn` / `--no-entropy-warn` (default on)
+    - `--entropy-threshold <bitsPerChar>` (default 3.8)
+    - `--entropy-min-length <n>` (default 16)
+    - `--entropy-whitelist <pattern>` (repeatable)
+  - Add config mirrors:
+    - `warnEntropy`, `entropyThreshold`, `entropyMinLength`, `entropyWhitelist`
+  - Wire warnings into presentation surfaces:
+    - `--trace` (stderr line once per key), `-l/--log` (same rule)
+  - Implement gating + entropy calc (Shannon over char freq; printable ASCII)
+  - Noise control: once-per-key-per-run set
+  - Unit tests: scoring, gating, whitelist, once-per-key logic
+  - Docs: short “Entropy warnings” section in Shell guide and Plugin-first host guide
+
+- Release preparation
   - npm run lint
   - npm run typecheck
   - npm run test
   - npm run build
   - npm run verify:package
-  - npm run verify:tarball
-  - Bump version and publish when satisfied.
+  - npm run verify:tarball  - Bump version and publish when satisfied.
 - Documentation
   - Review and finalize the new AWS section in guides/plugins.md
     to reflect final CLI behavior, env/ctx mirrors, and examples.
@@ -24,8 +39,7 @@ NOTE: Update timestamp on commit.
 
 ## Completed (recent)
 
-- Plugins documentation
-  - Added Plugins index and child pages (aws, batch, cmd, init, demo) with
+- Plugins documentation  - Added Plugins index and child pages (aws, batch, cmd, init, demo) with
     implementation details and examples.
 - Guides index bullets refactored to “[Title](link) - Description”.
 - Docs/nav updates
