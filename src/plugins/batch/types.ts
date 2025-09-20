@@ -19,11 +19,10 @@ export const ScriptSchema = z.union([
 ]);
 
 export const BatchConfigSchema = z.object({
-  scripts: z.record(ScriptSchema).optional(),
+  scripts: z.record(z.string(), ScriptSchema).optional(),
   shell: z.union([z.string(), z.boolean()]).optional(),
   rootPath: z.string().optional(),
   globs: z.string().optional(),
   pkgCwd: z.boolean().optional(),
 });
-
 export type BatchConfig = z.infer<typeof BatchConfigSchema>;

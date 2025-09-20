@@ -1,9 +1,10 @@
 # Development Plan — get-dotenv
 
-When updated: 2025-09-20T09:15:00Z
+When updated: 2025-09-20T10:05:00Z
 NOTE: Update timestamp on commit.
 
 ## Next up
+
 - Entropy warnings (warning-only; no masking)
 
 - Add CLI flags:
@@ -39,6 +40,16 @@ NOTE: Update timestamp on commit.
   - Design "required keys/schema" validation of final env.
 
 ## Completed (recent)
+
+- ESLint / Vitest plugin
+  - Migrated from deprecated `eslint-plugin-vitest` to `@vitest/eslint-plugin`
+    to align with ESLint v9 and eliminate peer dependency override warnings.
+  - Updated `eslint.config.ts` import; preserved recommended rules usage.
+
+- Zod v4 migration
+  - Updated all `z.record(...)` usages to the new v4 signature requiring explicit
+    key and value schemas (e.g., `z.record(z.string(), valueSchema)`).
+  - Replaced deprecated `ZodTypeAny` with `ZodType` in plugin definition typing.
 
 - Packaging
   - verify-tarball.js now emits rich diagnostics on failure (npm/node/cwd,

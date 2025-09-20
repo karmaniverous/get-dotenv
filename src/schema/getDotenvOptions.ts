@@ -17,7 +17,7 @@ export const getDotenvOptionsSchemaRaw = z.object({
   dotenvToken: z.string().optional(),
   dynamicPath: z.string().optional(),
   // Dynamic map is intentionally wide for now; refine once sources are normalized.
-  dynamic: z.record(z.unknown()).optional(),
+  dynamic: z.record(z.string(), z.unknown()).optional(),
   env: z.string().optional(),
   excludeDynamic: z.boolean().optional(),
   excludeEnv: z.boolean().optional(),

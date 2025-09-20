@@ -11,7 +11,7 @@ import type { Scripts } from '../generateGetDotenvCli/GetDotenvCliOptions';
  */
 
 // String-only env value map
-const stringMap = z.record(z.string());
+const stringMap = z.record(z.string(), z.string());
 const envStringMap = z.record(z.string(), stringMap);
 
 // Allow string[] or single string for "paths" in RAW; normalize later.
@@ -24,13 +24,13 @@ export const getDotenvConfigSchemaRaw = z.object({
   loadProcess: z.boolean().optional(),
   log: z.boolean().optional(),
   shell: z.union([z.string(), z.boolean()]).optional(),
-  scripts: z.record(z.unknown()).optional(), // Scripts validation left wide; generator validates elsewhere
+  scripts: z.record(z.string(), z.unknown()).optional(), // Scripts validation left wide; generator validates elsewhere
   vars: stringMap.optional(), // public, global
   envVars: envStringMap.optional(), // public, per-env
   // Dynamic in config (JS/TS only). JSON/YAML loader will reject if set.
   dynamic: z.unknown().optional(),
   // Per-plugin config bag; validated by plugins/host when used.
-  plugins: z.record(z.unknown()).optional(),
+  plugins: z.record(z.string(), z.unknown()).optional(),
 });
 
 export type GetDotenvConfigRaw = z.infer<typeof getDotenvConfigSchemaRaw>;

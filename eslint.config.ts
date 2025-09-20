@@ -1,10 +1,10 @@
 import eslint from '@eslint/js';
+import vitestPlugin from '@vitest/eslint-plugin';
 import prettierConfig from 'eslint-config-prettier';
 import jsonc from 'eslint-plugin-jsonc';
 import prettierPlugin from 'eslint-plugin-prettier';
 import simpleImportSortPlugin from 'eslint-plugin-simple-import-sort';
 import tsdocPlugin from 'eslint-plugin-tsdoc';
-import vitestPlugin from 'eslint-plugin-vitest';
 import globals from 'globals';
 import jsoncParser from 'jsonc-eslint-parser';
 import { dirname } from 'path';

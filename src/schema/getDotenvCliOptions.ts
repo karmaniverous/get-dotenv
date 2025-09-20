@@ -15,7 +15,7 @@ export const getDotenvCliOptionsSchemaRaw = getDotenvOptionsSchemaRaw.extend({
   paths: z.string().optional(),
   pathsDelimiter: z.string().optional(),
   pathsDelimiterPattern: z.string().optional(),
-  scripts: z.record(z.unknown()).optional(),
+  scripts: z.record(z.string(), z.unknown()).optional(),
   shell: z.union([z.boolean(), z.string()]).optional(),
   vars: z.string().optional(),
   varsAssignor: z.string().optional(),
@@ -23,7 +23,6 @@ export const getDotenvCliOptionsSchemaRaw = getDotenvOptionsSchemaRaw.extend({
   varsDelimiter: z.string().optional(),
   varsDelimiterPattern: z.string().optional(),
 });
-
 export const getDotenvCliOptionsSchemaResolved = getDotenvCliOptionsSchemaRaw;
 
 export type GetDotenvCliOptionsRaw = z.infer<
