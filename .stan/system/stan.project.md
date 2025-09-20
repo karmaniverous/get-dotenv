@@ -1,10 +1,9 @@
 # Project Requirements — get-dotenv
 
-When updated: 2025-09-20T08:00:00Z
+When updated: 2025-09-20T08:25:00Z
 
 ## Product positioning (summary)
 Where it shines:
-
 - Deterministic dotenv cascade across paths with public/private/global/env axes.
 - Progressive, recursive expansion with defaults; dynamic vars in JS/TS (safe).- Plugin-first host with once-per-invocation context and typed options.
 - Cross-platform command execution (argv-aware shell-off; normalized shells).
@@ -92,14 +91,13 @@ and behaviors is required.
 
 ## Supported Node/Runtime
 
-- Node: >= 18- ESM-first package with dual exports:
+- Node: >= 20- ESM-first package with dual exports:
   - import: dist/index.mjs (types: dist/index.d.mts)
   - require: dist/index.cjs (types: dist/index.d.cts)
 ## Tooling
 
 - Build: Rollup
-- TypeScript: strict; ESM module
-- Lint: ESLint v9 (flat config), Prettier formatting
+- TypeScript: strict; ESM module- Lint: ESLint v9 (flat config), Prettier formatting
 - Test: Vitest with V8 coverage
 
 ## Core behaviors (must be preserved)

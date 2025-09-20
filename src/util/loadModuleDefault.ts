@@ -97,7 +97,7 @@ export const loadModuleDefault = async <T>(
       bundle: true,
       platform: 'node',
       format: 'esm',
-      target: 'node18',
+      target: 'node20',
       outfile: cacheFile,
       sourcemap: false,
       logLevel: 'silent',

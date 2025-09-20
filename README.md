@@ -2,11 +2,10 @@
 
 ## Requirements
 
-- Node.js >= 18 (this repository pins 22.19.0 for CI/reproducibility)
+- Node.js >= 20 (this repository pins 22.19.0 for CI/reproducibility)
 
 ## API Reference
 Generated API documentation is hosted at:
-
 - https://docs.karmanivero.us/get-dotenv
 
 The site is built with TypeDoc from the source code in this repository.

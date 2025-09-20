@@ -3,7 +3,9 @@
 When updated: 2025-09-20T08:00:00Z
 NOTE: Update timestamp on commit.
 
-## Next up- Entropy warnings (warning-only; no masking)
+## Next up
+
+- Entropy warnings (warning-only; no masking)
 
 - Add CLI flags:
   - `--entropy-warn` / `--no-entropy-warn` (default on)
@@ -39,10 +41,14 @@ NOTE: Update timestamp on commit.
 
 ## Completed (recent)
 
+- Engines & bundling alignment
+  - Pegged Node engines to >= 20 (package.json, docs).
+  - Raised esbuild targets from node18 to node20 for TS dynamic/config bundling
+    to match the new minimum runtime.
+
 - Engines & smoke validation
   - Relaxed Node engines to >= 18 (package.json, docs).
-  - Lowered esbuild targets from node22 to node18 for TS dynamic/config loaders.
-  - Extended smoke suite with a default-shell echo step (no --shell-off) to
+  - Lowered esbuild targets from node22 to node18 for TS dynamic/config loaders. - Extended smoke suite with a default-shell echo step (no --shell-off) to
     validate normalized shells on POSIX/Windows.
 - Plugins documentation
   - Added Plugins index and child pages (aws, batch, cmd, init, demo) with
