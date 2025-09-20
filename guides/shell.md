@@ -1,7 +1,10 @@
+---
+title: Shell execution behavior
+---
+
 # Shell execution behavior
 
-get-dotenv executes commands via [execa](https://github.com/sindresorhus/execa)
-and normalizes shell behavior across platforms.
+get-dotenv executes commands via [execa](https://github.com/sindresorhus/execa)and normalizes shell behavior across platforms.
 
 ## Resolution rules
 

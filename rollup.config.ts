@@ -98,6 +98,22 @@ const config: RollupOptions[] = [
       { extend: true, file: `${outputPath}/plugins-batch.cjs`, format: 'cjs' },
     ],
   },
+  // plugins/aws subpath
+  {
+    ...commonInputOptions,
+    input: 'src/plugins/aws/index.ts',
+    output: [
+      { extend: true, file: `${outputPath}/plugins-aws.mjs`, format: 'esm' },
+    ],
+  },
+  {
+    ...commonInputOptions,
+    input: 'src/plugins/aws/index.ts',
+    output: [
+      { extend: true, file: `${outputPath}/plugins-aws.cjs`, format: 'cjs' },
+    ],
+  },
+
   // plugins/init subpath
   {
     ...commonInputOptions,
@@ -204,6 +220,22 @@ const config: RollupOptions[] = [
       },
     ],
   },
+  // Types: plugins-aws
+  {
+    ...commonInputOptions,
+    input: 'src/plugins/aws/index.ts',
+    plugins: [
+      aliasPlugin({ entries: commonAliases }),
+      ...commonPlugins,
+      dtsPlugin(),
+    ],
+    output: [
+      { extend: true, file: `${outputPath}/plugins-aws.d.ts`, format: 'esm' },
+      { extend: true, file: `${outputPath}/plugins-aws.d.mts`, format: 'esm' },
+      { extend: true, file: `${outputPath}/plugins-aws.d.cts`, format: 'cjs' },
+    ],
+  },
+
   // Types: plugins-init
   {
     ...commonInputOptions,

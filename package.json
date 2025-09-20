@@ -88,6 +88,16 @@
         "default": "./dist/cliHost.cjs"
       }
     },
+    "./plugins/aws": {
+      "import": {
+        "types": "./dist/plugins-aws.d.mts",
+        "default": "./dist/plugins-aws.mjs"
+      },
+      "require": {
+        "types": "./dist/plugins-aws.d.cts",
+        "default": "./dist/plugins-aws.cjs"
+      }
+    },
     "./plugins/batch": {
       "import": {
         "types": "./dist/plugins-batch.d.mts",

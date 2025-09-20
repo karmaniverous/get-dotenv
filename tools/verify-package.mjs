@@ -41,6 +41,7 @@ const main = async () => {
     const jsExpectations = [
       'index.mjs',
       'cliHost.mjs',
+      'plugins-aws.mjs',
       'plugins-batch.mjs',
       'plugins-init.mjs',
       'config.mjs',

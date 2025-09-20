@@ -1,7 +1,10 @@
+---
+title: Plugin-first host
+---
+
 # Plugin-first host (GetDotenvCli)
 
-The plugin-first host provides a composable way to build dotenv-aware CLIs. It
-validates options strictly, resolves dotenv context once per invocation, and
+The plugin-first host provides a composable way to build dotenv-aware CLIs. Itvalidates options strictly, resolves dotenv context once per invocation, and
 exposes lifecycle hooks for plugins.
 
 ## Quickstart

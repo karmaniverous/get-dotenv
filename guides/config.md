@@ -1,7 +1,10 @@
+---
+title: Config files and overlays
+---
+
 # Config files and overlays (always-on)
 
-The config loader lets you specify environment values using JSON/YAML or JS/TS
-config files, then overlay them deterministically with privacy and source
+The config loader lets you specify environment values using JSON/YAML or JS/TSconfig files, then overlay them deterministically with privacy and source
 precedence.
 
 Behavior: In the shipped CLI (plugin-first host) and the generator path, the

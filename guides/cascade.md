@@ -1,7 +1,10 @@
+---
+title: Cascade and precedence
+---
+
 # Cascade and precedence
 
-get-dotenv loads variables from a deterministic cascade of dotenv files, per
-input path, then merges across paths.
+get-dotenv loads variables from a deterministic cascade of dotenv files, perinput path, then merges across paths.
 
 ## File naming
 

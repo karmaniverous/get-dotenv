@@ -46,14 +46,6 @@ You can always use `getdotenv` directly on the command line, but its REAL power 
 
 When you plug your own [`commander`](https://www.npmjs.com/package/commander) CLI commands into the `getdotenv` base, they will execute within all of the environmental context created above!
 
-## Breaking Changes
-
-In version 4.0.0, in addition to a full TypeScript refactor, I replaced the use of the unsafe `Function` constructor for dynamic variable processing with a MUCH safer dynamic module import.
-
-Dynamic importing is intrinsically asynchronous, and so far I haven't been able to figure out how to cram that into the synchronous `getDotenvSync` function. There really aren't THAT many users of this library, so rather than have async & sync versions that do different things, I just eliminated the sync version entirely.
-
-If you have a use case for sync dotenv processing and DON'T need dynamic variables, let me know and I'll put the restricted version back in. If you have an idea of how to make dynamic imports synchronous, I'm all ears!
-
 ## Testing
 
 This project uses Vitest with the V8 coverage provider. Run:
@@ -363,5 +355,17 @@ Diagnostics and CI capture:
 The guides are also included in the [hosted API docs](https://docs.karmanivero.us/get-dotenv).
 
 ---
+
+## Generated CLI
+
+This package still supports generating a standalone CLI for your projects.
+For most use cases we recommend the new plugin-first host because it resolves
+dotenv context once per invocation, supports composable plugins, and provides
+better subprocess control and diagnostics. If you prefer a thin, fixed
+command surface with defaults baked into config, the generated CLI can be a
+good fit.
+
+See the Generated CLI guide for details:
+https://docs.karmanivero.us/get-dotenv/guides/generated-cli
 
 See more great templates & tools on [my GitHub Profile](https://github.com/karmaniverous)!
