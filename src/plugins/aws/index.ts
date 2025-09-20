@@ -44,138 +44,138 @@ export const awsPlugin = () =>
           'fallback dotenv/config key for profile',
         )
         .option('--region-key <string>', 'dotenv/config key for region')
-        .action(
-          async (
-            _unknown: unknown,
-            opts: Record<string, unknown>,
-            thisCommand: unknown,
-          ) => {
-            const self = thisCommand as {
-              parent?: unknown;
-              rawArgs?: string[];
-            };
-            const parent = (self.parent ?? null) as
-              | (GetDotenvCli & {
-                  getDotenvCliOptions?: {
-                    scripts?: Record<
-                      string,
-                      string | { cmd: string; shell?: string | boolean }
-                    >;
-                    shell?: string | boolean;
-                    capture?: boolean;
-                  };
-                })
-              | null;
-            // Access merged root CLI options (installed by passOptions())
-            const rootOpts = (parent?.getDotenvCliOptions ?? {}) as NonNullable<
-              typeof parent
-            >['getDotenvCliOptions'];
-            const capture =
-              process.env.GETDOTENV_STDIO === 'pipe' ||
-              Boolean(rootOpts?.capture);
-
-            // Build overlay cfg from subcommand flags layered over discovered config.
-            const ctx = cli.getCtx();
-            const cfgBase = ((ctx?.pluginConfigs?.['aws'] ?? {}) ||
-              {}) as AwsPluginConfigResolved;
-            const overlay: Partial<AwsPluginConfigResolved> = {};
-            // Map boolean toggles (respect explicit --no-*)
-            if (Object.prototype.hasOwnProperty.call(opts, 'loginOnDemand'))
-              overlay.loginOnDemand = Boolean(opts.loginOnDemand);
-            if (Object.prototype.hasOwnProperty.call(opts, 'setEnv'))
-              overlay.setEnv = Boolean(opts.setEnv);
-            if (Object.prototype.hasOwnProperty.call(opts, 'addCtx'))
-              overlay.addCtx = Boolean(opts.addCtx);
-            // Strings/enums
-            if (typeof opts.profile === 'string')
-              overlay.profile = opts.profile;
-            if (typeof opts.region === 'string') overlay.region = opts.region;
-            if (typeof opts.defaultRegion === 'string')
-              overlay.defaultRegion = opts.defaultRegion;
-            if (typeof opts.strategy === 'string')
-              overlay.strategy =
-                opts.strategy as AwsPluginConfigResolved['strategy'];
-            // Advanced key overrides
-            if (typeof opts.profileKey === 'string')
-              overlay.profileKey = opts.profileKey;
-            if (typeof opts.profileFallbackKey === 'string')
-              overlay.profileFallbackKey = opts.profileFallbackKey;
-            if (typeof opts.regionKey === 'string')
-              overlay.regionKey = opts.regionKey;
-
-            const cfg: AwsPluginConfigResolved = {
-              ...cfgBase,
-              ...overlay,
-            };
-
-            // Resolve current context with overrides
-            const out = await resolveAwsContext({
-              dotenv: ctx?.dotenv ?? {},
-              cfg,
-            });
-
-            // Apply env/ctx mirrors per toggles
-            if (cfg.setEnv !== false) {
-              if (out.region) {
-                process.env.AWS_REGION = out.region;
-                if (!process.env.AWS_DEFAULT_REGION)
-                  process.env.AWS_DEFAULT_REGION = out.region;
-              }
-              if (out.credentials) {
-                process.env.AWS_ACCESS_KEY_ID = out.credentials.accessKeyId;
-                process.env.AWS_SECRET_ACCESS_KEY =
-                  out.credentials.secretAccessKey;
-                if (out.credentials.sessionToken !== undefined) {
-                  process.env.AWS_SESSION_TOKEN = out.credentials.sessionToken;
-                }
-              }
-            }
-            if (cfg.addCtx !== false) {
-              if (ctx) {
-                ctx.plugins ??= {};
-                ctx.plugins['aws'] = {
-                  ...(out.profile ? { profile: out.profile } : {}),
-                  ...(out.region ? { region: out.region } : {}),
-                  ...(out.credentials ? { credentials: out.credentials } : {}),
+        // Accept any extra operands so Commander does not error when tokens appear after "--".
+        .argument('[args...]')
+        .action(async (opts: Record<string, unknown>, thisCommand: unknown) => {
+          const self = thisCommand as { parent?: unknown; rawArgs?: string[] };
+          const parent = (self.parent ?? null) as
+            | (GetDotenvCli & {
+                getDotenvCliOptions?: {
+                  scripts?: Record<
+                    string,
+                    string | { cmd: string; shell?: string | boolean }
+                  >;
+                  shell?: string | boolean;
+                  capture?: boolean;
                 };
-              }
-            }
+              })
+            | null;
 
-            // Detect '--' and forward tokens to AWS CLI when present.
-            const raw = Array.isArray(self.rawArgs) ? self.rawArgs : [];
-            const idx = raw.indexOf('--');
-            const forwarded = idx >= 0 ? raw.slice(idx + 1) : [];
-            if (idx >= 0 && forwarded.length > 0) {
-              const argv = ['aws', ...forwarded];
-              const shellSetting = resolveShell(
-                rootOpts?.scripts,
-                'aws',
-                rootOpts?.shell,
-              ) as unknown as string | boolean | URL;
-              const ctxDotenv = (ctx?.dotenv ?? {}) as Record<
-                string,
-                string | undefined
-              >;
-              const exit = await runCommand(argv, shellSetting, {
-                env: { ...process.env, ...ctxDotenv },
-                stdio: capture ? 'pipe' : 'inherit',
-              });
-              // Always terminate deterministically
-              process.exit(typeof exit === 'number' ? exit : 0);
-            } else {
-              // Session only: low-noise breadcrumb under debug
-              if (process.env.GETDOTENV_DEBUG) {
-                const log: Logger = console;
-                log.log('[aws] session established', {
-                  profile: out.profile,
-                  region: out.region,
-                  hasCreds: Boolean(out.credentials),
-                });
-              }
-              process.exit(0);
+          // Access merged root CLI options (installed by passOptions())
+          const rootOpts = (parent?.getDotenvCliOptions ?? {}) as NonNullable<
+            typeof parent
+          >['getDotenvCliOptions'];
+          const capture =
+            process.env.GETDOTENV_STDIO === 'pipe' ||
+            Boolean(rootOpts?.capture);
+          const underTests =
+            process.env.GETDOTENV_TEST === '1' ||
+            typeof process.env.VITEST_WORKER_ID === 'string';
+
+          // Build overlay cfg from subcommand flags layered over discovered config.
+          const ctx = cli.getCtx();
+          const cfgBase = (ctx?.pluginConfigs?.['aws'] ??
+            {}) as AwsPluginConfigResolved;
+          const overlay: Partial<AwsPluginConfigResolved> = {};
+          // Map boolean toggles (respect explicit --no-*)
+          if (Object.prototype.hasOwnProperty.call(opts, 'loginOnDemand'))
+            overlay.loginOnDemand = Boolean(opts.loginOnDemand);
+          if (Object.prototype.hasOwnProperty.call(opts, 'setEnv'))
+            overlay.setEnv = Boolean(opts.setEnv);
+          if (Object.prototype.hasOwnProperty.call(opts, 'addCtx'))
+            overlay.addCtx = Boolean(opts.addCtx);
+          // Strings/enums
+          if (typeof opts.profile === 'string') overlay.profile = opts.profile;
+          if (typeof opts.region === 'string') overlay.region = opts.region;
+          if (typeof opts.defaultRegion === 'string')
+            overlay.defaultRegion = opts.defaultRegion;
+          if (typeof opts.strategy === 'string')
+            overlay.strategy =
+              opts.strategy as AwsPluginConfigResolved['strategy'];
+          // Advanced key overrides
+          if (typeof opts.profileKey === 'string')
+            overlay.profileKey = opts.profileKey;
+          if (typeof opts.profileFallbackKey === 'string')
+            overlay.profileFallbackKey = opts.profileFallbackKey;
+          if (typeof opts.regionKey === 'string')
+            overlay.regionKey = opts.regionKey;
+
+          const cfg: AwsPluginConfigResolved = {
+            ...cfgBase,
+            ...overlay,
+          };
+
+          // Resolve current context with overrides
+          const out = await resolveAwsContext({
+            dotenv: ctx?.dotenv ?? {},
+            cfg,
+          });
+
+          // Apply env/ctx mirrors per toggles
+          if (cfg.setEnv !== false) {
+            if (out.region) {
+              process.env.AWS_REGION = out.region;
+              if (!process.env.AWS_DEFAULT_REGION)
+                process.env.AWS_DEFAULT_REGION = out.region;
             }
-          },
-        );
+            if (out.credentials) {
+              process.env.AWS_ACCESS_KEY_ID = out.credentials.accessKeyId;
+              process.env.AWS_SECRET_ACCESS_KEY =
+                out.credentials.secretAccessKey;
+              if (out.credentials.sessionToken !== undefined) {
+                process.env.AWS_SESSION_TOKEN = out.credentials.sessionToken;
+              }
+            }
+          }
+          if (cfg.addCtx !== false) {
+            if (ctx) {
+              ctx.plugins ??= {};
+              ctx.plugins['aws'] = {
+                ...(out.profile ? { profile: out.profile } : {}),
+                ...(out.region ? { region: out.region } : {}),
+                ...(out.credentials ? { credentials: out.credentials } : {}),
+              };
+            }
+          }
+
+          // Detect '--' and forward tokens to AWS CLI when present.
+          const raw = Array.isArray(self.rawArgs) ? self.rawArgs : [];
+          const idx = raw.indexOf('--');
+          const forwarded = idx >= 0 ? raw.slice(idx + 1) : [];
+          if (idx >= 0 && forwarded.length > 0) {
+            const argv = ['aws', ...forwarded];
+            const shellSetting = resolveShell(
+              rootOpts?.scripts,
+              'aws',
+              rootOpts?.shell,
+            ) as unknown as string | boolean | URL;
+            const ctxDotenv = (ctx?.dotenv ?? {}) as Record<
+              string,
+              string | undefined
+            >;
+            const exit = await runCommand(argv, shellSetting, {
+              env: { ...process.env, ...ctxDotenv },
+              stdio: capture ? 'pipe' : 'inherit',
+            });
+            // Deterministic termination (suppressed under tests)
+            if (!underTests) {
+              process.exit(typeof exit === 'number' ? exit : 0);
+            }
+            return;
+          } else {
+            // Session only: low-noise breadcrumb under debug
+            if (process.env.GETDOTENV_DEBUG) {
+              const log: Logger = console;
+              log.log('[aws] session established', {
+                profile: out.profile,
+                region: out.region,
+                hasCreds: Boolean(out.credentials),
+              });
+            }
+            if (!underTests) process.exit(0);
+            return;
+          }
+        });
       void cmd;
     },
     async afterResolve(_cli, ctx) {

@@ -1,10 +1,9 @@
 # Development Plan — get-dotenv
 
-When updated: 2025-09-20T04:10:00Z
+When updated: 2025-09-20T04:22:00Z
 NOTE: Update timestamp on commit.
 
-## Next up
-- AWS base plugin (follow-ups)
+## Next up- AWS base plugin (follow-ups)
   - Consider adding package export subpath ("./plugins/aws") and Rollup outputs
     when we decide to publish it for consumers; keep host-only for now.
   - Documentation: add a short section to guides/plugins.md showing usage and
@@ -31,10 +30,18 @@ NOTE: Update timestamp on commit.
 
 ## Completed (recent)
 
+- AWS subcommand fixes
+  - Accept variadic args on the aws command to avoid Commander “excess
+    arguments” when using “--”.
+  - Correct action signature to (opts, thisCommand); remove undefined
+    thisCommand bug.
+  - Gate process.exit under tests (VITEST_WORKER_ID/GETDOTENV_TEST) to
+    prevent killing the test runner.
+  - Restore getAwsConfigure guard for mocked undefined; silence lint locally.
+  - Fix unit test destructuring to avoid unused var lint error.
 - AWS subcommand
   - Wired awsPlugin into the shipped CLI.
-  - Implemented `aws` subcommand with session-only and forwarding modes.
-  - Options: --login-on-demand/--no-login-on-demand, --set-env/--no-set-env,
+  - Implemented `aws` subcommand with session-only and forwarding modes.  - Options: --login-on-demand/--no-login-on-demand, --set-env/--no-set-env,
     --add-ctx/--no-add-ctx, --profile/--region/--default-region,
     --strategy <cli-export|none>, and advanced key overrides.
   - Forwarding uses runCommand + resolveShell, injects `{...process.env, ...ctx.dotenv}`,

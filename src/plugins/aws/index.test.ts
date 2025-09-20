@@ -63,7 +63,7 @@ describe('plugins/aws subcommand', () => {
     ]);
 
     expect(runCommandMock).toHaveBeenCalledTimes(1);
-    const [cmd, shell, opts] = runCommandMock.mock.calls[0] as [
+    const [cmd, _shell, opts] = runCommandMock.mock.calls[0] as [
       string | string[],
       string | boolean | URL,
       { env?: Record<string, string>; stdio?: 'inherit' | 'pipe' },
