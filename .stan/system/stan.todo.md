@@ -1,10 +1,9 @@
 # Development Plan — get-dotenv
 
-When updated: 2025-09-20T02:05:00Z
+When updated: 2025-09-20T03:25:00Z
 NOTE: Update timestamp on commit.
 
 ## Next up
-
 - AWS base plugin (follow-ups)
   - Consider adding package export subpath ("./plugins/aws") and Rollup outputs
     when we decide to publish it for consumers; keep host-only for now.

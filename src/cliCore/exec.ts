@@ -1,8 +1,6 @@
-import type { ExecaReturnBase } from 'execa';
 import { execa, execaCommand } from 'execa';
 
 import { tokenize } from '../plugins/cmd/tokenize';
-
 const dbg = (...args: unknown[]) => {
   if (process.env.GETDOTENV_DEBUG) {
     // Use stderr to avoid interfering with stdout assertions
@@ -28,14 +26,20 @@ const stripOuterQuotes = (s: string): string => {
   return out;
 };
 
-// Extract exitCode/stdout/stderr from execa result or error in a typed/tolerant way.
+// Extract exitCode/stdout/stderr from execa result or error in a tolerant way.
 const pickResult = (
   r: unknown,
-): { exitCode: number; stdout: string; stderr: string } => ({
-  exitCode: (r as { exitCode?: number })?.exitCode ?? Number.NaN,
-  stdout: String((r as { stdout?: unknown })?.stdout ?? ''),
-  stderr: String((r as { stderr?: unknown })?.stderr ?? ''),
-});
+): { exitCode: number; stdout: string; stderr: string } => {
+  const exit = (r as { exitCode?: unknown }).exitCode;
+  const stdoutVal = (r as { stdout?: unknown }).stdout;
+  const stderrVal = (r as { stderr?: unknown }).stderr;
+  return {
+    exitCode: typeof exit === 'number' ? exit : Number.NaN,
+    stdout: typeof stdoutVal === 'string' ? stdoutVal : '',
+    stderr: typeof stderrVal === 'string' ? stderrVal : '',
+  };
+};
+
 // Convert NodeJS.ProcessEnv (string | undefined values) to the shape execa
 // expects (Readonly<Partial<Record<string, string>>>), dropping undefineds.
 const sanitizeEnv = (
@@ -88,7 +92,7 @@ export const runCommandResult = async (
           ? { timeout: opts.timeoutMs, killSignal: 'SIGKILL' }
           : {}),
       });
-      const ok = pickResult(result as ExecaReturnBase<string>);
+      const ok = pickResult(result);
       dbg('exit:capture (plain)', { exitCode: ok.exitCode });
       return ok;
     } catch (err) {
@@ -112,7 +116,7 @@ export const runCommandResult = async (
           ? { timeout: opts.timeoutMs, killSignal: 'SIGKILL' }
           : {}),
       });
-      const ok = pickResult(result as ExecaReturnBase<string>);
+      const ok = pickResult(result);
       dbg('exit:capture (shell)', { exitCode: ok.exitCode });
       return ok;
     } catch (err) {

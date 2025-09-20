@@ -8,14 +8,13 @@ import type {
 
 const DEFAULT_TIMEOUT_MS = 15_000;
 
-const trim = (s: unknown) => String(s ?? '').trim();
+const trim = (s: unknown) => (typeof s === 'string' ? s.trim() : '');
 const unquote = (s: string) =>
   s.length >= 2 &&
   ((s.startsWith('"') && s.endsWith('"')) ||
     (s.startsWith("'") && s.endsWith("'")))
     ? s.slice(1, -1)
     : s;
-
 export const parseExportCredentialsJson = (
   txt: string,
 ): AwsCredentials | undefined => {
@@ -52,7 +51,7 @@ export const parseExportCredentialsJson = (
 export const parseExportCredentialsEnv = (
   txt: string,
 ): AwsCredentials | undefined => {
-  const lines = String(txt ?? '').split(/\r?\n/);
+  const lines = txt.split(/\r?\n/);
   let id: string | undefined;
   let secret: string | undefined;
   let token: string | undefined;
@@ -67,7 +66,9 @@ export const parseExportCredentialsEnv = (
     }
     if (!m) continue;
     const k = m[1];
-    let v = unquote(m[2].trim());
+    const valRaw = m[2];
+    if (typeof valRaw !== 'string') continue;
+    let v = unquote(valRaw.trim());
     // Drop trailing semicolons if present (some shells)
     v = v.replace(/;$/, '');
     if (k === 'AWS_ACCESS_KEY_ID') id = v;
@@ -96,6 +97,7 @@ const getAwsConfigure = async (
       timeoutMs,
     },
   );
+  if (!r || typeof r.exitCode !== 'number') return undefined;
   if (r.exitCode === 0) {
     const v = trim(r.stdout);
     return v.length > 0 ? v : undefined;
@@ -162,9 +164,11 @@ export const resolveAwsContext = async ({
     // If region is still missing and we have a profile, try best-effort region resolve.
     if (!region && profile) region = await getAwsConfigure('region', profile);
     if (!region && cfg.defaultRegion) region = cfg.defaultRegion;
-    return { profile, region };
+    const out: AwsContext = {};
+    if (profile !== undefined) out.profile = profile;
+    if (region !== undefined) out.region = region;
+    return out;
   }
-
   // Env-first credentials.
   let credentials: AwsCredentials | undefined;
   const envId = trim(process.env.AWS_ACCESS_KEY_ID);
@@ -217,5 +221,9 @@ export const resolveAwsContext = async ({
   if (!region && profile) region = await getAwsConfigure('region', profile);
   if (!region && cfg.defaultRegion) region = cfg.defaultRegion;
 
-  return { profile, region, ...(credentials ? { credentials } : {}) };
+  const out: AwsContext = {};
+  if (profile !== undefined) out.profile = profile;
+  if (region !== undefined) out.region = region;
+  if (credentials) out.credentials = credentials;
+  return out;
 };
