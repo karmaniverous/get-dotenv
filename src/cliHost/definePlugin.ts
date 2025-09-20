@@ -3,10 +3,10 @@ import type { ZodTypeAny } from 'zod';
 
 import type { GetDotenvCli, GetDotenvCliCtx } from './GetDotenvCli';
 
+/** Public plugin contract used by the GetDotenv CLI host. */
 export interface GetDotenvCliPlugin {
   id?: string /**
-   * Setup phase: register commands and wiring on the provided CLI instance.
-   * Runs parent → children (pre-order).
+   * Setup phase: register commands and wiring on the provided CLI instance.   * Runs parent → children (pre-order).
    */;
   setup: (cli: GetDotenvCli) => void | Promise<void>;
   /**
@@ -33,7 +33,11 @@ export interface GetDotenvCliPlugin {
   use: (child: GetDotenvCliPlugin) => GetDotenvCliPlugin;
 }
 
-type DefineSpec = Omit<GetDotenvCliPlugin, 'children' | 'use'> & {
+/**
+ * Public spec type for defining a plugin with optional children.
+ * Exported to ensure TypeDoc links and navigation resolve correctly.
+ */
+export type DefineSpec = Omit<GetDotenvCliPlugin, 'children' | 'use'> & {
   children?: GetDotenvCliPlugin[];
 };
 /**

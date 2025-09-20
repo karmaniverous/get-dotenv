@@ -5,7 +5,6 @@ validates options strictly, resolves dotenv context once per invocation, and
 exposes lifecycle hooks for plugins.
 
 ## Quickstart
-
 ```ts
 #!/usr/bin/env node
 import type { Command } from 'commander';
@@ -13,20 +12,13 @@ import { GetDotenvCli } from '@karmaniverous/get-dotenv/cliHost';
 import { batchPlugin } from '@karmaniverous/get-dotenv/plugins/batch';
 
 const program: Command = new GetDotenvCli('mycli').use(batchPlugin());
-
-// Guarded config loader (add via --use-config-loader)
-const useConfigLoader = process.argv.includes('--use-config-loader');
-await (program as unknown as GetDotenvCli).resolveAndLoad(
-  useConfigLoader ? { useConfigLoader } : {},
-);
-
+await (program as unknown as GetDotenvCli).resolveAndLoad();
 await program.parseAsync();
 ```
 
 - `resolveAndLoad()` produces a context `{ optionsResolved, dotenv, plugins? }`.
 - The host registers a preSubcommand hook to ensure a context exists when
   subcommands run (e.g., batch).
-
 ## Writing a plugin
 
 ```ts
@@ -85,7 +77,6 @@ inherit the parent’s defaults and flags.
 ## Scaffolding a host-based CLI
 
 Use the built-in scaffolder to create config files and a starter CLI:
-
 ```bash
 # JSON config + .local + CLI skeleton named "acme"
 getdotenv init . --config-format json --with-local --cli-name acme --force
@@ -103,10 +94,7 @@ Notes:
   - Precedence is `--force` > `--yes` > auto-detect (non-interactive => Skip All).
 
 ## Config loader behavior
-
-The plugin host and the generator use the config loader/overlay path by default.
-When no config files are present, the loader is a no-op. See the “Config files
-and overlays” guide for discovery, formats, and precedence.
-
-Note: a `useConfigLoader` option may be accepted for forward compatibility, but
-it currently has no effect.
+The plugin host and the generator use the config loader/overlay path by default
+(always-on). When no config files are present, the loader is a no-op. See the
+“Config files and overlays” guide for discovery, formats, and precedence.
+There is no switch to enable this behavior; it is always active.

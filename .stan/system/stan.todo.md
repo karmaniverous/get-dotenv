@@ -1,10 +1,9 @@
 # Development Plan — get-dotenv
 
-When updated: 2025-09-20T01:35:00Z
+When updated: 2025-09-20T02:05:00Z
 NOTE: Update timestamp on commit.
 
-## Next up — AWS base plugin (host-only)
-- Implement base AWS plugin for the plugin-first host (no commands):
+## Next up — AWS base plugin (host-only)- Implement base AWS plugin for the plugin-first host (no commands):
   - afterResolve only; no AWS SDK dependency.
   - Resolve profile/region from ctx.dotenv first, then plugins.aws overrides.
   - Profile precedence: plugins.aws.profile > AWS_LOCAL_PROFILE > AWS_PROFILE.
@@ -37,9 +36,15 @@ NOTE: Update timestamp on commit.
 
 ## Completed (recent)
 
+- TypeDoc/doc site:
+  - Exported `DefineSpec` and re-exported public types from cliHost index;
+    fixed JSDoc link to `setOptionalFlag` via fully-qualified module path to
+    resolve TypeDoc warnings.
+  - Updated guides/plugins.md Quickstart for always-on config loader (removed
+    stale `--use-config-loader` gating); aligned README CLI help (removed
+    root `-c, --command` line) with the shipped CLI.
 - Tests/lint: fix ESLint unused vars in init scaffolding test by asserting
   generated config files exist (`cfg`, `cfgLocal`).
-
 - Init: ensure destination .gitignore includes local patterns
   - Add/append: `getdotenv.config.local.*` and `*.local`.
   - Log Created/Updated when changes are applied.- Config loader: enable JS/TS config files

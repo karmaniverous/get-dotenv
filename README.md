@@ -202,11 +202,9 @@ You can also use `getdotenv` from the command line:
 # Options:
 #   -e, --env <string>                  target environment (dotenv-expanded)
 #   -v, --vars <string>                 extra variables expressed as delimited key-value pairs (dotenv-expanded): KEY1=VAL1 KEY2=VAL2
-#   -c, --command <string>              command executed according to the --shell option, conflicts with cmd subcommand (dotenv-expanded)
 #   -o, --output-path <string>          consolidated output file  (dotenv-expanded)
 #   -s, --shell [string]                command execution shell, no argument for default OS shell or provide shell string (default OS shell)
-#   -S, --shell-off                     command execution shell OFF
-#   -p, --load-process                  load variables to process.env ON (default)
+#   -S, --shell-off                     command execution shell OFF#   -p, --load-process                  load variables to process.env ON (default)
 #   -P, --load-process-off              load variables to process.env OFF
 #   -a, --exclude-all                   exclude all dotenv variables from loading ON
 #   -A, --exclude-all-off               exclude all dotenv variables from loading OFF (default)

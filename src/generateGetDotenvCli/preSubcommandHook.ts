@@ -28,7 +28,9 @@ import { resolveCommand, resolveShell } from './resolve';
  * @property defaults - Generator defaults used to resolve tri-state flags with exact-optional semantics.
  *
  * @remarks
- * Flags resolved here are set or deleted via {@link setOptionalFlag} to
+ * Flags resolved here are set or deleted via
+ * {@link generateGetDotenvCli/flagUtils.setOptionalFlag | setOptionalFlag} to
+ * // fully-qualified link target for TypeDoc navigation
  * preserve exactOptionalPropertyTypes behavior.
  */
 export type PreSubHookContext = {
