@@ -1,10 +1,9 @@
 # Development Plan — get-dotenv
 
-When updated: 2025-09-20T04:22:00Z
+When updated: 2025-09-20T04:35:00Z
 NOTE: Update timestamp on commit.
 
-## Next up- AWS base plugin (follow-ups)
-  - Consider adding package export subpath ("./plugins/aws") and Rollup outputs
+## Next up- AWS base plugin (follow-ups)  - Consider adding package export subpath ("./plugins/aws") and Rollup outputs
     when we decide to publish it for consumers; keep host-only for now.
   - Documentation: add a short section to guides/plugins.md showing usage and
     config snippets (`plugins.aws`).
@@ -30,10 +29,15 @@ NOTE: Update timestamp on commit.
 
 ## Completed (recent)
 
+- AWS subcommand stabilization
+  - Use (args, opts, thisCommand) signature; treat positional args as
+    forward-to-AWS-CLI and no args as session-only.
+  - Remove rawArgs scanning; build argv from captured args.
+  - Increase E2E alias termination default timeout to 10s to reduce flake on Windows.
+
 - AWS subcommand fixes
   - Accept variadic args on the aws command to avoid Commander “excess
-    arguments” when using “--”.
-  - Correct action signature to (opts, thisCommand); remove undefined
+    arguments” when using “--”.  - Correct action signature to (opts, thisCommand); remove undefined
     thisCommand bug.
   - Gate process.exit under tests (VITEST_WORKER_ID/GETDOTENV_TEST) to
     prevent killing the test runner.
