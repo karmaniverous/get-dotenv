@@ -174,7 +174,7 @@ export const computeContext = async <
         .join('\n');
       throw new Error(`Invalid config for plugin '${p.id}':\n${msgs}`);
     }
-    mergedPluginConfigs[p.id] = parsed.data as unknown;
+    mergedPluginConfigs[p.id] = parsed.data;
   }
 
   return {
