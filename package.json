@@ -48,6 +48,7 @@
     "globals": "^16.4.0",
     "jsonc-eslint-parser": "^2.4.0",
     "knip": "^5.63.1",
+    "npm-packlist": "^10.0.0",
     "lefthook": "^1.13.0",
     "prettier": "^3.6.2",
     "release-it": "^19.0.4",

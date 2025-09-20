@@ -41,78 +41,110 @@ const pickPath = (entry) => {
   return entry.path ?? entry.filename ?? entry.name ?? undefined;
 };
 
-const main = async () => {
-  let out;
+const tryNpmPackJson = async () => {
+  const { stdout } = await execFileAsync('npm', [
+    'pack',
+    '--json',
+    '--dry-run',
+  ]);
+  return JSON.parse(stdout);
+};
+
+const logNpmFailure = async (err) => {
+  const code = err && typeof err.code !== 'undefined' ? String(err.code) : '';
+  const signal =
+    err && typeof err.signal !== 'undefined' ? String(err.signal) : '';
+  const msg = err && err.message ? String(err.message) : '';
+  const stderr = err && typeof err.stderr === 'string' ? err.stderr : '';
+  const stdout = err && typeof err.stdout === 'string' ? err.stdout : '';
+  console.error(
+    'verify-tarball: ERROR while running "npm pack --json --dry-run"',
+  );
+  console.error(`cwd: ${process.cwd()}`);
+  console.error(
+    `node: ${process.version} (${process.platform}/${process.arch})`,
+  );
   try {
-    const { stdout } = await execFileAsync('npm', [
+    const { stdout: npmv } = await execFileAsync('npm', ['--version']);
+    console.error(`npm: ${npmv.trim()}`);
+  } catch {
+    console.error('npm: <unavailable>');
+  }
+  if (code || signal) console.error(`code: ${code} signal: ${signal}`);
+  if (msg) console.error(`message: ${msg}`);
+  if (stderr && stderr.trim()) console.error('[stderr]\n' + stderr.trim());
+  if (stdout && stdout.trim()) console.error('[stdout]\n' + stdout.trim());
+  try {
+    const { stdout: fallback } = await execFileAsync('npm', [
       'pack',
-      '--json',
       '--dry-run',
     ]);
-    out = stdout;
-  } catch (err) {
-    // Rich diagnostics when the npm pack invocation itself fails.
-    const code = err && typeof err.code !== 'undefined' ? String(err.code) : '';
-    const signal =
-      err && typeof err.signal !== 'undefined' ? String(err.signal) : '';
-    const msg = err && err.message ? String(err.message) : '';
-    const stderr = err && typeof err.stderr === 'string' ? err.stderr : '';
-    const stdout = err && typeof err.stdout === 'string' ? err.stdout : '';
-    console.error(
-      'verify-tarball: ERROR while running "npm pack --json --dry-run"',
-    );
-    console.error(`cwd: ${process.cwd()}`);
-    console.error(
-      `node: ${process.version} (${process.platform}/${process.arch})`,
-    );
-    try {
-      const { stdout: npmv } = await execFileAsync('npm', ['--version']);
-      console.error(`npm: ${npmv.trim()}`);
-    } catch {
-      console.error('npm: <unavailable>');
-    }
-    if (code || signal) console.error(`code: ${code} signal: ${signal}`);
-    if (msg) console.error(`message: ${msg}`);
-    if (stderr && stderr.trim()) console.error('[stderr]\n' + stderr.trim());
-    if (stdout && stdout.trim()) console.error('[stdout]\n' + stdout.trim());
-    // Best-effort fallback sample without --json to help diagnose older npm shapes.
-    try {
-      const { stdout: fallback } = await execFileAsync('npm', [
-        'pack',
-        '--dry-run',
-      ]);
-      const head = fallback.split(/\r?\n/).slice(0, 80).join('\n');
-      console.error('[fallback npm pack --dry-run output (head)]\n' + head);
-    } catch {
-      /* ignore */
-    }
-    process.exit(1);
-  }
-  let list;
-  try {
-    list = JSON.parse(out);
+    const head = fallback.split(/\r?\n/).slice(0, 80).join('\n');
+    console.error('[fallback npm pack --dry-run output (head)]\n' + head);
   } catch {
+    /* ignore */
+  }
+};
+
+const tryPacklist = async () => {
+  let packlist;
+  try {
+    const mod = await import('npm-packlist');
+    packlist = mod.default ?? mod;
+  } catch (e) {
     console.error(
-      'verify-tarball: ERROR\nUnable to parse npm pack --json output',
+      'verify-tarball: ERROR\nFallback to npm-packlist failed to load.',
     );
-    process.exit(1);
+    console.error(
+      'Tip: add "npm-packlist" as a devDependency or ensure npm is on PATH.',
+    );
+    throw e;
+  }
+  const files = await packlist({ path: process.cwd() });
+  return files.map((p) => normalize(p));
+};
+
+const main = async () => {
+  let used = 'npm';
+  let names;
+  try {
+    // Primary: npm pack --json --dry-run
+    const list = await tryNpmPackJson();
+    // Normalize to a flat array of file entries (supports various npm JSON shapes).
+    const filesArr = Array.isArray(list)
+      ? list.flatMap((e) => (e && Array.isArray(e.files) ? e.files : []))
+      : list && Array.isArray(list.files)
+        ? list.files
+        : [];
+    names = new Set(
+      filesArr
+        .map((e) => pickPath(e))
+        .filter(Boolean)
+        .map((p) => normalize(p)),
+    );
+  } catch (err) {
+    // Log npm failure details and fall back to npm-packlist
+    await logNpmFailure(err);
+    console.error(
+      'verify-tarball: Falling back to npm-packlist to compute file list…',
+    );
+    used = 'packlist';
+    try {
+      const files = await tryPacklist();
+      names = new Set(files);
+    } catch (fallbackErr) {
+      console.error(
+        'verify-tarball: ERROR\nUnable to compute file list via npm-packlist.',
+      );
+      console.error(String(fallbackErr));
+      process.exit(1);
+    }
   }
 
-  // npm pack --json commonly returns an array of objects, each with a `files` array.
-  // Older shapes may return a single object with a `files` array, or even a flat array.
-  // Normalize to a flat array of file entries (plain JS, no TS casts).
-  const filesArr = Array.isArray(list)
-    ? list.flatMap((e) => (e && Array.isArray(e.files) ? e.files : []))
-    : list && Array.isArray(list.files)
-      ? list.files
-      : [];
+  // At this point, `names` is a Set of normalized paths originating from:
+  // - npm pack --json (preferred), or
+  // - npm-packlist fallback (simulated npm file inclusion).
 
-  const names = new Set(
-    filesArr
-      .map((e) => pickPath(e))
-      .filter(Boolean)
-      .map((p) => normalize(p)),
-  );
   const missing = expected.filter((p) => !names.has(p));
   if (missing.length > 0) {
     // Emit detailed diagnostics to help pinpoint why entries are missing.
@@ -128,9 +160,8 @@ const main = async () => {
     } catch {
       /* ignore */
     }
-    console.error(
-      `pack files: ${filesArr.length}  unique paths: ${names.size}`,
-    );
+    console.error(`source: ${used}`);
+    console.error(`unique paths: ${names.size}`);
     if (sampleFound.length > 0) {
       console.error('found (sample):\n- ' + sampleFound.join('\n- '));
     } else {

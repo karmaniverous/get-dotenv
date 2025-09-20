@@ -1,10 +1,9 @@
 # Development Plan — get-dotenv
 
-When updated: 2025-09-20T08:50:00Z
+When updated: 2025-09-20T09:15:00Z
 NOTE: Update timestamp on commit.
 
 ## Next up
-
 - Entropy warnings (warning-only; no masking)
 
 - Add CLI flags:
@@ -46,9 +45,13 @@ NOTE: Update timestamp on commit.
     pack files/unique path counts, sample found entries, and missing list),
     plus detailed error output if the npm pack invocation itself fails.
 - Packaging
-  - Removed TypeScript casts from tools/verify-tarball.mjs (pure JS ESM),
-    fixing ESLint parse error; kept .mjs for tools consistency.
+  - Made verify-tarball resilient when npm is not on PATH by falling back to
+    npm-packlist to compute the publish file list (simulates npm’s inclusion
+    algorithm). Added npm-packlist as a devDependency. The script still prefers
+    `npm pack --json --dry-run` when available and reports which source it used.
 - Packaging
+  - Removed TypeScript casts from tools/verify-tarball.mjs (pure JS ESM),
+    fixing ESLint parse error; kept .mjs for tools consistency.- Packaging
   - Fixed verify-tarball to correctly parse `npm pack --json` (array-of-objects
     shape). Now flattens `files` arrays and verifies expected entries reliably.
 - Engines & bundling alignment
