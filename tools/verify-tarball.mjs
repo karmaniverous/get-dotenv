@@ -4,10 +4,10 @@
  *
  * Checks a representative set of dist outputs and template files are present
  * in the tarball file listing. Fails with a clear message if any are missing.
- */import { execFile } from 'node:child_process';
+ */
+import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 import path from 'node:path';
-
 const execFileAsync = promisify(execFile);
 
 const normalize = (p) => p.split(path.sep).join('/');
@@ -67,13 +67,11 @@ const main = async () => {
 
   // npm pack --json commonly returns an array of objects, each with a `files` array.
   // Older shapes may return a single object with a `files` array, or even a flat array.
-  // Normalize to a flat array of file entries.
+  // Normalize to a flat array of file entries (plain JS, no TS casts).
   const filesArr = Array.isArray(list)
-    ? list.flatMap((e) =>
-        Array.isArray((e ?? {}).files) ? (e.files as unknown[]) : [],
-      )
-    : Array.isArray((list as { files?: unknown[] } | undefined)?.files)
-      ? ((list as { files?: unknown[] }).files as unknown[])
+    ? list.flatMap((e) => (e && Array.isArray(e.files) ? e.files : []))
+    : list && Array.isArray(list.files)
+      ? list.files
       : [];
 
   const names = new Set(
