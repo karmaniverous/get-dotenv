@@ -1,10 +1,9 @@
 # Development Plan — get-dotenv
 
-When updated: 2025-09-20T00:05:00Z
+When updated: 2025-09-20T01:35:00Z
 NOTE: Update timestamp on commit.
 
 ## Next up — AWS base plugin (host-only)
-
 - Implement base AWS plugin for the plugin-first host (no commands):
   - afterResolve only; no AWS SDK dependency.
   - Resolve profile/region from ctx.dotenv first, then plugins.aws overrides.
