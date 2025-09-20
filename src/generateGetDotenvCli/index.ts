@@ -11,7 +11,8 @@ import {
 } from './preSubcommandHook';
 
 /**
- * Generate a Commander CLI Command for get-dotenv. * Orchestration only: delegates building and lifecycle hooks.
+ * Generate a Commander CLI Command for get-dotenv.
+ * Orchestration only: delegates building and lifecycle hooks.
  */
 export const generateGetDotenvCli = async (
   customOptions: Pick<GetDotenvCliGenerateOptions, 'importMetaUrl'> &

@@ -16,7 +16,8 @@ import {
 } from './GetDotenvCliOptions';
 
 /**
- * GetDotenv CLI Pre-hook Callback function type. Mutates inbound options & * executes side effects within the `getDotenv` context.
+ * GetDotenv CLI Pre-hook Callback function type. Mutates inbound options &
+ * executes side effects within the `getDotenv` context.
  */
 export type GetDotenvCliPreHookCallback = (
   options: GetDotenvCliOptions,

@@ -1,6 +1,8 @@
 import type { Command } from 'commander';
 import { execaCommand } from 'execa';
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import type { setOptionalFlag } from '../cliCore/flagUtils.ts';
 import { resolveCliOptions } from '../cliCore/resolveCliOptions';
 import type {
   CommandWithOptions,
@@ -22,14 +24,14 @@ import type { GetDotenvCliOptions } from './GetDotenvCliOptions';
 import { resolveCommand, resolveShell } from './resolve';
 
 /**
- * Context for composing the Commander `preSubcommand` hook. * * @property logger - Logger compatible with `console` (must support `log`, optional `error`).
+ * Context for composing the Commander `preSubcommand` hook.
+ * @property logger - Logger compatible with `console` (must support `log`, optional `error`).
  * @property preHook - Optional async pre-hook called before command execution; may mutate options.
  * @property postHook - Optional async post-hook called after `getDotenv` has run.
  * @property defaults - Generator defaults used to resolve tri-state flags with exact-optional semantics.
  *
  * @remarks
- * Flags resolved here are set or deleted via
- * {@link generateGetDotenvCli/flagUtils#setOptionalFlag | setOptionalFlag}
+ * Flags resolved here are set or deleted via {@link setOptionalFlag}
  * to preserve exactOptionalPropertyTypes behavior.
  */
 export type PreSubHookContext = {
