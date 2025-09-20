@@ -1,6 +1,6 @@
 # Development Plan — get-dotenv
 
-When updated: 2025-09-20T03:25:00Z
+When updated: 2025-09-20T04:10:00Z
 NOTE: Update timestamp on commit.
 
 ## Next up
@@ -10,7 +10,6 @@ NOTE: Update timestamp on commit.
   - Documentation: add a short section to guides/plugins.md showing usage and
     config snippets (`plugins.aws`).
   - Optional: expose timeouts/profile/region overrides via plugin config docs.
-
 - Release prep
   - Run lint/typecheck/build; verify:package and verify:tarball; bump version
     when ready.
@@ -32,12 +31,24 @@ NOTE: Update timestamp on commit.
 
 ## Completed (recent)
 
+- AWS subcommand
+  - Wired awsPlugin into the shipped CLI.
+  - Implemented `aws` subcommand with session-only and forwarding modes.
+  - Options: --login-on-demand/--no-login-on-demand, --set-env/--no-set-env,
+    --add-ctx/--no-add-ctx, --profile/--region/--default-region,
+    --strategy <cli-export|none>, and advanced key overrides.
+  - Forwarding uses runCommand + resolveShell, injects `{...process.env, ...ctx.dotenv}`,
+    honors capture/GETDOTENV_STDIO.
+  - Added unit tests for session-only and forwarding paths.
+  - Fixed ESLint in service.ts (unnecessary conditional).
+  - Added docs section in guides/plugins.md.
+  - Knip: aws plugin is now referenced by the shipped CLI.
+
 - Exec helper (captured): added runCommandResult (timeout, env sanitization,
   argv preservation) to src/cliCore/exec.ts; kept runCommand non-breaking.
 - AWS base plugin (host-only): implemented in src/plugins/aws/
   - types.ts: Zod schema for `plugins.aws`.
-  - service.ts: resolve profile/region and acquire credentials:
-    env-first -> export-credentials (JSON/env) -> SSO login retry -> static fallback.
+  - service.ts: resolve profile/region and acquire credentials:    env-first -> export-credentials (JSON/env) -> SSO login retry -> static fallback.
   - index.ts: afterResolve writes AWS\_\* and region per toggles and mirrors to ctx.plugins.aws.
   - Tests: service parsers and flows; minimal exec test for runCommandResult.
 

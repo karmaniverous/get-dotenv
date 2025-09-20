@@ -5,6 +5,7 @@ validates options strictly, resolves dotenv context once per invocation, and
 exposes lifecycle hooks for plugins.
 
 ## Quickstart
+
 ```ts
 #!/usr/bin/env node
 import type { Command } from 'commander';
@@ -19,6 +20,7 @@ await program.parseAsync();
 - `resolveAndLoad()` produces a context `{ optionsResolved, dotenv, plugins? }`.
 - The host registers a preSubcommand hook to ensure a context exists when
   subcommands run (e.g., batch).
+
 ## Writing a plugin
 
 ```ts
@@ -77,6 +79,7 @@ inherit the parent’s defaults and flags.
 ## Scaffolding a host-based CLI
 
 Use the built-in scaffolder to create config files and a starter CLI:
+
 ```bash
 # JSON config + .local + CLI skeleton named "acme"
 getdotenv init . --config-format json --with-local --cli-name acme --force
@@ -94,7 +97,56 @@ Notes:
   - Precedence is `--force` > `--yes` > auto-detect (non-interactive => Skip All).
 
 ## Config loader behavior
+
 The plugin host and the generator use the config loader/overlay path by default
 (always-on). When no config files are present, the loader is a no-op. See the
 “Config files and overlays” guide for discovery, formats, and precedence.
 There is no switch to enable this behavior; it is always active.
+
+## AWS
+
+The AWS base plugin resolves profile/region and acquires credentials using a
+safe cascade (env-first → CLI export → (optional) SSO login → static fallback),
+then writes them into `process.env` and mirrors them under `ctx.plugins.aws`.
+
+You can also use the `aws` subcommand to establish a session and optionally
+forward to the AWS CLI:
+
+- Session only:
+
+  ```
+  getdotenv aws --profile dev --login-on-demand
+  ```
+
+  Establishes credentials/region according to overrides and exits 0.
+
+- Forward to AWS CLI (tokens after `--` are passed through):
+  ```
+  getdotenv aws --profile dev --login-on-demand -- sts get-caller-identity
+  ```
+  Uses the same exec path as `cmd`: shell-off by default for binaries, honors
+  script/global shell overrides, and supports CI-friendly capture via
+  `--capture` or `GETDOTENV_STDIO=pipe`.
+
+NPM script patterns:
+
+- Needs runtime flags:
+
+  ```json
+  { "scripts": { "aws": "getdotenv aws" } }
+  ```
+
+  Then:
+
+  ```
+  npm run aws -- --profile dev -- -- s3 ls
+  ```
+
+- Hardcoded command:
+  ```json
+  {
+    "scripts": {
+      "aws:whoami": "getdotenv aws --login-on-demand -- sts get-caller-identity"
+    }
+  }
+  ```

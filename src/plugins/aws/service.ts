@@ -97,7 +97,7 @@ const getAwsConfigure = async (
       timeoutMs,
     },
   );
-  if (!r || typeof r.exitCode !== 'number') return undefined;
+  if (typeof r.exitCode !== 'number') return undefined;
   if (r.exitCode === 0) {
     const v = trim(r.stdout);
     return v.length > 0 ? v : undefined;
