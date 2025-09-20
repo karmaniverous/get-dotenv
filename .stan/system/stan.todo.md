@@ -1,23 +1,23 @@
 # Development Plan — get-dotenv
 
-When updated: 2025-09-20T07:10:00Z
+When updated: 2025-09-20T08:00:00Z
 NOTE: Update timestamp on commit.
 
-## Next up
-- Entropy warnings (warning-only; no masking)
-  - Add CLI flags:
-    - `--entropy-warn` / `--no-entropy-warn` (default on)
-    - `--entropy-threshold <bitsPerChar>` (default 3.8)
-    - `--entropy-min-length <n>` (default 16)
-    - `--entropy-whitelist <pattern>` (repeatable)
-  - Add config mirrors:
-    - `warnEntropy`, `entropyThreshold`, `entropyMinLength`, `entropyWhitelist`
-  - Wire warnings into presentation surfaces:
-    - `--trace` (stderr line once per key), `-l/--log` (same rule)
-  - Implement gating + entropy calc (Shannon over char freq; printable ASCII)
-  - Noise control: once-per-key-per-run set
-  - Unit tests: scoring, gating, whitelist, once-per-key logic
-  - Docs: short “Entropy warnings” section in Shell guide and Plugin-first host guide
+## Next up- Entropy warnings (warning-only; no masking)
+
+- Add CLI flags:
+  - `--entropy-warn` / `--no-entropy-warn` (default on)
+  - `--entropy-threshold <bitsPerChar>` (default 3.8)
+  - `--entropy-min-length <n>` (default 16)
+  - `--entropy-whitelist <pattern>` (repeatable)
+- Add config mirrors:
+  - `warnEntropy`, `entropyThreshold`, `entropyMinLength`, `entropyWhitelist`
+- Wire warnings into presentation surfaces:
+  - `--trace` (stderr line once per key), `-l/--log` (same rule)
+- Implement gating + entropy calc (Shannon over char freq; printable ASCII)
+- Noise control: once-per-key-per-run set
+- Unit tests: scoring, gating, whitelist, once-per-key logic
+- Docs: short “Entropy warnings” section in Shell guide and Plugin-first host guide
 
 - Release preparation
   - npm run lint
@@ -25,7 +25,7 @@ NOTE: Update timestamp on commit.
   - npm run test
   - npm run build
   - npm run verify:package
-  - npm run verify:tarball  - Bump version and publish when satisfied.
+  - npm run verify:tarball - Bump version and publish when satisfied.
 - Documentation
   - Review and finalize the new AWS section in guides/plugins.md
     to reflect final CLI behavior, env/ctx mirrors, and examples.
@@ -39,12 +39,18 @@ NOTE: Update timestamp on commit.
 
 ## Completed (recent)
 
-- Plugins documentation  - Added Plugins index and child pages (aws, batch, cmd, init, demo) with
+- Engines & smoke validation
+  - Relaxed Node engines to >= 18 (package.json, docs).
+  - Lowered esbuild targets from node22 to node18 for TS dynamic/config loaders.
+  - Extended smoke suite with a default-shell echo step (no --shell-off) to
+    validate normalized shells on POSIX/Windows.
+- Plugins documentation
+  - Added Plugins index and child pages (aws, batch, cmd, init, demo) with
     implementation details and examples.
 - Guides index bullets refactored to “[Title](link) - Description”.
 - Docs/nav updates
   - Added front matter titles to all guides and a guides index with children.
-  - Created “Generated CLI” guide and linked from README.  - Exposed "./plugins/aws" subpath (runtime/types), updated verify/build.
+  - Created “Generated CLI” guide and linked from README. - Exposed "./plugins/aws" subpath (runtime/types), updated verify/build.
 - AWS subcommand stabilized (session-only region/default; forwarding with capture).
 - Windows alias E2E termination stabilized; smoke suite OK.
 - Full CI suite green (lint, typecheck, test, build, docs, knip, smoke).- Added AWS docs section to guides/plugins.md.

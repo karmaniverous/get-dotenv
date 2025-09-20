@@ -90,7 +90,7 @@ const loadJsTsDefault = async <T>(absPath: string): Promise<T | undefined> => {
       bundle: true,
       platform: 'node',
       format: 'esm',
-      target: 'node22',
+      target: 'node18',
       outfile,
       sourcemap: false,
       logLevel: 'silent',

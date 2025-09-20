@@ -200,6 +200,14 @@ const main = async () => {
     cli('batch', '-r', './test', '-g', 'full partial', '-l'),
   );
 
+  // 6) Default shell command (no --shell-off): cross-platform echo
+  // Validates normalized default shells: /bin/bash (POSIX) and powershell.exe (Windows).
+  failures += await run(
+    '6) Default shell echo (no --shell-off)',
+    // Use the default subcommand form; shell is ON by default in the shipped CLI.
+    cli('cmd', 'echo', 'OK'),
+  );
+
   hr();
   console.log(failures > 0 ? `Smoke: FAIL (${failures} step(s))` : 'Smoke: OK');
   clearTimeout(globalWatchdog);

@@ -2,10 +2,9 @@
 
 ## Requirements
 
-- Node.js >= 22.19 (this repository pins 22.19.0 for CI/reproducibility)
+- Node.js >= 18 (this repository pins 22.19.0 for CI/reproducibility)
 
 ## API Reference
-
 Generated API documentation is hosted at:
 
 - https://docs.karmanivero.us/get-dotenv

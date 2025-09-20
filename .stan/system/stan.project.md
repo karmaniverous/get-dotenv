@@ -1,9 +1,8 @@
 # Project Requirements — get-dotenv
 
-When updated: 2025-09-20T07:10:00Z
+When updated: 2025-09-20T08:00:00Z
 
 ## Product positioning (summary)
-
 Where it shines:
 
 - Deterministic dotenv cascade across paths with public/private/global/env axes.
@@ -93,10 +92,9 @@ and behaviors is required.
 
 ## Supported Node/Runtime
 
-- Node: >= 22.19- ESM-first package with dual exports:
+- Node: >= 18- ESM-first package with dual exports:
   - import: dist/index.mjs (types: dist/index.d.mts)
   - require: dist/index.cjs (types: dist/index.d.cts)
-
 ## Tooling
 
 - Build: Rollup
