@@ -10,10 +10,17 @@ import {
 } from './generateGetDotenvCli/GetDotenvCliOptions';
 import { defaultsDeep } from './util/defaultsDeep';
 export const getDotenvOptionsFilename = 'getdotenv.config.json';
+
+// Compat: widen CLI-facing shapes at the converter boundary so projects that
+// provide data-style config can pass vars as a map and paths as string[].
+type RootOptionsShapeCompat = Omit<RootOptionsShape, 'vars' | 'paths'> & {
+  vars?: string | Record<string, string | undefined>;
+  paths?: string | string[];
+};
 /**
  * A minimal representation of an environment key/value mapping.
- * Values may be `undefined` to represent "unset".
- */ export type ProcessEnv = Record<string, string | undefined>;
+ * Values may be `undefined` to represent "unset". */ export type ProcessEnv =
+  Record<string, string | undefined>;
 
 /**
  * Dynamic variable function signature. Receives the current expanded variables
@@ -155,12 +162,11 @@ export const getDotenvCliOptions2Options = ({
   varsDelimiter,
   varsDelimiterPattern,
   ...rest
-}: RootOptionsShape): GetDotenvOptions => {
+}: RootOptionsShapeCompat): GetDotenvOptions => {
   /**
    * Convert CLI-facing string options into {@link GetDotenvOptions}.
    *
-   * - Splits {@link GetDotenvCliOptions.paths} using either a delimiter
-   *   or a regular expression pattern into a string array.   * - Parses {@link GetDotenvCliOptions.vars} as space-separated `KEY=VALUE`
+   * - Splits {@link GetDotenvCliOptions.paths} using either a delimiter   *   or a regular expression pattern into a string array.   * - Parses {@link GetDotenvCliOptions.vars} as space-separated `KEY=VALUE`
    *   pairs (configurable delimiters) into a {@link ProcessEnv}.
    * - Drops CLI-only keys that have no programmatic equivalent.
    *
@@ -172,7 +178,6 @@ export const getDotenvCliOptions2Options = ({
   const restObj = { ...(rest as unknown as Record<string, unknown>) };
   delete restObj.debug;
   delete restObj.scripts;
-
   const splitBy = (
     value: string | undefined,
     delim?: string,
@@ -223,7 +228,6 @@ export const getDotenvCliOptions2Options = ({
     ...(parsedVars !== undefined ? { vars: parsedVars } : {}),
   } as GetDotenvOptions;
 };
-
 export const resolveGetDotenvOptions = async (
   customOptions: Partial<GetDotenvOptions>,
 ) => {

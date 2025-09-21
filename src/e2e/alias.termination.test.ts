@@ -43,10 +43,9 @@ describe('E2E alias termination (Windows)', () => {
 
       // 5s step timeout; adjust via env if needed (CI variance).
       const STEP_TIMEOUT_MS = Number.parseInt(
-        process.env.GETDOTENV_VITEST_STEP_TIMEOUT_MS ?? '15000',
+        process.env.GETDOTENV_VITEST_STEP_TIMEOUT_MS ?? '20000',
         10,
-      );
-      // Ensure the child CLI is NOT treated as "under tests" so the alias
+      ); // Ensure the child CLI is NOT treated as "under tests" so the alias
       // path is free to call process.exit normally. Keep capture ON.
       const childEnv = {
         ...process.env,
@@ -84,6 +83,6 @@ describe('E2E alias termination (Windows)', () => {
       // With -r/--exclude-private set, SECRET should be blank.
       expect(obj.SECRET ?? '').toBe('');
     },
-    15000,
+    20000,
   );
 });

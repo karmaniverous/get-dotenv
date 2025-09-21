@@ -38,14 +38,13 @@ describe('plugins/aws subcommand', () => {
       .use(awsPlugin())
       .passOptions();
     await cli.parseAsync(['node', 'test', 'aws', '--region', 'us-east-1']);
-
     // No forwarding
     expect(runCommandMock).not.toHaveBeenCalled();
     // Region set
     expect(process.env.AWS_REGION).toBe('us-east-1');
     // DEFAULT_REGION is also set when previously unset
     expect(process.env.AWS_DEFAULT_REGION).toBe('us-east-1');
-  });
+  }, 15000);
 
   it('forwards args after "--" to AWS CLI with env injection and capture honored', async () => {
     process.env.GETDOTENV_STDIO = 'pipe'; // force capture

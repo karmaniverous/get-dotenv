@@ -1,10 +1,9 @@
 # Development Plan — get-dotenv
 
-When updated: 2025-09-21T14:20:00Z
+When updated: 2025-09-21T15:40:00Z
 NOTE: Update timestamp on commit.
 
 ## Next up
-
 - Entropy warnings (warning-only; no masking)
 - Add CLI flags:
   - `--entropy-warn` / `--no-entropy-warn` (default on)
@@ -40,10 +39,19 @@ NOTE: Update timestamp on commit.
 
 ## Completed (recent)
 
+- Lint and test stability
+  - Fixed @typescript-eslint/no-unnecessary-condition in
+    src/GetDotenvOptions.ts by widening the converter input type to accept
+    vars as an object map and paths as string[], matching intended behavior
+    and removing an always-false branch.
+  - Increased E2E timeouts to reduce Windows flakiness:
+    - alias termination test: per-step default 15s → 20s; test timeout 15s → 20s.
+    - PowerShell quoting test: 15s → 20s.
+    - AWS session-only subcommand test: 5s → 15s.
+
 - ESLint / Vitest plugin
   - Migrated from deprecated `eslint-plugin-vitest` to `@vitest/eslint-plugin`
-    to align with ESLint v9 and eliminate peer dependency override warnings.
-  - Updated `eslint.config.ts` import; preserved recommended rules usage.
+    to align with ESLint v9 and eliminate peer dependency override warnings.  - Updated `eslint.config.ts` import; preserved recommended rules usage.
 
 - Zod v4 migration
   - Updated all `z.record(...)` usages to the new v4 signature requiring explicit
