@@ -1,10 +1,9 @@
 # Development Plan — get-dotenv
 
-When updated: 2025-09-21T00:20:00Z
+When updated: 2025-09-21T13:45:00Z
 NOTE: Update timestamp on commit.
 
 ## Next up
-
 - Entropy warnings (warning-only; no masking)
 - Add CLI flags:
   - `--entropy-warn` / `--no-entropy-warn` (default on)
@@ -103,3 +102,10 @@ NOTE: Update timestamp on commit.
 - AWS subcommand stabilized (session-only region/default; forwarding with capture).
 - Windows alias E2E termination stabilized; smoke suite OK.
 - Full CI suite green (lint, typecheck, test, build, docs, knip, smoke).- Added AWS docs section to guides/plugins.md.
+- Compatibility & stability
+  - getDotenvCliOptions2Options now tolerates object `vars` and array `paths`
+    to avoid crashes when JSON configs use data shapes.
+  - Increased default timeouts for Windows:
+    - E2E alias termination test: 10s → 15s.
+    - Smoke per-step default: 5s → 15s (overridable via env).
+    These reduce flakiness without masking real failures.

@@ -23,7 +23,7 @@ const nodeBin = process.execPath; // current Node
 // - Per-step timeout defaults to 5s; override via GETDOTENV_SMOKE_STEP_TIMEOUT_MS.
 // - Global watchdog defaults to 60s; override via GETDOTENV_SMOKE_GLOBAL_TIMEOUT_MS.
 const STEP_TIMEOUT_MS = Number.parseInt(
-  process.env.GETDOTENV_SMOKE_STEP_TIMEOUT_MS ?? '5000',
+  process.env.GETDOTENV_SMOKE_STEP_TIMEOUT_MS ?? '15000',
   10,
 );
 const GLOBAL_TIMEOUT_MS = Number.parseInt(

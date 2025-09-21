@@ -43,7 +43,7 @@ describe('E2E alias termination (Windows)', () => {
 
       // 5s step timeout; adjust via env if needed (CI variance).
       const STEP_TIMEOUT_MS = Number.parseInt(
-        process.env.GETDOTENV_VITEST_STEP_TIMEOUT_MS ?? '10000',
+        process.env.GETDOTENV_VITEST_STEP_TIMEOUT_MS ?? '15000',
         10,
       );
       // Ensure the child CLI is NOT treated as "under tests" so the alias

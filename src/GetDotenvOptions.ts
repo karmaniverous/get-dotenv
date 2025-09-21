@@ -9,11 +9,11 @@ import {
   type GetDotenvCliOptions,
 } from './generateGetDotenvCli/GetDotenvCliOptions';
 import { defaultsDeep } from './util/defaultsDeep';
-export const getDotenvOptionsFilename = 'getdotenv.config.json'; /**
+export const getDotenvOptionsFilename = 'getdotenv.config.json';
+/**
  * A minimal representation of an environment key/value mapping.
  * Values may be `undefined` to represent "unset".
- */
-export type ProcessEnv = Record<string, string | undefined>;
+ */ export type ProcessEnv = Record<string, string | undefined>;
 
 /**
  * Dynamic variable function signature. Receives the current expanded variables
@@ -179,29 +179,37 @@ export const getDotenvCliOptions2Options = ({
     pattern?: string,
   ) => (value ? value.split(pattern ? RegExp(pattern) : (delim ?? ' ')) : []);
 
-  const kvPairs = (
-    vars
-      ? splitBy(vars, varsDelimiter, varsDelimiterPattern).map((v) =>
-          v.split(
-            varsAssignorPattern
-              ? RegExp(varsAssignorPattern)
-              : (varsAssignor ?? '='),
-          ),
-        )
-      : []
-  ) as [string, string][];
+  // Tolerate vars as either a CLI string ("A=1 B=2") or an object map.
+  let parsedVars: ProcessEnv | undefined;
+  if (typeof vars === 'string') {
+    const kvPairs = splitBy(vars, varsDelimiter, varsDelimiterPattern).map(
+      (v) =>
+        v.split(
+          varsAssignorPattern
+            ? RegExp(varsAssignorPattern)
+            : (varsAssignor ?? '='),
+        ),
+    ) as [string, string][];
+    parsedVars = Object.fromEntries(kvPairs);
+  } else if (vars && typeof vars === 'object' && !Array.isArray(vars)) {
+    // Keep only string or undefined values to match ProcessEnv.
+    const entries = Object.entries(vars as Record<string, unknown>).filter(
+      ([k, v]) =>
+        typeof k === 'string' && (typeof v === 'string' || v === undefined),
+    ) as [string, string | undefined][];
+    parsedVars = Object.fromEntries(entries);
+  }
 
-  const parsedVars = Object.fromEntries(kvPairs);
+  // Tolerate paths as either a delimited string or string[]
+  const pathsOut = Array.isArray(paths)
+    ? paths.filter((p): p is string => typeof p === 'string')
+    : splitBy(paths, pathsDelimiter, pathsDelimiterPattern);
 
   // Preserve exactOptionalPropertyTypes: only include keys when defined.
   return {
     ...(restObj as Partial<GetDotenvOptions>),
-    ...(paths !== undefined
-      ? {
-          paths: splitBy(paths, pathsDelimiter, pathsDelimiterPattern),
-        }
-      : {}),
-    ...(vars !== undefined ? { vars: parsedVars } : {}),
+    ...(pathsOut.length > 0 ? { paths: pathsOut } : {}),
+    ...(parsedVars !== undefined ? { vars: parsedVars } : {}),
   } as GetDotenvOptions;
 };
 
