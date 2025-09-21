@@ -60,6 +60,10 @@ NOTE: Update timestamp on commit.
     - No-args path returns early (no invocation).
   - Batch default cmd:
     - Positional and `-c/--command` forms honor script-level shell overrides.
+- Generator batch default cmd
+  - Return early when no positional tokens are provided so the preSubcommand
+    hook exclusively handles `-c/--command`. Prevents duplicate executor
+    invocations in option-form runs.
 - Lint and test stability
   - Fixed @typescript-eslint/no-unnecessary-condition in
     src/GetDotenvOptions.ts by widening the converter input type to accept vars as an object map and paths as string[], matching intended behavior and removing an always-false branch.

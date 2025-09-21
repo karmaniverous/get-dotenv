@@ -35,6 +35,9 @@ export const cmdCommand = new Command()
 
       // Execute command.
       const args = Array.isArray(commandParts) ? commandParts : [];
+      // When no positional tokens are provided (e.g., option form `-c/--command`),
+      // the preSubcommand hook handles execution. Avoid a duplicate call here.
+      if (args.length === 0) return;
       const command = args.map(String).join(' ');
 
       await execShellCommandBatch({
