@@ -2,8 +2,17 @@
 
 When updated: 2025-09-20T08:25:00Z
 
+## Documentation formatting policy (HARD RULE — project-level)
+
+- NEVER manually hard-wrap narrative Markdown or plain text content anywhere in this repository.
+- Paragraphs MUST be single logical lines; insert blank lines between paragraphs for structure.
+- Only preformatted/code blocks (fenced code, CLI excerpts, YAML/JSON examples) may wrap as needed; lists may use one item per line.
+- This policy is enforced during review. If prose is manually wrapped, fix it by unwrapping to single-line paragraphs.
+
 ## Product positioning (summary)
+
 Where it shines:
+
 - Deterministic dotenv cascade across paths with public/private/global/env axes.
 - Progressive, recursive expansion with defaults; dynamic vars in JS/TS (safe).- Plugin-first host with once-per-invocation context and typed options.
 - Cross-platform command execution (argv-aware shell-off; normalized shells).
@@ -32,7 +41,7 @@ Must-have (near-term):
      - Purpose: Provide a low-risk signal for likely secrets without altering values or masking by default. Keeps observability high while nudging safer workflows.
      - Surfaces:
        - `--trace`: emit an extra stderr line per affected key (at most once per key per run).
-       - `-l/--log`: same behavior (since values are printed).
+       - `-l/--log`: same warning policy (since values are printed).
      - Trigger gating:
        - Only evaluate entropy when cheap prefilters pass:
          - Length ≥ `minLen` (default 16).
@@ -72,28 +81,23 @@ Must-have (near-term):
    - Fail-fast with helpful diagnostics.
 4. Shell completion
    - Generate bash/zsh/pwsh completion for flags/subcommands.
-Nice-to-have (next): 5) First-party secrets provider plugins (AWS/GCP/Vault). 6) Watch mode for local dev (recompute on file changes; optional command rerun). 7) Enhanced `--trace` diff (origin/value/overridden-by). 8) Troubleshooting doc (common shell pitfalls and quoting recipes).
+     Nice-to-have (next): 5) First-party secrets provider plugins (AWS/GCP/Vault). 6) Watch mode for local dev (recompute on file changes; optional command rerun). 7) Enhanced `--trace` diff (origin/value/overridden-by). 8) Troubleshooting doc (common shell pitfalls and quoting recipes).
 
 ## Mission
 
-Load environment variables from a configurable cascade of dotenv files and/or
-explicit variables, optionally expand variables recursively, optionally inject
-into `process.env`, and expose a flexible CLI that can act standalone or as the
-foundation for child CLIs. Backward compatibility with the existing public API
-and behaviors is required.
+Load environment variables from a configurable cascade of dotenv files and/or explicit variables, optionally expand variables recursively, optionally inject into `process.env`, and expose a flexible CLI that can act standalone or as the foundation for child CLIs. Backward compatibility with the existing public API and behaviors is required.
+
 ## Compatibility policy (plugin-first vs generated CLI)
 
 - The plugin-first shipped CLI may evolve without strict backward compatibility.
-- The legacy generated CLI (via generateGetDotenvCli) MUST preserve existing
-  flags/behavior for consumers. Changes to flag names or behavior in the
-  plugin-first CLI do not imply changes to the generated CLI unless explicitly
-  coordinated as a breaking change for that surface.
+- The legacy generated CLI (via generateGetDotenvCli) MUST preserve existing flags/behavior for consumers. Changes to flag names or behavior in the plugin-first CLI do not imply changes to the generated CLI unless explicitly coordinated as a breaking change for that surface.
 
 ## Supported Node/Runtime
 
 - Node: >= 20- ESM-first package with dual exports:
   - import: dist/index.mjs (types: dist/index.d.mts)
   - require: dist/index.cjs (types: dist/index.d.cts)
+
 ## Tooling
 
 - Build: Rollup
@@ -146,49 +150,31 @@ and behaviors is required.
      - Script-level overrides (`scripts[name].shell`) take precedence for that script.
    - Nested CLI:
      - Outer context is passed to inner commands via `process.env.getDotenvCliOptions` (JSON).
-     - Within a single process tree (Commander), the current merged options are placed
-       on the command instance as `getDotenvCliOptions` for subcommands.
+     - Within a single process tree (Commander), the current merged options are placed on the command instance as `getDotenvCliOptions` for subcommands.
 
 - CLI flag standardization (plugin-first host):
-  - Use “-c, --cmd <command...>” provided by the cmd plugin as the parent-level
-    option alias. The shipped CLI does not include a root “-c, --command” flag.
-  - The legacy generated CLI retains “-c, --command <string>” for compatibility
-    and uses its own command wiring as documented in the generator entry.
+  - Use “-c, --cmd <command...>” provided by the cmd plugin as the parent-level option alias. The shipped CLI does not include a root “-c, --command” flag.
+  - The legacy generated CLI retains “-c, --command <string>” for compatibility and uses its own command wiring as documented in the generator entry.
 
 - Command alias on parent (cmd):
   - The CLI MUST support two equivalent ways to execute a command:
     1. Subcommand: `cmd [args...]` (positional arguments are joined verbatim),
     2. Option alias on the parent: `-c, --cmd <command...>` (variadic, joined with spaces).
-  - The option alias is an ergonomic convenience to ensure npm-run flag routing applies
-    to getdotenv rather than the inner shell command. Recommended authoring pattern:
-    - Anti-pattern: `"script": "getdotenv echo $FOO"` (flags passed to `npm run script -- ...`
-      are applied to `echo`, not to `getdotenv`).
-    - Recommended: `"script": "getdotenv -c 'echo $FOO'"`, then
-      `npm run script -- -e dev` applies `-e` to getdotenv itself.
-  - Conflict detection: if both the alias and the `cmd` subcommand are supplied in a single
-    invocation, print a helpful message and exit with code 0 (legacy-parity graceful exit).
-  - Expansion semantics:
-    - Alias value is dotenv-expanded at parse time (unless explicitly disabled in a future
-      option); `cmd` positional args are joined verbatim and then resolved via scripts/shell.
+  - The option alias is an ergonomic convenience to ensure npm-run flag routing applies to getdotenv rather than the inner shell command. Recommended authoring pattern:
+    - Anti-pattern: `"script": "getdotenv echo $FOO"` (flags passed to `npm run script -- ...` are applied to `echo`, not to `getdotenv`).
+    - Recommended: `"script": "getdotenv -c 'echo $FOO'"`, then `npm run script -- -e dev` applies `-e` to getdotenv itself.
   - Scripts and shell precedence is unchanged:
     - `scripts[name].shell` (object form) overrides the global `shell` for that script.
-  - Scope: For the new plugin-first CLI, the alias is owned by the cmd plugin and attaches
-    to the parent; the old generated CLI retains its original `-c, --command` until a
-    deliberate breaking change is published.
+  - Scope: For the new plugin-first CLI, the alias is owned by the cmd plugin and attaches to the parent; the old generated CLI retains its original `-c, --command` until a deliberate breaking change is published.
 - Shell expansion guidance (procedural):
-  - Outer shells (e.g., bash, PowerShell) may expand variables before Node receives argv.
-    Document quoting rules and recommend single quotes for `$FOO` on POSIX and single quotes
-    on PowerShell to suppress outer expansion. Prefer `"getdotenv -c '...'"` in npm scripts.
-  - Future optional safety nets may include `--cmd-file <path>` (read command from file) or
-    env-backed alias (`GETDOTENV_CMD`) to avoid outer-shell expansion entirely.
+  - Outer shells (e.g., bash, PowerShell) may expand variables before Node receives argv. Document quoting rules and recommend single quotes for `$FOO` on POSIX and single quotes on PowerShell to suppress outer expansion. Prefer `"getdotenv -c '...'"` in npm scripts.
+  - Future optional safety nets may include `--cmd-file <path>` (read command from file) or env-backed alias (`GETDOTENV_CMD`) to avoid outer-shell expansion entirely.
 
 ## vNext (additive) — Plugin-first CLI host and Schema-driven config
 
 Purpose
 
-- Introduce a plugin-first CLI host that composes environment-aware CLIs. It
-  validates options strictly, resolves dotenv context once per invocation, and
-  exposes lifecycle hooks for plugins.
+- Introduce a plugin-first CLI host that composes environment-aware CLIs. It validates options strictly, resolves dotenv context once per invocation, and exposes lifecycle hooks for plugins.
 
 ### Architectural split
 
@@ -252,7 +238,7 @@ Purpose
 
 - Config-provided values as an alternative to .env files (pure data):
   - vars?: Record<string, string> (global, public)
-  - envVars?: Record<string, Record<string,string>> (env-specific, public)
+  - envVars?: Record<string, Record<string,string>> (per-env, public)
   - Private values live in .local configs with the same keys (privacy derives from filename).
   - These insert into env overlay with three axes:
     1. kind: dynamic > env > global
@@ -286,41 +272,30 @@ Purpose
   - Write full logs per job to `.tsbuild/batch/<run-id>/<sanitized-path>.{out,err}.log`.
   - Provide `--live` to stream interleaved updates with `[cwd]` prefixes (optional).
 - Failure policy:
-  - Honor `--ignore-errors`. When false (default), bail early on first failure
-    or stop launching new jobs; print a summary.
+  - Honor `--ignore-errors`. When false (default), bail early on first failure or stop launching new jobs; print a summary.
   - When true, run all and summarize at the end.
 - Per-script hints:
   - Extend scripts entries with `parallel?: boolean` and `concurrency?: number`.
-  - When hints are present, they override the global concurrency for that script
-    (e.g., force sequential for heavy tasks like `npm install`).
+  - When hints are present, they override the global concurrency for that script (e.g., force sequential for heavy tasks like `npm install`).
 
 ## AWS base plugin (plugin-first host)
 
 Purpose
 
-- Provide a minimal “auth context” for AWS that other plugins can rely on,
-  without bundling any domain logic (e.g., secrets, SQS, etc.) and without
-  adding an AWS SDK dependency here.
-- Works only with the plugin-first host (GetDotenvCli definePlugin). The
-  generated CLI path is explicitly out of scope; existing projects using it
-  will continue to own their AWS wiring until they migrate to the host.
+- Provide a minimal “auth context” for AWS that other plugins can rely on, without bundling any domain logic (e.g., secrets, SQS, etc.) and without adding an AWS SDK dependency here.
+- Works only with the plugin-first host (GetDotenvCli definePlugin). The generated CLI path is explicitly out of scope; existing projects using it will continue to own their AWS wiring until they migrate to the host.
 
 Behavior (no commands)
 
-- Implemented as a base plugin with no commands. It runs once per invocation
-  in `afterResolve`, after dotenv overlays/config have been applied.
-- It resolves profile/region, acquires credentials (supporting SSO and non‑SSO
-  profiles), publishes them to process.env when enabled, and mirrors them into
-  `ctx.plugins.aws` for programmatic consumers.
+- Implemented as a base plugin with no commands. It runs once per invocation in `afterResolve`, after dotenv overlays/config have been applied.
+- It resolves profile/region, acquires credentials (supporting SSO and non‑SSO profiles), publishes them to process.env when enabled, and mirrors them into `ctx.plugins.aws` for programmatic consumers.
 
 Inputs and where they come from
 
 - Values may come from dotenv (public/local) or getdotenv config (JSON/YAML/TS/JS):
-  - Profiles typically live in local dotenv per environment (e.g., `.env.local`,
-    `.env.dev.local`), since they are developer‑machine specifics.
+  - Profiles typically live in local dotenv per environment (e.g., `.env.local`, `.env.dev.local`), since they are developer‑machine specifics.
   - Region is non‑secret and may live in public dotenv or config.
-  - The plugin reads the already‑resolved dotenv (`ctx.dotenv`) first, then
-    optional config overrides under `plugins.aws`.
+  - The plugin reads the already‑resolved dotenv (`ctx.dotenv`) first, then optional config overrides under `plugins.aws`.
 
 Resolution precedence
 
@@ -332,8 +307,7 @@ Resolution precedence
 - Region:
   1. `plugins.aws.region` (explicit override)
   2. `ctx.dotenv['AWS_REGION']` (default key)
-  3. If a profile was resolved and region is still missing, best‑effort
-     `aws configure get region --profile <profile>`
+  3. If a profile was resolved and region is still missing, best‑effort `aws configure get region --profile <profile>`
   4. `plugins.aws.defaultRegion` (optional fallback)
   5. undefined
 - Advanced (optional) key renames:
@@ -344,26 +318,20 @@ Resolution precedence
 
 Credentials acquisition (SSO and non‑SSO)
 
-- Env‑first: if `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` are already set
-  in `process.env` (e.g., provided by CI or earlier tooling), use them and stop.
+- Env‑first: if `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` are already set in `process.env` (e.g., provided by CI or earlier tooling), use them and stop.
 - Otherwise, when a `profile` is present and strategy is enabled:
   1. Try CLI export (works for SSO, role, and static profiles on modern AWS CLI):
      `aws configure export-credentials --profile <profile>` (no shell; argv array).
      If it succeeds, use the returned creds.
   2. If export fails:
-     - Detect SSO hints for the profile (best‑effort, e.g., `sso_session`,
-       `sso_start_url`).
-     - If it appears SSO and `plugins.aws.loginOnDemand === true`, run
-       `aws sso login --profile <profile>` (once), then retry export once.
+     - Detect SSO hints for the profile (best‑effort, e.g., `sso_session`, `sso_start_url`).
+     - If it appears SSO and `plugins.aws.loginOnDemand === true`, run `aws sso login --profile <profile>` (once), then retry export once.
      - If not SSO (static profile) or login is disabled, fall back to static reads:
-       `aws configure get aws_access_key_id/secret_access_key/session_token`
-       with `--profile <profile>`.
-- If none of the above produce credentials, leave env untouched and do not
-  publish a credentials bag (plugin is inert).
+       `aws configure get aws_access_key_id/secret_access_key/session_token` with `--profile <profile>`.
+- If none of the above produce credentials, leave env untouched and do not publish a credentials bag (plugin is inert).
 
 Publishing outputs
--- `setEnv` (default true): when enabled, the plugin writes the resolved values to
-`process.env`:
+-- `setEnv` (default true): when enabled, the plugin writes the resolved values to `process.env`:
 
 - `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_SESSION_TOKEN?`
 - `AWS_REGION` (and optionally `AWS_DEFAULT_REGION` for broader compatibility)
@@ -389,16 +357,11 @@ Configuration schema (plugins.aws)
 - `profileFallbackKey?: string` (default `'AWS_PROFILE'`)
 - `regionKey?: string` (default `'AWS_REGION'`)
 - `strategy?: 'cli-export' | 'none'` (default `'cli-export'`)
-- `loginOnDemand?: boolean` (default `false`): only attempts `aws sso login`
-  when export just failed and the profile appears to be SSO; never logs in when
-  creds are already valid.
+- `loginOnDemand?: boolean` (default `false`): only attempts `aws sso login` when export just failed and the profile appears to be SSO; never logs in when creds are already valid.
 - `setEnv?: boolean` (default `true`)
 - `addCtx?: boolean` (default `true`)
 
 Notes
 
-- No commands are registered by this base plugin; domain plugins (e.g., a wrapped
-  Secrets Manager plugin) can be installed separately and will consume the env/ctx
-  provided by this base.
-- The plugin keeps no AWS SDK runtime dependency; downstream libraries may bring
-  SDKs as needed.
+- No commands are registered by this base plugin; domain plugins (e.g., a wrapped Secrets Manager plugin) can be installed separately and will consume the env/ctx provided by this base.
+- The plugin keeps no AWS SDK runtime dependency; downstream libraries may bring SDKs as needed.

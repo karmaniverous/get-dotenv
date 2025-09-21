@@ -1,16 +1,12 @@
+> **_Load, expand, and compose environment variables from a deterministic dotenv cascade, then execute commands under that context. Use `get-dotenv` as a library, a CLI, or a plugin-first host to build dotenv-aware tooling with cross‑platform shell control, CI‑friendly capture, and clear diagnostics._**
+
 # get-dotenv
 
-## Requirements
-
-- Node.js >= 20 (this repository pins 22.19.0 for CI/reproducibility)
-
-## API Reference
-
-Generated API documentation is hosted at:
-
-- https://docs.karmanivero.us/get-dotenv
-
-The site is built with TypeDoc from the source code in this repository.
+[![npm version](https://img.shields.io/npm/v/@karmaniverous/get-dotenv.svg)](https://www.npmjs.com/package/@karmaniverous/get-dotenv)
+![Node Current](https://img.shields.io/node/v/@karmaniverous/get-dotenv) <!-- TYPEDOC_EXCLUDE -->
+[![docs](https://img.shields.io/badge/docs-website-blue)](https://docs.karmanivero.us/get-dotenv)
+[![changelog](https://img.shields.io/badge/changelog-latest-blue.svg)](https://github.com/karmaniverous/get-dotenv/tree/main/CHANGELOG.md)<!-- /TYPEDOC_EXCLUDE -->
+[![license](https://img.shields.io/badge/license-BSD--3--Clause-blue.svg)](https://github.com/karmaniverous/get-dotenv/tree/main/LICENSE.md)
 
 Load environment variables with a cascade of environment-aware dotenv files. You can:
 
@@ -46,6 +42,18 @@ You can always use `getdotenv` directly on the command line, but its REAL power 
 
 When you plug your own [`commander`](https://www.npmjs.com/package/commander) CLI commands into the `getdotenv` base, they will execute within all of the environmental context created above!
 
+## Requirements
+
+- Node.js >= 20 (this repository pins 22.19.0 for CI/reproducibility)
+
+## API Reference
+
+Generated API documentation is hosted at:
+
+- https://docs.karmanivero.us/get-dotenv
+
+The site is built with TypeDoc from the source code in this repository.
+
 ## Testing
 
 This project uses Vitest with the V8 coverage provider. Run:
@@ -62,8 +70,7 @@ npm install @karmaniverous/get-dotenv
 
 ## Scaffold
 
-You can scaffold config files and a host-based CLI skeleton using the built-in
-init command. Templates are shipped with the package and copied verbatim.
+You can scaffold config files and a host-based CLI skeleton using the built-in init command. Templates are shipped with the package and copied verbatim.
 
 Examples:
 
@@ -85,20 +92,13 @@ npx getdotenv init ./apps/toolbox \
 
 Collision flow (when a destination file exists):
 
-- Interactive prompt: [o]verwrite, [e]xample, [s]kip, or their “all” variants
-  [O]/[E]/[S].
-- Non-interactive detection:
-  - Treated as `--yes` (Skip All) unless `--force` is provided (Overwrite All).
-  - Considered non-interactive when stdin or stdout is not a TTY OR when a
-    CI-like environment variable is present (`CI`, `GITHUB_ACTIONS`,
-    `BUILDKITE`, `TEAMCITY_VERSION`, `TF_BUILD`).
-- Precedence:
-  - `--force` > `--yes` > auto-detect (non-interactive => Skip All).
+- Interactive prompt: [o]verwrite, [e]xample, [s]kip, or their “all” variants [O]/[E]/[S].
+- Non-interactive detection: Treated as `--yes` (Skip All) unless `--force` is provided (Overwrite All). Considered non-interactive when stdin or stdout is not a TTY OR when a CI-like environment variable is present (`CI`, `GITHUB_ACTIONS`, `BUILDKITE`, `TEAMCITY_VERSION`, `TF_BUILD`).
+- Precedence: `--force` > `--yes` > auto-detect (non-interactive => Skip All).
 - Options overview:
   - `--config-format <json|yaml|js|ts>`
   - `--with-local` to generate `.local` alongside public config (JSON/YAML)
-  - `--cli-name <string>` for token substitution (`__CLI_NAME__`) in the CLI
-    skeleton
+  - `--cli-name <string>` for token substitution (`__CLI_NAME__`) in the CLI skeleton
   - `--force` to overwrite all; `--yes` to skip all
 
 Notes:
@@ -149,9 +149,7 @@ export default {
 };
 ```
 
-If `esbuild` is not installed and a direct import fails, get-dotenv attempts a
-simple fallback for single-file `.ts` modules without imports; otherwise it will
-throw with clear guidance to install `esbuild`.
+If `esbuild` is not installed and a direct import fails, get-dotenv attempts a simple fallback for single-file `.ts` modules without imports; otherwise it will throw with clear guidance to install `esbuild`.
 
 Programmatic users can skip files entirely and pass dynamic variables directly:
 
@@ -178,8 +176,7 @@ Notes:
   - Install `esbuild` (`npm i -D esbuild`).
 
 - “Unable to load dynamic TypeScript file …”:
-  - Install `esbuild`. A simple transpile fallback exists only for trivial
-    single-file modules; any imports in `dynamic.ts` require `esbuild` bundling.
+  - Install `esbuild`. A simple transpile fallback exists only for trivial single-file modules; any imports in `dynamic.ts` require `esbuild` bundling.
 
 ## Command Line Interface
 
@@ -289,9 +286,7 @@ Meanwhile, [this issue](https://github.com/karmaniverous/get-dotenv/issues/7) do
 
 ### Authoring npm scripts and the `-c`/`--cmd` alias
 
-When you run commands via `npm run`, flags after `--` are forwarded to your script
-and may be applied to the inner shell command instead of `getdotenv` unless you
-structure your script carefully.
+When you run commands via `npm run`, flags after `--` are forwarded to your script and may be applied to the inner shell command instead of `getdotenv` unless you structure your script carefully.
 
 - Anti-pattern:
 
@@ -305,22 +300,17 @@ structure your script carefully.
   ```json
   { "scripts": { "script": "getdotenv -c 'echo $APP_SETTING'" } }
   ```
-  Now `npm run script -- -e dev` applies `-e` to `getdotenv`, which loads and expands
-  variables before executing the inner command.
+  Now `npm run script -- -e dev` applies `-e` to `getdotenv`, which loads and expands variables before executing the inner command.
 
 Notes:
 
 - `-c`/`--cmd` is an alias of the `cmd` subcommand; do not use both in a single invocation.
-- On POSIX shells, prefer single quotes to prevent the outer shell from expanding `$VAR`
-  before Node sees it. On PowerShell, single quotes are also literal.
-- Script-level shell overrides (`scripts[name].shell`) still take precedence over the global
-  `--shell`.
+- On POSIX shells, prefer single quotes to prevent the outer shell from expanding `$VAR` before Node sees it. On PowerShell, single quotes are also literal.
+- Script-level shell overrides (`scripts[name].shell`) still take precedence over the global `--shell`.
 
 Important:
 
-- When using the parent alias `--cmd` with a Node eval payload, quote the entire
-  payload as a single token so Commander does not treat `-e/--eval` as
-  getdotenv’s `-e, --env` flag.
+- When using the parent alias `--cmd` with a Node eval payload, quote the entire payload as a single token so Commander does not treat `-e/--eval` as getdotenv’s `-e, --env` flag.
   - POSIX example:
     ```
     getdotenv --cmd 'node -e "console.log(process.env.APP_SETTING ?? \"\")"'
@@ -329,23 +319,19 @@ Important:
     ```
     getdotenv --cmd 'node -e "console.log(process.env.APP_SETTING ?? \"\")"'
     ```
-- If you do not need to pass additional parent flags after the command, you can
-  prefer the subcommand form instead:
+- If you do not need to pass additional parent flags after the command, you can prefer the subcommand form instead:
   ```
   getdotenv --shell-off cmd node -e "console.log(process.env.APP_SETTING ?? '')"
   ```
 
 Diagnostics and CI capture:
 
-- To capture child stdout/stderr deterministically (e.g., in CI), either set
-  the environment variable `GETDOTENV_STDIO=pipe` or pass `--capture`. Outputs
-  are buffered and re-emitted after completion.
+- To capture child stdout/stderr deterministically (e.g., in CI), either set the environment variable `GETDOTENV_STDIO=pipe` or pass `--capture`. Outputs are buffered and re-emitted after completion.
 - For debugging environment composition, use:
   ```
   getdotenv --trace [keys...] cmd node -e "0"
   ```
-  When provided without keys, `--trace` emits a concise origin line for every
-  key (parent | dotenv | unset) to stderr before the child process launches.
+  When provided without keys, `--trace` emits a concise origin line for every key (parent | dotenv | unset) to stderr before the child process launches.
 
 ---
 
@@ -362,12 +348,7 @@ The guides are also included in the [hosted API docs](https://docs.karmanivero.u
 
 ## Generated CLI
 
-This package still supports generating a standalone CLI for your projects.
-For most use cases we recommend the new plugin-first host because it resolves
-dotenv context once per invocation, supports composable plugins, and provides
-better subprocess control and diagnostics. If you prefer a thin, fixed
-command surface with defaults baked into config, the generated CLI can be a
-good fit.
+This package still supports generating a standalone CLI for your projects. For most use cases we recommend the new plugin-first host because it resolves dotenv context once per invocation, supports composable plugins, and provides better subprocess control and diagnostics. If you prefer a thin, fixed command surface with defaults baked into config, the generated CLI can be a good fit.
 
 See the Generated CLI guide for details:
 https://docs.karmanivero.us/get-dotenv/guides/generated-cli
