@@ -9,7 +9,6 @@ import {
   type GetDotenvCliOptions,
 } from './generateGetDotenvCli/GetDotenvCliOptions';
 import { defaultsDeep } from './util/defaultsDeep';
-
 export const getDotenvOptionsFilename = 'getdotenv.config.json'; /**
  * A minimal representation of an environment key/value mapping.
  * Values may be `undefined` to represent "unset".

@@ -1,6 +1,6 @@
 # Development Plan — get-dotenv
 
-When updated: 2025-09-21T00:00:00Z
+When updated: 2025-09-21T00:20:00Z
 NOTE: Update timestamp on commit.
 
 ## Next up
@@ -72,6 +72,13 @@ NOTE: Update timestamp on commit.
     fixing ESLint parse error; kept .mjs for tools consistency.- Packaging
   - Fixed verify-tarball to correctly parse `npm pack --json` (array-of-objects
     shape). Now flattens `files` arrays and verifies expected entries reliably.
+- Compatibility
+  - getDotenvCliOptions2Options now tolerates:
+    - vars as an object map (Record<string,string|undefined>) in addition to a
+      CLI-style string, and
+    - paths as a string[] in addition to a delimited string.
+      This prevents crashes when a project’s getdotenv.config.json uses data shapes
+      while the loader also overlays the same config.
 - Engines & bundling alignment
   - Pegged Node engines to >= 20 (package.json, docs).
   - Raised esbuild targets from node18 to node20 for TS dynamic/config bundling to match the new minimum runtime.
