@@ -12,32 +12,37 @@ export const cmdCommand = new Command()
   .enablePositionalOptions()
   .passThroughOptions()
   .argument('[command...]')
-  .action(async (_options: unknown, thisCommand: Command) => {
-    const args = thisCommand.args as unknown[];
-    if (args.length === 0) return;
-    if (!thisCommand.parent) throw new Error('parent command not found');
-    const {
-      getDotenvCliOptions: { logger = console, ...getDotenvCliOptions },
-    } = thisCommand.parent as GetDotenvCliCommand;
+  .action(
+    async (
+      commandParts: string[] | undefined,
+      _options: unknown,
+      thisCommand: Command,
+    ) => {
+      const args = Array.isArray(commandParts) ? commandParts : [];
+      if (args.length === 0) return;
+      if (!thisCommand.parent) throw new Error('parent command not found');
+      const {
+        getDotenvCliOptions: { logger = console, ...getDotenvCliOptions },
+      } = thisCommand.parent as GetDotenvCliCommand;
 
-    const command = args.map(String).join(' ');
+      const command = args.map(String).join(' ');
 
-    const cmd = resolveCommand(getDotenvCliOptions.scripts, command);
-
-    if (getDotenvCliOptions.debug)
-      logger.log('\n*** command ***\n', `'${cmd}'`);
-    await execaCommand(cmd, {
-      env: {
-        ...process.env,
-        getDotenvCliOptions: JSON.stringify(getDotenvCliOptions),
-      },
-      // execa expects string | boolean | URL; we normalize in generator
-      // and allow script-level overrides.
-      shell: resolveShell(
-        getDotenvCliOptions.scripts,
-        command,
-        getDotenvCliOptions.shell,
-      ) as unknown as string | boolean | URL,
-      stdio: 'inherit',
-    });
-  });
+      const cmd = resolveCommand(getDotenvCliOptions.scripts, command);
+      if (getDotenvCliOptions.debug)
+        logger.log('\n*** command ***\n', `'${cmd}'`);
+      await execaCommand(cmd, {
+        env: {
+          ...process.env,
+          getDotenvCliOptions: JSON.stringify(getDotenvCliOptions),
+        },
+        // execa expects string | boolean | URL; we normalize in generator
+        // and allow script-level overrides.
+        shell: resolveShell(
+          getDotenvCliOptions.scripts,
+          command,
+          getDotenvCliOptions.shell,
+        ) as unknown as string | boolean | URL,
+        stdio: 'inherit',
+      });
+    },
+  );
