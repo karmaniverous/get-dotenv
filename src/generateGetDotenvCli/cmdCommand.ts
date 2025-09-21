@@ -11,10 +11,10 @@ export const cmdCommand = new Command()
   .configureHelp({ showGlobalOptions: true })
   .enablePositionalOptions()
   .passThroughOptions()
+  .argument('[command...]')
   .action(async (_options: unknown, thisCommand: Command) => {
     const args = thisCommand.args as unknown[];
     if (args.length === 0) return;
-
     if (!thisCommand.parent) throw new Error('parent command not found');
     const {
       getDotenvCliOptions: { logger = console, ...getDotenvCliOptions },

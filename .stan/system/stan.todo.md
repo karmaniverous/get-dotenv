@@ -1,10 +1,9 @@
 # Development Plan — get-dotenv
 
-When updated: 2025-09-21T15:40:00Z
+When updated: 2025-09-21T16:30:00Z
 NOTE: Update timestamp on commit.
 
-## Next up
-- Entropy warnings (warning-only; no masking)
+## Next up- Entropy warnings (warning-only; no masking)
 - Add CLI flags:
   - `--entropy-warn` / `--no-entropy-warn` (default on)
   - `--entropy-threshold <bitsPerChar>` (default 3.8)
@@ -39,10 +38,14 @@ NOTE: Update timestamp on commit.
 
 ## Completed (recent)
 
+- Generator CLI fixes
+  - Added `[command...]` to both generator `cmd` commands:
+    - batch default subcommand (batchCommand/cmdCommand.ts)
+    - root cmdCommand.ts
+    Resolves “too many arguments for 'cmd'” when passing a positional command (e.g., `batch ... git-status`).
 - Lint and test stability
   - Fixed @typescript-eslint/no-unnecessary-condition in
-    src/GetDotenvOptions.ts by widening the converter input type to accept
-    vars as an object map and paths as string[], matching intended behavior
+    src/GetDotenvOptions.ts by widening the converter input type to accept    vars as an object map and paths as string[], matching intended behavior
     and removing an always-false branch.
   - Increased E2E timeouts to reduce Windows flakiness:
     - alias termination test: per-step default 15s → 20s; test timeout 15s → 20s.

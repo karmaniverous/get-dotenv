@@ -10,13 +10,13 @@ export const cmdCommand = new Command()
   )
   .enablePositionalOptions()
   .passThroughOptions()
+  .argument('[command...]')
   .action(async (_options: unknown, thisCommand: Command) => {
     if (!thisCommand.parent)
       throw new Error(`unable to resolve parent command`);
 
     if (!thisCommand.parent.parent)
       throw new Error(`unable to resolve root command`);
-
     const {
       getDotenvCliOptions: { logger = console, ...getDotenvCliOptions },
     } = thisCommand.parent.parent as GetDotenvCliCommand;
