@@ -54,9 +54,15 @@ NOTE: Update timestamp on commit.
   - Fixed action signatures for generator `cmd` commands to accept
     `[command...]` as the first parameter, aligning with Commander’s
     calling convention and preventing undefined/parent resolution errors.
+- Generator runtime tests (scripts & shell overrides)
+  - Root cmd:
+    - Resolves scripts and honors per-script shell (`/bin/bash` vs false).
+    - No-args path returns early (no invocation).
+  - Batch default cmd:
+    - Positional and `-c/--command` forms honor script-level shell overrides.
 - Lint and test stability
   - Fixed @typescript-eslint/no-unnecessary-condition in
-    src/GetDotenvOptions.ts by widening the converter input type to accept vars as an object map and paths as string[], matching intended behavior    and removing an always-false branch.
+    src/GetDotenvOptions.ts by widening the converter input type to accept vars as an object map and paths as string[], matching intended behavior and removing an always-false branch.
   - Increased E2E timeouts to reduce Windows flakiness:
     - alias termination test: per-step default 15s → 20s; test timeout 15s → 20s.
     - PowerShell quoting test: 15s → 20s.
