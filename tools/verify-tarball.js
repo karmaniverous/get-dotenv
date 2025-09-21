@@ -11,10 +11,10 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import process from 'node:process';
 const execFileAsync = promisify(execFile);
+
 const normalize = (p) => p.split(path.sep).join('/');
 const expected = [
-  // Core dist runtime entries (ESM/CJS + CLI)
-  'dist/index.mjs',
+  // Core dist runtime entries (ESM/CJS + CLI)  'dist/index.mjs',
   'dist/index.cjs',
   'dist/cliHost.mjs',
   'dist/plugins-aws.mjs',
@@ -121,6 +121,56 @@ const tryPacklist = async () => {
   return files.map((p) => normalize(p));
 };
 
+// Final fallback: enumerate from package.json "files" entries
+// Recursively walks listed files/dirs and returns a normalized list.
+const tryFilesFromPackageFiles = async () => {
+  let pkg;
+  const cwd = process.cwd();
+  const isNoise = (name) =>
+    name === 'node_modules' ||
+    name === '.git' ||
+    name === '.tsbuild' ||
+    name === '.rollup.cache' ||
+    name === '.DS_Store';
+  const relNormalize = (abs) => normalize(path.relative(cwd, abs));
+
+  try {
+    const txt = await fs.readFile(path.join(cwd, 'package.json'), 'utf-8');
+    pkg = JSON.parse(txt);
+  } catch (e) {
+    console.error(
+      'verify-tarball: ERROR\nUnable to load package.json for files-field fallback.',
+    );
+    console.error(String(e));
+    throw e;
+  }
+  const filesField = Array.isArray(pkg?.files) ? pkg.files : [];
+  if (filesField.length === 0) {
+    throw new Error(
+      'files-field fallback unavailable: package.json has no "files" array',
+    );
+  }
+  const out = new Set();
+  const walk = async (abs) => {
+    try {
+      const stat = await fs.stat(abs);
+      if (stat.isDirectory()) {
+        const entries = await fs.readdir(abs, { withFileTypes: true });
+        for (const e of entries) {
+          if (isNoise(e.name)) continue;
+          await walk(path.join(abs, e.name));
+        }
+      } else if (stat.isFile()) {
+        out.add(relNormalize(abs));
+      }
+    } catch {
+      /* ignore missing paths */
+    }
+  };
+  await Promise.all(filesField.map((p) => walk(path.join(cwd, p))));
+  return Array.from(out);
+};
+
 const main = async () => {
   let used = 'npm';
   let names;
@@ -151,13 +201,27 @@ const main = async () => {
       names = new Set(files);
     } catch (fallbackErr) {
       console.error(
-        'verify-tarball: ERROR\nUnable to compute file list via npm-packlist.',
+        'verify-tarball: npm-packlist fallback failed. Attempting files-field fallback…',
       );
-      console.error(String(fallbackErr));
-      process.exit(1);
+      try {
+        const files = await tryFilesFromPackageFiles();
+        names = new Set(files.map((p) => normalize(p)));
+        used = 'files-field';
+      } catch (thirdErr) {
+        console.error(
+          'verify-tarball: ERROR\nUnable to compute file list via files-field fallback.',
+        );
+        console.error('npm-packlist error:', String(fallbackErr));
+        console.error('files-field error:', String(thirdErr));
+        console.error('cwd:', process.cwd());
+        console.error(
+          'node:',
+          `${process.version} (${process.platform}/${process.arch})`,
+        );
+        process.exit(1);
+      }
     }
   }
-
   // At this point, `names` is a Set of normalized paths originating from:
   // - npm pack --json (preferred), or
   // - npm-packlist fallback (simulated npm file inclusion).
@@ -189,7 +253,6 @@ const main = async () => {
     );
     process.exit(1);
   }
-
   console.log('verify-tarball: OK');
 };
 main().catch((err) => {

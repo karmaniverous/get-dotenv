@@ -1,10 +1,9 @@
 # Development Plan — get-dotenv
 
-When updated: 2025-09-20T10:20:00Z
+When updated: 2025-09-20T10:28:00Z
 NOTE: Update timestamp on commit.
 
-## Next up
-- Entropy warnings (warning-only; no masking)
+## Next up- Entropy warnings (warning-only; no masking)
 
 - Add CLI flags:
   - `--entropy-warn` / `--no-entropy-warn` (default on)
@@ -55,10 +54,14 @@ NOTE: Update timestamp on commit.
     by reading package.json and passing it via the `package` option to
     npm-packlist@10. Adds a robust fs import and clearer diagnostics when
     package.json is missing/unreadable.
+  - verify-tarball: added a final fallback that enumerates files from the
+    package.json "files" entries and recursively walks those paths. This
+    allows verifying expected dist/templates presence even when both npm and
+    npm-packlist are unavailable or erroring (Windows/CI edge cases).
+
 - Packaging
   - verify-tarball.js now emits rich diagnostics on failure (npm/node/cwd,
-    pack files/unique path counts, sample found entries, and missing list),
-    plus detailed error output if the npm pack invocation itself fails.- Packaging
+    pack files/unique path counts, sample found entries, and missing list),    plus detailed error output if the npm pack invocation itself fails.- Packaging
   - Made verify-tarball resilient when npm is not on PATH by falling back to
     npm-packlist to compute the publish file list (simulates npm’s inclusion
     algorithm). Added npm-packlist as a devDependency. The script still prefers
