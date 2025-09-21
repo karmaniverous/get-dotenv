@@ -1,10 +1,9 @@
 # Development Plan — get-dotenv
 
-When updated: 2025-09-21T18:26:00Z
+When updated: 2025-09-21T19:00:00Z
 NOTE: Update timestamp on commit.
 
 ## Next up- Entropy warnings (warning-only; no masking)
-
 - Add CLI flags:
   - `--entropy-warn` / `--no-entropy-warn` (default on)
   - `--entropy-threshold <bitsPerChar>` (default 3.8)
@@ -39,10 +38,12 @@ NOTE: Update timestamp on commit.
 
 ## Completed (recent)
 
+- Docs formatting
+  - Unwrapped manually wrapped paragraphs and bullet items in guides/cascade.md and guides/generated-cli.md per project formatting policy.
+
 - Generator CLI fixes
   - Added `[command...]` to both generator `cmd` commands:
-    - batch default subcommand (batchCommand/cmdCommand.ts)
-    - root cmdCommand.ts
+    - batch default subcommand (batchCommand/cmdCommand.ts)    - root cmdCommand.ts
       Resolves “too many arguments for 'cmd'” when passing a positional command (e.g., `batch ... git-status`).
 - Generator runtime tests
   - Added tests validating generated CLI ergonomics match the host:

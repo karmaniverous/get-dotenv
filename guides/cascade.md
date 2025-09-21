@@ -4,7 +4,7 @@ title: Cascade and precedence
 
 # Cascade and precedence
 
-get-dotenv loads variables from a deterministic cascade of dotenv files, perinput path, then merges across paths.
+get-dotenv loads variables from a deterministic cascade of dotenv files, per input path, then merges across paths.
 
 ## File naming
 
@@ -20,15 +20,11 @@ Per input path, the loader evaluates up to four files in this order:
 3. Private global: `<token>.<privateToken>` (e.g., `.env.local`)
 4. Private env: `<token>.<ENV>.<privateToken>` (e.g., `.env.dev.local`)
 
-If a file is missing, it is silently skipped. Parsed values from later files
-override earlier ones (e.g., private values override public values).
+If a file is missing, it is silently skipped. Parsed values from later files override earlier ones (e.g., private values override public values).
 
 ## Multiple paths
 
-When `paths` contains more than one directory, get-dotenv visits each directory
-in the order they appear in the array. For each directory, the same four-file
-cascade is applied and merged into the overall result. Later paths override
-earlier paths for colliding keys.
+When `paths` contains more than one directory, get-dotenv visits each directory in the order they appear in the array. For each directory, the same four-file cascade is applied and merged into the overall result. Later paths override earlier paths for colliding keys.
 
 Example:
 ```json
@@ -40,33 +36,26 @@ Values from `./packages/app` win over `./` if the same key appears in both.
 
 ## Dynamic variables
 
-If `dynamicPath` is provided and `excludeDynamic` is not set, the module at that
-path is loaded and its default export is applied after parsing and expansion:
+If `dynamicPath` is provided and `excludeDynamic` is not set, the module at that path is loaded and its default export is applied after parsing and expansion:
 
-- If a value is a function, it is called with the current dotenv map and the
-  selected environment; its return value is assigned to the key.
+- If a value is a function, it is called with the current dotenv map and the selected environment; its return value is assigned to the key.
 - Otherwise, the value is assigned directly.
 
-Keys are processed in object key order and can override previously loaded
-variables.
+Keys are processed in object key order and can override previously loaded variables.
 
 See the README “Dynamic Processing” section for details.
 
 ## Expansion and defaults
 
-After merging, values are expanded recursively using:
-- `$VAR[:default]` or `${VAR[:default]}`
+After merging, values are expanded recursively using:- `$VAR[:default]` or `${VAR[:default]}`
 - Unknown variables expand to an empty string unless a default is provided.
 
 See the API docs for `dotenvExpand` and `dotenvExpandAll` for precise behavior.
 
 ## Output file
 
-If `outputPath` is set, the fully expanded variables are written to a single
-dotenv file at the resolved path. Multiline values are quoted. The returned
-object from `getDotenv` matches the file contents.
+If `outputPath` is set, the fully expanded variables are written to a single dotenv file at the resolved path. Multiline values are quoted. The returned object from `getDotenv` matches the file contents.
 
 ## Logging and process.env
 
-If `log` is set, the resulting map is logged. If `loadProcess` is set, the map
-is merged into `process.env` (string values only).
+If `log` is set, the resulting map is logged. If `loadProcess` is set, the map is merged into `process.env` (string values only).
