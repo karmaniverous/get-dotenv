@@ -1,9 +1,10 @@
 # Development Plan — get-dotenv
 
-When updated: 2025-09-21T13:45:00Z
+When updated: 2025-09-21T14:20:00Z
 NOTE: Update timestamp on commit.
 
 ## Next up
+
 - Entropy warnings (warning-only; no masking)
 - Add CLI flags:
   - `--entropy-warn` / `--no-entropy-warn` (default on)
@@ -78,10 +79,14 @@ NOTE: Update timestamp on commit.
     - paths as a string[] in addition to a delimited string.
       This prevents crashes when a project’s getdotenv.config.json uses data shapes
       while the loader also overlays the same config.
+  - Converter sanitation and lint fix:
+    - getDotenvCliOptions2Options now drops undefined-valued entries from `vars`
+      before returning, aligning with ProcessEnv expectations and tests.
+    - Avoided an always-falsy Array.isArray check by using a locally cast
+      union variable for `paths` (stops @typescript-eslint/no-unnecessary-condition).
 - Engines & bundling alignment
   - Pegged Node engines to >= 20 (package.json, docs).
   - Raised esbuild targets from node18 to node20 for TS dynamic/config bundling to match the new minimum runtime.
-
 - Coverage
   - Tightened Vitest coverage inputs to eliminate irrelevant files:
     - Restrict collection to `src/**/*.ts`.
@@ -108,4 +113,4 @@ NOTE: Update timestamp on commit.
   - Increased default timeouts for Windows:
     - E2E alias termination test: 10s → 15s.
     - Smoke per-step default: 5s → 15s (overridable via env).
-    These reduce flakiness without masking real failures.
+      These reduce flakiness without masking real failures.

@@ -200,10 +200,21 @@ export const getDotenvCliOptions2Options = ({
     parsedVars = Object.fromEntries(entries);
   }
 
+  // Drop undefined-valued entries at the converter stage to match ProcessEnv
+  // expectations and the compat test assertions.
+  if (parsedVars) {
+    parsedVars = Object.fromEntries(
+      Object.entries(parsedVars).filter(([, v]) => v !== undefined),
+    );
+  }
+
   // Tolerate paths as either a delimited string or string[]
-  const pathsOut = Array.isArray(paths)
-    ? paths.filter((p): p is string => typeof p === 'string')
-    : splitBy(paths, pathsDelimiter, pathsDelimiterPattern);
+  // Use a locally cast union type to avoid lint warnings about always-falsy conditions
+  // under the RootOptionsShape (which declares paths as string | undefined).
+  const pathsAny = paths as unknown as string[] | string | undefined;
+  const pathsOut = Array.isArray(pathsAny)
+    ? pathsAny.filter((p): p is string => typeof p === 'string')
+    : splitBy(pathsAny, pathsDelimiter, pathsDelimiterPattern);
 
   // Preserve exactOptionalPropertyTypes: only include keys when defined.
   return {
