@@ -69,3 +69,16 @@ getdotenv cmd plain
 Nested `getdotenv` invocations inherit parent CLI options and the loaded dotenv
 context via `process.env.getDotenvCliOptions` (JSON). The shell resolution and
 scripts table continue to apply within nested commands using the same rules.
+
+## Capture (CI‑friendly)
+
+By default, child process output is streamed live (`stdio: 'inherit'`). For
+deterministic logs in CI or tests, enable capture:
+
+- Flag: `--capture`
+- Env: `GETDOTENV_STDIO=pipe`
+
+When capture is enabled, stdout/stderr are buffered and re‑emitted after the
+child completes. Batch and AWS forwarding also honor capture, ensuring stable
+output ordering in automated environments. Live streaming remains available by
+omitting the flag/env (the default).

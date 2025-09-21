@@ -5,7 +5,9 @@
 - Node.js >= 20 (this repository pins 22.19.0 for CI/reproducibility)
 
 ## API Reference
+
 Generated API documentation is hosted at:
+
 - https://docs.karmanivero.us/get-dotenv
 
 The site is built with TypeDoc from the source code in this repository.
@@ -106,14 +108,15 @@ Notes:
 
 ## Usage
 
-````js
+```js
 import { getDotenv } from '@karmaniverous/get-dotenv';
 
-const dotenv = await getDotenv(options);```
+const dotenv = await getDotenv(options);
+```
 
 Options can be passed programmatically or set in a `getdotenv.config.json` file in your project root directory. The same file also sets default options for the `getdotenv` CLI or any child CLI you spawn from it.
 
-See the [child CLI example repo](https://github.com/karmaniverous/get-dotenv-child#configuration) for an extensiive discussion of the various config options and how & where to set them.
+See the [child CLI example repo](https://github.com/karmaniverous/get-dotenv-child#configuration) for an extensive discussion of the various config options and how & where to set them.
 
 ## Dynamic Processing
 
@@ -126,10 +129,10 @@ export default {
   SOME_DYNAMIC_VARIABLE: (dotenv) => someLogic(dotenv),
   ANOTHER_DYNAMIC_VARIABLE: (dotenv) =>
     someOtherLogic(dotenv.SOME_DYNAMIC_VARIABLE),
-  ONE_MORE_TIME: ({ DESTRUCTRED_VARIABLE, ANOTHER_DYNAMIC_VARIABLE }) =>
-    DESTRUCTRED_VARIABLE + ANOTHER_DYNAMIC_VARIABLE,
+  ONE_MORE_TIME: ({ DESTRUCTURED_VARIABLE, ANOTHER_DYNAMIC_VARIABLE }) =>
+    DESTRUCTURED_VARIABLE + ANOTHER_DYNAMIC_VARIABLE,
 };
-````
+```
 
 If the value corresponding to a key is a function, it will be executed with the current state of `dotenv` as its single argument and the result applied back to the `dotenv` object. Otherwise, the value will just be applied back to `dotenv`. (Although if you're going to do that then you might as well just create a public global variable in the first place.)
 
@@ -218,7 +221,8 @@ You can also use `getdotenv` from the command line:
 #   --dynamic-path <string>             dynamic variables path (.js or .ts; .ts is auto-compiled when esbuild is available, otherwise precompile)
 #   --paths <string>                    dotenv-expanded delimited list of paths to dotenv directory (default: "./")
 #   --paths-delimiter <string>          paths delimiter string (default: " ")
-#   --paths-delimiter-pattern <string>  paths delimiter regex pattern#   --private-token <string>            dotenv-expanded token indicating private variables (default: "local")
+#   --paths-delimiter-pattern <string>  paths delimiter regex pattern
+#   --private-token <string>            dotenv-expanded token indicating private variables (default: "local")
 #   --vars-delimiter <string>           vars delimiter string (default: " ")
 #   --vars-delimiter-pattern <string>   vars delimiter regex pattern
 #   --vars-assignor <string>            vars assignment operator string (default: "=")
@@ -277,7 +281,7 @@ Note that `batch` executes its commands in sequence, rather than in parallel!
 
 To understand why, imagine running `npm install` in a dozen repos from the same command line. The visual feedback would be impossible to follow, and if something broke you'd have a really hard time figuring out why.
 
-Instead, everything runs in sequence, and you get a clear record of exactly what heppened and where. Also worth noting that many complex processes are resource hogs: you would not _want_ to run a dozen Serverless deployments at once!
+Instead, everything runs in sequence, and you get a clear record of exactly what happened and where. Also worth noting that many complex processes are resource hogs: you would not _want_ to run a dozen Serverless deployments at once!
 
 Meanwhile, [this issue](https://github.com/karmaniverous/get-dotenv/issues/7) documents the parallel-processing option requirement. Feel free to submit a PR!
 
@@ -349,6 +353,8 @@ Diagnostics and CI capture:
 
 - [Cascade and precedence](./guides/cascade.md)
 - [Shell execution behavior and quoting](./guides/shell.md)
+- [Config files and overlays](./guides/config.md)
+- [Plugin-first host and plugins](./guides/plugins.md)
 
 The guides are also included in the [hosted API docs](https://docs.karmanivero.us/get-dotenv).
 

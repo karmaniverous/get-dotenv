@@ -27,16 +27,17 @@ await program.parseAsync();
 ## Writing a plugin
 
 ```ts
+import type { GetDotenvCli } from '@karmaniverous/get-dotenv/cliHost';
 import { definePlugin } from '@karmaniverous/get-dotenv/cliHost';
 
 export const myPlugin = definePlugin({
   id: 'my',
-  setup(cli) {
+  setup(cli: GetDotenvCli) {
     cli
       .ns('my')
       .description('My commands')
       .action(async () => {
-        const ctx = (cli as any).getCtx?.();
+        const ctx = cli.getCtx?.();
         // Use ctx.dotenv or ctx.plugins['my']...
       });
   },

@@ -1,6 +1,6 @@
 # Development Plan — get-dotenv
 
-When updated: 2025-09-21T16:30:00Z
+When updated: 2025-09-21T18:26:00Z
 NOTE: Update timestamp on commit.
 
 ## Next up- Entropy warnings (warning-only; no masking)
@@ -131,7 +131,18 @@ NOTE: Update timestamp on commit.
 - Plugins documentation
   - Added Plugins index and child pages (aws, batch, cmd, init, demo) with
     implementation details and examples.
-- Guides index bullets refactored to “[Title](link) - Description”.
+- Docs polish
+  - README: fixed CLI help line break, normalized code fences, and corrected typos
+    (“extensive”, “happened”, “DESTRUCTURED_VARIABLE”). Added links to Config and
+    Plugins guides for discoverability.
+  - Shell guide: added “Capture (CI-friendly)” section documenting --capture and
+    GETDOTENV_STDIO=pipe behavior.
+  - Config guide: added scripts table example with per-script shell overrides.
+- Typedoc
+  - Marked RootOptionsShapeCompat as @internal to silence the warning without filtering internal types.- Guides index bullets refactored to “[Title](link) - Description”.
+- Docs polish
+  - Plugins guide: removed `as any` in example; annotated `setup(cli: GetDotenvCli)`
+    and retrieved context via `cli.getCtx?.()` to align with codebase standards.
 - Docs/nav updates
   - Added front matter titles to all guides and a guides index with children.
   - Created “Generated CLI” guide and linked from README. - Exposed "./plugins/aws" subpath (runtime/types), updated verify/build.
