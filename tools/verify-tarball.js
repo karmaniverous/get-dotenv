@@ -14,7 +14,8 @@ const execFileAsync = promisify(execFile);
 
 const normalize = (p) => p.split(path.sep).join('/');
 const expected = [
-  // Core dist runtime entries (ESM/CJS + CLI)  'dist/index.mjs',
+  // Core dist runtime entries (ESM/CJS + CLI)
+  'dist/index.mjs',
   'dist/index.cjs',
   'dist/cliHost.mjs',
   'dist/plugins-aws.mjs',
@@ -121,7 +122,7 @@ const tryPacklist = async () => {
   return files.map((p) => normalize(p));
 };
 
-// Final fallback: enumerate from package.json "files" entries
+// Files-field fallback: enumerate from package.json "files" entries
 // Recursively walks listed files/dirs and returns a normalized list.
 const tryFilesFromPackageFiles = async () => {
   let pkg;
@@ -190,29 +191,29 @@ const main = async () => {
         .map((p) => normalize(p)),
     );
   } catch (err) {
-    // Log npm failure details and fall back to npm-packlist
+    // Log npm failure details and prefer the files-field fallback next.
     await logNpmFailure(err);
     console.error(
-      'verify-tarball: Falling back to npm-packlist to compute file list…',
+      'verify-tarball: Falling back to package.json "files" entries…',
     );
-    used = 'packlist';
+    used = 'files-field';
     try {
-      const files = await tryPacklist();
-      names = new Set(files);
-    } catch (fallbackErr) {
+      const files = await tryFilesFromPackageFiles();
+      names = new Set(files.map((p) => normalize(p)));
+    } catch (filesErr) {
       console.error(
-        'verify-tarball: npm-packlist fallback failed. Attempting files-field fallback…',
+        'verify-tarball: files-field fallback failed. Attempting npm-packlist…',
       );
+      used = 'packlist';
       try {
-        const files = await tryFilesFromPackageFiles();
-        names = new Set(files.map((p) => normalize(p)));
-        used = 'files-field';
-      } catch (thirdErr) {
+        const files = await tryPacklist();
+        names = new Set(files);
+      } catch (packlistErr) {
         console.error(
           'verify-tarball: ERROR\nUnable to compute file list via files-field fallback.',
         );
-        console.error('npm-packlist error:', String(fallbackErr));
-        console.error('files-field error:', String(thirdErr));
+        console.error('files-field error:', String(filesErr));
+        console.error('npm-packlist error:', String(packlistErr));
         console.error('cwd:', process.cwd());
         console.error(
           'node:',
@@ -224,8 +225,8 @@ const main = async () => {
   }
   // At this point, `names` is a Set of normalized paths originating from:
   // - npm pack --json (preferred), or
+  // - files-field fallback (package.json "files"), or
   // - npm-packlist fallback (simulated npm file inclusion).
-
   const missing = expected.filter((p) => !names.has(p));
   if (missing.length > 0) {
     // Emit detailed diagnostics to help pinpoint why entries are missing.
