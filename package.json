@@ -217,7 +217,10 @@
     "release:pre": "dotenvx run -f .env.local -- release-it --no-git.requireBranch --github.prerelease --preRelease",
     "stan:docs": "typedoc --emit none",
     "test": "vitest run --coverage",
-    "typecheck": "tsc -p tsconfig.json --noEmit"
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "verify:package": "node tools/verify-package.js",
+    "verify:smoke": "node tools/smoke.js",
+    "verify:tarball": "node tools/verify-tarball.js"
   },
   "type": "module",
   "types": "dist/index.d.ts",

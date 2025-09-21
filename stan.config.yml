@@ -16,8 +16,8 @@ scripts:
   test: npm run test
   docs: npm run stan:docs
   build: npm run build
-  smoke: node tools/smoke.js
-  verify-package: node tools/verify-package.js
-  verify-tarball: node tools/verify-tarball.js
+  verify-smoke: npm run verify:smoke
+  verify-package: npm run verify:package
+  verify-tarball: npm run verify:tarball
 stanPath: .stan
 includes: []
