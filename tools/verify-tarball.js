@@ -7,10 +7,10 @@
  */
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
+import fs from 'node:fs/promises';
 import path from 'node:path';
 import process from 'node:process';
 const execFileAsync = promisify(execFile);
-
 const normalize = (p) => p.split(path.sep).join('/');
 const expected = [
   // Core dist runtime entries (ESM/CJS + CLI)
@@ -100,7 +100,24 @@ const tryPacklist = async () => {
     );
     throw e;
   }
-  const files = await packlist({ path: process.cwd() });
+  // npm-packlist@10 expects the parsed package.json passed explicitly in some paths.
+  // Read and parse package.json from cwd; provide a clear error when unavailable.
+  let pkg;
+  try {
+    const pkgTxt = await fs.readFile(
+      path.join(process.cwd(), 'package.json'),
+      'utf-8',
+    );
+    pkg = JSON.parse(pkgTxt);
+  } catch (e) {
+    console.error(
+      'verify-tarball: ERROR\nUnable to read package.json from current working directory.',
+    );
+    console.error('cwd:', process.cwd());
+    console.error(String(e));
+    throw e;
+  }
+  const files = await packlist({ path: process.cwd(), package: pkg });
   return files.map((p) => normalize(p));
 };
 
