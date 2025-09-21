@@ -1,10 +1,11 @@
 # Development Plan — get-dotenv
 
-When updated: 2025-09-20T10:28:00Z
+When updated: 2025-09-21T00:00:00Z
 NOTE: Update timestamp on commit.
 
-## Next up- Entropy warnings (warning-only; no masking)
+## Next up
 
+- Entropy warnings (warning-only; no masking)
 - Add CLI flags:
   - `--entropy-warn` / `--no-entropy-warn` (default on)
   - `--entropy-threshold <bitsPerChar>` (default 3.8)
@@ -61,7 +62,7 @@ NOTE: Update timestamp on commit.
 
 - Packaging
   - verify-tarball.js now emits rich diagnostics on failure (npm/node/cwd,
-    pack files/unique path counts, sample found entries, and missing list),    plus detailed error output if the npm pack invocation itself fails.- Packaging
+    pack files/unique path counts, sample found entries, and missing list), plus detailed error output if the npm pack invocation itself fails.- Packaging
   - Made verify-tarball resilient when npm is not on PATH by falling back to
     npm-packlist to compute the publish file list (simulates npm’s inclusion
     algorithm). Added npm-packlist as a devDependency. The script still prefers
@@ -75,6 +76,12 @@ NOTE: Update timestamp on commit.
   - Pegged Node engines to >= 20 (package.json, docs).
   - Raised esbuild targets from node18 to node20 for TS dynamic/config bundling to match the new minimum runtime.
 
+- Coverage
+  - Tightened Vitest coverage inputs to eliminate irrelevant files:
+    - Restrict collection to `src/**/*.ts`.
+    - Exclude caches/build artifacts (`.tsbuild/**`, `**/.rollup.cache/**`, `dist/**`, `esm/**`, `.stan/**`),
+      templates (`templates/**`), tools (`tools/**`), tests (`test/**`), and common repo
+      config files (`**/*.config.*`, `**/*.rc.*`, specific root configs).
 - Engines & smoke validation
   - Relaxed Node engines to >= 18 (package.json, docs).
   - Lowered esbuild targets from node22 to node18 for TS dynamic/config loaders. - Extended smoke suite with a default-shell echo step (no --shell-off) to

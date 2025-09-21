@@ -13,16 +13,29 @@ export default defineConfig({
     ],
     coverage: {
       provider: 'v8',
+      // Only collect coverage for library source files.
+      include: ['src/**/*.ts'],
+      // Exclude caches, build artifacts, templates, tools, tests, and config files.
       exclude: [
-        'docs/**',
+        '**/*.d.ts',
+        '**/*.config.*',
+        '**/*.rc.*',
         'vitest.config.ts',
+        'rollup.config.ts',
+        'eslint.config.ts',
         'dist/**',
         'esm/**',
         '.stan/**',
-        '**/*.d.ts',
-        'rollup.config.ts',
-        'eslint.config.ts',
+        '.tsbuild/**',
+        '**/.tsbuild/**',
+        '**/.rollup.cache/**',
+        'templates/**',
+        'tools/**',
+        'test/**',
+        // CLI entrypoints are distributed but not part of unit under test coverage
+        // (E2E tests exercise these paths separately).
         'src/cli/**',
+        'docs/**',
       ],
     },
   },
