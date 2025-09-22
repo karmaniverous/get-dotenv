@@ -214,12 +214,18 @@ export class GetDotenvCli<
       }
     }
     if (v) this.version(v);
+    // Help header:
+    // - If caller provides helpHeader, use it.
+    // - Otherwise, when a version is known, default to "<name> v<version>".
     if (typeof helpHeader === 'string') {
       this[HELP_HEADER_SYMBOL] = helpHeader;
+    } else if (v) {
+      // Use the current command name (possibly overridden by 'name' above).
+      const header = `${this.name()} v${v}`;
+      this[HELP_HEADER_SYMBOL] = header;
     }
     return this;
   }
-
   /**
    * Register a plugin for installation (parent level).
    * Installation occurs on first resolveAndLoad() (or explicit install()).

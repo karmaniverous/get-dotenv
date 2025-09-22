@@ -1,19 +1,15 @@
 # Development Plan — get-dotenv
 
-When updated: 2025-09-22T07:25:00Z
+When updated: 2025-09-22T09:10:00Z
 NOTE: Update timestamp on commit.
 
 ## Next up
 
 ### Host-only: (follow-ups) branding adoption and API polish
 
-- Branding API (plugin host only)
-  - Encourage downstream apps to call cli.brand in their entrypoint
-    (we expose the API; shipped CLI may adopt later).
 - Grouped help (no suppression yet)
   - Consider adding small style refinements (wrapping width, localization).
-- Ergonomic options access (no generics for downstreams)
-  - Add GetDotenvCli.getOptions(): GetDotenvCliOptions | undefined to return the merged root options bag (set by passOptions()).
+- Ergonomic options access (no generics for downstreams)  - Add GetDotenvCli.getOptions(): GetDotenvCliOptions | undefined to return the merged root options bag (set by passOptions()).
   - Add readMergedOptions(cmd: Command): GetDotenvCliOptions | undefined helper for action handlers that only have thisCommand; avoids structural casts.
   - passOptions() stores the merged bag on the host instance (in addition to current per-command attachment for nested inheritance).
 - Public export surface (single import path)
@@ -72,10 +68,19 @@ Implementation steps
 
 ## Completed (recent)
 
+- Shipped CLI branding and docs
+  - Shipped CLI now calls `brand({ importMetaUrl })`, so `getdotenv vX.Y.Z`
+    appears at the top of `-h` output. Version is resolved from the package
+    nearest to the CLI source.
+  - `GetDotenvCli.brand()` now defaults the help header to `<name> v<version>`
+    when no explicit `helpHeader` is provided and a version was resolved.
+  - Added “Branding the host CLI” guide section (how to call `brand` and what it
+    prints) and “Adding app/root options and consuming them from a plugin”
+    (using `tagAppOptions`, `passOptions`, and `readMergedOptions`).
+
 - CI unblock: alias guard and help typing
   - Cmd alias: added aliasHandled guard in plugins/cmd/alias.ts to ensure
-    alias-only invocations execute once when both preAction and preSubcommand
-    fire. Fixes ReferenceError and stabilizes Windows alias E2E termination.
+    alias-only invocations execute once when both preAction and preSubcommand    fire. Fixes ReferenceError and stabilizes Windows alias E2E termination.
   - Help customization (host): visibleOptions now returns Option[] and filters
     on \_\_group === 'base'. afterAll handler now receives AddHelpTextContext
     and uses ctx.command for rendering. Removed unnecessary String() calls in

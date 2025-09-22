@@ -22,6 +22,81 @@ await program.parseAsync();
 - `resolveAndLoad()` produces a context `{ optionsResolved, dotenv, plugins? }`.
 - The host registers a preSubcommand hook to ensure a context exists when subcommands run (e.g., batch).
 
+## Branding the host CLI
+
+Use the branding helper to set the CLI’s name/description and automatically display the version at the top of help (-h). When you provide `importMetaUrl`, the host resolves the nearest package.json and uses its `version`. If you don’t pass a `helpHeader`, the host prints a sensible default `<name> v<version>` as a header.
+
+```ts
+#!/usr/bin/env node
+import type { Command } from 'commander';
+import { GetDotenvCli } from '@karmaniverous/get-dotenv/cliHost';
+
+const program: GetDotenvCli = new GetDotenvCli('toolbox');
+await program.brand({
+  importMetaUrl: import.meta.url, // resolves version from your package.json
+  description: 'Toolbox CLI', // optional
+  // helpHeader: 'My Toolbox v1.2.3',  // optional; default uses "<name> v<version>"
+});
+
+// … wire options/plugins …
+await program.parseAsync();
+```
+
+Notes:
+
+- The shipped getdotenv CLI calls `brand({ importMetaUrl })` so `getdotenv vX.Y.Z` appears at the top of `-h` output.
+- Downstream CLIs should do the same; the resolved version will be your package’s version.
+
+## Adding app/root options and consuming them from a plugin
+
+You can add your own root options and group them under “App options” in help using `tagAppOptions`. Install base flags and merging with `attachRootOptions().passOptions()` so values flow into the merged options bag:
+
+```ts
+import type { Command } from 'commander';
+import {
+  GetDotenvCli,
+  readMergedOptions,
+} from '@karmaniverous/get-dotenv/cliHost';
+import { definePlugin } from '@karmaniverous/get-dotenv/cliHost';
+
+const program: GetDotenvCli = new GetDotenvCli('mycli');
+await program.brand({ importMetaUrl: import.meta.url, description: 'My CLI' });
+
+program
+  .attachRootOptions() // install base flags (-e, --paths, etc.)
+  .tagAppOptions((root) => {
+    root.option('--foo <value>', 'custom app option'); // appears under "App options" in -h
+  })
+  .use(
+    definePlugin({
+      id: 'print',
+      setup(cli) {
+        cli.ns('print').action((_args, _opts, thisCommand) => {
+          // Read the merged root options bag. Custom keys flow through.
+          const bag = readMergedOptions(thisCommand) ?? {};
+          const foo = (bag as unknown as { foo?: string }).foo;
+          console.log(`foo=${foo ?? ''}`);
+        });
+      },
+    }),
+  )
+  .passOptions(); // merge flags (parent < current), compute dotenv context
+
+await program.parseAsync();
+```
+
+Example:
+
+```bash
+mycli -e dev --foo bar print
+# -> foo=bar
+```
+
+Notes:
+
+- `tagAppOptions` only affects help grouping; values are parsed by Commander and merged by `passOptions()`.
+- Use `readMergedOptions(thisCommand)` in actions (or `cli.getOptions()` from code that has a handle on the host) to read the merged options bag. Custom keys are present at runtime even if not in the default type.
+
 ## Writing a plugin
 
 ```ts
@@ -86,8 +161,8 @@ getdotenv init . --config-format json --with-local --cli-name acme --force
 
 Notes:
 
-- Templates are shipped with the package and copied verbatim (no inline codegen).
-- Collision flow supports [o]/[e]/[s] and [O]/[E]/[S]; non-interactive defaults to `--yes` (skip all) unless `--force`.
+- Templates are shipped and copied verbatim (no inline codegen).
+- Collision flow supports [o]/[e]/[s] and [O]/[E]/[S]; non-interactive defaults to `--yes` unless `--force`.
 - The CLI skeleton replaces `__CLI_NAME__` tokens with your chosen name.
 - Non-interactive detection and precedence:
   - Treated as `--yes` (Skip All) when stdin or stdout is not a TTY OR when a CI-like environment variable is present (`CI`, `GITHUB_ACTIONS`, `BUILDKITE`, `TEAMCITY_VERSION`, `TF_BUILD`).
