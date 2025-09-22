@@ -1,13 +1,12 @@
 import type { Command as CommanderCommand } from 'commander';
 
 import { GetDotenvCli } from '../cliHost/GetDotenvCli';
-import type { GetDotenvCliOptions } from '../generateGetDotenvCli/GetDotenvCliOptions';
 import { getDotenvCliOptions2Options } from '../GetDotenvOptions';
 import { attachRootOptions } from './attachRootOptions';
 import { baseRootOptionDefaults } from './defaults';
+import type { GetDotenvCliOptions } from './GetDotenvCliOptions';
 import { resolveCliOptions } from './resolveCliOptions';
-import type { CommandWithOptions, RootOptionsShape } from './types';
-/**
+import type { CommandWithOptions, RootOptionsShape } from './types'; /**
  * Adapter-layer augmentation: add chainable helpers to GetDotenvCli without
  * coupling the core host to cliCore. Importing this module has side effects:
  * it extends the prototype and merges types for consumers.

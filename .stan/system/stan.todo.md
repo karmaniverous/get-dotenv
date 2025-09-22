@@ -1,11 +1,12 @@
 # Development Plan — get-dotenv
 
-When updated: 2025-09-22T00:05:00Z
+When updated: 2025-09-22T04:45:00Z
 NOTE: Update timestamp on commit.
 
 ## Next up
 
 ### Host-only: Branding, grouped help, and ergonomic options accessors
+
 - Branding API (plugin host only)
   - Add GetDotenvCli.brand({ name?, description?, version?, importMetaUrl?, helpHeader? }):
     - name/description set Commander name/description for downstream branding.
@@ -34,18 +35,20 @@ NOTE: Update timestamp on commit.
   - Suppression/hideHelp can be added later based on real demand.
 
 Implementation steps
-1) Implement getOptions() and readMergedOptions() (start)
+
+1. Implement getOptions() and readMergedOptions() (start)
    - Add options bag storage on the host and wire passOptions() to set it.
    - Export readMergedOptions(cmd) and re-export types from cliHost index.
-2) Grouped help rendering
+2. Grouped help rendering
    - Add option tagging and a custom help formatter for grouped sections.
-3) Branding helper
+3. Branding helper
    - Add brand() with name/description/version/helpHeader.
 
 ### Entropy warnings (warning-only; no masking)
+
 - Add CLI flags:
   - `--entropy-warn` / `--no-entropy-warn` (default on)
-  - `--entropy-threshold <bitsPerChar>` (default 3.8)  - `--entropy-min-length <n>` (default 16)
+  - `--entropy-threshold <bitsPerChar>` (default 3.8) - `--entropy-min-length <n>` (default 16)
   - `--entropy-whitelist <pattern>` (repeatable)
 - Add config mirrors:
   - `warnEntropy`, `entropyThreshold`, `entropyMinLength`, `entropyWhitelist`
@@ -76,12 +79,24 @@ Implementation steps
 
 ## Completed (recent)
 
+- Host decoupling from generator + lint fix
+  - Moved GetDotenvCliOptions and Scripts types into cliCore
+    (src/cliCore/GetDotenvCliOptions.ts) so the host has no dependency
+    on the generator module.
+  - Updated imports in host and cliCore enhancer/plugins to use the new
+    cliCore path; left a thin re-export shim in
+    src/generateGetDotenvCli/GetDotenvCliOptions.ts for stability.
+  - Replaced import() type annotations in src/cliHost/index.ts with
+    proper top-level type imports to satisfy @typescript-eslint rule.
+  - Rationale: the host must not depend on the generated CLI; this keeps
+    layering clean without changing public re-exports from cliHost.
+
 - Docs formatting
   - Unwrapped manually wrapped paragraphs and bullet items in guides/cascade.md and guides/generated-cli.md per project formatting policy.
 
 - Generator CLI fixes
   - Added `[command...]` to both generator `cmd` commands:
-    - batch default subcommand (batchCommand/cmdCommand.ts)    - root cmdCommand.ts
+    - batch default subcommand (batchCommand/cmdCommand.ts) - root cmdCommand.ts
       Resolves “too many arguments for 'cmd'” when passing a positional command (e.g., `batch ... git-status`).
 - Generator runtime tests
   - Added tests validating generated CLI ergonomics match the host:

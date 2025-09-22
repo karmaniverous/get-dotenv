@@ -1,12 +1,14 @@
 import type { Command } from 'commander';
 
+import type { GetDotenvCliOptions } from '../cliCore/GetDotenvCliOptions';
+
 export type { DefineSpec, GetDotenvCliPlugin } from './definePlugin';
 export { definePlugin } from './definePlugin';
 export type { GetDotenvCliCtx } from './GetDotenvCli';
 export { GetDotenvCli } from './GetDotenvCli';
 // Downstream-friendly type re-exports (single import path)
+export type { GetDotenvCliOptions } from '../cliCore/GetDotenvCliOptions';
 export type { ScriptsTable } from '../cliCore/types';
-export type { GetDotenvCliOptions } from '../generateGetDotenvCli/GetDotenvCliOptions';
 
 /**
  * Helper to retrieve the merged root options bag from any action handler
@@ -14,9 +16,7 @@ export type { GetDotenvCliOptions } from '../generateGetDotenvCli/GetDotenvCliOp
  */
 export const readMergedOptions = (
   cmd: Command,
-):
-  | import('../generateGetDotenvCli/GetDotenvCliOptions').GetDotenvCliOptions
-  | undefined => {
+): GetDotenvCliOptions | undefined => {
   // Ascend to the root command
   let root: Command = cmd;
   while ((root as unknown as { parent?: Command }).parent) {
@@ -24,9 +24,7 @@ export const readMergedOptions = (
   }
   const hostAny = root as unknown as { getOptions?: () => unknown };
   return typeof hostAny.getOptions === 'function'
-    ? (hostAny.getOptions() as import('../generateGetDotenvCli/GetDotenvCliOptions').GetDotenvCliOptions)
+    ? (hostAny.getOptions() as GetDotenvCliOptions)
     : ((root as unknown as { getDotenvCliOptions?: unknown })
-        .getDotenvCliOptions as
-        | import('../generateGetDotenvCli/GetDotenvCliOptions').GetDotenvCliOptions
-        | undefined);
+        .getDotenvCliOptions as GetDotenvCliOptions | undefined);
 };

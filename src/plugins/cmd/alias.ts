@@ -10,17 +10,16 @@ import type { Command } from 'commander';
 
 import { baseRootOptionDefaults } from '../../cliCore/defaults';
 import { runCommand } from '../../cliCore/exec';
+import type { GetDotenvCliOptions } from '../../cliCore/GetDotenvCliOptions';
 import { resolveCliOptions } from '../../cliCore/resolveCliOptions';
 import type { CommandWithOptions } from '../../cliCore/types';
 import type { GetDotenvCli } from '../../cliHost/GetDotenvCli';
 import { dotenvExpandFromProcessEnv } from '../../dotenvExpand';
-import type { GetDotenvCliOptions } from '../../generateGetDotenvCli/GetDotenvCliOptions';
 import type { Logger } from '../../GetDotenvOptions';
 import { getDotenvCliOptions2Options } from '../../GetDotenvOptions';
 import { resolveCommand, resolveShell } from '../../services/batch/resolve';
 import type { CmdPluginOptions } from './index';
 import { tokenize } from './tokenize';
-
 export const attachParentAlias = (
   cli: GetDotenvCli,
   options: CmdPluginOptions,
