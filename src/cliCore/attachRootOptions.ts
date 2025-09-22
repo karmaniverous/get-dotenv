@@ -1,6 +1,7 @@
 import type { Command } from 'commander';
 import { Option } from 'commander';
 
+// NOTE: grouped-help tagging is applied by temporarily wrapping adders below.
 import { dotenvExpandFromProcessEnv } from '../dotenvExpand';
 import type { RootOptionsShape } from './types';
 
@@ -17,6 +18,33 @@ export const attachRootOptions = (
     includeCommandOption?: boolean;
   },
 ) => {
+  // Install temporary wrappers to tag all options added here as "base".
+  const GROUP = 'base';
+  const tagLatest = (cmd: Command, group: string) => {
+    const optsArr = (cmd as unknown as { options?: unknown[] }).options;
+    if (Array.isArray(optsArr) && optsArr.length > 0) {
+      const last = optsArr[optsArr.length - 1] as Record<string, unknown>;
+      last.__group = group;
+    }
+  };
+  const originalAddOption = program.addOption.bind(program);
+  const originalOption = program.option.bind(program) as unknown as (
+    ...args: unknown[]
+  ) => Command;
+  program.addOption = function patchedAdd(opt: Option) {
+    // Tag before adding, in case consumers inspect the Option directly.
+    (opt as unknown as Record<string, unknown>).__group = GROUP;
+    const ret = originalAddOption(opt);
+    return ret;
+  } as Command['addOption'];
+  program.option = function patchedOption(
+    ...args: Parameters<Command['option']>
+  ) {
+    const ret = originalOption(...(args as unknown[]));
+    tagLatest(this, GROUP);
+    return ret;
+  } as Command['option'];
+
   const {
     defaultEnv,
     dotenvToken,
@@ -299,5 +327,8 @@ export const attachRootOptions = (
     '--trace [keys...]',
     'emit diagnostics for child env composition (optional keys)',
   );
+  // Restore original methods to avoid tagging future additions outside base.
+  program.addOption = originalAddOption;
+  program.option = originalOption as unknown as Command['option'];
   return p;
 };

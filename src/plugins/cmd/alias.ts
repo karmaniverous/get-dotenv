@@ -45,10 +45,19 @@ export const attachParentAlias = (
     aliasSpec.description ??
     'alias of cmd subcommand; provide command tokens (variadic)';
   cli.option(aliasSpec.flags, desc);
+  // Tag the just-added parent option for grouped help rendering.
+  try {
+    const optsArr = (cli as unknown as { options?: unknown[] }).options;
+    if (Array.isArray(optsArr) && optsArr.length > 0) {
+      const last = optsArr[optsArr.length - 1] as Record<string, unknown>;
+      last.__group = 'plugin:cmd';
+    }
+  } catch {
+    /* noop */
+  }
 
   // Shared alias executor for either preAction or preSubcommand hooks.
-  // Ensure we only execute once even if both hooks fire in a single parse.
-  let aliasHandled = false;
+  // Ensure we only execute once even if both hooks fire in a single parse.  let aliasHandled = false;
   const maybeRunAlias = async (thisCommand: Command) => {
     dbg('alias:maybe:start');
     const raw =

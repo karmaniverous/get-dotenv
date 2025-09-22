@@ -1,24 +1,17 @@
 # Development Plan — get-dotenv
 
-When updated: 2025-09-22T04:45:00Z
+When updated: 2025-09-22T05:35:00Z
 NOTE: Update timestamp on commit.
 
 ## Next up
 
-### Host-only: Branding, grouped help, and ergonomic options accessors
+### Host-only: (follow-ups) branding adoption and API polish
 
 - Branding API (plugin host only)
-  - Add GetDotenvCli.brand({ name?, description?, version?, importMetaUrl?, helpHeader? }):
-    - name/description set Commander name/description for downstream branding.
-    - version: if omitted and importMetaUrl provided, resolve the nearest package.json version (via package-directory); otherwise leave unset.
-    - helpHeader: optional one-line banner prepended in help output (kept low-noise).
+  - Encourage downstream apps to call cli.brand in their entrypoint
+    (we expose the API; shipped CLI may adopt later).
 - Grouped help (no suppression yet)
-  - Tag base options registered by attachRootOptions as “base”.
-  - Tag options added inside plugin.setup(cli) as “plugin:<id>”.
-  - Options added by the app outside plugin setup are tagged “app”.
-  - Override program.configureHelp to render grouped sections:
-    - “Base getdotenv options”, “App options”, and “Plugin options — <id>”.
-  - Behavior-preserving; presentation only (suppression can be added later if needed).
+  - Consider adding small style refinements (wrapping width, localization).
 - Ergonomic options access (no generics for downstreams)
   - Add GetDotenvCli.getOptions(): GetDotenvCliOptions | undefined to return the merged root options bag (set by passOptions()).
   - Add readMergedOptions(cmd: Command): GetDotenvCliOptions | undefined helper for action handlers that only have thisCommand; avoids structural casts.
@@ -36,13 +29,14 @@ NOTE: Update timestamp on commit.
 
 Implementation steps
 
-1. Implement getOptions() and readMergedOptions() (start)
+1. Implement getOptions() and readMergedOptions() (done)
    - Add options bag storage on the host and wire passOptions() to set it.
    - Export readMergedOptions(cmd) and re-export types from cliHost index.
-2. Grouped help rendering
-   - Add option tagging and a custom help formatter for grouped sections.
-3. Branding helper
-   - Add brand() with name/description/version/helpHeader.
+2. Grouped help rendering (done)
+   - attachRootOptions tags base options; cmd plugin tags parent alias as plugin:cmd.
+   - Host help shows Base section (default), and App/Plugin sections after help.
+3. Branding helper (done)
+   - brand() implemented with best-effort version resolution from importMetaUrl and optional help header.
 
 ### Entropy warnings (warning-only; no masking)
 
@@ -65,7 +59,7 @@ Implementation steps
   - npm run test
   - npm run build
   - npm run verify:package
-  - npm run verify:tarball - Bump version and publish when satisfied.
+  - npm run verify:tarball
 - Documentation
   - Review and finalize the new AWS section in guides/plugins.md
     to reflect final CLI behavior, env/ctx mirrors, and examples.
@@ -78,6 +72,16 @@ Implementation steps
   - Design "required keys/schema" validation of final env.
 
 ## Completed (recent)
+
+- Grouped help and branding (host-only)
+  - attachRootOptions now tags options as 'base' without changing call sites (temporary wrappers).
+  - cmd plugin alias tags the parent option as 'plugin:cmd'.
+  - Host configures help to show Base options in the default section and renders
+    App/Plugin sections after help with stable titles.
+  - Added GetDotenvCli.tagAppOptions(cb) so downstream apps can tag their own
+    root options as 'app' during a callback.
+  - Implemented GetDotenvCli.brand({ name?, description?, version?, importMetaUrl?, helpHeader? })
+    with best-effort version discovery (nearest package.json) and an optional help header.
 
 - Host decoupling from generator + lint fix
   - Moved GetDotenvCliOptions and Scripts types into cliCore

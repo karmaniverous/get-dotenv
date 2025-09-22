@@ -1,4 +1,7 @@
 import { Command } from 'commander';
+import fs from 'fs-extra';
+import { packageDirectory } from 'package-directory';
+import { fileURLToPath } from 'url';
 
 import type { GetDotenvCliOptions } from '../generateGetDotenvCli/GetDotenvCliOptions';
 import type { ProcessEnv } from '../GetDotenvOptions';
@@ -24,6 +27,7 @@ const HOST_META_URL = import.meta.url;
 
 const CTX_SYMBOL = Symbol('GetDotenvCli.ctx');
 const OPTS_SYMBOL = Symbol('GetDotenvCli.options');
+const HELP_HEADER_SYMBOL = Symbol('GetDotenvCli.helpHeader');
 
 /**
  * Plugin-first CLI host for get-dotenv. Extends Commander.Command.
@@ -43,12 +47,34 @@ export class GetDotenvCli<
   private _plugins: GetDotenvCliPlugin[] = [];
   /** One-time installation guard */
   private _installed = false;
+  /** Optional header line to prepend in help output */
+  private [HELP_HEADER_SYMBOL]: string | undefined;
   constructor(alias = 'getdotenv') {
     super(alias);
     // Ensure subcommands that use passThroughOptions can be attached safely.
     // Commander requires parent commands to enable positional options when a
     // child uses passThroughOptions.
     this.enablePositionalOptions();
+    // Configure grouped help: show only base options in default "Options";
+    // append App/Plugin sections after default help.
+    this.configureHelp({
+      visibleOptions: (cmd) => {
+        const all = (cmd as unknown as { options?: unknown[] }).options ?? [];
+        return all.filter((o) => {
+          const g = (o as Record<string, unknown>).__group as
+            | string
+            | undefined;
+          return g === 'base';
+        });
+      },
+    });
+    this.addHelpText('beforeAll', () => {
+      const header = this[HELP_HEADER_SYMBOL];
+      return header && header.length > 0 ? `${header}\n\n` : '';
+    });
+    this.addHelpText('afterAll', (cmd) =>
+      this.#renderOptionGroups(cmd as Command),
+    );
     // Skeleton preSubcommand hook: produce a context if absent, without
     // mutating process.env. The passOptions hook (when installed) will
     // compute the final context using merged CLI options; keeping
@@ -121,6 +147,78 @@ export class GetDotenvCli<
   }
 
   /**
+   * Tag options added during the provided callback as 'app' for grouped help.
+   * Allows downstream apps to demarcate their root-level options.
+   */
+  tagAppOptions<T>(fn: (root: Command) => T): T {
+    const root = this as unknown as Command;
+    const originalAddOption = root.addOption.bind(root);
+    const originalOption = root.option.bind(root) as unknown as (
+      ...args: unknown[]
+    ) => Command;
+    const tagLatest = (cmd: Command, group: string) => {
+      const optsArr = (cmd as unknown as { options?: unknown[] }).options;
+      if (Array.isArray(optsArr) && optsArr.length > 0) {
+        const last = optsArr[optsArr.length - 1] as Record<string, unknown>;
+        last.__group = group;
+      }
+    };
+    root.addOption = function patchedAdd(opt) {
+      (opt as unknown as Record<string, unknown>).__group = 'app';
+      return originalAddOption(opt);
+    } as Command['addOption'];
+    root.option = function patchedOption(
+      ...args: Parameters<Command['option']>
+    ) {
+      const ret = originalOption(...(args as unknown[]));
+      tagLatest(this, 'app');
+      return ret;
+    } as Command['option'];
+    try {
+      return fn(root);
+    } finally {
+      root.addOption = originalAddOption;
+      root.option = originalOption as unknown as Command['option'];
+    }
+  }
+
+  /**
+   * Branding helper: set CLI name/description/version and optional help header.
+   * If version is omitted and importMetaUrl is provided, attempts to read the
+   * nearest package.json version (best-effort; non-fatal on failure).
+   */
+  async brand(args: {
+    name?: string;
+    description?: string;
+    version?: string;
+    importMetaUrl?: string;
+    helpHeader?: string;
+  }): Promise<this> {
+    const { name, description, version, importMetaUrl, helpHeader } = args;
+    if (typeof name === 'string' && name.length > 0) this.name(name);
+    if (typeof description === 'string') this.description(description);
+    let v = version;
+    if (!v && importMetaUrl) {
+      try {
+        const fromUrl = fileURLToPath(importMetaUrl);
+        const pkgDir = await packageDirectory({ cwd: fromUrl });
+        if (pkgDir) {
+          const txt = await fs.readFile(`${pkgDir}/package.json`, 'utf-8');
+          const pkg = JSON.parse(txt) as { version?: string };
+          if (pkg.version) v = pkg.version;
+        }
+      } catch {
+        // best-effort only
+      }
+    }
+    if (v) this.version(v);
+    if (typeof helpHeader === 'string') {
+      this[HELP_HEADER_SYMBOL] = helpHeader;
+    }
+    return this;
+  }
+
+  /**
    * Register a plugin for installation (parent level).
    * Installation occurs on first resolveAndLoad() (or explicit install()).
    */
@@ -157,5 +255,58 @@ export class GetDotenvCli<
       for (const child of p.children) await run(child);
     };
     for (const p of this._plugins) await run(p);
+  }
+
+  // Render App/Plugin grouped options appended after default help.
+  #renderOptionGroups(cmd: Command): string {
+    const all = (cmd as unknown as { options?: unknown[] }).options ?? [];
+    type Row = { flags: string; description: string };
+    const byGroup = new Map<string, Row[]>();
+    for (const o of all) {
+      const opt = o as { flags?: string; description?: string } & {
+        __group?: string;
+      };
+      const g = (opt as { __group?: string }).__group;
+      if (!g || g === 'base') continue; // base handled by default help
+      const rows = byGroup.get(g) ?? [];
+      rows.push({
+        flags: String(opt.flags ?? ''),
+        description: String(opt.description ?? ''),
+      });
+      byGroup.set(g, rows);
+    }
+    if (byGroup.size === 0) return '';
+    const renderRows = (title: string, rows: Row[]) => {
+      const width = Math.min(
+        40,
+        rows.reduce((m, r) => Math.max(m, r.flags.length), 0),
+      );
+      const lines = rows
+        .map((r) => {
+          const pad = ' '.repeat(Math.max(2, width - r.flags.length + 2));
+          return `  ${r.flags}${pad}${r.description}`.trimEnd();
+        })
+        .join('\n');
+      return `\n${title}:\n${lines}\n`;
+    };
+    let out = '';
+    // App options (if any)
+    const app = byGroup.get('app');
+    if (app && app.length > 0) {
+      out += renderRows('App options', app);
+    }
+    // Plugin groups sorted by id
+    const pluginKeys = Array.from(byGroup.keys()).filter((k) =>
+      k.startsWith('plugin:'),
+    );
+    pluginKeys.sort((a, b) => a.localeCompare(b));
+    for (const k of pluginKeys) {
+      const id = k.slice('plugin:'.length) || '(unknown)';
+      const rows = byGroup.get(k) ?? [];
+      if (rows.length > 0) {
+        out += renderRows(`Plugin options — ${id}`, rows);
+      }
+    }
+    return out;
   }
 }
