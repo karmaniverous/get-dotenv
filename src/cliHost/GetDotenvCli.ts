@@ -1,5 +1,6 @@
 import { Command } from 'commander';
 
+import type { GetDotenvCliOptions } from '../generateGetDotenvCli/GetDotenvCliOptions';
 import type { ProcessEnv } from '../GetDotenvOptions';
 // NOTE: host class kept thin; heavy context computation lives in computeContext.
 import {
@@ -22,6 +23,7 @@ export type GetDotenvCliCtx<
 const HOST_META_URL = import.meta.url;
 
 const CTX_SYMBOL = Symbol('GetDotenvCli.ctx');
+const OPTS_SYMBOL = Symbol('GetDotenvCli.options');
 
 /**
  * Plugin-first CLI host for get-dotenv. Extends Commander.Command.
@@ -95,6 +97,21 @@ export class GetDotenvCli<
     return (this as unknown as Record<symbol, GetDotenvCliCtx<TOptions>>)[
       CTX_SYMBOL
     ];
+  }
+
+  /**
+   * Retrieve the merged root CLI options bag (if set by passOptions()).
+   * Downstream-safe: no generics required.
+   */
+  getOptions(): GetDotenvCliOptions | undefined {
+    return (this as unknown as Record<symbol, GetDotenvCliOptions | undefined>)[
+      OPTS_SYMBOL
+    ];
+  }
+
+  /** Internal: set the merged root options bag for this run. */
+  _setOptionsBag(bag: GetDotenvCliOptions): void {
+    (this as unknown as Record<symbol, GetDotenvCliOptions>)[OPTS_SYMBOL] = bag;
   }
 
   /**   * Convenience helper to create a namespaced subcommand.

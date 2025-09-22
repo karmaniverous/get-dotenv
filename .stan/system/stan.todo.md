@@ -1,13 +1,51 @@
 # Development Plan — get-dotenv
 
-When updated: 2025-09-21T19:00:00Z
+When updated: 2025-09-22T00:05:00Z
 NOTE: Update timestamp on commit.
 
-## Next up- Entropy warnings (warning-only; no masking)
+## Next up
+
+### Host-only: Branding, grouped help, and ergonomic options accessors
+- Branding API (plugin host only)
+  - Add GetDotenvCli.brand({ name?, description?, version?, importMetaUrl?, helpHeader? }):
+    - name/description set Commander name/description for downstream branding.
+    - version: if omitted and importMetaUrl provided, resolve the nearest package.json version (via package-directory); otherwise leave unset.
+    - helpHeader: optional one-line banner prepended in help output (kept low-noise).
+- Grouped help (no suppression yet)
+  - Tag base options registered by attachRootOptions as “base”.
+  - Tag options added inside plugin.setup(cli) as “plugin:<id>”.
+  - Options added by the app outside plugin setup are tagged “app”.
+  - Override program.configureHelp to render grouped sections:
+    - “Base getdotenv options”, “App options”, and “Plugin options — <id>”.
+  - Behavior-preserving; presentation only (suppression can be added later if needed).
+- Ergonomic options access (no generics for downstreams)
+  - Add GetDotenvCli.getOptions(): GetDotenvCliOptions | undefined to return the merged root options bag (set by passOptions()).
+  - Add readMergedOptions(cmd: Command): GetDotenvCliOptions | undefined helper for action handlers that only have thisCommand; avoids structural casts.
+  - passOptions() stores the merged bag on the host instance (in addition to current per-command attachment for nested inheritance).
+- Public export surface (single import path)
+  - From @karmaniverous/get-dotenv/cliHost re-export:
+    - GetDotenvCli
+    - type GetDotenvContext (non-generic alias of the concrete host context)
+    - type GetDotenvCliOptions
+    - type ScriptsTable
+    - readMergedOptions
+- Constraints
+  - Plugin-host only; do not modify the generator.
+  - Suppression/hideHelp can be added later based on real demand.
+
+Implementation steps
+1) Implement getOptions() and readMergedOptions() (start)
+   - Add options bag storage on the host and wire passOptions() to set it.
+   - Export readMergedOptions(cmd) and re-export types from cliHost index.
+2) Grouped help rendering
+   - Add option tagging and a custom help formatter for grouped sections.
+3) Branding helper
+   - Add brand() with name/description/version/helpHeader.
+
+### Entropy warnings (warning-only; no masking)
 - Add CLI flags:
   - `--entropy-warn` / `--no-entropy-warn` (default on)
-  - `--entropy-threshold <bitsPerChar>` (default 3.8)
-  - `--entropy-min-length <n>` (default 16)
+  - `--entropy-threshold <bitsPerChar>` (default 3.8)  - `--entropy-min-length <n>` (default 16)
   - `--entropy-whitelist <pattern>` (repeatable)
 - Add config mirrors:
   - `warnEntropy`, `entropyThreshold`, `entropyMinLength`, `entropyWhitelist`

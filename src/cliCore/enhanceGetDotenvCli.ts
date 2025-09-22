@@ -56,6 +56,10 @@ GetDotenvCli.prototype.passOptions = function (
       // Persist merged options for nested invocations (batch exec).
       thisCommand.getDotenvCliOptions =
         merged as unknown as GetDotenvCliOptions;
+      // Also store on the host for downstream ergonomic accessors.
+      (this as unknown as GetDotenvCli)._setOptionsBag(
+        merged as unknown as GetDotenvCliOptions,
+      );
 
       // Build service options and compute context (always-on config loader path).
       const serviceOptions = getDotenvCliOptions2Options(merged);
@@ -75,6 +79,9 @@ GetDotenvCli.prototype.passOptions = function (
       );
       thisCommand.getDotenvCliOptions =
         merged as unknown as GetDotenvCliOptions;
+      (this as unknown as GetDotenvCli)._setOptionsBag(
+        merged as unknown as GetDotenvCliOptions,
+      );
       // Avoid duplicate heavy work if a context is already present.
       if (!this.getCtx()) {
         const serviceOptions = getDotenvCliOptions2Options(merged);
