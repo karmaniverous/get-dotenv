@@ -57,7 +57,8 @@ export const attachParentAlias = (
   }
 
   // Shared alias executor for either preAction or preSubcommand hooks.
-  // Ensure we only execute once even if both hooks fire in a single parse.  let aliasHandled = false;
+  // Ensure we only execute once even if both hooks fire in a single parse.
+  let aliasHandled = false;
   const maybeRunAlias = async (thisCommand: Command) => {
     dbg('alias:maybe:start');
     const raw =
@@ -67,7 +68,6 @@ export const attachParentAlias = (
       ...c.aliases(),
     ]);
     const hasSub = childNames.some((n) => raw.includes(n));
-
     // Read alias value from parent opts.
     const o = (thisCommand as CommandWithOptions<GetDotenvCliOptions>).opts();
     const val = (o as unknown as Record<string, unknown>)[aliasKey];

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-deprecated */
 import type { Command } from 'commander';
 import { Option } from 'commander';
 
@@ -38,6 +39,7 @@ export const attachRootOptions = (
     return ret;
   } as Command['addOption'];
   program.option = function patchedOption(
+    this: Command,
     ...args: Parameters<Command['option']>
   ) {
     const ret = originalOption(...(args as unknown[]));

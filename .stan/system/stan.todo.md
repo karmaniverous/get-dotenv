@@ -1,6 +1,6 @@
 # Development Plan — get-dotenv
 
-When updated: 2025-09-22T05:35:00Z
+When updated: 2025-09-22T07:25:00Z
 NOTE: Update timestamp on commit.
 
 ## Next up
@@ -62,8 +62,7 @@ Implementation steps
   - npm run verify:tarball
 - Documentation
   - Review and finalize the new AWS section in guides/plugins.md
-    to reflect final CLI behavior, env/ctx mirrors, and examples.
-- Packaging consideration
+    to reflect final CLI behavior, env/ctx mirrors, and examples.- Packaging consideration
   - Decide whether to export a "./plugins/aws" subpath and add
     corresponding rollup outputs if we choose to publish it.
 - Roadmap groundwork
@@ -72,6 +71,21 @@ Implementation steps
   - Design "required keys/schema" validation of final env.
 
 ## Completed (recent)
+
+- CI unblock: alias guard and help typing
+  - Cmd alias: added aliasHandled guard in plugins/cmd/alias.ts to ensure
+    alias-only invocations execute once when both preAction and preSubcommand
+    fire. Fixes ReferenceError and stabilizes Windows alias E2E termination.
+  - Help customization (host): visibleOptions now returns Option[] and filters
+    on \_\_group === 'base'. afterAll handler now receives AddHelpTextContext
+    and uses ctx.command for rendering. Removed unnecessary String() calls in
+    option group rendering.
+  - Patched Command.option wrappers annotated with this: Command in both
+    src/cliCore/attachRootOptions.ts and src/cliHost/GetDotenvCli.ts to resolve
+    TS2683 (“this implicitly has type any”).
+  - Lint: locally suppressed @typescript-eslint/no-deprecated in the adapter/
+    host layers where Command.option is intentionally used pending broader
+    refactor. Keeps ESLint green without changing behavior.
 
 - Grouped help and branding (host-only)
   - attachRootOptions now tags options as 'base' without changing call sites (temporary wrappers).

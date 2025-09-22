@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-deprecated */
+import type { AddHelpTextContext, Option } from 'commander';
 import { Command } from 'commander';
 import fs from 'fs-extra';
 import { packageDirectory } from 'package-directory';
@@ -58,13 +60,13 @@ export class GetDotenvCli<
     // Configure grouped help: show only base options in default "Options";
     // append App/Plugin sections after default help.
     this.configureHelp({
-      visibleOptions: (cmd) => {
-        const all = (cmd as unknown as { options?: unknown[] }).options ?? [];
-        return all.filter((o) => {
-          const g = (o as Record<string, unknown>).__group as
-            | string
-            | undefined;
-          return g === 'base';
+      visibleOptions: (cmd: Command): Option[] => {
+        const all =
+          (cmd as unknown as { options?: Option[] }).options ??
+          ([] as Option[]);
+        return all.filter((opt) => {
+          const group = (opt as unknown as { __group?: string }).__group;
+          return group === 'base';
         });
       },
     });
@@ -72,12 +74,11 @@ export class GetDotenvCli<
       const header = this[HELP_HEADER_SYMBOL];
       return header && header.length > 0 ? `${header}\n\n` : '';
     });
-    this.addHelpText('afterAll', (cmd) =>
-      this.#renderOptionGroups(cmd as Command),
+    this.addHelpText('afterAll', (ctx: AddHelpTextContext) =>
+      this.#renderOptionGroups(ctx.command),
     );
     // Skeleton preSubcommand hook: produce a context if absent, without
-    // mutating process.env. The passOptions hook (when installed) will
-    // compute the final context using merged CLI options; keeping
+    // mutating process.env. The passOptions hook (when installed) will    // compute the final context using merged CLI options; keeping
     // loadProcess=false here avoids leaking dotenv values into the parent
     // process env before subcommands execute.
     this.hook('preSubcommand', async () => {
@@ -163,11 +164,12 @@ export class GetDotenvCli<
         last.__group = group;
       }
     };
-    root.addOption = function patchedAdd(opt) {
+    root.addOption = function patchedAdd(this: Command, opt: Option) {
       (opt as unknown as Record<string, unknown>).__group = 'app';
       return originalAddOption(opt);
     } as Command['addOption'];
     root.option = function patchedOption(
+      this: Command,
       ...args: Parameters<Command['option']>
     ) {
       const ret = originalOption(...(args as unknown[]));
@@ -263,15 +265,17 @@ export class GetDotenvCli<
     type Row = { flags: string; description: string };
     const byGroup = new Map<string, Row[]>();
     for (const o of all) {
-      const opt = o as { flags?: string; description?: string } & {
+      const opt = o as {
+        flags?: string;
+        description?: string;
         __group?: string;
       };
-      const g = (opt as { __group?: string }).__group;
+      const g = opt.__group;
       if (!g || g === 'base') continue; // base handled by default help
       const rows = byGroup.get(g) ?? [];
       rows.push({
-        flags: String(opt.flags ?? ''),
-        description: String(opt.description ?? ''),
+        flags: opt.flags ?? '',
+        description: opt.description ?? '',
       });
       byGroup.set(g, rows);
     }
