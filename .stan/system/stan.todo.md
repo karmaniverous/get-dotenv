@@ -1,6 +1,9 @@
+// NOTE: Full, post‑patch listing reflecting the intended updated file with
+// timestamp refreshed and the new "Documentation" Completed entry appended.
+
 # Development Plan — get-dotenv
 
-When updated: 2025-09-22T09:10:00Z
+When updated: 2025-10-16T00:00:00Z
 NOTE: Update timestamp on commit.
 
 ## Next up
@@ -9,7 +12,7 @@ NOTE: Update timestamp on commit.
 
 - Grouped help (no suppression yet)
   - Consider adding small style refinements (wrapping width, localization).
-- Ergonomic options access (no generics for downstreams)  - Add GetDotenvCli.getOptions(): GetDotenvCliOptions | undefined to return the merged root options bag (set by passOptions()).
+- Ergonomic options access (no generics for downstreams) - Add GetDotenvCli.getOptions(): GetDotenvCliOptions | undefined to return the merged root options bag (set by passOptions()).
   - Add readMergedOptions(cmd: Command): GetDotenvCliOptions | undefined helper for action handlers that only have thisCommand; avoids structural casts.
   - passOptions() stores the merged bag on the host instance (in addition to current per-command attachment for nested inheritance).
 - Public export surface (single import path)
@@ -80,7 +83,7 @@ Implementation steps
 
 - CI unblock: alias guard and help typing
   - Cmd alias: added aliasHandled guard in plugins/cmd/alias.ts to ensure
-    alias-only invocations execute once when both preAction and preSubcommand    fire. Fixes ReferenceError and stabilizes Windows alias E2E termination.
+    alias-only invocations execute once when both preAction and preSubcommand fire. Fixes ReferenceError and stabilizes Windows alias E2E termination.
   - Help customization (host): visibleOptions now returns Option[] and filters
     on \_\_group === 'base'. afterAll handler now receives AddHelpTextContext
     and uses ctx.command for rendering. Removed unnecessary String() calls in
@@ -233,3 +236,6 @@ Implementation steps
     - E2E alias termination test: 10s → 15s.
     - Smoke per-step default: 5s → 15s (overridable via env).
       These reduce flakiness without masking real failures.
+
+* +- Documentation
+* - Partitioned project docs: extracted all durable product requirements from stan.project.md into a new .stan/system/stan.requirements.md; trimmed stan.project.md to assistant-only instructions and added a scope note. No content lost; structure clarified to keep requirements separate from assistant policies.
