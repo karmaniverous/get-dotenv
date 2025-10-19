@@ -3,6 +3,7 @@ import { packageDirectory } from 'package-directory';
 import path from 'path';
 
 import { runCommand } from '../../cliCore/exec';
+import { buildSpawnEnv } from '../../cliCore/spawnEnv';
 import type { Logger } from '../../GetDotenvOptions';
 type ExecShellCommandBatchOptions = {
   globs: string;
@@ -137,14 +138,16 @@ export const execShellCommandBatch = async ({
         (typeof command === 'string' && command.length > 0) ||
         (Array.isArray(command) && command.length > 0);
       if (hasCmd) {
+        const envBag =
+          getDotenvCliOptions !== undefined
+            ? { getDotenvCliOptions: JSON.stringify(getDotenvCliOptions) }
+            : undefined;
         await runCommand(command, shell, {
           cwd: path,
-          env: {
-            ...process.env,
-            getDotenvCliOptions: getDotenvCliOptions
-              ? JSON.stringify(getDotenvCliOptions)
-              : undefined,
-          },
+          env: buildSpawnEnv(
+            process.env,
+            envBag,
+          ) as unknown as NodeJS.ProcessEnv,
           stdio: capture ? 'pipe' : 'inherit',
         });
       } else {

@@ -13,6 +13,7 @@ import { baseRootOptionDefaults } from '../../cliCore/defaults';
 import { runCommand } from '../../cliCore/exec';
 import type { GetDotenvCliOptions } from '../../cliCore/GetDotenvCliOptions';
 import { resolveCliOptions } from '../../cliCore/resolveCliOptions';
+import { buildSpawnEnv } from '../../cliCore/spawnEnv';
 import type { CommandWithOptions } from '../../cliCore/types';
 import type { GetDotenvCli } from '../../cliHost/GetDotenvCli';
 import { maybeWarnEntropy } from '../../diagnostics/entropy';
@@ -266,11 +267,13 @@ export const attachParentAlias = (
         }
       }
       exitCode = await runCommand(commandArg, shellSetting, {
-        env: {
-          ...process.env,
+        env: buildSpawnEnv(process.env, {
           ...dotenv,
           getDotenvCliOptions: JSON.stringify(envBag),
-        },
+        } as Record<
+          string,
+          string | undefined
+        >) as unknown as NodeJS.ProcessEnv,
         stdio: capture ? 'pipe' : 'inherit',
       });
       dbg('run:done', { exitCode });

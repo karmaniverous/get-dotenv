@@ -1,4 +1,5 @@
 import { runCommand } from '../../cliCore/exec';
+import { buildSpawnEnv } from '../../cliCore/spawnEnv';
 import { definePlugin } from '../../cliHost/definePlugin';
 import type { GetDotenvCli } from '../../cliHost/GetDotenvCli';
 import type { Logger } from '../../GetDotenvOptions';
@@ -157,7 +158,10 @@ export const awsPlugin = () =>
                 string | undefined
               >;
               const exit = await runCommand(argv, shellSetting, {
-                env: { ...process.env, ...ctxDotenv },
+                env: buildSpawnEnv(
+                  process.env,
+                  ctxDotenv,
+                ) as unknown as NodeJS.ProcessEnv,
                 stdio: capture ? 'pipe' : 'inherit',
               });
               // Deterministic termination (suppressed under tests)

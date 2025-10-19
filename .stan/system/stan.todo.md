@@ -1,6 +1,6 @@
 # Development Plan — get-dotenv
 
-When updated: 2025-10-19T00:45:00Z
+When updated: 2025-10-19T02:10:00Z
 NOTE: Update timestamp on commit.
 
 ## Next up
@@ -60,7 +60,8 @@ Scope
 Tasks
 
 - redact util: default masks for common secret names (SECRET, TOKEN, KEY, PASSWORD); support regex/glob‑like overrides; apply only at print time.
-- entropy util: gating (min length default 16; printable ASCII), Shannon entropy bits/char (default 3.8), whitelist patterns, once‑per‑key tracking.
+- entropy util: gating (min length default 16; printable ASCII), Shannon entropy bits/char (default 3.8), whitelist patterns, and once‑per‑key‑per‑run guard. Wired flags:
+  `--entropy-warn`/`--entropy-warn-off`, `--entropy-threshold <n>`, `--entropy-min-length <n>`, `--entropy-whitelist <pattern>` (repeatable).
 - CLI/config: add flags/mirrors:
   - `--redact` (bool), `--entropy-warn`/`--no-entropy-warn`, `--entropy-threshold <n>`, `--entropy-min-length <n>`, `--entropy-whitelist <pattern>` (repeatable).
   - Mirrors: `redact`, `warnEntropy`, `entropyThreshold`, `entropyMinLength`, `entropyWhitelist`.
@@ -169,14 +170,13 @@ Acceptance
   - Added entropy diagnostics with gating (printable ASCII, length >= 16),
     Shannon entropy bits/char (default threshold 3.8), whitelist patterns, and
     once-per-key-per-run guard. Wired flags:
-    `--entropy-warn`/`--entropy-warn-off`, `--entropy-threshold <n>`,
-    `--entropy-min-length <n>`, `--entropy-whitelist <pattern...>`.
+    `--entropy-warn`/`--entropy-warn-off`, `--entropy-threshold <n>`, `--entropy-min-length <n>`, `--entropy-whitelist <pattern...>`.
   - Applied to `--trace` in cmd plugin (parent alias and subcommand) and to
     `-l/--log` surfaces in both `getDotenv` and loader paths. Diagnostics never
     modify runtime env; they alter displayed values only. Defaults favor low
     noise (warnEntropy true; redaction opt-in).
 
-- Facet overlay: added "generator" facet to exclude src/generateGetDotenvCli/**
+- Facet overlay: added "generator" facet to exclude src/generateGetDotenvCli/\*\*
   (anchors: index.ts, buildRootCommand.ts) and set it inactive by default via
   facet.state.json. This reduces archive size without affecting the current
   dev plan (Workstreams 4–6).
@@ -191,4 +191,16 @@ Acceptance
   plugins-demo, plugins-batch-actions, plugins-cmd, and ci. These are already
   covered by anchors in facet.meta.json and are not required for the current
   dev plan (Workstreams 4–6), further reducing archive size while preserving
-  breadcrumbs.
+  breadcrumbs.
+
+- Workstream 4: spawn env normalization helper
+  - Added shared helper `buildSpawnEnv(base, overlay)` in `src/cliCore/spawnEnv.ts`.
+  - Drops undefined, dedupes Windows env keys case-insensitively (last wins, casing preserved),
+    provides HOME fallback from USERPROFILE, and normalizes TMP/TEMP coherently.
+  - Adopted in cmd (parent alias and subcommand), batch executor, and aws forwarding so all
+    subprocesses use the same spawn env composition logic. Added unit tests.
+
+- Workstream 5: help ordering polish
+  - Sorted base “Options” so short-aliased flags are listed before long-only flags.
+  - Applied the same ordering inside grouped “App options” and “Plugin options” sections.
+  - Added a help-order test asserting `-e, --env` precedes `--strict` in help output.

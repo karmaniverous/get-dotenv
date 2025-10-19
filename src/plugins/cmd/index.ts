@@ -1,6 +1,7 @@
 import { Command } from 'commander';
 
 import { runCommand } from '../../cliCore/exec';
+import { buildSpawnEnv } from '../../cliCore/spawnEnv';
 import type { CommandWithOptions } from '../../cliCore/types';
 import { definePlugin } from '../../cliHost/definePlugin';
 import type { GetDotenvCli } from '../../cliHost/GetDotenvCli';
@@ -241,11 +242,13 @@ export const cmdPlugin = (options: CmdPluginOptions = {}) =>
                 ? args.map(String)
                 : resolved;
             await runCommand(commandArg, shellSetting, {
-              env: {
-                ...process.env,
+              env: buildSpawnEnv(process.env, {
                 ...dotenv,
                 getDotenvCliOptions: JSON.stringify(envBag),
-              },
+              } as Record<
+                string,
+                string | undefined
+              >) as unknown as NodeJS.ProcessEnv,
               stdio: capture ? 'pipe' : 'inherit',
             });
           },

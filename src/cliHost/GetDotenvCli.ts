@@ -64,10 +64,24 @@ export class GetDotenvCli<
         const all =
           (cmd as unknown as { options?: Option[] }).options ??
           ([] as Option[]);
-        return all.filter((opt) => {
+        const base = all.filter((opt) => {
           const group = (opt as unknown as { __group?: string }).__group;
           return group === 'base';
         });
+        // Sort: short-aliased options first, then long-only; stable by flags.
+        const hasShort = (opt: Option) => {
+          const flags = (opt as unknown as { flags?: string }).flags ?? '';
+          // Matches "-x," or starting "-x " before any long
+          return /(^|\s|,)-[A-Za-z]/.test(flags);
+        };
+        const byFlags = (opt: Option) =>
+          (opt as unknown as { flags?: string }).flags ?? '';
+        base.sort((a, b) => {
+          const aS = hasShort(a) ? 1 : 0;
+          const bS = hasShort(b) ? 1 : 0;
+          return bS - aS || byFlags(a).localeCompare(byFlags(b));
+        });
+        return base;
       },
     });
     this.addHelpText('beforeAll', () => {
@@ -291,6 +305,12 @@ export class GetDotenvCli<
         40,
         rows.reduce((m, r) => Math.max(m, r.flags.length), 0),
       );
+      // Sort within group: short-aliased flags first
+      rows.sort((a, b) => {
+        const aS = /(^|\s|,)-[A-Za-z]/.test(a.flags) ? 1 : 0;
+        const bS = /(^|\s|,)-[A-Za-z]/.test(b.flags) ? 1 : 0;
+        return bS - aS || a.flags.localeCompare(b.flags);
+      });
       const lines = rows
         .map((r) => {
           const pad = ' '.repeat(Math.max(2, width - r.flags.length + 2));
