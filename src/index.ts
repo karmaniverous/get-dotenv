@@ -12,3 +12,4 @@ export {
   type GetDotenvOptions,
   type ProcessEnv,
 } from './GetDotenvOptions';
+export { interpolateDeep } from './util/interpolateDeep';

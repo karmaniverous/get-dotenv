@@ -1,6 +1,6 @@
 # Development Plan — get-dotenv
 
-When updated: 2025-10-19T00:20:00Z
+When updated: 2025-10-19T00:35:00Z
 NOTE: Update timestamp on commit.
 
 ## Next up
@@ -113,6 +113,13 @@ Acceptance
 - Enhanced `--trace` diff (origin/value/overridden‑by).
 
 ## Completed Items (append‑only; most recent at bottom)
+
+- Workstream 1 (initial slice): interpolation utility and wiring
+  - Added `interpolateDeep(obj, envRef)` to expand string leaves; arrays untouched; non-strings preserved.
+  - Phase C (config path): outputPath now deep‑interpolated against `{ ...process.env, ...dotenv }` (ctx wins); bootstrap keys excluded.
+  - Per‑plugin slice (host path): deep‑interpolate plugin config slices against `{ ...dotenv, ...process.env }` (process.env wins) before validation; validated slices stored on ctx.
+  - Exported `interpolateDeep` from the package root for plugin authors.
+  - Note: Validation (`requiredKeys`/Zod) and `--strict` wiring are pending in Workstream 2.
 
 - Apply facet overlay defaults to keep the next archive small while preserving full context for in‑flight work:
   - Inactive facets: tests, docs, templates, tools, plugins-aws, plugins-init, plugins-demo, plugins-batch-actions, plugins-cmd, ci.

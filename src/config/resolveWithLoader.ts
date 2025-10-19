@@ -9,6 +9,7 @@ import {
   type Logger,
   type ProcessEnv,
 } from '../GetDotenvOptions';
+import { interpolateDeep } from '../util/interpolateDeep';
 import { loadModuleDefault } from '../util/loadModuleDefault';
 import { resolveGetDotenvConfigSources } from './loader';
 
@@ -21,7 +22,9 @@ import { resolveGetDotenvConfigSources } from './loader';
  * 2) Discover packaged + project config sources and overlay onto base.
  * 3) Apply dynamics in order:
  *    programmatic dynamic \> config dynamic (packaged → project public → project local)
- *    \> file dynamicPath. * 4) Optionally write outputPath, log, and merge into process.env.
+ *    \> file dynamicPath.
+ * 4) Phase C interpolation of remaining string options (e.g., outputPath).
+ * 5) Optionally write outputPath, log, and merge into process.env.
  */
 export const resolveDotenvWithConfigLoader = async (
   validated: GetDotenvOptions,
@@ -105,10 +108,17 @@ export const resolveDotenvWithConfigLoader = async (
     }
   }
 
-  // 4) Output/log/process merge
-  if (validated.outputPath) {
+  // 4) Phase C: interpolate remaining string options (exclude bootstrap set)
+  // For now, we only need an interpolated outputPath; bootstrap keys are excluded by design.
+  const envRef: ProcessEnv = { ...process.env, ...dotenv };
+  const { outputPath: outputPathInterpolated } = interpolateDeep<{
+    outputPath?: string;
+  }>({ outputPath: validated.outputPath }, envRef);
+
+  // 5) Output/log/process merge (use interpolated outputPath if present)
+  if (outputPathInterpolated) {
     await fs.writeFile(
-      validated.outputPath,
+      outputPathInterpolated,
       Object.keys(dotenv).reduce((contents, key) => {
         const value = dotenv[key] ?? '';
         return `${contents}${key}=${

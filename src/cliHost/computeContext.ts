@@ -13,6 +13,7 @@ import {
 } from '../GetDotenvOptions';
 import { getDotenvOptionsSchemaResolved } from '../schema/getDotenvOptions';
 import { defaultsDeep } from '../util/defaultsDeep';
+import { interpolateDeep } from '../util/interpolateDeep';
 import { loadModuleDefault } from '../util/loadModuleDefault';
 import type { GetDotenvCliPlugin } from './definePlugin';
 import type { GetDotenvCliCtx } from './GetDotenvCli';
@@ -164,17 +165,32 @@ export const computeContext = async <
     localPlugins,
   );
   for (const p of plugins) {
-    if (!p.id || !p.configSchema) continue;
+    if (!p.id) continue;
     const slice = mergedPluginConfigs[p.id];
     if (slice === undefined) continue;
-    const parsed = p.configSchema.safeParse(slice);
-    if (!parsed.success) {
-      const msgs = parsed.error.issues
-        .map((i) => `${i.path.join('.')}: ${i.message}`)
-        .join('\n');
-      throw new Error(`Invalid config for plugin '${p.id}':\n${msgs}`);
+    // Per-plugin interpolation just before validation/afterResolve:
+    // precedence: process.env wins over ctx.dotenv for slice defaults.
+    const envRef: Record<string, string | undefined> = {
+      ...dotenv,
+      ...process.env,
+    };
+    const interpolated = interpolateDeep(
+      slice as Record<string, unknown>,
+      envRef,
+    );
+    // Validate if a schema is provided; otherwise accept interpolated slice as-is.
+    if (p.configSchema) {
+      const parsed = p.configSchema.safeParse(interpolated);
+      if (!parsed.success) {
+        const msgs = parsed.error.issues
+          .map((i) => `${i.path.join('.')}: ${i.message}`)
+          .join('\n');
+        throw new Error(`Invalid config for plugin '${p.id}':\n${msgs}`);
+      }
+      mergedPluginConfigs[p.id] = parsed.data;
+    } else {
+      mergedPluginConfigs[p.id] = interpolated;
     }
-    mergedPluginConfigs[p.id] = parsed.data;
   }
 
   return {
