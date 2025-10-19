@@ -1,6 +1,6 @@
 # Development Plan — get-dotenv
 
-When updated: 2025-10-19T00:35:00Z
+When updated: 2025-10-19T00:45:00Z
 NOTE: Update timestamp on commit.
 
 ## Next up
@@ -113,6 +113,13 @@ Acceptance
 - Enhanced `--trace` diff (origin/value/overridden‑by).
 
 ## Completed Items (append‑only; most recent at bottom)
+
+- Workstream 1 (follow-up): fix exactOptionalPropertyTypes in Phase C
+  - Resolved TS2379 by interpolating `outputPath` as a plain string when
+    defined instead of constructing an object with a possibly-undefined
+    property. This keeps Phase C behavior intact while satisfying strict
+    optional typing. Build/docs no longer report the TS2379 warning from
+    resolveWithLoader.
 
 - Workstream 1 (initial slice): interpolation utility and wiring
   - Added `interpolateDeep(obj, envRef)` to expand string leaves; arrays untouched; non-strings preserved.

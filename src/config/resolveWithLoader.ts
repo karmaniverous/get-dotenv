@@ -108,12 +108,13 @@ export const resolveDotenvWithConfigLoader = async (
     }
   }
 
-  // 4) Phase C: interpolate remaining string options (exclude bootstrap set)
-  // For now, we only need an interpolated outputPath; bootstrap keys are excluded by design.
+  // 4) Phase C: interpolate remaining string options (exclude bootstrap set).
+  // For now, interpolate outputPath only; bootstrap keys are excluded by design.
   const envRef: ProcessEnv = { ...process.env, ...dotenv };
-  const { outputPath: outputPathInterpolated } = interpolateDeep<{
-    outputPath?: string;
-  }>({ outputPath: validated.outputPath }, envRef);
+  const outputPathInterpolated =
+    typeof validated.outputPath === 'string'
+      ? interpolateDeep(validated.outputPath, envRef)
+      : undefined;
 
   // 5) Output/log/process merge (use interpolated outputPath if present)
   if (outputPathInterpolated) {
