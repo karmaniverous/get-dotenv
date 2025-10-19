@@ -22,6 +22,13 @@ export type RootOptionsShape = {
   debug?: boolean;
   capture?: boolean;
   strict?: boolean;
+  // Diagnostics
+  redact?: boolean;
+  warnEntropy?: boolean;
+  entropyThreshold?: number;
+  entropyMinLength?: number;
+  entropyWhitelist?: string[];
+  redactPatterns?: string[];
 
   defaultEnv?: string;
   dotenvToken?: string;

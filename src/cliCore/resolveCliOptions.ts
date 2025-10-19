@@ -35,6 +35,8 @@ export const resolveCliOptions = <
     excludePublicOff,
     loadProcessOff,
     logOff,
+    entropyWarn,
+    entropyWarnOff,
     scripts,
     shellOff,
     ...rest
@@ -131,6 +133,16 @@ export const resolveCliOptions = <
       merged.loadProcess,
       loadProcessOff as true | undefined,
       d.loadProcess,
+    ),
+  );
+  // warnEntropy (tri-state)
+  setOptionalFlag(
+    merged,
+    'warnEntropy',
+    resolveExclusion(
+      merged.warnEntropy,
+      entropyWarnOff as true | undefined,
+      d.warnEntropy,
     ),
   );
 

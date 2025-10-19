@@ -3,6 +3,11 @@ export const baseRootOptionDefaults = {
   dotenvToken: '.env',
   loadProcess: true,
   logger: console,
+  // Diagnostics defaults
+  warnEntropy: true,
+  entropyThreshold: 3.8,
+  entropyMinLength: 16,
+  entropyWhitelist: ['^GIT_', '^npm_', '^CI$', 'SHLVL'],
   paths: './',
   pathsDelimiter: ' ',
   privateToken: 'local',

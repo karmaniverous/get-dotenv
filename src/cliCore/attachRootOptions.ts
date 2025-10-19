@@ -262,6 +262,10 @@ export const attachRootOptions = (
     )
     .option('--capture', 'capture child process stdio for commands (tests/CI)')
     .option(
+      '--redact',
+      'mask secret-like values in logs/trace (presentation-only)',
+    )
+    .option(
       '--default-env <string>',
       'default target environment',
       dotenvExpandFromProcessEnv,
@@ -334,6 +338,35 @@ export const attachRootOptions = (
     '--strict',
     'fail on env validation errors (schema/requiredKeys)',
   );
+  // Entropy diagnostics (presentation-only)
+  p = p
+    .addOption(
+      new Option(
+        '--entropy-warn',
+        'enable entropy warnings (default on)',
+      ).conflicts('entropyWarnOff'),
+    )
+    .addOption(
+      new Option('--entropy-warn-off', 'disable entropy warnings').conflicts(
+        'entropyWarn',
+      ),
+    )
+    .option(
+      '--entropy-threshold <number>',
+      'entropy bits/char threshold (default 3.8)',
+    )
+    .option(
+      '--entropy-min-length <number>',
+      'min length to examine for entropy (default 16)',
+    )
+    .option(
+      '--entropy-whitelist <pattern...>',
+      'suppress entropy warnings when key matches any regex pattern',
+    )
+    .option(
+      '--redact-pattern <pattern...>',
+      'additional key-match regex patterns to trigger redaction',
+    );
   // Restore original methods to avoid tagging future additions outside base.
   program.addOption = originalAddOption;
   program.option = originalOption as unknown as Command['option'];

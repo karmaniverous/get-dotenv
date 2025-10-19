@@ -1,5 +1,6 @@
 import '../../cliCore/enhanceGetDotenvCli'; // ensure helpers are available in host CLIs
 
+import type { EntropyOptions } from '../../diagnostics/entropy';
 const dbg = (...args: unknown[]) => {
   if (process.env.GETDOTENV_DEBUG) {
     // Use stderr to avoid interfering with stdout assertions
@@ -14,6 +15,8 @@ import type { GetDotenvCliOptions } from '../../cliCore/GetDotenvCliOptions';
 import { resolveCliOptions } from '../../cliCore/resolveCliOptions';
 import type { CommandWithOptions } from '../../cliCore/types';
 import type { GetDotenvCli } from '../../cliHost/GetDotenvCli';
+import { maybeWarnEntropy } from '../../diagnostics/entropy';
+import { redactTriple } from '../../diagnostics/redact';
 import { dotenvExpandFromProcessEnv } from '../../dotenvExpand';
 import type { Logger } from '../../GetDotenvOptions';
 import { getDotenvCliOptions2Options } from '../../GetDotenvOptions';
@@ -92,7 +95,8 @@ export const attachParentAlias = (
     // Merge CLI options and resolve dotenv context.
     const { merged } = resolveCliOptions<GetDotenvCliOptions>(
       o as unknown,
-      baseRootOptionDefaults as Partial<GetDotenvCliOptions>,
+      // cast through unknown to avoid readonly -> mutable incompatibilities
+      baseRootOptionDefaults as unknown as Partial<GetDotenvCliOptions>,
       process.env.getDotenvCliOptions,
     );
     const logger: Logger = (merged as { logger?: Logger }).logger ?? console;
@@ -166,8 +170,40 @@ export const attachParentAlias = (
             : parent !== undefined
               ? 'parent'
               : 'unset';
+        // Build redact options and triple bag without undefined-valued fields
+        const redOpts: { redact?: boolean; redactPatterns?: string[] } = {};
+        const redFlag = (merged as { redact?: boolean }).redact;
+        const redPatterns = (merged as { redactPatterns?: string[] })
+          .redactPatterns;
+        if (redFlag) redOpts.redact = true;
+        if (redFlag && Array.isArray(redPatterns))
+          redOpts.redactPatterns = redPatterns;
+        const tripleBag: { parent?: string; dotenv?: string; final?: string } =
+          {};
+        if (parent !== undefined) tripleBag.parent = parent;
+        if (dot !== undefined) tripleBag.dotenv = dot;
+        if (final !== undefined) tripleBag.final = final;
+        const triple = redactTriple(k, tripleBag, redOpts);
         process.stderr.write(
-          `[trace] key=${k} origin=${origin} parent=${parent ?? ''} dotenv=${dot ?? ''} final=${final ?? ''}\n`,
+          `[trace] key=${k} origin=${origin} parent=${triple.parent ?? ''} dotenv=${triple.dotenv ?? ''} final=${triple.final ?? ''}\n`,
+        );
+        const entOpts: EntropyOptions = {};
+        const warnEntropy = (merged as { warnEntropy?: boolean }).warnEntropy;
+        const entropyThreshold = (merged as { entropyThreshold?: number })
+          .entropyThreshold;
+        const entropyMinLength = (merged as { entropyMinLength?: number })
+          .entropyMinLength;
+        const entropyWhitelist = (merged as { entropyWhitelist?: string[] })
+          .entropyWhitelist;
+        if (typeof warnEntropy === 'boolean') entOpts.warnEntropy = warnEntropy;
+        if (typeof entropyThreshold === 'number')
+          entOpts.entropyThreshold = entropyThreshold;
+        if (typeof entropyMinLength === 'number')
+          entOpts.entropyMinLength = entropyMinLength;
+        if (Array.isArray(entropyWhitelist))
+          entOpts.entropyWhitelist = entropyWhitelist;
+        maybeWarnEntropy(k, final, origin, entOpts, (line) =>
+          process.stderr.write(line + '\n'),
         );
       }
     }

@@ -2,6 +2,10 @@ import fs from 'fs-extra';
 import { nanoid } from 'nanoid';
 import path from 'path';
 
+import type { EntropyOptions } from './diagnostics/entropy';
+import { maybeWarnEntropy } from './diagnostics/entropy';
+import type { RedactOptions } from './diagnostics/redact';
+import { redactObject } from './diagnostics/redact';
 import { dotenvExpandAll } from './dotenvExpand';
 import {
   type GetDotenvDynamic,
@@ -194,7 +198,48 @@ export const getDotenv = async (
   }
 
   // Log result.
-  if (log) logger.log(resultDotenv);
+  if (log) {
+    const redactFlag = (options as { redact?: boolean }).redact ?? false;
+    const redactPatterns =
+      (options as { redactPatterns?: string[] }).redactPatterns ?? undefined;
+    const redOpts: RedactOptions = {};
+    if (redactFlag) redOpts.redact = true;
+    if (redactFlag && Array.isArray(redactPatterns))
+      redOpts.redactPatterns = redactPatterns;
+    const bag = redactFlag
+      ? redactObject(resultDotenv, redOpts)
+      : { ...resultDotenv };
+    logger.log(bag);
+    // Entropy warnings: once-per-key-per-run (presentation only)
+    const warnEntropyVal =
+      (options as { warnEntropy?: boolean }).warnEntropy ?? true;
+    const entropyThresholdVal = (options as { entropyThreshold?: number })
+      .entropyThreshold;
+    const entropyMinLengthVal = (options as { entropyMinLength?: number })
+      .entropyMinLength;
+    const entropyWhitelistVal = (options as { entropyWhitelist?: string[] })
+      .entropyWhitelist;
+    const entOpts: EntropyOptions = {};
+    if (typeof warnEntropyVal === 'boolean')
+      entOpts.warnEntropy = warnEntropyVal;
+    if (typeof entropyThresholdVal === 'number')
+      entOpts.entropyThreshold = entropyThresholdVal;
+    if (typeof entropyMinLengthVal === 'number')
+      entOpts.entropyMinLength = entropyMinLengthVal;
+    if (Array.isArray(entropyWhitelistVal))
+      entOpts.entropyWhitelist = entropyWhitelistVal;
+    for (const [k, v] of Object.entries(resultDotenv)) {
+      maybeWarnEntropy(
+        k,
+        v,
+        v !== undefined ? 'dotenv' : 'unset',
+        entOpts,
+        (line) => {
+          logger.log(line);
+        },
+      );
+    }
+  }
 
   // Load process.env.
   if (loadProcess) Object.assign(process.env, resultDotenv);

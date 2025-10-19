@@ -4,6 +4,9 @@ import { runCommand } from '../../cliCore/exec';
 import type { CommandWithOptions } from '../../cliCore/types';
 import { definePlugin } from '../../cliHost/definePlugin';
 import type { GetDotenvCli } from '../../cliHost/GetDotenvCli';
+import type { EntropyOptions } from '../../diagnostics/entropy';
+import { maybeWarnEntropy } from '../../diagnostics/entropy';
+import { redactTriple } from '../../diagnostics/redact';
 import type { GetDotenvCliOptions } from '../../generateGetDotenvCli/GetDotenvCliOptions';
 import type { Logger } from '../../GetDotenvOptions';
 import { resolveCommand, resolveShell } from '../../services/batch/resolve';
@@ -164,9 +167,57 @@ export const cmdPlugin = (options: CmdPluginOptions = {}) =>
                     : parent !== undefined
                       ? 'parent'
                       : 'unset';
+                // Apply presentation-time redaction (if enabled)
+                const redFlag = (merged as { redact?: boolean }).redact;
+                const redPatterns = (merged as { redactPatterns?: string[] })
+                  .redactPatterns;
+                const redOpts: { redact?: boolean; redactPatterns?: string[] } =
+                  {};
+                if (redFlag) redOpts.redact = true;
+                if (redFlag && Array.isArray(redPatterns))
+                  redOpts.redactPatterns = redPatterns;
+                const tripleBag: {
+                  parent?: string;
+                  dotenv?: string;
+                  final?: string;
+                } = {};
+                if (parent !== undefined) tripleBag.parent = parent;
+                if (dot !== undefined) tripleBag.dotenv = dot;
+                if (final !== undefined) tripleBag.final = final;
+                const triple = redactTriple(k, tripleBag, redOpts);
                 // Emit concise diagnostic line to stderr.
                 process.stderr.write(
-                  `[trace] key=${k} origin=${origin} parent=${parent ?? ''} dotenv=${dot ?? ''} final=${final ?? ''}\n`,
+                  `[trace] key=${k} origin=${origin} parent=${triple.parent ?? ''} dotenv=${triple.dotenv ?? ''} final=${triple.final ?? ''}\n`,
+                );
+                // Optional entropy warning (once-per-key)
+                const entOpts: EntropyOptions = {};
+                const warnEntropy = (merged as { warnEntropy?: boolean })
+                  .warnEntropy;
+                const entropyThreshold = (
+                  merged as {
+                    entropyThreshold?: number;
+                  }
+                ).entropyThreshold;
+                const entropyMinLength = (
+                  merged as {
+                    entropyMinLength?: number;
+                  }
+                ).entropyMinLength;
+                const entropyWhitelist = (
+                  merged as {
+                    entropyWhitelist?: string[];
+                  }
+                ).entropyWhitelist;
+                if (typeof warnEntropy === 'boolean')
+                  entOpts.warnEntropy = warnEntropy;
+                if (typeof entropyThreshold === 'number')
+                  entOpts.entropyThreshold = entropyThreshold;
+                if (typeof entropyMinLength === 'number')
+                  entOpts.entropyMinLength = entropyMinLength;
+                if (Array.isArray(entropyWhitelist))
+                  entOpts.entropyWhitelist = entropyWhitelist;
+                maybeWarnEntropy(k, final, origin, entOpts, (line) =>
+                  process.stderr.write(line + '\n'),
                 );
               }
             }

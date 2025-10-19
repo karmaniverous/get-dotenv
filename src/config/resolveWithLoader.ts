@@ -1,6 +1,10 @@
 import fs from 'fs-extra';
 import path from 'path';
 
+import type { EntropyOptions } from '../diagnostics/entropy';
+import { maybeWarnEntropy } from '../diagnostics/entropy';
+import type { RedactOptions } from '../diagnostics/redact';
+import { redactObject } from '../diagnostics/redact';
 import { overlayEnv } from '../env/overlay';
 import { getDotenv } from '../getDotenv';
 import {
@@ -131,7 +135,52 @@ export const resolveDotenvWithConfigLoader = async (
   }
   const logger: Logger =
     (validated as unknown as { logger?: Logger }).logger ?? console;
-  if (validated.log) logger.log(dotenv);
+  if (validated.log) {
+    const redactFlag =
+      (validated as unknown as { redact?: boolean }).redact ?? false;
+    const redactPatterns = (
+      validated as unknown as { redactPatterns?: string[] }
+    ).redactPatterns;
+    const redOpts: RedactOptions = {};
+    if (redactFlag) redOpts.redact = true;
+    if (redactFlag && Array.isArray(redactPatterns))
+      redOpts.redactPatterns = redactPatterns;
+    const bag = redactFlag ? redactObject(dotenv, redOpts) : { ...dotenv };
+    logger.log(bag);
+    // Entropy warnings: once per key per run (presentation only)
+    const warnEntropyVal =
+      (validated as unknown as { warnEntropy?: boolean }).warnEntropy ?? true;
+    const entropyThresholdVal = (
+      validated as unknown as { entropyThreshold?: number }
+    ).entropyThreshold;
+    const entropyMinLengthVal = (
+      validated as unknown as { entropyMinLength?: number }
+    ).entropyMinLength;
+    const entropyWhitelistVal = (
+      validated as unknown as { entropyWhitelist?: string[] }
+    ).entropyWhitelist;
+    const entOpts: EntropyOptions = {};
+    // include keys only when defined to satisfy exactOptionalPropertyTypes
+    if (typeof warnEntropyVal === 'boolean')
+      entOpts.warnEntropy = warnEntropyVal;
+    if (typeof entropyThresholdVal === 'number')
+      entOpts.entropyThreshold = entropyThresholdVal;
+    if (typeof entropyMinLengthVal === 'number')
+      entOpts.entropyMinLength = entropyMinLengthVal;
+    if (Array.isArray(entropyWhitelistVal))
+      entOpts.entropyWhitelist = entropyWhitelistVal;
+    for (const [k, v] of Object.entries(dotenv)) {
+      maybeWarnEntropy(
+        k,
+        v,
+        v !== undefined ? 'dotenv' : 'unset',
+        entOpts,
+        (line) => {
+          logger.log(line);
+        },
+      );
+    }
+  }
   if (validated.loadProcess) Object.assign(process.env, dotenv);
 
   return dotenv;

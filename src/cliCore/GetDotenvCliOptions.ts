@@ -20,6 +20,18 @@ export interface GetDotenvCliOptions
    */
   strict?: boolean;
   /**
+   * Redaction (presentation): mask secret-like values in logs/trace.
+   */
+  redact?: boolean;
+  /**
+   * Entropy warnings (presentation): emit once-per-key warnings for high-entropy values.
+   */
+  warnEntropy?: boolean;
+  entropyThreshold?: number;
+  entropyMinLength?: number;
+  entropyWhitelist?: string[];
+  redactPatterns?: string[];
+  /**
    * When true, capture child stdout/stderr and re-emit after completion.
    * Useful for tests/CI. Default behavior is streaming via stdio: 'inherit'.
    */
