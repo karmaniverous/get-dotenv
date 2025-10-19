@@ -1,11 +1,9 @@
 # Development Plan — get-dotenv
 
-When updated: 2025-10-19T04:40:00Z
+When updated: 2025-10-19T05:00:00Z
 NOTE: Update timestamp on commit.
 
 ## Next up
-
-
 
 - Release (deferred): run release-it (auto-changelog), publish v5.2.0, push
   release branch; verify npm tarball in CI. Note: release is postponed until
@@ -21,10 +19,11 @@ NOTE: Update timestamp on commit.
   latest changes remain stable.
 
 ## Backlog (tracked; not in current slice)
- - Batch `--concurrency` (pooling, output aggregation, live prefixed streaming, end‑of‑run summary).
- - First‑party secrets provider plugins (AWS/GCP/Vault).
- - Watch mode (recompute on file changes; optional rerun).
- - Enhanced `--trace` diff (origin/value/overridden‑by).
+
+- Batch `--concurrency` (pooling, output aggregation, live prefixed streaming, end‑of‑run summary).
+- First‑party secrets provider plugins (AWS/GCP/Vault).
+- Watch mode (recompute on file changes; optional rerun).
+- Enhanced `--trace` diff (origin/value/overridden‑by).
 
 - Batch `--concurrency` (pooling, output aggregation, live prefixed streaming, end‑of‑run summary).
 - First‑party secrets provider plugins (AWS/GCP/Vault).
@@ -125,4 +124,11 @@ NOTE: Update timestamp on commit.
   - generated-cli.md gains a “Validation and diagnostics” section
   - plugins.md clarifies validation/diagnostics behavior with a link to config guide
   - shell.md documents environment normalization
-  No release performed; package.json remains 5.1.0.
+    No release performed; package.json remains 5.1.0.
+
+- Docs/knip cleanup:
+  - Resolved TypeDoc warning by exporting `RootOptionsShapeCompat` so it is
+    included in API docs.
+  - Removed unused devDependency `cross-env` and updated `stan.config.yml`
+    build step to avoid calling it; removed `npm-packlist` from knip
+    `ignoreDependencies` per configuration hint.

@@ -10,6 +10,6 @@
   "project": ["src/**/*.ts"],
   "ignore": [],
   "ignoreBinaries": ["Write-Output"],
-  "ignoreDependencies": ["npm-packlist"],
+  "ignoreDependencies": ["cross-env"],
   "rules": { "exports": "off", "types": "off", "duplicates": "off" }
 }
