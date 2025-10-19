@@ -10,6 +10,6 @@
   "project": ["src/**/*.ts"],
   "ignore": [],
   "ignoreBinaries": ["Write-Output"],
-  "ignoreDependencies": ["cross-env"],
+  "ignoreDependencies": ["cross-env", "esbuild"],
   "rules": { "exports": "off", "types": "off", "duplicates": "off" }
 }
