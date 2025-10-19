@@ -1,0 +1,88 @@
+{
+  "tests": {
+    "exclude": [
+      "test/**",
+      "src/**/*.test.ts",
+      "src/e2e/**"
+    ],
+    "include": [
+      "src/dotenvExpand.more.test.ts"
+    ]
+  },
+  "docs": {
+    "exclude": [
+      "guides/**",
+      "docs/**"
+    ],
+    "include": [
+      "guides/index.md"
+    ]
+  },
+  "templates": {
+    "exclude": [
+      "templates/**"
+    ],
+    "include": [
+      "templates/config/json/public/getdotenv.config.json",
+      "templates/cli/ts/index.ts"
+    ]
+  },
+  "tools": {
+    "exclude": [
+      "tools/**"
+    ],
+    "include": [
+      "tools/verify-package.js"
+    ]
+  },
+  "plugins-aws": {
+    "exclude": [
+      "src/plugins/aws/**"
+    ],
+    "include": [
+      "src/plugins/aws/types.ts"
+    ]
+  },
+  "plugins-init": {
+    "exclude": [
+      "src/plugins/init/**"
+    ],
+    "include": [
+      "src/plugins/init/constants.ts"
+    ]
+  },
+  "plugins-demo": {
+    "exclude": [
+      "src/plugins/demo/**"
+    ],
+    "include": [
+      "src/plugins/demo/index.ts"
+    ]
+  },
+  "plugins-batch-actions": {
+    "exclude": [
+      "src/plugins/batch/actions/**"
+    ],
+    "include": [
+      "src/plugins/batch/actions/parentAction.ts"
+    ]
+  },
+  "plugins-cmd": {
+    "exclude": [
+      "src/plugins/cmd/**"
+    ],
+    "include": [
+      "src/plugins/cmd/tokenize.ts"
+    ]
+  },
+  "ci": {
+    "exclude": [
+      ".github/**",
+      ".lefthook/**",
+      "lefthook.yml"
+    ],
+    "include": [
+      ".github/workflows/sync.yml"
+    ]
+  }
+}
