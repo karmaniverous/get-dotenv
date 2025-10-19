@@ -1,5 +1,6 @@
 ---
 title: Plugin-first host
+sidebar_position: 1
 ---
 
 # Plugin-first host (GetDotenvCli)
@@ -21,6 +22,138 @@ await program.parseAsync();
 
 - `resolveAndLoad()` produces a context `{ optionsResolved, dotenv, plugins? }`.
 - The host registers a preSubcommand hook to ensure a context exists when subcommands run (e.g., batch).
+
+## Wiring included plugins (cmd, batch, aws, init)
+
+This library ships a small set of ready‑to‑use plugins. Most projects want the same baseline:
+
+- Root flags (`-e/--env`, `--paths`, `--dotenv-token`, `--strict`, `--trace`, etc.)
+- A “cmd” command (and parent alias `-c, --cmd <command...>`) for one‑off commands
+- The “batch” command for running a command across many working directories
+- The AWS base plugin to establish a session and make it available to children
+- The “init” plugin for scaffolding config and a CLI skeleton
+
+Here is a minimal host that wires all of the above.
+
+```ts
+#!/usr/bin/env node
+import { GetDotenvCli } from '@karmaniverous/get-dotenv/cliHost';
+import { cmdPlugin } from '@karmaniverous/get-dotenv/plugins/cmd';
+import { batchPlugin } from '@karmaniverous/get-dotenv/plugins/batch';
+import { awsPlugin } from '@karmaniverous/get-dotenv/plugins/aws';
+import { initPlugin } from '@karmaniverous/get-dotenv/plugins/init';
+
+const program = new GetDotenvCli('toolbox');
+
+// Optional: nice help header (uses your package.json version when importMetaUrl is provided)
+await program.brand({
+  importMetaUrl: import.meta.url,
+  description: 'Toolbox CLI',
+});
+
+// 1) Attach base root options (-e/--env, --paths, --strict, --trace, etc.)
+// 2) Install included plugins
+// 3) passOptions() merges root flags (parent < current), computes the dotenv context
+//    once per invocation, runs validation, and persists merged options for nested flows.
+program
+  .attachRootOptions({ loadProcess: false })
+  .use(cmdPlugin({ asDefault: true, optionAlias: '-c, --cmd <command...>' }))
+  .use(batchPlugin())
+  .use(awsPlugin())
+  .use(initPlugin())
+  .passOptions({ loadProcess: false });
+
+await program.parseAsync();
+```
+
+Notes:
+
+- attachRootOptions adds the familiar root flags so users can select env, set paths, enable `--strict`, `--trace`, etc.
+- passOptions composes defaults + flags into a merged options bag, resolves the dotenv context once, and persists the merged bag for nested invocations. Included plugins (cmd/batch/aws) read this bag for consistent behavior (shell resolution, scripts, capture).
+- cmdPlugin installs both the subcommand and a parent alias `-c, --cmd <command...>`. Prefer the alias in npm scripts so flags after `--` are applied to your CLI, not to the inner command.
+
+### Configure included plugins (JSON/TS config)
+
+Put defaults under getdotenv.config.*. The loader overlays packaged → project/public → project/local and then applies dynamic (when present). Plugin slices live under the `plugins` key.
+
+JSON example:
+
+```json
+{
+  "paths": "./",
+  "dotenvToken": ".env",
+  "privateToken": "local",
+  "plugins": {
+    "batch": {
+      "scripts": {
+        "build": { "cmd": "npm run build", "shell": "/bin/bash" },
+        "plain": { "cmd": "node -v", "shell": false }
+      },
+      "shell": true,
+      "rootPath": "./packages",
+      "globs": "*",
+      "pkgCwd": false
+    },
+    "aws": {
+      "profile": "dev",                // or rely on AWS_LOCAL_PROFILE in dotenv
+      "defaultRegion": "us-east-1",
+      "loginOnDemand": true,          // best-effort SSO login when export fails
+      "setEnv": true,                 // write to process.env
+      "addCtx": true                  // mirror under ctx.plugins.aws
+    }
+  }
+}
+```
+
+TypeScript example (JS/TS allows dynamic too):
+
+```ts
+export default {
+  plugins: {
+    batch: {
+      scripts: { build: { cmd: 'npm run build', shell: '/bin/bash' } },
+      shell: false
+    },
+    aws: {
+      profileKey: 'AWS_LOCAL_PROFILE',
+      regionKey: 'AWS_REGION',
+      strategy: 'cli-export',
+      loginOnDemand: true
+    }
+  }
+};
+```
+
+### Usage examples
+
+- One-off command (alias on the parent):
+
+```bash
+toolbox -e dev -c 'node -e "console.log(process.env.APP_SETTING ?? \"\")"'
+```
+
+- Batch across workspaces:
+
+```bash
+toolbox batch -r ./services -g "web api" -c build
+```
+
+- AWS session + optional forwarding:
+
+```bash
+# session only (populate process.env and ctx.plugins.aws)
+toolbox aws --profile dev --login-on-demand
+
+# forward to AWS CLI (tokens after -- are passed through)
+toolbox aws -- sts get-caller-identity
+```
+
+### Common pitfalls & troubleshooting
+
+- “Flags don’t seem to apply to cmd/batch”: Ensure you called `attachRootOptions()` before installing plugins and `passOptions()` before `parseAsync()`. `passOptions()` creates the merged root options bag and persists it for nested flows; included plugins read this bag.
+- “My npm script flags ended up on the inner command”: Prefer the parent alias: `"getdotenv -c 'echo $APP_SETTING'"` and run `npm run script -- -e dev`. The alias ensures `-e` is applied to your CLI, not to `echo`.
+- “Node `-e/--eval` snippets break when shell is off”: The included cmd plugin preserves argv arrays for `node -e/--eval` when `--shell-off`, avoiding lossy re-tokenization (especially on Windows/PowerShell).
+- “AWS still empty”: The base plugin is best‑effort. With `strategy: 'cli-export'` it tries `aws configure export-credentials`; for SSO, enable `loginOnDemand` to retry after `aws sso login`. It publishes region/creds to `process.env` (when `setEnv` is not disabled) and mirrors to `ctx.plugins.aws`.
 
 ## Branding the host CLI
 
@@ -175,6 +308,8 @@ The plugin host and the generator use the config loader/overlay path by default 
 ## AWS
 
 The AWS base plugin resolves profile/region and acquires credentials using a safe cascade (env-first → CLI export → (optional) SSO login → static fallback), then writes them into `process.env` and mirrors them under `ctx.plugins.aws`.
+
+See “Wiring included plugins” above for an end‑to‑end host example and config snippets.
 
 You can also use the `aws` subcommand to establish a session and optionally forward to the AWS CLI:
 
