@@ -1,75 +1,118 @@
-// NOTE: Full, post‑patch listing reflecting the intended updated file with
-// timestamp refreshed and the new "Documentation" Completed entry appended.
-
 # Development Plan — get-dotenv
 
-When updated: 2025-10-16T00:00:00Z
+When updated: 2025-10-19T00:20:00Z
 NOTE: Update timestamp on commit.
 
 ## Next up
 
-### Host-only: (follow-ups) branding adoption and API polish
+### Workstream 1 — Interpolation model (Phase C + per‑plugin), validation hook‑up
 
-- Grouped help (no suppression yet)
-  - Consider adding small style refinements (wrapping width, localization).
-- Ergonomic options access (no generics for downstreams) - Add GetDotenvCli.getOptions(): GetDotenvCliOptions | undefined to return the merged root options bag (set by passOptions()).
-  - Add readMergedOptions(cmd: Command): GetDotenvCliOptions | undefined helper for action handlers that only have thisCommand; avoids structural casts.
-  - passOptions() stores the merged bag on the host instance (in addition to current per-command attachment for nested inheritance).
-- Public export surface (single import path)
-  - From @karmaniverous/get-dotenv/cliHost re-export:
-    - GetDotenvCli
-    - type GetDotenvContext (non-generic alias of the concrete host context)
-    - type GetDotenvCliOptions
-    - type ScriptsTable
-    - readMergedOptions
-- Constraints
-  - Plugin-host only; do not modify the generator.
-  - Suppression/hideHelp can be added later based on real demand.
+Scope
+- Implement deterministic deep interpolation of CLI/config string options after `ctx.dotenv` is composed (Phase C), excluding bootstrap keys.
+- Add progressive per‑plugin interpolation just before each plugin’s `afterResolve`, then validate that plugin’s slice (warn by default; fail under `--strict`).
 
-Implementation steps
+Tasks
+- util: introduce `interpolateDeep(obj, envRef)` (strings only; preserve non‑strings).
+- host/config path: in `resolveDotenvWithConfigLoader` (and `cliHost/computeContext`), add Phase C pass over CLI/config string options with env precedence `{ ...process.env, ...ctx.dotenv }` (ctx wins). Exclude bootstrap keys (dotenvToken, privateToken, env, defaultEnv, paths (+splitters), vars (+splitters/assignor), exclude*, loadProcess, log, shell, dynamicPath).
+- host/plugin path: before invoking each plugin’s `afterResolve`, deep‑interpolate that plugin’s config slice against `{ ...ctx.dotenv, ...process.env }` (process.env wins), then run validation (see Workstream 2). Ensure parent → children order so upstream env (e.g., AWS creds) is visible to children.
+- Tests:
+  - interpolateDeep: nested shapes, arrays untouched, unknowns semantics (embedded→empty substring; isolated→undefined; `:default` honored).
+  - Phase C: bootstrap exclusion honored; precedence (ctx over parent env) proven; idempotence.
+  - Per‑plugin: precedence (process.env over ctx for slice), parent→children propagation, validation invocation ordering.
 
-1. Implement getOptions() and readMergedOptions() (done)
-   - Add options bag storage on the host and wire passOptions() to set it.
-   - Export readMergedOptions(cmd) and re-export types from cliHost index.
-2. Grouped help rendering (done)
-   - attachRootOptions tags base options; cmd plugin tags parent alias as plugin:cmd.
-   - Host help shows Base section (default), and App/Plugin sections after help.
-3. Branding helper (done)
-   - brand() implemented with best-effort version resolution from importMetaUrl and optional help header.
+Acceptance
+- Phase C runs once per invocation; bootstrap keys are not retro‑interpolated.
+- Per‑plugin slice interpolation and validation occur pre‑`afterResolve`; ordering is deterministic.
 
-### Entropy warnings (warning-only; no masking)
+### Workstream 2 — Validation surfaces (`requiredKeys`, Zod, `--strict`)
 
-- Add CLI flags:
-  - `--entropy-warn` / `--no-entropy-warn` (default on)
-  - `--entropy-threshold <bitsPerChar>` (default 3.8) - `--entropy-min-length <n>` (default 16)
-  - `--entropy-whitelist <pattern>` (repeatable)
-- Add config mirrors:
-  - `warnEntropy`, `entropyThreshold`, `entropyMinLength`, `entropyWhitelist`
-- Wire warnings into presentation surfaces:
-  - `--trace` (stderr line once per key), `-l/--log` (same rule)
-- Implement gating + entropy calc (Shannon over char freq; printable ASCII)
-- Noise control: once-per-key-per-run set
-- Unit tests: scoring, gating, whitelist, once-per-key logic
-- Docs: short “Entropy warnings” section in Shell guide and Plugin-first host guide
+Scope
+- JSON/YAML: support `requiredKeys: string[]` presence checks on final env.
+- JS/TS: support exported Zod schema for strong validation against final env.
+- CLI/config: add `--strict` flag and `strict: boolean` mirror to fail on validation errors.
 
-- Release preparation
-  - npm run lint
-  - npm run typecheck
-  - npm run test
-  - npm run build
-  - npm run verify:package
-  - npm run verify:tarball
-- Documentation
-  - Review and finalize the new AWS section in guides/plugins.md
-    to reflect final CLI behavior, env/ctx mirrors, and examples.- Packaging consideration
-  - Decide whether to export a "./plugins/aws" subpath and add
-    corresponding rollup outputs if we choose to publish it.
-- Roadmap groundwork
-  - Draft batch `--concurrency` design (pooling, output aggregation, summary).
-  - Add `--redact` masking for `--trace` and `-l/--log` (default patterns + custom).
-  - Design "required keys/schema" validation of final env.
+Tasks
+- schema/config loader: extend resolved config types to recognize `requiredKeys` (JSON/YAML) and optional `schema` for JS/TS (guard shape; import in TS via robust loader).
+- host path: after final env composition (post‑Phase C), run validation:
+  - If `schema` present (JS/TS): `schema.safeParse(finalEnv)`.
+  - Else if `requiredKeys` present (JSON/YAML): check presence of keys.
+  - Warn by default; under `--strict` or `strict: true`, exit non‑zero.
+- CLI host options: add `strict?: boolean` in GetDotenvCliOptions; wire through preSubcommand resolution.
+- Tests: requiredKeys success/failure; Zod schema success/failure; warn vs fail per `--strict`; error messaging (concise key list or Zod issues).
 
-## Completed Items (in completion order, most recent at bottom)
+Acceptance
+- Validation consistently runs once against the composed env (not partials). `--strict` flips warn → fail without side effects.
+
+### Workstream 3 — Diagnostics: redaction (`--redact`) and entropy warnings
+
+Scope
+- Presentation‑only features for `--trace` and `-l/--log`.
+- Redaction masks values by default patterns and user overrides.
+- Entropy warnings emit once‑per‑key‑per‑run based on gating and threshold.
+
+Tasks
+- redact util: default masks for common secret names (SECRET, TOKEN, KEY, PASSWORD); support regex/glob‑like overrides; apply only at print time.
+- entropy util: gating (min length default 16; printable ASCII), Shannon entropy bits/char (default 3.8), whitelist patterns, once‑per‑key tracking.
+- CLI/config: add flags/mirrors:
+  - `--redact` (bool), `--entropy-warn`/`--no-entropy-warn`, `--entropy-threshold <n>`, `--entropy-min-length <n>`, `--entropy-whitelist <pattern>` (repeatable).
+  - Mirrors: `redact`, `warnEntropy`, `entropyThreshold`, `entropyMinLength`, `entropyWhitelist`.
+- Apply in:
+  - trace output: redact values when enabled; emit `[entropy] ...` when gated and threshold exceeded.
+  - log output (`-l/--log`): same policy.
+- Tests: mask correctness and override precedence; entropy gating/threshold/whitelist; once‑per‑key guard.
+
+Acceptance
+- Masking never alters runtime env—only printed output. Entropy warnings are diagnostic only and respect once‑per‑key policy.
+
+### Workstream 4 — Spawn environment normalization
+
+Scope
+- Provide a single helper and adopt it consistently.
+
+Tasks
+- Introduce `buildSpawnEnv(baseEnv: NodeJS.ProcessEnv)` in a small, exported module (e.g., `src/cliCore/spawnEnv.ts` or reuse `exec.ts` with exports) that drops `undefined` entries and normalizes TMP/TEMP/HOME where beneficial cross‑platform.
+- Adopt in cmd, batch, and aws forwarders; remove ad‑hoc env maps.
+- Tests: undefineds dropped; invariants preserved; platform conditionals tolerated.
+
+Acceptance
+- All subprocess entry points use the same spawn‑env helper; behavior is consistent and test‑covered.
+
+### Workstream 5 — UX polish: help ordering (short before long‑only)
+
+Scope
+- Ensure help shows short‑aliased options before long‑only flags (e.g., `--strict` listed after short‑aliased peers). Keep grouped help behavior.
+
+Tasks
+- Host help renderer: enforce ordering within groups; add a small test capturing `-h` output and asserting relative order for a representative set (including `--strict`).
+
+Acceptance
+- Help output is stable and predictable; tests lock order to prevent regressions.
+
+### Workstream 6 — Docs & Release
+
+Scope
+- Update guides and prepare a minor release.
+
+Tasks
+- Docs:
+  - Config/Plugin‑first guides: add “Interpolation model” (Phase C + per‑plugin).
+  - Validation: document `requiredKeys`, Zod schema, and `--strict` with examples.
+  - Diagnostics: redact/entropy flags, defaults, gating, and examples.
+- Release checklist:
+  - lint, typecheck, unit+E2E (POSIX/Windows), smoke, build, verify:package, verify:tarball.
+  - Changelog and version bump; publish.
+
+Acceptance
+- Docs reflect the new behaviors clearly; release passes all verifications.
+
+## Backlog (tracked; not in current slice)
+
+- Batch `--concurrency` (pooling, output aggregation, live prefixed streaming, end‑of‑run summary).
+- First‑party secrets provider plugins (AWS/GCP/Vault).
+- Watch mode (recompute on file changes; optional rerun).
+- Enhanced `--trace` diff (origin/value/overridden‑by).
+
+## Completed Items (append‑only; most recent at bottom)
 
 - Apply facet overlay defaults to keep the next archive small while preserving full context for in‑flight work:
   - Inactive facets: tests, docs, templates, tools, plugins-aws, plugins-init, plugins-demo, plugins-batch-actions, plugins-cmd, ci.
