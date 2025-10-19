@@ -9,7 +9,9 @@ import type {
   RootOptionsShape,
   ScriptsTable,
 } from '../cliCore/types';
+import { resolveGetDotenvConfigSources } from '../config/loader';
 import { resolveDotenvWithConfigLoader } from '../config/resolveWithLoader';
+import { validateEnvAgainstSources } from '../config/validate';
 import {
   getDotenvCliOptions2Options,
   type Logger,
@@ -122,6 +124,21 @@ export const makePreSubcommandHook = <
     );
     const dotenv: ProcessEnv =
       await resolveDotenvWithConfigLoader(serviceOptions);
+    // Global validation against config (warn by default; --strict fails).
+    try {
+      const sources = await resolveGetDotenvConfigSources(import.meta.url);
+      const issues = validateEnvAgainstSources(dotenv, sources);
+      if (Array.isArray(issues) && issues.length > 0) {
+        issues.forEach((m) => {
+          logger.error(m);
+        });
+        if ((mergedGetDotenvCliOptions as { strict?: boolean }).strict) {
+          process.exit(1);
+        }
+      }
+    } catch {
+      // Tolerate validator failures in non-strict mode
+    }
     // Execute post-hook.
     if (postHook) await postHook(dotenv); // Execute command.
     const args = (thisCommand as { args?: unknown[] }).args ?? [];

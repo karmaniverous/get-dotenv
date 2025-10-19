@@ -329,6 +329,11 @@ export const attachRootOptions = (
     '--trace [keys...]',
     'emit diagnostics for child env composition (optional keys)',
   );
+  // Validation: strict mode fails on env validation issues (warn by default).
+  p = p.option(
+    '--strict',
+    'fail on env validation errors (schema/requiredKeys)',
+  );
   // Restore original methods to avoid tagging future additions outside base.
   program.addOption = originalAddOption;
   program.option = originalOption as unknown as Command['option'];

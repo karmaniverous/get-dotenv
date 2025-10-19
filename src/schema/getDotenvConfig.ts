@@ -3,11 +3,12 @@ import { z } from 'zod';
 import type { Scripts } from '../generateGetDotenvCli/GetDotenvCliOptions';
 
 /**
- * Zod schemas for configuration files discovered by the new loader. *
+ * Zod schemas for configuration files discovered by the new loader.
+ *
  * Notes:
  * - RAW: all fields optional; shapes are stringly-friendly (paths may be string[] or string).
  * - RESOLVED: normalized shapes (paths always string[]).
- * - For this step (JSON/YAML only), any defined `dynamic` will be rejected by the loader.
+ * - For JSON/YAML configs, the loader rejects "dynamic" and "schema" (JS/TS-only).
  */
 
 // String-only env value map
@@ -25,6 +26,8 @@ export const getDotenvConfigSchemaRaw = z.object({
   log: z.boolean().optional(),
   shell: z.union([z.string(), z.boolean()]).optional(),
   scripts: z.record(z.string(), z.unknown()).optional(), // Scripts validation left wide; generator validates elsewhere
+  requiredKeys: z.array(z.string()).optional(),
+  schema: z.unknown().optional(), // JS/TS-only; loader rejects in JSON/YAML
   vars: stringMap.optional(), // public, global
   envVars: envStringMap.optional(), // public, per-env
   // Dynamic in config (JS/TS only). JSON/YAML loader will reject if set.
@@ -34,6 +37,7 @@ export const getDotenvConfigSchemaRaw = z.object({
 });
 
 export type GetDotenvConfigRaw = z.infer<typeof getDotenvConfigSchemaRaw>;
+
 // Normalize paths to string[]
 const normalizePaths = (p?: string[] | string) =>
   p === undefined ? undefined : Array.isArray(p) ? p : [p];
@@ -54,11 +58,14 @@ export type GetDotenvConfigResolved = {
   log?: boolean;
   shell?: string | boolean;
   scripts?: Scripts;
+  requiredKeys?: string[];
+  schema?: unknown;
   vars?: Record<string, string>;
   envVars?: Record<string, Record<string, string>>;
   dynamic?: unknown;
   plugins?: Record<string, unknown>;
 };
+
 /**
  * Helper to normalize a RAW config object into a RESOLVED shape,
  * with Zod validation and helpful errors.

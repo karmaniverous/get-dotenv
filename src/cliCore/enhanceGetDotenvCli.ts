@@ -1,6 +1,8 @@
 import type { Command as CommanderCommand } from 'commander';
 
 import { GetDotenvCli } from '../cliHost/GetDotenvCli';
+import { resolveGetDotenvConfigSources } from '../config/loader';
+import { validateEnvAgainstSources } from '../config/validate';
 import { getDotenvCliOptions2Options } from '../GetDotenvOptions';
 import { attachRootOptions } from './attachRootOptions';
 import { baseRootOptionDefaults } from './defaults';
@@ -63,6 +65,34 @@ GetDotenvCli.prototype.passOptions = function (
       // Build service options and compute context (always-on config loader path).
       const serviceOptions = getDotenvCliOptions2Options(merged);
       await this.resolveAndLoad(serviceOptions);
+      // Global validation: once after Phase C using config sources.
+      try {
+        const ctx = this.getCtx();
+        const dotenv = (ctx?.dotenv ?? {}) as Record<
+          string,
+          string | undefined
+        >;
+        const sources = await resolveGetDotenvConfigSources(import.meta.url);
+        const issues = validateEnvAgainstSources(dotenv, sources);
+        if (Array.isArray(issues) && issues.length > 0) {
+          const logger = ((merged as unknown as { logger?: unknown }).logger ??
+            console) as {
+            log: (...a: unknown[]) => void;
+            error?: (...a: unknown[]) => void;
+          };
+          const emit = logger.error ?? logger.log;
+          issues.forEach((m) => {
+            emit(m);
+          });
+          if ((merged as unknown as { strict?: boolean }).strict) {
+            // Deterministic failure under strict mode
+            process.exit(1);
+          }
+        }
+      } catch {
+        // Be tolerant: validation errors reported above; unexpected failures here
+        // should not crash non-strict flows.
+      }
     },
   );
   // Also handle root-level flows (no subcommand) so option-aliases can run
@@ -85,6 +115,31 @@ GetDotenvCli.prototype.passOptions = function (
       if (!this.getCtx()) {
         const serviceOptions = getDotenvCliOptions2Options(merged);
         await this.resolveAndLoad(serviceOptions);
+        try {
+          const ctx = this.getCtx();
+          const dotenv = (ctx?.dotenv ?? {}) as Record<
+            string,
+            string | undefined
+          >;
+          const sources = await resolveGetDotenvConfigSources(import.meta.url);
+          const issues = validateEnvAgainstSources(dotenv, sources);
+          if (Array.isArray(issues) && issues.length > 0) {
+            const logger = ((merged as unknown as { logger?: unknown })
+              .logger ?? console) as {
+              log: (...a: unknown[]) => void;
+              error?: (...a: unknown[]) => void;
+            };
+            const emit = logger.error ?? logger.log;
+            issues.forEach((m) => {
+              emit(m);
+            });
+            if ((merged as unknown as { strict?: boolean }).strict) {
+              process.exit(1);
+            }
+          }
+        } catch {
+          // Tolerate validation side-effects in non-strict mode
+        }
       }
     },
   );

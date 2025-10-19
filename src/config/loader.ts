@@ -206,10 +206,14 @@ export const loadConfigFile = async (
     throw new Error(`Invalid config ${filePath}:\n${msgs}`);
   }
 
-  // Disallow dynamic in JSON/YAML; allow in JS/TS
-  if (!isJsOrTs(filePath) && parsed.data.dynamic !== undefined) {
+  // Disallow dynamic and schema in JSON/YAML; allow both in JS/TS.
+  if (
+    !isJsOrTs(filePath) &&
+    (parsed.data.dynamic !== undefined || parsed.data.schema !== undefined)
+  ) {
     throw new Error(
-      `Config ${filePath} specifies "dynamic"; JSON/YAML configs cannot include dynamic in this step. Use JS/TS config.`,
+      `Config ${filePath} specifies unsupported keys for JSON/YAML. ` +
+        `Use JS/TS config for "dynamic" or "schema".`,
     );
   }
 

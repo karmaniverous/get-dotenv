@@ -15,6 +15,11 @@ export interface GetDotenvCliOptions
    */
   debug?: boolean;
   /**
+   * Strict mode: fail the run when env validation issues are detected
+   * (schema or requiredKeys). Warns by default when false or unset.
+   */
+  strict?: boolean;
+  /**
    * When true, capture child stdout/stderr and re-emit after completion.
    * Useful for tests/CI. Default behavior is streaming via stdio: 'inherit'.
    */

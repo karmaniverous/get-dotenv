@@ -21,6 +21,7 @@ export type RootOptionsShape = {
   log?: boolean;
   debug?: boolean;
   capture?: boolean;
+  strict?: boolean;
 
   defaultEnv?: string;
   dotenvToken?: string;
