@@ -1,6 +1,5 @@
 stan-core:
   stanPath: .stan
-  includes: []
   excludes:
     - '**/.tsbuild/**'
     - '**/*.tsbuildinfo'
@@ -8,6 +7,11 @@ stan-core:
     - CHANGELOG.md
     - docs
     - package-lock.json
+  imports:
+    smoz:
+      - ../smoz/.stan/system/stan.requirements.md
+      - ../smoz/.stan/system/stan.todo.md
+      - ../smoz/.stan/interop/get-dotenv/**
 stan-cli:
   scripts:
     typecheck: npm run typecheck
