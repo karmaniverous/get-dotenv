@@ -1,6 +1,6 @@
 # Development Plan — get-dotenv
 
-When updated: 2025-10-19T02:10:00Z
+When updated: 2025-10-19T02:26:00Z
 NOTE: Update timestamp on commit.
 
 ## Next up
@@ -204,3 +204,11 @@ Acceptance
   - Sorted base “Options” so short-aliased flags are listed before long-only flags.
   - Applied the same ordering inside grouped “App options” and “Plugin options” sections.
   - Added a help-order test asserting `-e, --env` precedes `--strict` in help output.
+
+- Workstream 6 (docs: interpolation/validation/diagnostics) and release bump
+  - Updated guides/config.md to document Phase C and per‑plugin interpolation precedence,
+    config validation surfaces (`requiredKeys` for JSON/YAML and Zod `schema` for JS/TS),
+    strict‑mode behavior, and presentation‑only diagnostics (redaction and entropy flags).
+  - Bumped package.json version to 5.2.0 in preparation for a minor release.
+  - Next: generate CHANGELOG via `release-it` (auto-changelog), publish, and verify
+    npm tarball in CI (`verify:tarball`). No code changes required beyond docs/process.

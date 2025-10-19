@@ -84,6 +84,61 @@ The overlay flow:
 
 All expansions are progressive within each slice: when applying a `vars` object, keys are expanded left-to-right so later values may reference earlier results.
 
+## Interpolation model (Phase C and per‑plugin)
+
+After dotenv files and config overlays are composed, a final interpolation pass resolves remaining string options using the composed env:
+
+- Phase C (host/generator paths): interpolate remaining string options (e.g., `outputPath`) against `{ ...process.env, ...ctx.dotenv }`. Precedence: ctx wins over parent process.env.
+- Per‑plugin interpolation: immediately before a plugin’s `afterResolve`, the host interpolates that plugin’s config slice against `{ ...ctx.dotenv, ...process.env }`. Precedence: parent process.env wins over ctx for per‑plugin slices so upstream runtime adjustments (e.g., AWS creds) are visible to children.
+
+Notes:
+
+- Bootstrap keys are excluded from Phase C (dotenvToken, privateToken, env/defaultEnv, paths/vars and their splitters, `exclude*`, `loadProcess`, `log`, `shell`, `dynamicPath`).
+- Interpolation is progressive within a slice; later values can reference earlier results.
+
+## Validation (requiredKeys, schema, and --strict)
+
+You can validate the final composed environment via config:
+
+- JSON/YAML: `requiredKeys?: string[]` — each key must be present (value !== undefined) in the final env.
+- JS/TS: `schema?: ZodSchema` — a Zod schema whose `safeParse(finalEnv)` is executed once after Phase C.
+
+Behavior:
+
+- Validation runs once against the composed env (host/generator paths), after overlays and Phase C interpolation.
+- By default, issues are printed as warnings. Set `--strict` (or `strict: true` in options) to fail with a non‑zero exit when issues are detected.
+
+Examples:
+
+```yaml
+# getdotenv.config.yaml
+requiredKeys:
+  - APP_SETTING
+  - ENV_SETTING
+```
+
+```ts
+// getdotenv.config.ts
+import { z } from 'zod';
+export default {
+  schema: z.object({
+    APP_SETTING: z.string().min(1),
+    ENV_SETTING: z.string().optional(),
+  }),
+};
+```
+
+## Diagnostics (redaction and entropy)
+
+Presentation‑only diagnostics help audit values without altering runtime behavior:
+
+- Redaction (`--redact`): masks secret‑like keys (default patterns include SECRET, TOKEN, PASSWORD, API_KEY, KEY) in `-l/--log` and `--trace` outputs. Add patterns with `--redact-pattern <regex...>`.
+- Entropy warnings (on by default): once‑per‑key messages when printable strings of length ≥ 16 exceed the Shannon bits/char threshold (default 3.8). Flags:
+  - `--entropy-warn` / `--entropy-warn-off`
+  - `--entropy-threshold <n>`
+  - `--entropy-min-length <n>`
+  - `--entropy-whitelist <regex...>` to suppress by key name
+
 ## Scripts table (optional)
 
 You can define a scripts table in config and optionally override shell behavior per script. Script strings are resolved by the `cmd` and `batch` commands:
