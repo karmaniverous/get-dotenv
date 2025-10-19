@@ -175,3 +175,8 @@ Acceptance
     `-l/--log` surfaces in both `getDotenv` and loader paths. Diagnostics never
     modify runtime env; they alter displayed values only. Defaults favor low
     noise (warnEntropy true; redaction opt-in).
+
+- Facet overlay: added "generator" facet to exclude src/generateGetDotenvCli/**
+  (anchors: index.ts, buildRootCommand.ts) and set it inactive by default via
+  facet.state.json. This reduces archive size without affecting the current
+  dev plan (Workstreams 4–6).

@@ -1,4 +1,5 @@
 {
+  "generator": { "exclude": ["src/generateGetDotenvCli/**"], "include": ["src/generateGetDotenvCli/index.ts", "src/generateGetDotenvCli/buildRootCommand.ts"] },
   "tests": {
     "exclude": [
       "test/**",
@@ -85,4 +86,4 @@
       ".github/workflows/sync.yml"
     ]
   }
-}
+}
