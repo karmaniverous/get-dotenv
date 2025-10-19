@@ -1,4 +1,27 @@
 {
+  "configs": {
+    "exclude": [
+      "eslint.config.ts",
+      "vitest.config.ts",
+      "rollup.config.ts",
+      "typedoc.json",
+      "tsconfig.json",
+      "tsconfig.base.json",
+      "tsdoc.json",
+      "knip.json",
+      "lefthook.yml",
+      ".prettierrc.json",
+      ".prettierignore",
+      ".gitattributes",
+      ".gitignore",
+      ".nvmrc",
+      ".node-version",
+      ".npmrc",
+      "getdotenv.config.json"
+    ],
+    "include": ["eslint.config.ts"]
+  },
+  "vscode": { "exclude": [".vscode/**"], "include": [".vscode/settings.json"] },
   "generator": { "exclude": ["src/generateGetDotenvCli/**"], "include": ["src/generateGetDotenvCli/index.ts", "src/generateGetDotenvCli/buildRootCommand.ts"] },
   "tests": {
     "exclude": [

@@ -1,3 +1,15 @@
 {
-  "generator": false
+  "generator": false,
+  "configs": false,
+  "vscode": false,
+  "tests": false,
+  "docs": false,
+  "templates": false,
+  "tools": false,
+  "plugins-aws": false,
+  "plugins-init": false,
+  "plugins-demo": false,
+  "plugins-batch-actions": false,
+  "plugins-cmd": false,
+  "ci": false
 }

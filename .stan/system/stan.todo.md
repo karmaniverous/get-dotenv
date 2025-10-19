@@ -179,4 +179,16 @@ Acceptance
 - Facet overlay: added "generator" facet to exclude src/generateGetDotenvCli/**
   (anchors: index.ts, buildRootCommand.ts) and set it inactive by default via
   facet.state.json. This reduces archive size without affecting the current
-  dev plan (Workstreams 4–6).
+  dev plan (Workstreams 4–6).
+
+- Facet overlay: added "configs" (root build/lint/ts configs and dotfiles) and
+  "vscode" (workspace settings) facets with small anchors. Both default to
+  inactive in facet.state.json to further reduce archive size while keeping
+  minimal context available.
+
+- Facet overlay: defaulted existing non-essential facets to inactive in
+  facet.state.json: tests, docs, templates, tools, plugins-aws, plugins-init,
+  plugins-demo, plugins-batch-actions, plugins-cmd, and ci. These are already
+  covered by anchors in facet.meta.json and are not required for the current
+  dev plan (Workstreams 4–6), further reducing archive size while preserving
+  breadcrumbs.
