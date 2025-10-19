@@ -34,6 +34,20 @@ Load environment variables with a cascade of environment-aware dotenv files. You
 
 ✅ Set defaults for all options in a `getdotenv.config.json` file in your project root directory.
 
+✅ Validate your final composed environment via config: JSON/YAML `requiredKeys` or a JS/TS Zod `schema`. Validation runs once after Phase C (interpolation). Use `--strict` to fail on issues; otherwise warnings are printed. See the [Config files and overlays](./guides/config.md) guide.
+
+✅ Diagnostics for safer visibility without altering runtime values:
+
+- Redaction at presentation time for secret-like keys (`--redact`, `--redact-pattern`).
+- Entropy warnings (on by default) for high-entropy strings; gated by length/printability and tunable via `--entropy-*` flags. See [Config files and overlays](./guides/config.md).
+
+✅ Clear tracing and CI-friendly capture:
+
+- `--trace [keys...]` shows per-key origin (parent | dotenv | unset) before spawning.
+- Set `GETDOTENV_STDIO=pipe` or use `--capture` to buffer child stdout/stderr deterministically. See [Shell execution behavior](./guides/shell.md).
+
+✅ Cross-platform shells and normalized child environments: defaults to `/bin/bash` on POSIX and `powershell.exe` on Windows; subprocess env is composed once via a unified helper that drops undefineds and normalizes temp/home variables. See [Shell execution behavior](./guides/shell.md).
+
 ✅ [Generate an extensible `getdotenv`-based CLI](https://github.com/karmaniverous/get-dotenv-child) for use in your own projects.
 
 `getdotenv` relies on the excellent [`dotenv`](https://www.npmjs.com/package/dotenv) parser and somewhat improves on [`dotenv-expand`](https://www.npmjs.com/package/dotenv-expand) for recursive variable expansion.

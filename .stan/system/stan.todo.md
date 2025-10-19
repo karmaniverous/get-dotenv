@@ -1,9 +1,11 @@
 # Development Plan — get-dotenv
 
-When updated: 2025-10-19T03:50:00Z
+When updated: 2025-10-19T04:40:00Z
 NOTE: Update timestamp on commit.
 
 ## Next up
+
+
 
 - Release (deferred): run release-it (auto-changelog), publish v5.2.0, push
   release branch; verify npm tarball in CI. Note: release is postponed until
@@ -19,7 +21,6 @@ NOTE: Update timestamp on commit.
   latest changes remain stable.
 
 ## Backlog (tracked; not in current slice)
-
  - Batch `--concurrency` (pooling, output aggregation, live prefixed streaming, end‑of‑run summary).
  - First‑party secrets provider plugins (AWS/GCP/Vault).
  - Watch mode (recompute on file changes; optional rerun).
@@ -117,4 +118,11 @@ NOTE: Update timestamp on commit.
   is complete and verified.
 
 - Amendment: “Next up” was trimmed to release-only and small follow-ups to keep
-  focus on remaining actions. Prior workstreams remain in Completed for context.
+  focus on remaining actions. Prior workstreams remain in Completed for context.
+
+- Documentation sweep: updated README (validation/strict, diagnostics, trace/capture,
+  normalized shells/env) and guides:
+  - generated-cli.md gains a “Validation and diagnostics” section
+  - plugins.md clarifies validation/diagnostics behavior with a link to config guide
+  - shell.md documents environment normalization
+  No release performed; package.json remains 5.1.0.

@@ -170,7 +170,7 @@ Notes:
 
 ## Config loader behavior
 
-The plugin host and the generator use the config loader/overlay path by default (always-on). When no config files are present, the loader is a no-op. See the “Config files and overlays” guide for discovery, formats, and precedence. There is no switch to enable this behavior; it is always active.
+The plugin host and the generator use the config loader/overlay path by default (always-on). When no config files are present, the loader is a no-op. Validation runs once after Phase C (interpolation) and respects `--strict`; redaction/entropy diagnostics apply to `--trace` and `-l/--log` without altering runtime values. See the “Config files and overlays” guide (./config.md) for discovery, precedence, validation, and diagnostics.
 
 ## AWS
 

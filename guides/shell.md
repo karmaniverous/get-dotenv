@@ -67,6 +67,14 @@ getdotenv cmd plain
 
 Nested `getdotenv` invocations inherit parent CLI options and the loaded dotenv context via `process.env.getDotenvCliOptions` (JSON). The shell resolution and scripts table continue to apply within nested commands using the same rules.
 
+## Environment normalization
+
+Child processes receive a normalized environment composed from the parent and the current dotenv context:
+
+- Composition: `{ ...process.env, ...ctx.dotenv }`
+- Normalization: a single helper drops undefined values and improves cross-platform behavior (e.g., TMP/TEMP coherence and HOME fallback on Windows; TMPDIR population on POSIX).
+- This keeps subprocess behavior consistent across platforms and surfaces.
+
 ## Capture (CI‑friendly)
 
 By default, child process output is streamed live (`stdio: 'inherit'`). For deterministic logs in CI or tests, enable capture:

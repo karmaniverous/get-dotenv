@@ -38,6 +38,13 @@ npx getdotenv init . \
   --force
 ```
 
+```bash
+# TypeScript config with a dynamic example; CLI named "toolbox"
+npx getdotenv init ./apps/toolbox \
+  --config-format ts \
+  --cli-name toolbox
+```
+
 This scaffolds:
 
 - `getdotenv.config.json` (and `.local` variant if requested)
@@ -59,8 +66,22 @@ Then:
 npm run env-print -- -e dev
 ```
 
+### Validation and diagnostics
+
+The generated CLI uses the same always-on loader and post-composition checks as the plugin-first host:
+
+- Validation (once after Phase C): declare JSON/YAML `requiredKeys` or provide a JS/TS Zod `schema`. Warnings are printed by default; pass `--strict` (or set `strict: true`) to fail the run on issues.
+- Diagnostics (presentation-only): enable `--redact` with optional `--redact-pattern <regex...>` to mask secret-like keys in `--trace` and `-l/--log` outputs. Entropy warnings are on by default and can be tuned via:
+  - `--entropy-warn` / `--entropy-warn-off`
+  - `--entropy-threshold <n>`
+  - `--entropy-min-length <n>`
+  - `--entropy-whitelist <regex...>`
+- Tracing and capture: use `--trace [keys...]` for per-key origin lines and `--capture` (or `GETDOTENV_STDIO=pipe`) for CI-friendly buffered output.
+
 See also:
 
-- Plugin host overview: the “Plugin-first host” guide for building domain plugins and composing commands on top of get-dotenv.
-- Shell and quoting: the “Shell execution behavior” guide for cross-platform quoting and capture tips.
-- Config loader and overlays: the “Config files and overlays” guide for JSON/YAML/JS/TS sources and precedence.
+- Config files and overlays: ./config.md
+- Shell execution behavior and quoting: ./shell.md
+- Plugin-first host and plugins: ./plugins.md
+
+See the [Generated CLI guide](https://docs.karmanivero.us/get-dotenv/guides/generated-cli) for details.
