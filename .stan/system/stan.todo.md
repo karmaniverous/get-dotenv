@@ -105,3 +105,7 @@ When updated: 2025-10-19T00:00:00Z
 - Interop tests: prevent process.exit on help under Vitest
   - Added Commander exitOverride in createCli when VITEST_WORKER_ID/GETDOTENV_TEST is present.
   - Swallows help/version exits; rethrows other errors to preserve failure paths.
+  
+- Interop tests: short-circuit help under tests
+  - When under tests and "-h/--help" is present, render help via outputHelp()
+    and return before parseAsync to avoid Commander exits in all environments.

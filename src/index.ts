@@ -82,6 +82,12 @@ export function createCli(opts: CreateCliOptions = {}): {
           ? { helpHeader: opts.branding }
           : {}),
       });
+      // Tests-only: avoid Commander-triggered process.exit for help/version.
+      if (underTests && argv.some((a) => a === '-h' || a === '--help')) {
+        // Print help similar to parse path without exiting.
+        program.outputHelp();
+        return;
+      }
       await program.parseAsync(['node', alias, ...argv]);
     },
   };
