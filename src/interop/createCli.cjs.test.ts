@@ -12,6 +12,9 @@ describe('interop/createCli (CJS require of dist)', () => {
       // Build does not run before tests in this repo; treat as a skip.
       return;
     }
+    // Ensure tests-only path disables process.exit for help/version flows.
+    process.env.GETDOTENV_TEST = '1';
+
     const req = createRequire(import.meta.url);
     const mod = req(cjsPath) as {
       createCli?: (opts?: { alias?: string; branding?: string }) => {

@@ -2,6 +2,9 @@ import { describe, expect, it } from 'vitest';
 
 describe('interop/createCli (ESM dynamic)', () => {
   it('exposes named createCli and runs help', async () => {
+    // Ensure tests-only path disables process.exit for help/version flows.
+    process.env.GETDOTENV_TEST = '1';
+
     // Dynamic import ensures we exercise ESM resolution in test runtime.
     const mod = (await import('../index')) as unknown as {
       createCli?: (opts?: { alias?: string; branding?: string }) => {
