@@ -132,6 +132,28 @@ Options can be passed programmatically or set in a `getdotenv.config.json` file 
 
 See the [child CLI example repo](https://github.com/karmaniverous/get-dotenv-child#configuration) for an extensive discussion of the various config options and how & where to set them.
 
+## CLI embedding (createCli)
+
+Prefer the named factory when you want to embed the get‑dotenv CLI in your own tool. It wires the plugin‑first host with the included plugins and returns a small runner.
+
+```ts
+#!/usr/bin/env node
+import { createCli } from '@karmaniverous/get-dotenv';
+
+// Build a CLI and run with your argv; alias appears in help.
+await createCli({
+  alias: 'mycli',
+  // Optional: override the help header (otherwise “mycli v<version>” is used).
+  branding: 'mycli v1.2.3',
+}).run(process.argv.slice(2));
+```
+
+Notes:
+
+- The host resolves dotenv context once per invocation and exposes subcommands: cmd, batch, aws, and init (see Guides below).
+- Use `--trace [keys...]` and `--redact` for diagnostics without altering runtime values.
+- Default shells are normalized across platforms: `/bin/bash` on POSIX and `powershell.exe` on Windows (overridable per‑script or globally).
+
 ## Dynamic Processing
 
 This package supports the full [`dotenv-expand`](https://www.npmjs.com/package/dotenv-expand) syntax, with some internal performance improvements. Dynamic variables can be authored in JS or TS.

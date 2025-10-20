@@ -1,30 +1,6 @@
 #!/usr/bin/env node
 
-import '../../cliCore/enhanceGetDotenvCli';
+import { createCli } from '../../index';
 
-import { GetDotenvCli } from '../../cliHost/GetDotenvCli';
-import type { GetDotenvOptions } from '../../GetDotenvOptions';
-import { awsPlugin } from '../../plugins/aws';
-import { batchPlugin } from '../../plugins/batch';
-import { cmdPlugin } from '../../plugins/cmd';
-import { demoPlugin } from '../../plugins/demo';
-import { initPlugin } from '../../plugins/init';
-// Shipped CLI rebased on plugin-first host.
-const program: GetDotenvCli = new GetDotenvCli<GetDotenvOptions>('getdotenv');
-
-// Brand the shipped CLI so help shows the package version (e.g., "getdotenv v5.0.0").
-await program.brand({
-  importMetaUrl: import.meta.url,
-  description: 'Base CLI.',
-});
-
-program
-  .attachRootOptions({ loadProcess: false })
-  .use(cmdPlugin({ asDefault: true, optionAlias: '-c, --cmd <command...>' }))
-  .use(batchPlugin())
-  .use(awsPlugin())
-  .use(demoPlugin())
-  .use(initPlugin())
-  .passOptions({ loadProcess: false });
-
-await program.parseAsync();
+// Delegate to the canonical host factory.
+await createCli({ alias: 'getdotenv' }).run(process.argv.slice(2));
