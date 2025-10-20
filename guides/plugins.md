@@ -74,7 +74,7 @@ Notes:
 
 ### Configure included plugins (JSON/TS config)
 
-Put defaults under getdotenv.config.*. The loader overlays packaged → project/public → project/local and then applies dynamic (when present). Plugin slices live under the `plugins` key.
+Put defaults under getdotenv.config.\*. The loader overlays packaged → project/public → project/local and then applies dynamic (when present). Plugin slices live under the `plugins` key.
 
 JSON example:
 
@@ -95,11 +95,11 @@ JSON example:
       "pkgCwd": false
     },
     "aws": {
-      "profile": "dev",                // or rely on AWS_LOCAL_PROFILE in dotenv
+      "profile": "dev",
       "defaultRegion": "us-east-1",
-      "loginOnDemand": true,          // best-effort SSO login when export fails
-      "setEnv": true,                 // write to process.env
-      "addCtx": true                  // mirror under ctx.plugins.aws
+      "loginOnDemand": true,
+      "setEnv": true,
+      "addCtx": true
     }
   }
 }
@@ -112,15 +112,15 @@ export default {
   plugins: {
     batch: {
       scripts: { build: { cmd: 'npm run build', shell: '/bin/bash' } },
-      shell: false
+      shell: false,
     },
     aws: {
       profileKey: 'AWS_LOCAL_PROFILE',
       regionKey: 'AWS_REGION',
       strategy: 'cli-export',
-      loginOnDemand: true
-    }
-  }
+      loginOnDemand: true,
+    },
+  },
 };
 ```
 
@@ -135,7 +135,7 @@ toolbox -e dev -c 'node -e "console.log(process.env.APP_SETTING ?? \"\")"'
 - Batch across workspaces:
 
 ```bash
-toolbox batch -r ./services -g "web api" -c build
+toolbox batch -r ./services -g "web api" -l
 ```
 
 - AWS session + optional forwarding:
@@ -148,16 +148,9 @@ toolbox aws --profile dev --login-on-demand
 toolbox aws -- sts get-caller-identity
 ```
 
-### Common pitfalls & troubleshooting
+### Branding the host CLI
 
-- “Flags don’t seem to apply to cmd/batch”: Ensure you called `attachRootOptions()` before installing plugins and `passOptions()` before `parseAsync()`. `passOptions()` creates the merged root options bag and persists it for nested flows; included plugins read this bag.
-- “My npm script flags ended up on the inner command”: Prefer the parent alias: `"getdotenv -c 'echo $APP_SETTING'"` and run `npm run script -- -e dev`. The alias ensures `-e` is applied to your CLI, not to `echo`.
-- “Node `-e/--eval` snippets break when shell is off”: The included cmd plugin preserves argv arrays for `node -e/--eval` when `--shell-off`, avoiding lossy re-tokenization (especially on Windows/PowerShell).
-- “AWS still empty”: The base plugin is best‑effort. With `strategy: 'cli-export'` it tries `aws configure export-credentials`; for SSO, enable `loginOnDemand` to retry after `aws sso login`. It publishes region/creds to `process.env` (when `setEnv` is not disabled) and mirrors to `ctx.plugins.aws`.
-
-## Branding the host CLI
-
-Use the branding helper to set the CLI’s name/description and automatically display the version at the top of help (-h). When you provide `importMetaUrl`, the host resolves the nearest package.json and uses its `version`. If you don’t pass a `helpHeader`, the host prints a sensible default `<name> v<version>` as a header.
+Use the branding helper to set the CLI’s name/description and automatically display the version in help when branding is active. When you provide `importMetaUrl`, the host resolves the nearest package.json and uses its `version`. If you don’t pass a `helpHeader`, the host prints a sensible default `<name> v<version>` as a header.
 
 ```ts
 #!/usr/bin/env node
@@ -168,17 +161,19 @@ const program: GetDotenvCli = new GetDotenvCli('toolbox');
 await program.brand({
   importMetaUrl: import.meta.url, // resolves version from your package.json
   description: 'Toolbox CLI', // optional
-  // helpHeader: 'My Toolbox v1.2.3',  // optional; default uses "<name> v<version>"
+  // helpHeader: 'My Toolbox v1.2.3', // optional; default uses "<name> v<version>"
 });
 
 // … wire options/plugins …
 await program.parseAsync();
 ```
 
-Notes:
+Notes and behavior details:
 
-- The shipped getdotenv CLI calls `brand({ importMetaUrl })` so `getdotenv vX.Y.Z` appears at the top of `-h` output.
-- Downstream CLIs should do the same; the resolved version will be your package’s version.
+- The shipped getdotenv binary is implemented via `createCli(...).run(argv)`. To keep `-h/--help` deterministic and avoid `process.exit`, the binary prints help and returns before branding runs. As a result, the header may be omitted for top‑level `-h/--help`.
+- If you need a branded header in help, either:
+  - run `getdotenv help` (which flows through normal parsing and branding), or
+  - author your own host (as in the example above) and call `brand()` before `parseAsync()`.
 
 ## Adding app/root options and consuming them from a plugin
 
@@ -304,41 +299,3 @@ Notes:
 ## Config loader behavior
 
 The plugin host and the generator use the config loader/overlay path by default (always-on). When no config files are present, the loader is a no-op. Validation runs once after Phase C (interpolation) and respects `--strict`; redaction/entropy diagnostics apply to `--trace` and `-l/--log` without altering runtime values. See the “Config files and overlays” guide (./config.md) for discovery, precedence, validation, and diagnostics.
-
-## AWS
-
-The AWS base plugin resolves profile/region and acquires credentials using a safe cascade (env-first → CLI export → (optional) SSO login → static fallback), then writes them into `process.env` and mirrors them under `ctx.plugins.aws`.
-
-See “Wiring included plugins” above for an end‑to‑end host example and config snippets.
-
-You can also use the `aws` subcommand to establish a session and optionally forward to the AWS CLI:
-
-- Session only:
-  ```
-  getdotenv aws --profile dev --login-on-demand
-  ```
-  Establishes credentials/region according to overrides and exits 0.
-- Forward to AWS CLI (tokens after `--` are passed through):
-  ```
-  getdotenv aws --profile dev --login-on-demand -- sts get-caller-identity
-  ```
-  Uses the same exec path as `cmd`: shell-off by default for binaries, honors script/global shell overrides, and supports CI-friendly capture via `--capture` or `GETDOTENV_STDIO=pipe`.
-
-NPM script patterns:
-
-- Needs runtime flags:
-  ```json
-  { "scripts": { "aws": "getdotenv aws" } }
-  ```
-  Then:
-  ```
-  npm run aws -- --profile dev -- -- s3 ls
-  ```
-- Hardcoded command:
-  ```json
-  {
-    "scripts": {
-      "aws:whoami": "getdotenv aws --login-on-demand -- sts get-caller-identity"
-    }
-  }
-  ```

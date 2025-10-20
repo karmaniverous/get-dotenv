@@ -15,7 +15,7 @@
 <p>If a file is missing, it is silently skipped. Parsed values from later files override earlier ones (e.g., private values override public values).</p>
 <h2 id="multiple-paths" class="tsd-anchor-link">Multiple paths<a href="#multiple-paths" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h2><p>When <code>paths</code> contains more than one directory, get-dotenv visits each directory in the order they appear in the array. For each directory, the same four-file cascade is applied and merged into the overall result. Later paths override earlier paths for colliding keys.</p>
 <p>Example:</p>
-<pre><code class="json"><span class="hl-1">{</span><br/><span class="hl-1">  </span><span class="hl-10">&quot;paths&quot;</span><span class="hl-1">: [</span><span class="hl-2">&quot;./&quot;</span><span class="hl-1">, </span><span class="hl-2">&quot;./packages/app&quot;</span><span class="hl-1">]</span><br/><span class="hl-1">}</span>
+<pre><code class="json"><span class="hl-1">{</span><br/><span class="hl-1">  </span><span class="hl-11">&quot;paths&quot;</span><span class="hl-1">: [</span><span class="hl-2">&quot;./&quot;</span><span class="hl-1">, </span><span class="hl-2">&quot;./packages/app&quot;</span><span class="hl-1">]</span><br/><span class="hl-1">}</span>
 </code><button type="button">Copy</button></pre>
 
 <p>Values from <code>./packages/app</code> win over <code>./</code> if the same key appears in both.</p>

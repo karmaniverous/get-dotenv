@@ -1,3 +1,6 @@
+### Full Listing: README.md
+
+````markdown
 > Load, expand, and compose environment variables from a deterministic dotenv cascade, then execute commands under that context. Use `get-dotenv` as a library, a CLI, or a plugin-first host to build dotenv-aware tooling with cross‑platform shell control, CI‑friendly capture, and clear diagnostics.
 
 # get-dotenv
@@ -403,3 +406,327 @@ See the [Generated CLI guide](https://docs.karmanivero.us/get-dotenv/guides/gene
 ---
 
 See more great templates & tools on [my GitHub Profile](https://github.com/karmaniverous)!
+````
+
+### Full Listing: guides/plugins.md
+
+````markdown
+---
+title: Plugin-first host
+sidebar_position: 1
+---
+
+# Plugin-first host (GetDotenvCli)
+
+The plugin-first host provides a composable way to build dotenv-aware CLIs. It validates options strictly, resolves dotenv context once per invocation, and exposes lifecycle hooks for plugins.
+
+## Quickstart
+
+```ts
+#!/usr/bin/env node
+import type { Command } from 'commander';
+import { GetDotenvCli } from '@karmaniverous/get-dotenv/cliHost';
+import { batchPlugin } from '@karmaniverous/get-dotenv/plugins/batch';
+
+const program: Command = new GetDotenvCli('mycli').use(batchPlugin());
+await (program as unknown as GetDotenvCli).resolveAndLoad();
+await program.parseAsync();
+```
+
+- `resolveAndLoad()` produces a context `{ optionsResolved, dotenv, plugins? }`.
+- The host registers a preSubcommand hook to ensure a context exists when subcommands run (e.g., batch).
+
+## Wiring included plugins (cmd, batch, aws, init)
+
+This library ships a small set of ready‑to‑use plugins. Most projects want the same baseline:
+
+- Root flags (`-e/--env`, `--paths`, `--dotenv-token`, `--strict`, `--trace`, etc.)
+- A “cmd” command (and parent alias `-c, --cmd <command...>`) for one‑off commands
+- The “batch” command for running a command across many working directories
+- The AWS base plugin to establish a session and make it available to children
+- The “init” plugin for scaffolding config and a CLI skeleton
+
+Here is a minimal host that wires all of the above.
+
+```ts
+#!/usr/bin/env node
+import { GetDotenvCli } from '@karmaniverous/get-dotenv/cliHost';
+import { cmdPlugin } from '@karmaniverous/get-dotenv/plugins/cmd';
+import { batchPlugin } from '@karmaniverous/get-dotenv/plugins/batch';
+import { awsPlugin } from '@karmaniverous/get-dotenv/plugins/aws';
+import { initPlugin } from '@karmaniverous/get-dotenv/plugins/init';
+
+const program = new GetDotenvCli('toolbox');
+
+// Optional: nice help header (uses your package.json version when importMetaUrl is provided)
+await program.brand({
+  importMetaUrl: import.meta.url,
+  description: 'Toolbox CLI',
+});
+
+// 1) Attach base root options (-e/--env, --paths, --strict, --trace, etc.)
+// 2) Install included plugins
+// 3) passOptions() merges root flags (parent < current), computes the dotenv context
+//    once per invocation, runs validation, and persists merged options for nested flows.
+program
+  .attachRootOptions({ loadProcess: false })
+  .use(cmdPlugin({ asDefault: true, optionAlias: '-c, --cmd <command...>' }))
+  .use(batchPlugin())
+  .use(awsPlugin())
+  .use(initPlugin())
+  .passOptions({ loadProcess: false });
+
+await program.parseAsync();
+```
+
+Notes:
+
+- attachRootOptions adds the familiar root flags so users can select env, set paths, enable `--strict`, `--trace`, etc.
+- passOptions composes defaults + flags into a merged options bag, resolves the dotenv context once, and persists the merged bag for nested invocations. Included plugins (cmd/batch/aws) read this bag for consistent behavior (shell resolution, scripts, capture).
+- cmdPlugin installs both the subcommand and a parent alias `-c, --cmd <command...>`. Prefer the alias in npm scripts so flags after `--` are applied to your CLI, not to the inner command.
+
+### Configure included plugins (JSON/TS config)
+
+Put defaults under getdotenv.config.\*. The loader overlays packaged → project/public → project/local and then applies dynamic (when present). Plugin slices live under the `plugins` key.
+
+JSON example:
+
+```json
+{
+  "paths": "./",
+  "dotenvToken": ".env",
+  "privateToken": "local",
+  "plugins": {
+    "batch": {
+      "scripts": {
+        "build": { "cmd": "npm run build", "shell": "/bin/bash" },
+        "plain": { "cmd": "node -v", "shell": false }
+      },
+      "shell": true,
+      "rootPath": "./packages",
+      "globs": "*",
+      "pkgCwd": false
+    },
+    "aws": {
+      "profile": "dev",
+      "defaultRegion": "us-east-1",
+      "loginOnDemand": true,
+      "setEnv": true,
+      "addCtx": true
+    }
+  }
+}
+```
+
+TypeScript example (JS/TS allows dynamic too):
+
+```ts
+export default {
+  plugins: {
+    batch: {
+      scripts: { build: { cmd: 'npm run build', shell: '/bin/bash' } },
+      shell: false,
+    },
+    aws: {
+      profileKey: 'AWS_LOCAL_PROFILE',
+      regionKey: 'AWS_REGION',
+      strategy: 'cli-export',
+      loginOnDemand: true,
+    },
+  },
+};
+```
+
+### Usage examples
+
+- One-off command (alias on the parent):
+
+```bash
+toolbox -e dev -c 'node -e "console.log(process.env.APP_SETTING ?? \"\")"'
+```
+
+- Batch across workspaces:
+
+```bash
+toolbox batch -r ./services -g "web api" -l
+```
+
+- AWS session + optional forwarding:
+
+```bash
+# session only (populate process.env and ctx.plugins.aws)
+toolbox aws --profile dev --login-on-demand
+
+# forward to AWS CLI (tokens after -- are passed through)
+toolbox aws -- sts get-caller-identity
+```
+
+### Branding the host CLI
+
+Use the branding helper to set the CLI’s name/description and automatically display the version in help when branding is active. When you provide `importMetaUrl`, the host resolves the nearest package.json and uses its `version`. If you don’t pass a `helpHeader`, the host prints a sensible default `<name> v<version>` as a header.
+
+```ts
+#!/usr/bin/env node
+import type { Command } from 'commander';
+import { GetDotenvCli } from '@karmaniverous/get-dotenv/cliHost';
+
+const program: GetDotenvCli = new GetDotenvCli('toolbox');
+await program.brand({
+  importMetaUrl: import.meta.url, // resolves version from your package.json
+  description: 'Toolbox CLI', // optional
+  // helpHeader: 'My Toolbox v1.2.3', // optional; default uses "<name> v<version>"
+});
+
+// … wire options/plugins …
+await program.parseAsync();
+```
+
+Notes and behavior details:
+
+- The shipped getdotenv binary is implemented via `createCli(...).run(argv)`. To keep `-h/--help` deterministic and avoid `process.exit`, the binary prints help and returns before branding runs. As a result, the header may be omitted for top‑level `-h/--help`.
+- If you need a branded header in help, either:
+  - run `getdotenv help` (which flows through normal parsing and branding), or
+  - author your own host (as in the example above) and call `brand()` before `parseAsync()`.
+
+## Adding app/root options and consuming them from a plugin
+
+You can add your own root options and group them under “App options” in help using `tagAppOptions`. Install base flags and merging with `attachRootOptions().passOptions()` so values flow into the merged options bag:
+
+```ts
+import type { Command } from 'commander';
+import {
+  GetDotenvCli,
+  readMergedOptions,
+} from '@karmaniverous/get-dotenv/cliHost';
+import { definePlugin } from '@karmaniverous/get-dotenv/cliHost';
+
+const program: GetDotenvCli = new GetDotenvCli('mycli');
+await program.brand({ importMetaUrl: import.meta.url, description: 'My CLI' });
+
+program
+  .attachRootOptions() // install base flags (-e, --paths, etc.)
+  .tagAppOptions((root) => {
+    root.option('--foo <value>', 'custom app option'); // appears under "App options" in -h
+  })
+  .use(
+    definePlugin({
+      id: 'print',
+      setup(cli) {
+        cli.ns('print').action((_args, _opts, thisCommand) => {
+          // Read the merged root options bag. Custom keys flow through.
+          const bag = readMergedOptions(thisCommand) ?? {};
+          const foo = (bag as unknown as { foo?: string }).foo;
+          console.log(`foo=${foo ?? ''}`);
+        });
+      },
+    }),
+  )
+  .passOptions(); // merge flags (parent < current), compute dotenv context
+
+await program.parseAsync();
+```
+
+Example:
+
+```bash
+mycli -e dev --foo bar print
+# -> foo=bar
+```
+
+Notes:
+
+- `tagAppOptions` only affects help grouping; values are parsed by Commander and merged by `passOptions()`.
+- Use `readMergedOptions(thisCommand)` in actions (or `cli.getOptions()` from code that has a handle on the host) to read the merged options bag. Custom keys are present at runtime even if not in the default type.
+
+## Writing a plugin
+
+```ts
+import type { GetDotenvCli } from '@karmaniverous/get-dotenv/cliHost';
+import { definePlugin } from '@karmaniverous/get-dotenv/cliHost';
+
+export const myPlugin = definePlugin({
+  id: 'my',
+  setup(cli: GetDotenvCli) {
+    cli
+      .ns('my')
+      .description('My commands')
+      .action(async () => {
+        const ctx = cli.getCtx?.();
+        // Use ctx.dotenv or ctx.plugins['my']...
+      });
+  },
+  async afterResolve(cli, ctx) {
+    // Initialize any clients/secrets using ctx.dotenv
+    // Attach per-plugin state under ctx.plugins by convention:
+    ctx.plugins ??= {};
+    ctx.plugins['my'] = { ready: true };
+  },
+});
+```
+
+Composition:
+
+```ts
+const parent = definePlugin({ id: 'parent', setup() {} })
+  .use(definePlugin({ id: 'childA', setup() {} }))
+  .use(definePlugin({ id: 'childB', setup() {} }));
+```
+
+Plugins install parent → children; `afterResolve` also runs parent → children.
+
+## Passing env to subprocesses
+
+Prefer passing the resolved env explicitly to subprocesses invoked by your commands:
+
+```ts
+import { execaCommand } from 'execa';
+
+// inside a command action:
+const ctx = cli.getCtx?.();
+await execaCommand('node -e "console.log(process.env.MY_VAR)"', {
+  env: { ...process.env, ...ctx.dotenv },
+  stdio: 'inherit',
+});
+```
+
+The shipped CLI uses a nested-CLI strategy by placing the merged CLI options on `process.env.getDotenvCliOptions` (JSON) so child `getdotenv` invocations can inherit the parent’s defaults and flags.
+
+## Scaffolding a host-based CLI
+
+Use the built-in scaffolder to create config files and a starter CLI:
+
+```bash
+# JSON config + .local + CLI skeleton named “acme”
+getdotenv init . --config-format json --with-local --cli-name acme --force
+```
+
+Notes:
+
+- Templates are shipped and copied verbatim (no inline codegen).
+- Collision flow supports [o]/[e]/[s] and [O]/[E]/[S]; non-interactive defaults to `--yes` unless `--force`.
+- The CLI skeleton replaces `__CLI_NAME__` tokens with your chosen name.
+- Non-interactive detection and precedence:
+  - Treated as `--yes` (Skip All) when stdin or stdout is not a TTY OR when a CI-like environment variable is present (`CI`, `GITHUB_ACTIONS`, `BUILDKITE`, `TEAMCITY_VERSION`, `TF_BUILD`).
+  - Precedence is `--force` > `--yes` > auto-detect (non-interactive => Skip All).
+
+## Config loader behavior
+
+The plugin host and the generator use the config loader/overlay path by default (always-on). When no config files are present, the loader is a no-op. Validation runs once after Phase C (interpolation) and respects `--strict`; redaction/entropy diagnostics apply to `--trace` and `-l/--log` without altering runtime values. See the “Config files and overlays” guide (./config.md) for discovery, precedence, validation, and diagnostics.
+````
+
+---
+
+SMOZ interop response (export surface and runtime behavior)
+
+- Canonical entry (named): We expose a stable named factory `createCli(opts?) => { run(argv: string[]): Promise<void> }` from the top-level module. This covers the recommended contract in your interop note and is the path used by our own binary (`dist/getdotenv.cli.mjs`) and by downstream embedders.
+- Deterministic help across ESM/CJS: `createCli().run(['-h'])` short-circuits before parsing to avoid Commander’s default `process.exit`. This applies in both ESM and CJS and eliminates environment-sensitive behavior in tests and programmatic embeddings. Consequence: the optional help header set by `brand()` may be omitted in the `-h/--help` path; the header still appears in flows that run through branding (e.g., `getdotenv help` or hosts that call `brand()` before `parseAsync()`).
+- ESM/CJS matrix covered by tests:
+  - ESM dynamic: `(await import('../index')).createCli().run(['-h'])` (smoke test).
+  - CJS require: `require('dist/index.cjs').createCli().run(['-h'])` (smoke test; gated to run when dist is present).
+- Default export variants: we did not add a default export (callable or object) in this release. The canonical surface is the named `createCli`. Your downstream adapter can continue to probe legacy shapes if desired, but the recommended path going forward is the named factory.
+- Types/public surface: `createCli` is included in the published `.d.ts` and in the top-level `exports` map (ESM/CJS). If you add a type-level probe in your interop matrix (optional), it should pass against `dist/index.d.*`.
+- Docs alignment:
+  - README and Guides now clarify the `-h/--help` short-circuit and its interaction with branding.
+  - Embedding examples include both ESM dynamic import and CJS require (against dist), matching your adapter’s use cases.
+
+If you want us to add a transitional default export shim (`default.createCli` or a callable default delegating to `createCli(opts).run(argv)`), we can schedule that in a minor release; for now, the canonical contract is the named `createCli`, and our tests validate that path in both module systems.

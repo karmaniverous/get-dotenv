@@ -26,7 +26,7 @@
 <li>A CLI skeleton at <code>src/cli/&lt;name&gt;/index.ts</code></li>
 </ul>
 <p>Inside npm scripts, prefer the parent-level alias form to ensure flags apply to getdotenv rather than the inner shell command:</p>
-<pre><code class="json"><span class="hl-1">{</span><br/><span class="hl-1">  </span><span class="hl-10">&quot;scripts&quot;</span><span class="hl-1">: {</span><br/><span class="hl-1">    </span><span class="hl-10">&quot;env-print&quot;</span><span class="hl-1">: </span><span class="hl-2">&quot;getdotenv -c &#39;node -e </span><span class="hl-4">\&quot;</span><span class="hl-2">console.log(process.env.APP_SETTING ?? </span><span class="hl-4">\\\&quot;\\\&quot;</span><span class="hl-2">)</span><span class="hl-4">\&quot;</span><span class="hl-2">&#39;&quot;</span><br/><span class="hl-1">  }</span><br/><span class="hl-1">}</span>
+<pre><code class="json"><span class="hl-1">{</span><br/><span class="hl-1">  </span><span class="hl-11">&quot;scripts&quot;</span><span class="hl-1">: {</span><br/><span class="hl-1">    </span><span class="hl-11">&quot;env-print&quot;</span><span class="hl-1">: </span><span class="hl-2">&quot;getdotenv -c &#39;node -e </span><span class="hl-4">\&quot;</span><span class="hl-2">console.log(process.env.APP_SETTING ?? </span><span class="hl-4">\\\&quot;\\\&quot;</span><span class="hl-2">)</span><span class="hl-4">\&quot;</span><span class="hl-2">&#39;&quot;</span><br/><span class="hl-1">  }</span><br/><span class="hl-1">}</span>
 </code><button type="button">Copy</button></pre>
 
 <p>Then:</p>
