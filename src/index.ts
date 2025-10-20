@@ -82,9 +82,10 @@ export function createCli(opts: CreateCliOptions = {}): {
           ? { helpHeader: opts.branding }
           : {}),
       });
-      // Tests-only: avoid Commander-triggered process.exit for help/version.
-      if (underTests && argv.some((a) => a === '-h' || a === '--help')) {
-        // Print help similar to parse path without exiting.
+      // Always short-circuit help to avoid Commander-triggered process.exit
+      // across environments (CJS/ESM). This preserves deterministic behavior
+      // in tests and keeps real CLI behavior equivalent (prints help then returns).
+      if (argv.some((a) => a === '-h' || a === '--help')) {
         program.outputHelp();
         return;
       }
