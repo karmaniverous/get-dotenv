@@ -101,3 +101,7 @@ When updated: 2025-10-19T00:00:00Z
   - Exported createCli from src/index.ts with options { alias, branding } and a run(argv) method.
   - Updated shipped CLI to call createCli({ alias: 'getdotenv' }).run(process.argv.slice(2)).
   - No default export or runCli helper introduced; named export only per interop plan.
+
+- Interop tests: prevent process.exit on help under Vitest
+  - Added Commander exitOverride in createCli when VITEST_WORKER_ID/GETDOTENV_TEST is present.
+  - Swallows help/version exits; rethrows other errors to preserve failure paths.

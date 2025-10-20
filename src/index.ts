@@ -59,6 +59,19 @@ export function createCli(opts: CreateCliOptions = {}): {
     .use(initPlugin())
     .passOptions({ loadProcess: false });
 
+  // Tests-only: avoid process.exit during help/version flows under Vitest.
+  const underTests =
+    process.env.GETDOTENV_TEST === '1' ||
+    typeof process.env.VITEST_WORKER_ID === 'string';
+  if (underTests) {
+    program.exitOverride((err: unknown) => {
+      const code = (err as { code?: string } | undefined)?.code;
+      if (code === 'commander.helpDisplayed' || code === 'commander.version')
+        return;
+      throw err;
+    });
+  }
+
   return {
     async run(argv: string[]) {
       await program.brand({
