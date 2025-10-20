@@ -114,3 +114,9 @@ When updated: 2025-10-19T00:00:00Z
     under tests) to avoid Commander process.exit under CJS. Keeps behavior
     consistent and resolves the failing interop test while preserving real CLI
     behavior (prints help and returns with code 0).
+
+- ESM interop timing fix:
+  - Moved help short-circuit to run before branding/parsing so
+    `createCli().run(['-h'])` returns immediately under dynamic ESM without
+    awaiting package metadata IO. Avoids test timeout while preserving CLI
+    behavior (prints help and exits 0).

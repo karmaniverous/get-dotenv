@@ -74,6 +74,13 @@ export function createCli(opts: CreateCliOptions = {}): {
 
   return {
     async run(argv: string[]) {
+      // Always short-circuit help to avoid Commander-triggered process.exit
+      // across environments (CJS/ESM) and to return immediately under dynamic
+      // ESM without performing extra IO. Prints help and returns.
+      if (argv.some((a) => a === '-h' || a === '--help')) {
+        program.outputHelp();
+        return;
+      }
       await program.brand({
         name: alias,
         importMetaUrl: import.meta.url,
@@ -82,13 +89,6 @@ export function createCli(opts: CreateCliOptions = {}): {
           ? { helpHeader: opts.branding }
           : {}),
       });
-      // Always short-circuit help to avoid Commander-triggered process.exit
-      // across environments (CJS/ESM). This preserves deterministic behavior
-      // in tests and keeps real CLI behavior equivalent (prints help then returns).
-      if (argv.some((a) => a === '-h' || a === '--help')) {
-        program.outputHelp();
-        return;
-      }
       await program.parseAsync(['node', alias, ...argv]);
     },
   };
