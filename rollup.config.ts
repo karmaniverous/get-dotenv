@@ -114,6 +114,36 @@ const config: RollupOptions[] = [
     ],
   },
 
+  // plugins/cmd subpath
+  {
+    ...commonInputOptions,
+    input: 'src/plugins/cmd/index.ts',
+    output: [
+      { extend: true, file: `${outputPath}/plugins-cmd.mjs`, format: 'esm' },
+    ],
+  },
+  {
+    ...commonInputOptions,
+    input: 'src/plugins/cmd/index.ts',
+    output: [
+      { extend: true, file: `${outputPath}/plugins-cmd.cjs`, format: 'cjs' },
+    ],
+  },
+  // plugins/demo subpath
+  {
+    ...commonInputOptions,
+    input: 'src/plugins/demo/index.ts',
+    output: [
+      { extend: true, file: `${outputPath}/plugins-demo.mjs`, format: 'esm' },
+    ],
+  },
+  {
+    ...commonInputOptions,
+    input: 'src/plugins/demo/index.ts',
+    output: [
+      { extend: true, file: `${outputPath}/plugins-demo.cjs`, format: 'cjs' },
+    ],
+  },
   // plugins/init subpath
   {
     ...commonInputOptions,
@@ -249,6 +279,40 @@ const config: RollupOptions[] = [
       { extend: true, file: `${outputPath}/plugins-init.d.ts`, format: 'esm' },
       { extend: true, file: `${outputPath}/plugins-init.d.mts`, format: 'esm' },
       { extend: true, file: `${outputPath}/plugins-init.d.cts`, format: 'cjs' },
+    ],
+  },
+  // Types: plugins-cmd
+  {
+    ...commonInputOptions,
+    input: 'src/plugins/cmd/index.ts',
+    plugins: [
+      aliasPlugin({ entries: commonAliases }),
+      ...commonPlugins,
+      dtsPlugin(),
+    ],
+    output: [
+      { extend: true, file: `${outputPath}/plugins-cmd.d.ts`, format: 'esm' },
+      { extend: true, file: `${outputPath}/plugins-cmd.d.mts`, format: 'esm' },
+      { extend: true, file: `${outputPath}/plugins-cmd.d.cts`, format: 'cjs' },
+    ],
+  },
+  // Types: plugins-demo
+  {
+    ...commonInputOptions,
+    input: 'src/plugins/demo/index.ts',
+    plugins: [
+      aliasPlugin({ entries: commonAliases }),
+      ...commonPlugins,
+      dtsPlugin(),
+    ],
+    output: [
+      { extend: true, file: `${outputPath}/plugins-demo.d.ts`, format: 'esm' },
+      {
+        extend: true,
+        file: `${outputPath}/plugins-demo.d.mts`,
+        format: 'esm',
+      },
+      { extend: true, file: `${outputPath}/plugins-demo.d.cts`, format: 'cjs' },
     ],
   },
   // Types: config

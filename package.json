@@ -120,6 +120,26 @@
         "default": "./dist/plugins-init.cjs"
       }
     },
+    "./plugins/cmd": {
+      "import": {
+        "types": "./dist/plugins-cmd.d.mts",
+        "default": "./dist/plugins-cmd.mjs"
+      },
+      "require": {
+        "types": "./dist/plugins-cmd.d.cts",
+        "default": "./dist/plugins-cmd.cjs"
+      }
+    },
+    "./plugins/demo": {
+      "import": {
+        "types": "./dist/plugins-demo.d.mts",
+        "default": "./dist/plugins-demo.mjs"
+      },
+      "require": {
+        "types": "./dist/plugins-demo.d.cts",
+        "default": "./dist/plugins-demo.cjs"
+      }
+    },
     "./config": {
       "import": {
         "types": "./dist/config.d.mts",

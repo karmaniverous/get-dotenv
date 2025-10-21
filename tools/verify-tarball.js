@@ -21,6 +21,8 @@ const expected = [
   'dist/plugins-aws.mjs',
   'dist/plugins-batch.mjs',
   'dist/plugins-init.mjs',
+  'dist/plugins-cmd.mjs',
+  'dist/plugins-demo.mjs',
   'dist/config.mjs',
   'dist/env-overlay.mjs',
   'dist/getdotenv.cli.mjs',

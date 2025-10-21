@@ -25,6 +25,8 @@ const main = async () => {
     './plugins/aws',
     './plugins/batch',
     './plugins/init',
+    './plugins/cmd',
+    './plugins/demo',
     './config',
     './env/overlay',
   ];
@@ -44,6 +46,8 @@ const main = async () => {
       'plugins-aws.mjs',
       'plugins-batch.mjs',
       'plugins-init.mjs',
+      'plugins-cmd.mjs',
+      'plugins-demo.mjs',
       'config.mjs',
       'env-overlay.mjs',
     ];
