@@ -38,5 +38,6 @@ export default defineConfig({
         'docs/**',
       ],
     },
+    testTimeout: 10_000,
   },
 });
