@@ -2,6 +2,7 @@
   "entry": [
     "src/index.ts",
     "src/cliHost/index.ts",
+    "src/plugins/index.ts",
     "src/plugins/batch/index.ts",
     "src/plugins/init/index.ts",
     "src/config/index.ts",

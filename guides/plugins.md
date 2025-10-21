@@ -13,7 +13,7 @@ The plugin-first host provides a composable way to build dotenv-aware CLIs. It v
 #!/usr/bin/env node
 import type { Command } from 'commander';
 import { GetDotenvCli } from '@karmaniverous/get-dotenv/cliHost';
-import { batchPlugin } from '@karmaniverous/get-dotenv/plugins/batch';
+import { batchPlugin } from '@karmaniverous/get-dotenv/plugins';
 
 const program: Command = new GetDotenvCli('mycli').use(batchPlugin());
 await (program as unknown as GetDotenvCli).resolveAndLoad();
@@ -38,10 +38,12 @@ Here is a minimal host that wires all of the above.
 ```ts
 #!/usr/bin/env node
 import { GetDotenvCli } from '@karmaniverous/get-dotenv/cliHost';
-import { cmdPlugin } from '@karmaniverous/get-dotenv/plugins/cmd';
-import { batchPlugin } from '@karmaniverous/get-dotenv/plugins/batch';
-import { awsPlugin } from '@karmaniverous/get-dotenv/plugins/aws';
-import { initPlugin } from '@karmaniverous/get-dotenv/plugins/init';
+import {
+  cmdPlugin,
+  batchPlugin,
+  awsPlugin,
+  initPlugin,
+} from '@karmaniverous/get-dotenv/plugins';
 
 const program = new GetDotenvCli('toolbox');
 
@@ -66,11 +68,7 @@ program
 await program.parseAsync();
 ```
 
-Notes:
-
-- attachRootOptions adds the familiar root flags so users can select env, set paths, enable `--strict`, `--trace`, etc.
-- passOptions composes defaults + flags into a merged options bag, resolves the dotenv context once, and persists the merged bag for nested invocations. Included plugins (cmd/batch/aws) read this bag for consistent behavior (shell resolution, scripts, capture).
-- cmdPlugin installs both the subcommand and a parent alias `-c, --cmd <command...>`. Prefer the alias in npm scripts so flags after `--` are applied to your CLI, not to the inner command.
+Note: Per‑plugin subpaths (e.g., `@karmaniverous/get-dotenv/plugins/cmd`) remain available, but the plugins barrel is recommended to share a single type identity with `cliHost` and simplify imports.
 
 ### Configure included plugins (JSON/TS config)
 

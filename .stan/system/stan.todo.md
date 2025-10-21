@@ -137,3 +137,8 @@ When updated: 2025-10-19T00:00:00Z
 
 - Distribute cmd and demo plugins
   - Added rollup builds (ESM/CJS and types) and package.json exports for ./plugins/cmd and ./plugins/demo; updated verification scripts to assert presence.
+
+- Rollup TS paths and knip entry for plugins barrel:
+  - Added TypeScript "paths" mappings to tsconfig.base.json for '@karmaniverous/get-dotenv/cliHost' and '@karmaniverous/get-dotenv/plugins' so @rollup/plugin-typescript resolves type-only imports during builds without TS2307 warnings.
+  - Included 'src/plugins/index.ts' in knip.json "entry" to silence the unused-file warning for the plugins barrel.
+  - Updated Guides to recommend importing plugins via the barrel.

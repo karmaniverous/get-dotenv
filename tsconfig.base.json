@@ -2,6 +2,10 @@
   "compilerOptions": {
     "allowSyntheticDefaultImports": true,
     "baseUrl": ".",
+    "paths": {
+      "@karmaniverous/get-dotenv/cliHost": ["src/cliHost/index.ts"],
+      "@karmaniverous/get-dotenv/plugins": ["src/plugins/index.ts"]
+    },
     "rootDir": ".",
     "emitDeclarationOnly": false,
     "exactOptionalPropertyTypes": true,
