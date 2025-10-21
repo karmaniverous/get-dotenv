@@ -1,7 +1,8 @@
+import type { GetDotenvCli } from '@karmaniverous/get-dotenv/cliHost';
+
 import { runCommand } from '../../cliCore/exec';
 import { buildSpawnEnv } from '../../cliCore/spawnEnv';
 import { definePlugin } from '../../cliHost/definePlugin';
-import type { GetDotenvCli } from '../../cliHost/GetDotenvCli';
 import type { Logger } from '../../GetDotenvOptions';
 import { resolveShell } from '../../services/batch/resolve';
 import { resolveAwsContext } from './service';

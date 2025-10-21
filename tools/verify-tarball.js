@@ -18,6 +18,7 @@ const expected = [
   'dist/index.mjs',
   'dist/index.cjs',
   'dist/cliHost.mjs',
+  'dist/plugins.mjs',
   'dist/plugins-aws.mjs',
   'dist/plugins-batch.mjs',
   'dist/plugins-init.mjs',

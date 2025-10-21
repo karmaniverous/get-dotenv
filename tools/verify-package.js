@@ -22,6 +22,7 @@ const main = async () => {
   const requiredExports = [
     '.',
     './cliHost',
+    './plugins',
     './plugins/aws',
     './plugins/batch',
     './plugins/init',
@@ -43,6 +44,7 @@ const main = async () => {
     const jsExpectations = [
       'index.mjs',
       'cliHost.mjs',
+      'plugins.mjs',
       'plugins-aws.mjs',
       'plugins-batch.mjs',
       'plugins-init.mjs',

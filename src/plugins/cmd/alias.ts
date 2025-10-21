@@ -7,6 +7,7 @@ const dbg = (...args: unknown[]) => {
     console.error('[getdotenv:alias]', ...args);
   }
 };
+import type { GetDotenvCli } from '@karmaniverous/get-dotenv/cliHost';
 import type { Command } from 'commander';
 
 import { baseRootOptionDefaults } from '../../cliCore/defaults';
@@ -15,7 +16,6 @@ import type { GetDotenvCliOptions } from '../../cliCore/GetDotenvCliOptions';
 import { resolveCliOptions } from '../../cliCore/resolveCliOptions';
 import { buildSpawnEnv } from '../../cliCore/spawnEnv';
 import type { CommandWithOptions } from '../../cliCore/types';
-import type { GetDotenvCli } from '../../cliHost/GetDotenvCli';
 import { maybeWarnEntropy } from '../../diagnostics/entropy';
 import { redactTriple } from '../../diagnostics/redact';
 import { dotenvExpandFromProcessEnv } from '../../dotenvExpand';

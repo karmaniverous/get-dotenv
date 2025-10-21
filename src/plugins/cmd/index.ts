@@ -1,10 +1,10 @@
+import type { GetDotenvCli } from '@karmaniverous/get-dotenv/cliHost';
 import { Command } from 'commander';
 
 import { runCommand } from '../../cliCore/exec';
 import { buildSpawnEnv } from '../../cliCore/spawnEnv';
 import type { CommandWithOptions } from '../../cliCore/types';
 import { definePlugin } from '../../cliHost/definePlugin';
-import type { GetDotenvCli } from '../../cliHost/GetDotenvCli';
 import type { EntropyOptions } from '../../diagnostics/entropy';
 import { maybeWarnEntropy } from '../../diagnostics/entropy';
 import { redactTriple } from '../../diagnostics/redact';

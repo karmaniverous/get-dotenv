@@ -159,6 +159,23 @@ const config: RollupOptions[] = [
       { extend: true, file: `${outputPath}/plugins-init.cjs`, format: 'cjs' },
     ],
   },
+
+  // plugins barrel (ESM/CJS)
+  {
+    ...commonInputOptions,
+    input: 'src/plugins/index.ts',
+    output: [
+      { extend: true, file: `${outputPath}/plugins.mjs`, format: 'esm' },
+    ],
+  },
+  {
+    ...commonInputOptions,
+    input: 'src/plugins/index.ts',
+    output: [
+      { extend: true, file: `${outputPath}/plugins.cjs`, format: 'cjs' },
+    ],
+  },
+
   // config loader subpath
   {
     ...commonInputOptions,
@@ -343,6 +360,22 @@ const config: RollupOptions[] = [
       { extend: true, file: `${outputPath}/env-overlay.d.ts`, format: 'esm' },
       { extend: true, file: `${outputPath}/env-overlay.d.mts`, format: 'esm' },
       { extend: true, file: `${outputPath}/env-overlay.d.cts`, format: 'cjs' },
+    ],
+  },
+
+  // Types: plugins barrel
+  {
+    ...commonInputOptions,
+    input: 'src/plugins/index.ts',
+    plugins: [
+      aliasPlugin({ entries: commonAliases }),
+      ...commonPlugins,
+      dtsPlugin(),
+    ],
+    output: [
+      { extend: true, file: `${outputPath}/plugins.d.ts`, format: 'esm' },
+      { extend: true, file: `${outputPath}/plugins.d.mts`, format: 'esm' },
+      { extend: true, file: `${outputPath}/plugins.d.cts`, format: 'cjs' },
     ],
   },
 

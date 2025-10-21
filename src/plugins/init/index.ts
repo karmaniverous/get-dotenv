@@ -4,6 +4,7 @@
  */
 import { stdin as input, stdout as output } from 'node:process';
 
+import type { GetDotenvCli } from '@karmaniverous/get-dotenv/cliHost';
 // NOTE: pay attention to non-interactive detection and precedence
 // (--force > --yes > auto-detect). See README for details.
 import type { Command } from 'commander';
@@ -12,7 +13,6 @@ import path from 'path';
 import { createInterface } from 'readline/promises';
 
 import { definePlugin } from '../../cliHost/definePlugin';
-import type { GetDotenvCli } from '../../cliHost/GetDotenvCli';
 import type { Logger } from '../../GetDotenvOptions';
 import { copyTextFile, ensureLines } from './io';
 import { planCliCopies, planConfigCopies } from './plan';

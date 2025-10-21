@@ -28,9 +28,10 @@
  *   getdotenv demo script echo OK
  *   getdotenv --trace demo run --print ENV_SETTING
  */
+import type { GetDotenvCli } from '@karmaniverous/get-dotenv/cliHost';
+
 import { runCommand } from '../../cliCore/exec';
 import { definePlugin } from '../../cliHost/definePlugin';
-import type { GetDotenvCli } from '../../cliHost/GetDotenvCli';
 import type { Logger } from '../../GetDotenvOptions';
 import { resolveCommand, resolveShell } from '../../services/batch/resolve';
 

@@ -1,6 +1,6 @@
+import type { GetDotenvCli } from '@karmaniverous/get-dotenv/cliHost';
 import type { Command } from 'commander';
 
-import type { GetDotenvCli } from '../../../cliHost/GetDotenvCli';
 import type { Logger } from '../../../GetDotenvOptions';
 import { execShellCommandBatch } from '../../../services/batch/execShellCommandBatch';
 import type { Scripts } from '../../../services/batch/resolve';

@@ -3,7 +3,9 @@
     "baseUrl": ".",
     "outDir": ".tsbuild",
     "paths": {
-      "@/*": ["*"]
+      "@/*": ["*"],
+      "@karmaniverous/get-dotenv/cliHost": ["src/cliHost/index.ts"],
+      "@karmaniverous/get-dotenv/plugins": ["src/plugins/index.ts"]
     },
     "tsBuildInfoFile": ".tsbuild/tsconfig.tsbuildinfo"
   },

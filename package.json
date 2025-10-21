@@ -90,6 +90,16 @@
         "default": "./dist/cliHost.cjs"
       }
     },
+    "./plugins": {
+      "import": {
+        "types": "./dist/plugins.d.mts",
+        "default": "./dist/plugins.mjs"
+      },
+      "require": {
+        "types": "./dist/plugins.d.cts",
+        "default": "./dist/plugins.cjs"
+      }
+    },
     "./plugins/aws": {
       "import": {
         "types": "./dist/plugins-aws.d.mts",

@@ -1,7 +1,7 @@
+import type { GetDotenvCli } from '@karmaniverous/get-dotenv/cliHost';
 import { Command as Commander } from 'commander';
 
 import { definePlugin } from '../../cliHost/definePlugin';
-import type { GetDotenvCli } from '../../cliHost/GetDotenvCli';
 import { buildDefaultCmdAction } from './actions/defaultCmdAction';
 import { buildParentAction } from './actions/parentAction';
 import { BatchConfigSchema, type BatchPluginOptions } from './types';
