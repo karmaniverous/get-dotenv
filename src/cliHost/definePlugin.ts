@@ -1,20 +1,51 @@
+/** src/cliHost/definePlugin.ts
+ * Plugin contracts for the GetDotenv CLI host.
+ *
+ * This module exposes a structural public interface for the host that plugins
+ * should use (GetDotenvCliPublic). Using a structural type at the seam avoids
+ * nominal class identity issues (private fields) in downstream consumers.
+ */
+
 // Optional per-plugin config validation (host validates when loader is enabled).
+import type { Command } from 'commander';
 import type { ZodType } from 'zod';
 
-import type { GetDotenvCli, GetDotenvCliCtx } from './GetDotenvCli';
+import type { GetDotenvOptions } from '../GetDotenvOptions';
+import type { GetDotenvCliCtx } from './GetDotenvCli';
 
-/** Public plugin contract used by the GetDotenv CLI host. */ export interface GetDotenvCliPlugin {
-  id?: string /**
-   * Setup phase: register commands and wiring on the provided CLI instance.   * Runs parent → children (pre-order).
-   */;
-  setup: (cli: GetDotenvCli) => void | Promise<void>;
+/**
+ * Structural public interface for the host exposed to plugins.
+ * - Extends Commander.Command so plugins can attach options/commands/hooks.
+ * - Adds host-specific helpers used by built-in plugins.
+ *
+ * Purpose: remove nominal class identity (private fields) from the plugin seam
+ * to avoid TS2379 under exactOptionalPropertyTypes in downstream consumers.
+ */
+export type GetDotenvCliPublic<
+  TOptions extends GetDotenvOptions = GetDotenvOptions,
+> = Command & {
+  ns: (name: string) => Command;
+  getCtx: () => GetDotenvCliCtx<TOptions> | undefined;
+  resolveAndLoad: (
+    customOptions?: Partial<TOptions>,
+  ) => Promise<GetDotenvCliCtx<TOptions>>;
+};
+
+/** Public plugin contract used by the GetDotenv CLI host. */
+export interface GetDotenvCliPlugin {
+  id?: string;
+  /**
+   * Setup phase: register commands and wiring on the provided CLI instance.
+   * Runs parent → children (pre-order).
+   */
+  setup: (cli: GetDotenvCliPublic) => void | Promise<void>;
   /**
    * After the dotenv context is resolved, initialize any clients/secrets
    * or attach per-plugin state under ctx.plugins (by convention).
    * Runs parent → children (pre-order).
    */
   afterResolve?: (
-    cli: GetDotenvCli,
+    cli: GetDotenvCliPublic,
     ctx: GetDotenvCliCtx,
   ) => void | Promise<void>;
   /**
@@ -24,7 +55,8 @@ import type { GetDotenvCli, GetDotenvCliCtx } from './GetDotenvCli';
   configSchema?: ZodType;
   /**
    * Compositional children. Installed after the parent per pre-order.
-   */ children: GetDotenvCliPlugin[];
+   */
+  children: GetDotenvCliPlugin[];
   /**
    * Compose a child plugin. Returns the parent to enable chaining.
    */
@@ -38,6 +70,7 @@ import type { GetDotenvCli, GetDotenvCliCtx } from './GetDotenvCli';
 export type DefineSpec = Omit<GetDotenvCliPlugin, 'children' | 'use'> & {
   children?: GetDotenvCliPlugin[];
 };
+
 /**
  * Define a GetDotenv CLI plugin with compositional helpers.
  *

@@ -1,4 +1,4 @@
-import type { GetDotenvCli } from '@karmaniverous/get-dotenv/cliHost';
+import type { GetDotenvCliPublic } from '@karmaniverous/get-dotenv/cliHost';
 import type { Command } from 'commander';
 
 import { execShellCommandBatch } from '../../../services/batch/execShellCommandBatch';
@@ -11,7 +11,7 @@ import type { BatchConfig } from '../types';
  * Build the parent "batch" action handler (no explicit subcommand).
  */
 export const buildParentAction =
-  (cli: GetDotenvCli, opts: BatchPluginOptions) =>
+  (cli: GetDotenvCliPublic, opts: BatchPluginOptions) =>
   async (
     commandParts: string[] | undefined,
     thisCommand: Command,

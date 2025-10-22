@@ -1,4 +1,4 @@
-import type { GetDotenvCli } from '@karmaniverous/get-dotenv/cliHost';
+import type { GetDotenvCliPublic } from '@karmaniverous/get-dotenv/cliHost';
 import type { Command } from 'commander';
 
 import type { Logger } from '../../../GetDotenvOptions';
@@ -13,7 +13,7 @@ import type { BatchConfig } from '../types';
  * Mirrors the original inline implementation with identical behavior.
  */
 export const buildDefaultCmdAction =
-  (cli: GetDotenvCli, batchCmd: Command, opts: BatchPluginOptions) =>
+  (cli: GetDotenvCliPublic, batchCmd: Command, opts: BatchPluginOptions) =>
   async (
     commandParts: string[] | undefined,
     _subOpts: unknown,

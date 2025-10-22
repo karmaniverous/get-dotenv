@@ -1,4 +1,4 @@
-import type { GetDotenvCli } from '@karmaniverous/get-dotenv/cliHost';
+import type { GetDotenvCliPublic } from '@karmaniverous/get-dotenv/cliHost';
 
 import { runCommand } from '../../cliCore/exec';
 import { buildSpawnEnv } from '../../cliCore/spawnEnv';
@@ -13,7 +13,7 @@ export const awsPlugin = () =>
     id: 'aws',
     // Host validates this slice when the loader path is active.
     configSchema: AwsPluginConfigSchema,
-    setup(cli: GetDotenvCli) {
+    setup(cli: GetDotenvCliPublic) {
       // Subcommand: aws
       const cmd = cli
         .ns('aws')
@@ -56,7 +56,7 @@ export const awsPlugin = () =>
           ) => {
             const self = thisCommand as { parent?: unknown };
             const parent = (self.parent ?? null) as
-              | (GetDotenvCli & {
+              | (GetDotenvCliPublic & {
                   getDotenvCliOptions?: {
                     scripts?: Record<
                       string,

@@ -1,4 +1,4 @@
-import type { GetDotenvCli } from '@karmaniverous/get-dotenv/cliHost';
+import type { GetDotenvCliPublic } from '@karmaniverous/get-dotenv/cliHost';
 import { Command as Commander } from 'commander';
 
 import { definePlugin } from '../../cliHost/definePlugin';
@@ -19,7 +19,7 @@ export const batchPlugin = (opts: BatchPluginOptions = {}) =>
     // Host validates this when config-loader is enabled; plugins may also
     // re-validate at action time as a safety belt.
     configSchema: BatchConfigSchema,
-    setup(cli: GetDotenvCli) {
+    setup(cli: GetDotenvCliPublic) {
       const ns = cli.ns('batch');
       const batchCmd = ns; // capture the parent "batch" command for default-subcommand context
 

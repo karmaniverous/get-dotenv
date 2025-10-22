@@ -282,3 +282,25 @@ When updated: 2025-10-19T00:00:00Z
     documenting TypeScript type-identity mismatches between cliHost and
     plugin subpaths (TS2379/#private under exactOptionalPropertyTypes) and the
     desired upstream outcome (single type identity across subpaths).
+
+- Align get‑dotenv plugin imports with the canonical barrel
+  - Switched src/cli/index.ts to import cmd/batch/aws from
+    '@karmaniverous/get-dotenv/plugins' (host remains from '/cliHost') to ensure
+    a single type identity and resolve TS2379 under exactOptionalPropertyTypes.
+
+- Remove obsolete host opt‑in tests (legacy adapter)
+  - Deleted src/cli/host/host.optin.test.ts; fixes import‑not‑found in
+    typecheck/build/docs and clears knip’s unresolved import.
+
+- Lint fixes in SMOZ plugin: guarded template parsing and removed unnecessary
+  optional chaining in the openapi command.
+
+- Remove dynamic import from spawn env helper
+  - Replaced the dynamic import in `src/cli/util/spawnEnv.ts` with a static
+    import from `@karmaniverous/get-dotenv` and removed the local fallback.
+  - Keeps policy of avoiding dynamic imports unless compelling.
+
+- Interop note for get-dotenv: TS2379 identity + missing root export
+  - Authored `.stan/interop/get-dotenv/ts2379-type-identity-and-missing-buildSpawnEnv-export.md`
+    documenting: (1) lingering type-identity mismatch for `GetDotenvCliPlugin`
+    under `exactOptionalPropertyTypes`, and (2) missing root export for `buildSpawnEnv`.

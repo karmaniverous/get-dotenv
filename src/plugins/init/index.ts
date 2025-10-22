@@ -4,7 +4,7 @@
  */
 import { stdin as input, stdout as output } from 'node:process';
 
-import type { GetDotenvCli } from '@karmaniverous/get-dotenv/cliHost';
+import type { GetDotenvCliPublic } from '@karmaniverous/get-dotenv/cliHost';
 // NOTE: pay attention to non-interactive detection and precedence
 // (--force > --yes > auto-detect). See README for details.
 import type { Command } from 'commander';
@@ -25,7 +25,7 @@ type CopyDecision = 'overwrite' | 'example' | 'skip';
 export const initPlugin = (opts: InitPluginOptions = {}) =>
   definePlugin({
     id: 'init',
-    setup(cli: GetDotenvCli) {
+    setup(cli: GetDotenvCliPublic) {
       const logger = opts.logger ?? console;
       const cmd = cli
         .ns('init')

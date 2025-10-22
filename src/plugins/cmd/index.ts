@@ -1,4 +1,3 @@
-import type { GetDotenvCli } from '@karmaniverous/get-dotenv/cliHost';
 import { Command } from 'commander';
 
 import { runCommand } from '../../cliCore/exec';
@@ -134,11 +133,8 @@ export const cmdPlugin = (options: CmdPluginOptions = {}) =>
             const capture =
               process.env.GETDOTENV_STDIO === 'pipe' ||
               Boolean((merged as { capture?: boolean }).capture);
-            // Prefer explicit env injection: pass the resolved dotenv map to the child.
-            // This avoids leaking prior secrets from the parent process.env when
-            // exclusions (e.g., --exclude-private) are in effect.
-            const host = cli as unknown as GetDotenvCli;
-            const ctx = host.getCtx();
+            // Prefer explicit env injection using the resolved dotenv map.
+            const ctx = cli.getCtx();
             const dotenv = (ctx?.dotenv ?? {}) as Record<
               string,
               string | undefined
@@ -257,7 +253,6 @@ export const cmdPlugin = (options: CmdPluginOptions = {}) =>
       else cli.addCommand(cmd);
 
       // Parent-attached option alias (optional).
-      if (aliasSpec)
-        attachParentAlias(cli as unknown as GetDotenvCli, options, cmd);
+      if (aliasSpec) attachParentAlias(cli as unknown, options, cmd);
     },
   });

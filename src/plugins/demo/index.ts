@@ -28,7 +28,7 @@
  *   getdotenv demo script echo OK
  *   getdotenv --trace demo run --print ENV_SETTING
  */
-import type { GetDotenvCli } from '@karmaniverous/get-dotenv/cliHost';
+import type { GetDotenvCliPublic } from '@karmaniverous/get-dotenv/cliHost';
 
 import { runCommand } from '../../cliCore/exec';
 import { definePlugin } from '../../cliHost/definePlugin';
@@ -38,7 +38,7 @@ import { resolveCommand, resolveShell } from '../../services/batch/resolve';
 export const demoPlugin = () =>
   definePlugin({
     id: 'demo',
-    setup(cli: GetDotenvCli) {
+    setup(cli: GetDotenvCliPublic) {
       const logger: Logger = console;
       const ns = cli
         .ns('demo')
@@ -133,7 +133,7 @@ export const demoPlugin = () =>
           ) => {
             // Safely access the parent’s merged options (installed by passOptions()).
             const parent = (thisCommand as { parent?: unknown }).parent as
-              | (GetDotenvCli & {
+              | (GetDotenvCliPublic & {
                   getDotenvCliOptions?: {
                     scripts?: Record<
                       string,

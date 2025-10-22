@@ -3,6 +3,7 @@ import type { Command } from 'commander';
 import type { GetDotenvCliOptions } from '../cliCore/GetDotenvCliOptions';
 
 export type { DefineSpec, GetDotenvCliPlugin } from './definePlugin';
+export type { GetDotenvCliPublic } from './definePlugin';
 export { definePlugin } from './definePlugin';
 export type { GetDotenvCliCtx } from './GetDotenvCli';
 export { GetDotenvCli } from './GetDotenvCli';

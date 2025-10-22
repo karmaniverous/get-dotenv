@@ -7,6 +7,7 @@ import { cmdPlugin } from './plugins/cmd';
 import { demoPlugin } from './plugins/demo';
 import { initPlugin } from './plugins/init';
 
+export { buildSpawnEnv } from './cliCore/spawnEnv';
 export {
   dotenvExpand,
   dotenvExpandAll,

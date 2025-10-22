@@ -155,4 +155,12 @@ When updated: 2025-10-19T00:00:00Z
     recommend the barrel and are consistent with the current implementation
     (root options, included plugins, once‑per‑invoke context).
   - Added .stan/interop/smoz/type-identity-response.md summarizing the change
-    set, downstream import guidance, and acceptance criteria.
+    set, downstream import guidance, and acceptance criteria.
+
+- Public host interface root spawn env export
+  - Introduced a structural public interface for the host
+    (GetDotenvCliPublic = Command & { ns, getCtx, resolveAndLoad }) and
+    switched the plugin seam to use it. This removes nominal class identity
+    at the boundary and eliminates TS2379 in consumers.
+  - Re-exported buildSpawnEnv at the package root to support static imports
+    (import { buildSpawnEnv } from '@karmaniverous/get-dotenv').
