@@ -205,3 +205,6 @@ When updated: 2025-10-19T00:00:00Z
     promoting methods onto the class).
   - Removed legacy enhancer imports from src/plugins/cmd/alias.ts and updated
     tests to import the host from the cliHost entry (no side-effect required).
+  - Fixed src/cliHost/help.order.test.ts to import the host from './index'
+    (removes the old enhancer import) and added explicit types to satisfy
+    strict ESLint rules.
