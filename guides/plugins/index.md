@@ -12,16 +12,11 @@ children:
 
 This section documents the plugins shipped with the get‑dotenv CLI:
 
-- [AWS](./aws.md) - Resolve profile/region and acquire credentials; mirrors to
-  process.env and ctx; includes an `aws` subcommand for session and forwarding.
-- [Batch](./batch.md) - Execute a command across multiple working directories
-  under the current dotenv context.
-- [Cmd](./cmd.md) - Execute a single command under the current dotenv context;
-  includes a convenient parent‑level `--cmd` alias.
-- [Init](./init.md) - Scaffold config files and a host‑based CLI skeleton with
-  safe collision flow (interactive and CI heuristics).
-- [Demo](./demo.md) - Educational plugin showing context access, child exec with
-  explicit env injection, and scripts/shell resolution.
+- [AWS](./aws.md) - Resolve profile/region and acquire credentials; mirrors to process.env and ctx; includes an `aws` subcommand for session and forwarding.
+- [Batch](./batch.md) - Execute a command across multiple working directories under the current dotenv context.
+- [Cmd](./cmd.md) - Execute a single command under the current dotenv context; includes a convenient parent‑level `--cmd` alias.
+- [Init](./init.md) - Scaffold config files and a host‑based CLI skeleton with safe collision flow (interactive and CI heuristics).
+- [Demo](./demo.md) - Educational plugin showing context access, child exec with explicit env injection, and scripts/shell resolution.
 
 ## Quickstart
 
@@ -43,7 +38,7 @@ await program.parseAsync();
 
 This library ships a small set of ready‑to‑use plugins. Most projects want the same baseline:
 
-- Root flags (`-e/--env`, `--paths`, `--dotenv-token`, `--strict`, `--trace`, etc.)
+- Root flags (`-e/--env`, `--paths`, `--strict`, `--trace`, etc.)
 - A “cmd” command (and parent alias `-c, --cmd <command...>`) for one‑off commands
 - The “batch” command for running a command across many working directories
 - The AWS base plugin to establish a session and make it available to children
@@ -83,6 +78,13 @@ program
 
 await program.parseAsync();
 ```
+
+Helpers availability
+
+- The root‑level base flag installer and one‑shot options merger are available whenever you import the host:
+  - `program.attachRootOptions(...)`
+  - `program.passOptions(...)`
+- No additional imports are required; these helpers are unconditional for `@karmaniverous/get-dotenv/cliHost`.
 
 Note: Per‑plugin subpaths (e.g., `@karmaniverous/get-dotenv/plugins/cmd`) remain available, but the plugins barrel is recommended to share a single type identity with `cliHost` and simplify imports.
 

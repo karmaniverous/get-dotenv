@@ -278,7 +278,7 @@ You can also use `getdotenv` from the command line:
 #
 # Commands:
 #   batch [options]                     Batch shell commands across multiple working directories.
-#   cmd                                 Batch execute command according to the --shell option, conflicts with --command option (default command)
+#   cmd                                 Execute command according to the --shell option, conflicts with --command option (default command)
 #   help [command]                      display help for command
 ```
 

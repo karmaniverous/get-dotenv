@@ -1,3 +1,7 @@
+// Ensure attachRootOptions() and passOptions() are available whenever the
+// /cliHost subpath is imported (unconditional for downstream hosts).
+import '../cliCore/enhanceGetDotenvCli';
+
 import type { Command } from 'commander';
 
 import type { GetDotenvCliOptions } from '../cliCore/GetDotenvCliOptions';
