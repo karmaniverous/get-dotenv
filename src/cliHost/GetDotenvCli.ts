@@ -14,7 +14,7 @@ import {
 } from '../GetDotenvOptions';
 import { getDotenvOptionsSchemaResolved } from '../schema/getDotenvOptions';
 import { computeContext } from './computeContext';
-import type { GetDotenvCliPlugin } from './definePlugin';
+import type { GetDotenvCliPlugin, GetDotenvCliPublic } from './definePlugin';
 
 /** * Per-invocation context shared with plugins and actions. */
 export type GetDotenvCliCtx<
@@ -248,7 +248,7 @@ export class GetDotenvCli<
     this._plugins.push(plugin);
     // Immediately run setup so subcommands exist before parsing.
     const setupOne = (p: GetDotenvCliPlugin) => {
-      const maybe = p.setup(this);
+      const maybe = p.setup(this as unknown as GetDotenvCliPublic);
       // Best-effort: ignore async completion for registration-only setup.
       void maybe;
       for (const child of p.children) setupOne(child);
@@ -271,9 +271,15 @@ export class GetDotenvCli<
   /**
    * Run afterResolve hooks for all plugins (parent → children).
    */
-  private async _runAfterResolve(ctx: GetDotenvCliCtx): Promise<void> {
+  private async _runAfterResolve(
+    ctx: GetDotenvCliCtx<TOptions>,
+  ): Promise<void> {
     const run = async (p: GetDotenvCliPlugin) => {
-      if (p.afterResolve) await p.afterResolve(this, ctx);
+      if (p.afterResolve)
+        await p.afterResolve(
+          this as unknown as GetDotenvCliPublic,
+          ctx as unknown as GetDotenvCliCtx,
+        );
       for (const child of p.children) await run(child);
     };
     for (const p of this._plugins) await run(p);

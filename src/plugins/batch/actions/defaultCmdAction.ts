@@ -166,7 +166,7 @@ export const buildDefaultCmdAction =
     // Optional: round-trip parent merged options if present (shipped CLI).
     const envBag = (
       (batchCmd.parent as
-        | (GetDotenvCli & {
+        | (GetDotenvCliPublic & {
             getDotenvCliOptions?: Record<string, unknown>;
           })
         | undefined) ?? undefined

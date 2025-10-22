@@ -169,4 +169,20 @@ When updated: 2025-10-19T00:00:00Z
   - Made GetDotenvCliPlugin generic over options and threaded TOptions through
     GetDotenvCli. Cast the host to GetDotenvCliPublic<TOptions> at hook sites.
   - Replaced lingering GetDotenvCli intersections in batch actions with
-    GetDotenvCliPublic and fixed the cmd alias call site typing.
+    GetDotenvCliPublic and fixed the cmd alias call site typing.
+
++- Fix plugin seam casts and batch typing
+
+- - Cast `this` to the structural public interface when invoking plugin hooks to
+- satisfy exactOptionalPropertyTypes invariance:
+- `p.setup(this as unknown as GetDotenvCliPublic<GetDotenvOptions>)` and
+- `p.afterResolve(this as unknown as GetDotenvCliPublic<GetDotenvOptions>, ctx as unknown as GetDotenvCliCtx<GetDotenvOptions>)`.
+- - Replace a lingering `GetDotenvCli` union constituent in
+- `src/plugins/batch/actions/defaultCmdAction.ts` with `GetDotenvCliPublic`
+- to remove the missing symbol error and redundant type constituent lints.
+
+- Interop response — TS2379 identity and buildSpawnEnv root export
+  - Authored `.stan/interop/smoz/ts2379-identity-and-buildSpawnEnv-response.md`
+    confirming single public type identity (structural seam public subpaths),
+    root export for `buildSpawnEnv`, and passing acceptance criteria (tsc/rollup/
+    typedoc). Guard (`verify-types`) in place to prevent regressions.
