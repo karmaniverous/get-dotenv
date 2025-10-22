@@ -58,6 +58,14 @@ When updated: 2025-10-19T00:00:00Z
 
 ## Completed (recent)
 
+- Promote root helpers to class methods (remove side‑effect enhancer)
+  - Export a subclass from src/cliHost/index.ts that adds attachRootOptions()
+    and passOptions() as real methods on GetDotenvCli, delegating to cliCore
+    helpers. Remove the unconditional side‑effect import previously used to
+    patch the prototype.
+  - Update src/index.ts to import the host from './cliHost' and drop the
+    enhancer import. No behavior changes; methods are now explicit and
+    discoverable without relying on augmentation.
 - Interop design note for getdotenv:
   - Added `.stan/interop/get-dotenv/smoz-cli-host-integration.md` capturing host+plugin
     integration, layered resolution with per‑layer interpolation, Zod validation,

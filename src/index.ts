@@ -1,6 +1,4 @@
-import './cliCore/enhanceGetDotenvCli';
-
-import { GetDotenvCli } from './cliHost/GetDotenvCli';
+import { GetDotenvCli } from './cliHost';
 import { awsPlugin } from './plugins/aws';
 import { batchPlugin } from './plugins/batch';
 import { cmdPlugin } from './plugins/cmd';
