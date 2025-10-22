@@ -142,3 +142,17 @@ When updated: 2025-10-19T00:00:00Z
   - Added TypeScript "paths" mappings to tsconfig.base.json for '@karmaniverous/get-dotenv/cliHost' and '@karmaniverous/get-dotenv/plugins' so @rollup/plugin-typescript resolves type-only imports during builds without TS2307 warnings.
   - Included 'src/plugins/index.ts' in knip.json "entry" to silence the unused-file warning for the plugins barrel.
   - Updated Guides to recommend importing plugins via the barrel.
+
+- Add verify-types guard for plugin .d.ts
+  - Introduced tools/verify-types.js and npm script "verify:types".
+  - Release hooks run verify:types after build to ensure no plugin .d.ts
+    imports cliHost via non-public or relative paths.
+
+- Docs alignment + SMOZ interop response
+  - Updated plugin guides (cmd/batch/demo/init) with “Import paths” sections,
+    recommending the plugins barrel and retaining per‑plugin subpath examples.
+  - Confirmed the AWS plugin page and the Plugin‑first host guide already
+    recommend the barrel and are consistent with the current implementation
+    (root options, included plugins, once‑per‑invoke context).
+  - Added .stan/interop/smoz/type-identity-response.md summarizing the change
+    set, downstream import guidance, and acceptance criteria.

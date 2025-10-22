@@ -7,6 +7,19 @@ title: Init plugin
 Scaffold get‑dotenv config files and a host‑based CLI skeleton with safe
 collision flow and CI heuristics.
 
+## Import paths
+
+```ts
+// Recommended: plugins barrel (shares type identity with cliHost)
+import { initPlugin } from '@karmaniverous/get-dotenv/plugins';
+```
+
+Per‑plugin subpaths remain available when needed:
+
+```ts
+import { initPlugin } from '@karmaniverous/get-dotenv/plugins/init';
+```
+
 ## Command
 
 ```bash
@@ -72,4 +85,3 @@ const program: Command = new GetDotenvCli('acme')
 await (program as unknown as GetDotenvCli).resolveAndLoad();
 await program.parseAsync();
 ```
-

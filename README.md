@@ -390,7 +390,7 @@ Diagnostics and CI capture:
 - [Cascade and precedence](./guides/cascade.md)
 - [Shell execution behavior and quoting](./guides/shell.md)
 - [Config files and overlays](./guides/config.md)
-- [Plugin-first host and plugins](./guides/plugins.md)
+- [Plugin-first host and plugins](./guides/plugins/index.md)
 
 The guides are also included in the [hosted API docs](https://docs.karmanivero.us/get-dotenv).
 

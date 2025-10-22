@@ -22,6 +22,7 @@ stan-cli:
       script: npm run docs -- --emit none
       warnPattern: \\[warning\\]
     knip: npm run knip
+    verify-types: npm run verify:types
     verify-smoke: npm run verify:smoke
     verify-package: npm run verify:package
     verify-tarball: npm run verify:tarball

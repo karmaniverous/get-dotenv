@@ -11,6 +11,19 @@ An educational plugin that showcases:
 - Resolving commands and shell overrides via the shared helpers.
 - Using `--trace` diagnostics.
 
+## Import paths
+
+```ts
+// Recommended: plugins barrel (shares type identity with cliHost)
+import { demoPlugin } from '@karmaniverous/get-dotenv/plugins';
+```
+
+Per‑plugin subpaths remain available when needed:
+
+```ts
+import { demoPlugin } from '@karmaniverous/get-dotenv/plugins/demo';
+```
+
 ## Commands
 
 - `demo ctx` — Print a summary of the current dotenv context (counts + sample).
@@ -27,4 +40,3 @@ getdotenv --trace ENV_SETTING demo script node -e "console.log(process.env.ENV_S
 
 These examples run with explicit env injection (`{ ...process.env, ...ctx.dotenv }`)
 so exclusions (e.g., `--exclude-private`) are honored predictably.
-

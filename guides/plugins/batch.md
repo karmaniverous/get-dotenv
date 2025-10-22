@@ -7,6 +7,19 @@ title: Batch plugin
 Execute a command across multiple working directories, each inheriting the
 current dotenv context. Output is streamed sequentially for legibility.
 
+## Import paths
+
+```ts
+// Recommended: plugins barrel (shares type identity with cliHost)
+import { batchPlugin } from '@karmaniverous/get-dotenv/plugins';
+```
+
+Per‑plugin subpaths remain available when needed:
+
+```ts
+import { batchPlugin } from '@karmaniverous/get-dotenv/plugins/batch';
+```
+
 ## Command
 
 ```bash
@@ -79,4 +92,3 @@ You can set default `scripts`, `shell`, `rootPath`, `globs`, and `pkgCwd` under
 - The child env is composed from the current context and parent env; use
   `--trace [keys...]` to inspect where values come from (dotenv vs parent).
 - On errors, the default behavior is to stop; use `--ignore-errors` to continue.
-

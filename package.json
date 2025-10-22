@@ -217,6 +217,7 @@
         "npm run lint",
         "npm run test",
         "npm run build",
+        "npm run verify:types",
         "npm run verify:package",
         "npm run verify:tarball"
       ],
@@ -249,6 +250,7 @@
     "stan:docs": "typedoc --emit none",
     "test": "vitest run --coverage",
     "typecheck": "tsc -p tsconfig.json --noEmit",
+    "verify:types": "node tools/verify-types.js",
     "verify:package": "node tools/verify-package.js",
     "verify:smoke": "node tools/smoke.js",
     "verify:tarball": "node tools/verify-tarball.js"

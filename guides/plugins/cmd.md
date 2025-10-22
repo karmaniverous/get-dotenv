@@ -8,6 +8,19 @@ Execute a single command under the current dotenv context. Includes a convenient
 parent‑level `-c, --cmd <command...>` alias so npm script flags apply to
 getdotenv rather than the inner shell command.
 
+## Import paths
+
+```ts
+// Recommended: plugins barrel (shares type identity with cliHost)
+import { cmdPlugin } from '@karmaniverous/get-dotenv/plugins';
+```
+
+Per‑plugin subpaths remain available when needed:
+
+```ts
+import { cmdPlugin } from '@karmaniverous/get-dotenv/plugins/cmd';
+```
+
 ## Command
 
 ```bash
@@ -84,4 +97,3 @@ Then:
 getdotenv cmd bash-only
 getdotenv cmd plain
 ```
-
