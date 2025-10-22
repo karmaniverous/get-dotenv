@@ -1,5 +1,3 @@
-import '../../cliCore/enhanceGetDotenvCli'; // ensure helpers are available in host CLIs
-
 import type { EntropyOptions } from '../../diagnostics/entropy';
 const dbg = (...args: unknown[]) => {
   if (process.env.GETDOTENV_DEBUG) {

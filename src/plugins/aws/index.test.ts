@@ -17,9 +17,7 @@ vi.mock('../../cliCore/exec', () => ({
   ) => runCommandMock(cmd, shell, opts),
 }));
 
-import '../../cliCore/enhanceGetDotenvCli';
-
-import { GetDotenvCli } from '../../cliHost/GetDotenvCli';
+import { GetDotenvCli } from '../../cliHost';
 import { awsPlugin } from './index';
 
 describe('plugins/aws subcommand', () => {

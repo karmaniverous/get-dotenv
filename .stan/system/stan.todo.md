@@ -199,3 +199,9 @@ When updated: 2025-10-19T00:00:00Z
   - Updated the test to import `GetDotenvCli` from `src/cliHost/index.ts`
     (the /cliHost entry) so the enhancer side-effect runs.
   - Added explicit assertions to satisfy lint rules and verify presence.
+
+- Tidy-ups: remove enhancer module and scrub imports
+  - Deleted src/cliCore/enhanceGetDotenvCli.ts (no longer referenced after
+    promoting methods onto the class).
+  - Removed legacy enhancer imports from src/plugins/cmd/alias.ts and updated
+    tests to import the host from the cliHost entry (no side-effect required).

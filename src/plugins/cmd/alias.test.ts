@@ -8,9 +8,7 @@ vi.mock('execa', () => ({
     execMock(cmd, opts),
 }));
 
-import '../../cliCore/enhanceGetDotenvCli';
-
-import { GetDotenvCli } from '../../cliHost/GetDotenvCli';
+import { GetDotenvCli } from '../../cliHost';
 import { cmdPlugin } from './index';
 
 describe('plugins/cmd option alias', () => {
