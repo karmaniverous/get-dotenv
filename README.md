@@ -12,11 +12,11 @@ Load environment variables with a cascade of environment-aware dotenv files. You
 
 ✅ Asynchronously load environment variables from multiple dotenv files.
 
-✅ Segregate variables info distinct files:
+✅ Segregate variables into distinct files:
 
-- Public files (e.g. `.env`, `env.dev`, `env.test`) are synced with your git repository.
-- Private files (e.g. `.env.local`, `env.dev.local`, `env.test.local`) are protected by `.gitignore`.
-- Global files (e.g. `.env`, `env.local`) apply to all environments.
+- Public files (e.g. `.env`, `.env.dev`, `.env.test`) are synced with your git repository.
+- Private files (e.g. `.env.local`, `.env.dev.local`, `.env.test.local`) are protected by `.gitignore`.
+- Global files (e.g. `.env`, `.env.local`) apply to all environments.
 - Env files (e.g. `.env.dev`, `.env.dev.local`, `.env.test`, `.env.test.local`) apply to a specific environment.
 - [Dynamic files](#dynamic-processing) (`.env.js`) export logic that dynamically & progressively generates new variables or overrides current ones.
 

@@ -6,11 +6,11 @@
 <a href="https://github.com/karmaniverous/get-dotenv/tree/main/LICENSE.md" target="_blank" class="external"><img src="https://img.shields.io/badge/license-BSD--3--Clause-blue.svg" alt="license"></a></p>
 <p>Load environment variables with a cascade of environment-aware dotenv files. You can:</p>
 <p>✅ Asynchronously load environment variables from multiple dotenv files.</p>
-<p>✅ Segregate variables info distinct files:</p>
+<p>✅ Segregate variables into distinct files:</p>
 <ul>
-<li>Public files (e.g. <code>.env</code>, <code>env.dev</code>, <code>env.test</code>) are synced with your git repository.</li>
-<li>Private files (e.g. <code>.env.local</code>, <code>env.dev.local</code>, <code>env.test.local</code>) are protected by <code>.gitignore</code>.</li>
-<li>Global files (e.g. <code>.env</code>, <code>env.local</code>) apply to all environments.</li>
+<li>Public files (e.g. <code>.env</code>, <code>.env.dev</code>, <code>.env.test</code>) are synced with your git repository.</li>
+<li>Private files (e.g. <code>.env.local</code>, <code>.env.dev.local</code>, <code>.env.test.local</code>) are protected by <code>.gitignore</code>.</li>
+<li>Global files (e.g. <code>.env</code>, <code>.env.local</code>) apply to all environments.</li>
 <li>Env files (e.g. <code>.env.dev</code>, <code>.env.dev.local</code>, <code>.env.test</code>, <code>.env.test.local</code>) apply to a specific environment.</li>
 <li><a href="#dynamic-processing">Dynamic files</a> (<code>.env.js</code>) export logic that dynamically &amp; progressively generates new variables or overrides current ones.</li>
 </ul>
