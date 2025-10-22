@@ -186,3 +186,8 @@ When updated: 2025-10-19T00:00:00Z
     confirming single public type identity (structural seam public subpaths),
     root export for `buildSpawnEnv`, and passing acceptance criteria (tsc/rollup/
     typedoc). Guard (`verify-types`) in place to prevent regressions.
+
+- Safety-rail test fix for helpers exposure
+  - Updated the test to import `GetDotenvCli` from `src/cliHost/index.ts`
+    (the /cliHost entry) so the enhancer side-effect runs.
+  - Added explicit assertions to satisfy lint rules and verify presence.

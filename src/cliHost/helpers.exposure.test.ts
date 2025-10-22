@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { GetDotenvCli } from './GetDotenvCli';
+import { GetDotenvCli } from './index';
 
 describe('/cliHost helpers exposure', () => {
   it('exposes attachRootOptions and passOptions on the host prototype', () => {
@@ -18,16 +18,17 @@ describe('/cliHost helpers exposure', () => {
   it('type-level visibility compiles (no runtime call required)', () => {
     const cli = new GetDotenvCli('test');
     // The following assignments compile only if module augmentation is visible.
-    const attach: unknown = (
+    const attach = (
       cli as unknown as {
         attachRootOptions?: (...args: unknown[]) => unknown;
       }
     ).attachRootOptions;
-    const pass: unknown = (
+    const pass = (
       cli as unknown as {
         passOptions?: (...args: unknown[]) => unknown;
       }
     ).passOptions;
-    (void attach, void pass);
+    expect(attach).toBeDefined();
+    expect(pass).toBeDefined();
   });
 });
