@@ -48,7 +48,7 @@ export const cmdPlugin = (options: CmdPluginOptions = {}) =>
       const cmd = new Command()
         .name('cmd')
         .description(
-          'Batch execute command according to the --shell option, conflicts with --command option (default subcommand)',
+          'Execute command according to the --shell option, conflicts with --command option (default subcommand)',
         )
         .configureHelp({ showGlobalOptions: true })
         .enablePositionalOptions()
