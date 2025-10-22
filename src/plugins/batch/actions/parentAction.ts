@@ -39,7 +39,7 @@ export const buildParentAction =
       const input = argsParent.map(String).join(' ');
       const mergedBag = ((
         (thisCommand.parent as
-          | (GetDotenvCli & {
+          | (GetDotenvCliPublic & {
               getDotenvCliOptions?: {
                 scripts?: Scripts;
                 shell?: string | boolean;
@@ -79,7 +79,7 @@ export const buildParentAction =
       if (extra.length > 0) globs = [globs, extra].filter(Boolean).join(' ');
       const mergedBag = ((
         (thisCommand.parent as
-          | (GetDotenvCli & {
+          | (GetDotenvCliPublic & {
               getDotenvCliOptions?: { shell?: string | boolean };
             })
           | null) ?? null
@@ -106,7 +106,7 @@ export const buildParentAction =
     if (typeof commandOpt === 'string') {
       const mergedBag = ((
         (thisCommand.parent as
-          | (GetDotenvCli & {
+          | (GetDotenvCliPublic & {
               getDotenvCliOptions?: {
                 scripts?: Scripts;
                 shell?: string | boolean;
@@ -139,7 +139,7 @@ export const buildParentAction =
     // list only (explicit --list without --command)
     const mergedBag = ((
       (thisCommand.parent as
-        | (GetDotenvCli & {
+        | (GetDotenvCliPublic & {
             getDotenvCliOptions?: {
               scripts?: Scripts;
               shell?: string | boolean;

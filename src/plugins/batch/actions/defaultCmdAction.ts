@@ -49,7 +49,7 @@ export const buildDefaultCmdAction =
     // plugin opts → plugin config → merged root CLI options
     const mergedBag = ((
       (batchCmd.parent as
-        | (GetDotenvCli & {
+        | (GetDotenvCliPublic & {
             getDotenvCliOptions?: {
               scripts?: Scripts;
               shell?: string | boolean;
@@ -113,7 +113,7 @@ export const buildDefaultCmdAction =
       const mergedGlobs = [globs, extraGlobs].filter(Boolean).join(' ');
       const shellBag = ((
         (batchCmd.parent as
-          | (GetDotenvCli & {
+          | (GetDotenvCliPublic & {
               getDotenvCliOptions?: { shell?: string | boolean };
             })
           | undefined) ?? undefined
@@ -141,7 +141,7 @@ export const buildDefaultCmdAction =
       const mergedGlobs = [globs, extra].filter(Boolean).join(' ');
       const mergedBag2 = ((
         (batchCmd.parent as
-          | (GetDotenvCli & {
+          | (GetDotenvCliPublic & {
               getDotenvCliOptions?: { shell?: string | boolean };
             })
           | undefined) ?? undefined
@@ -174,7 +174,7 @@ export const buildDefaultCmdAction =
 
     const mergedExec = ((
       (batchCmd.parent as
-        | (GetDotenvCli & {
+        | (GetDotenvCliPublic & {
             getDotenvCliOptions?: {
               scripts?: Scripts;
               shell?: string | boolean;

@@ -1,3 +1,4 @@
+import type { GetDotenvCli } from '@karmaniverous/get-dotenv/cliHost';
 import { Command } from 'commander';
 
 import { runCommand } from '../../cliCore/exec';
@@ -253,6 +254,7 @@ export const cmdPlugin = (options: CmdPluginOptions = {}) =>
       else cli.addCommand(cmd);
 
       // Parent-attached option alias (optional).
-      if (aliasSpec) attachParentAlias(cli as unknown, options, cmd);
+      if (aliasSpec)
+        attachParentAlias(cli as unknown as GetDotenvCli, options, cmd);
     },
   });

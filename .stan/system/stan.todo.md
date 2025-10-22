@@ -164,3 +164,9 @@ When updated: 2025-10-19T00:00:00Z
     at the boundary and eliminates TS2379 in consumers.
   - Re-exported buildSpawnEnv at the package root to support static imports
     (import { buildSpawnEnv } from '@karmaniverous/get-dotenv').
+
+- Generic plugin seam and batch/cmd type fixes
+  - Made GetDotenvCliPlugin generic over options and threaded TOptions through
+    GetDotenvCli. Cast the host to GetDotenvCliPublic<TOptions> at hook sites.
+  - Replaced lingering GetDotenvCli intersections in batch actions with
+    GetDotenvCliPublic and fixed the cmd alias call site typing.
