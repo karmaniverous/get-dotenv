@@ -207,4 +207,6 @@ When updated: 2025-10-19T00:00:00Z
     tests to import the host from the cliHost entry (no side-effect required).
   - Fixed src/cliHost/help.order.test.ts to import the host from './index'
     (removes the old enhancer import) and added explicit types to satisfy
-    strict ESLint rules.
+    strict ESLint rules.
+
+- Docs: fix relative link to Shell guide in guides/plugins/shipped/aws.md after plugin docs refactor; ensure root vs per‑plugin shell scope is documented and cross‑linked.

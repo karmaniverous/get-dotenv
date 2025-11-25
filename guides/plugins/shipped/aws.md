@@ -77,7 +77,7 @@ Forwarded tokens appear after `--`. The subprocess is invoked with:
 
 - Explicit env injection: `{ ...process.env, ...ctx.dotenv }`
 - `stdio`: inherits by default; use `--capture` or `GETDOTENV_STDIO=pipe` for deterministic buffering in CI.
-- Shell resolution: honors per‑script overrides and the global shell setting (see the [Shell execution behavior](../shell.md) guide).
+- Shell resolution: honors per‑script overrides and the global shell setting (see the [Shell execution behavior](../../shell.md) guide).
 
 ## Usage examples
 
