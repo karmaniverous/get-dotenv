@@ -1,8 +1,8 @@
 ---
-title: Init plugin
+title: init
 ---
 
-# Init plugin
+# Shipped Plugins: init
 
 Scaffold get‑dotenv config files and a host‑based CLI skeleton with safe
 collision flow and CI heuristics.

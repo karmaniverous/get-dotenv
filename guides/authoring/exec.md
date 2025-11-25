@@ -1,13 +1,13 @@
 ---
-title: Executing shell commands
+title: Executing Shell Commands
 ---
 
-# Executing shell commands
+# Authoring Plugins: Executing Shell Commands
 
 There are two distinct patterns for plugins that run shell commands:
 
-1) CLI‑driven (cmd/batch‑like): the user types arbitrary commands; a scripts table helps encapsulate frequently used commands.  
-2) Tool‑invocation inside a plugin: the plugin calls an external tool (e.g., docker) with env/config‑derived overrides; scripts are typically not relevant.
+1. CLI‑driven (cmd/batch‑like): the user types arbitrary commands; a scripts table helps encapsulate frequently used commands.
+2. Tool‑invocation inside a plugin: the plugin calls an external tool (e.g., docker) with env/config‑derived overrides; scripts are typically not relevant.
 
 This guide explains expansion timing, shell selection, child environment composition, capture/diagnostics, quoting, and safety, with minimal patterns you can copy.
 
@@ -30,6 +30,7 @@ Plugins should rely on the root shell setting unless a command itself requests a
 - Discouraged: a per‑plugin `shell` option. Use the root shell and the rare per‑script override instead.
 
 Recommended precedence (when you support scripts):
+
 ```
 scripts[name].shell (object form) > root bag.shell
 ```
@@ -44,6 +45,7 @@ const childEnv = buildSpawnEnv(process.env, ctx.dotenv);
 ```
 
 Benefits:
+
 - Windows: dedupes case‑insensitive keys, fills HOME from USERPROFILE, normalizes TMP/TEMP.
 - POSIX: populates TMPDIR when a temp key is present.
 
@@ -80,32 +82,44 @@ export const dockerPlugin = () =>
   definePlugin({
     id: 'docker',
     setup(cli: GetDotenvCliPublic) {
-      cli.ns('docker').argument('[args...]').action(async (args, _opts, thisCommand) => {
-        const bag = readMergedOptions(thisCommand) ?? {};
-        const ctx = cli.getCtx();
-        const env = buildSpawnEnv(process.env, ctx?.dotenv ?? {});
+      cli
+        .ns('docker')
+        .argument('[args...]')
+        .action(async (args, _opts, thisCommand) => {
+          const bag = readMergedOptions(thisCommand) ?? {};
+          const ctx = cli.getCtx();
+          const env = buildSpawnEnv(process.env, ctx?.dotenv ?? {});
 
-        // Choose shell behavior: explicit false (plain), or inherit the normalized root shell
-        const shell = (bag as { shell?: string | boolean }).shell ?? false;
-        const capture = process.env.GETDOTENV_STDIO === 'pipe' || (bag as { capture?: boolean }).capture;
+          // Choose shell behavior: explicit false (plain), or inherit the normalized root shell
+          const shell = (bag as { shell?: string | boolean }).shell ?? false;
+          const capture =
+            process.env.GETDOTENV_STDIO === 'pipe' ||
+            (bag as { capture?: boolean }).capture;
 
-        // Shell-off: prefer argv arrays to preserve payloads
-        const argv = ['docker', ...(Array.isArray(args) ? args.map(String) : [])];
-        const file = argv[0]!;
-        const fileArgs = argv.slice(1);
+          // Shell-off: prefer argv arrays to preserve payloads
+          const argv = [
+            'docker',
+            ...(Array.isArray(args) ? args.map(String) : []),
+          ];
+          const file = argv[0]!;
+          const fileArgs = argv.slice(1);
 
-        const child = await execa(file, fileArgs, {
-          env,
-          stdio: capture ? 'pipe' : 'inherit',
-          ...(shell !== false ? { shell } : {}),
+          const child = await execa(file, fileArgs, {
+            env,
+            stdio: capture ? 'pipe' : 'inherit',
+            ...(shell !== false ? { shell } : {}),
+          });
+          if (capture && child.stdout)
+            process.stdout.write(
+              child.stdout + (child.stdout.endsWith('\n') ? '' : '\n'),
+            );
         });
-        if (capture && child.stdout) process.stdout.write(child.stdout + (child.stdout.endsWith('\n') ? '' : '\n'));
-      });
     },
   });
 ```
 
 Notes:
+
 - Use `shell: false` for simpler, safer argv flows; flip to the root shell only when you need shell parsing.
 - Build `env` with `buildSpawnEnv`.
 - Honor capture for CI determinism.
@@ -122,7 +136,10 @@ import { execaCommand } from 'execa';
 type Script = string | { cmd: string; shell?: string | boolean };
 type Scripts = Record<string, Script>;
 
-function resolveScript(scripts: Scripts | undefined, nameOrCmd: string): { cmd: string; shell?: string | boolean } {
+function resolveScript(
+  scripts: Scripts | undefined,
+  nameOrCmd: string,
+): { cmd: string; shell?: string | boolean } {
   const entry = scripts?.[nameOrCmd];
   if (!entry) return { cmd: nameOrCmd };
   return typeof entry === 'string' ? { cmd: entry } : entry;
@@ -132,41 +149,53 @@ export const runPlugin = () =>
   definePlugin({
     id: 'run',
     setup(cli: GetDotenvCliPublic) {
-      cli.ns('run').argument('[command...]').action(async (commandParts, _opts, thisCommand) => {
-        const bag = readMergedOptions(thisCommand) ?? {};
-        const ctx = cli.getCtx();
-        const env = buildSpawnEnv(process.env, ctx?.dotenv ?? {});
+      cli
+        .ns('run')
+        .argument('[command...]')
+        .action(async (commandParts, _opts, thisCommand) => {
+          const bag = readMergedOptions(thisCommand) ?? {};
+          const ctx = cli.getCtx();
+          const env = buildSpawnEnv(process.env, ctx?.dotenv ?? {});
 
-        const input = Array.isArray(commandParts) ? commandParts.map(String).join(' ') : '';
-        if (!input) {
-          console.log('Provide a script name or a raw command');
-          return;
-        }
-        // Prefer plugin-scoped scripts first (rare), then optionally fall back to root scripts
-        const pluginScripts = ((ctx?.pluginConfigs?.['run'] as { scripts?: Scripts })?.scripts) ?? undefined;
-        const rootScripts = (bag as { scripts?: Scripts }).scripts ?? undefined;
-        const chosen = resolveScript(pluginScripts ?? rootScripts, input);
+          const input = Array.isArray(commandParts)
+            ? commandParts.map(String).join(' ')
+            : '';
+          if (!input) {
+            console.log('Provide a script name or a raw command');
+            return;
+          }
+          // Prefer plugin-scoped scripts first (rare), then optionally fall back to root scripts
+          const pluginScripts =
+            (ctx?.pluginConfigs?.['run'] as { scripts?: Scripts })?.scripts ??
+            undefined;
+          const rootScripts =
+            (bag as { scripts?: Scripts }).scripts ?? undefined;
+          const chosen = resolveScript(pluginScripts ?? rootScripts, input);
 
-        // Precedence: per-script shell (object form) > root shell
-        const rootShell = (bag as { shell?: string | boolean }).shell;
-        const shell = chosen.shell !== undefined ? chosen.shell : rootShell;
-        const capture = process.env.GETDOTENV_STDIO === 'pipe' || (bag as { capture?: boolean }).capture;
+          // Precedence: per-script shell (object form) > root shell
+          const rootShell = (bag as { shell?: string | boolean }).shell;
+          const shell = chosen.shell !== undefined ? chosen.shell : rootShell;
+          const capture =
+            process.env.GETDOTENV_STDIO === 'pipe' ||
+            (bag as { capture?: boolean }).capture;
 
-        await execaCommand(chosen.cmd, {
-          env,
-          stdio: capture ? 'pipe' : 'inherit',
-          ...(shell !== undefined ? { shell } : {}),
+          await execaCommand(chosen.cmd, {
+            env,
+            stdio: capture ? 'pipe' : 'inherit',
+            ...(shell !== undefined ? { shell } : {}),
+          });
         });
-      });
     },
   });
 ```
 
 Notes:
+
 - Commands typed at the CLI may be a script name or a raw command.
 - Prefer plugin‑scoped `plugins.run.scripts` for clarity; fall back to root scripts when it’s helpful.
 - Rarely, the object form `{ cmd, shell }` lets a single script request a different shell; otherwise the root shell applies.
 
 See also:
+
 - Shell execution behavior and quoting: ../shell.md
 - Authoring — Diagnostics: ./authoring-diagnostics.md

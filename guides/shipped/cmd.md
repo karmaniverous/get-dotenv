@@ -1,8 +1,8 @@
 ---
-title: Cmd plugin
+title: cmd
 ---
 
-# Cmd plugin
+# Shipped Plugins: cmd
 
 Execute a single command under the current dotenv context. Includes a convenient
 parent‑level `-c, --cmd <command...>` alias so npm script flags apply to

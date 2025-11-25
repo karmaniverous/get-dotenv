@@ -1,8 +1,8 @@
 ---
-title: Demo plugin
+title: demo
 ---
 
-# Demo plugin
+# Shipped Plugins: demo
 
 An educational plugin that showcases:
 

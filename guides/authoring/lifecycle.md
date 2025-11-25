@@ -1,8 +1,8 @@
 ---
-title: Authoring — Lifecycle and Wiring
+title: Lifecycle & Wiring
 ---
 
-# Authoring — Lifecycle and Wiring
+# Authoring Plugins: Lifecycle & Wiring
 
 Plugins are small modules that register commands and behavior against the plugin‑first host. The host resolves dotenv context once per invocation, overlays config, validates, and then runs your plugin’s setup and optional afterResolve hooks.
 
@@ -16,10 +16,13 @@ export const helloPlugin = () =>
   definePlugin({
     id: 'hello',
     setup(cli: GetDotenvCliPublic) {
-      cli.ns('hello').description('Say hello').action(() => {
-        const ctx = cli.getCtx();
-        console.log('hello', Object.keys(ctx?.dotenv ?? {}).length);
-      });
+      cli
+        .ns('hello')
+        .description('Say hello')
+        .action(() => {
+          const ctx = cli.getCtx();
+          console.log('hello', Object.keys(ctx?.dotenv ?? {}).length);
+        });
     },
   });
 ```
@@ -30,7 +33,12 @@ export const helloPlugin = () =>
 #!/usr/bin/env node
 import type { Command } from 'commander';
 import { GetDotenvCli } from '@karmaniverous/get-dotenv/cliHost';
-import { cmdPlugin, batchPlugin, awsPlugin, initPlugin } from '@karmaniverous/get-dotenv/plugins';
+import {
+  cmdPlugin,
+  batchPlugin,
+  awsPlugin,
+  initPlugin,
+} from '@karmaniverous/get-dotenv/plugins';
 import { helloPlugin } from './plugins/hello';
 
 const program: Command = new GetDotenvCli('toolbox');
@@ -52,6 +60,7 @@ await program.parseAsync();
 ```
 
 Notes:
+
 - `attachRootOptions()` installs base flags (env/paths/shell/trace/etc.).
 - `passOptions()` merges flags (parent < current), resolves dotenv context once, validates against config, and persists the merged options bag for nested flows.
 
@@ -82,5 +91,6 @@ cli.ns('print').action((_args, _opts, thisCommand) => {
 ```
 
 See also:
+
 - Authoring — Config and Validation: ./authoring-config.md
 - Executing shell commands: ./exec.md

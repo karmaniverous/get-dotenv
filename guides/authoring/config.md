@@ -1,20 +1,22 @@
 ---
-title: Authoring — Config and Validation
+title: Config & Validation
 ---
 
-# Authoring — Config and Validation
+# Authoring Plugins: Config & Validation
 
-The host discovers config in packaged and project roots, overlays privacy (public/local) and source (packaged/project), and exposes the merged result to plugins. Plugin config lives under `plugins.<id>` in getdotenv.config.*.
+The host discovers config in packaged and project roots, overlays privacy (public/local) and source (packaged/project), and exposes the merged result to plugins. Plugin config lives under `plugins.<id>` in getdotenv.config.\*.
 
 ## Overlay and interpolation timing
 
 Order of operations (high level):
-1) Compose dotenv from files (exclude dynamic for the base), then apply dynamic (programmatic + JS/TS config + file dynamicPath).
-2) Interpolate remaining string options (Phase C), e.g., outputPath.
-3) Merge plugin config slices (packaged → project/public → project/local) and deep‑interpolate each plugin’s slice against `{ ...ctx.dotenv, ...process.env }` (process.env wins). Your plugin receives this interpolated slice.
-4) Validate plugin config (when a schema is provided).
+
+1. Compose dotenv from files (exclude dynamic for the base), then apply dynamic (programmatic + JS/TS config + file dynamicPath).
+2. Interpolate remaining string options (Phase C), e.g., outputPath.
+3. Merge plugin config slices (packaged → project/public → project/local) and deep‑interpolate each plugin’s slice against `{ ...ctx.dotenv, ...process.env }` (process.env wins). Your plugin receives this interpolated slice.
+4. Validate plugin config (when a schema is provided).
 
 Implications:
+
 - Strings coming from plugin config (including command strings) are interpolated once before your code runs; treat them as final to avoid double‑expansion.
 - If you need late interpolation for a specific option, document it and expand exactly once in your plugin.
 
@@ -34,10 +36,18 @@ import { definePlugin } from '@karmaniverous/get-dotenv/cliHost';
 export const MyPluginConfig = z.object({
   toolPath: z.string().optional(),
   // Rare, CLI-driven case only: plugin-scoped scripts
-  scripts: z.record(z.string(), z.union([z.string(), z.object({
-    cmd: z.string(),
-    shell: z.union([z.string(), z.boolean()]).optional(),
-  })])).optional(),
+  scripts: z
+    .record(
+      z.string(),
+      z.union([
+        z.string(),
+        z.object({
+          cmd: z.string(),
+          shell: z.union([z.string(), z.boolean()]).optional(),
+        }),
+      ]),
+    )
+    .optional(),
 });
 export type MyPluginConfig = z.infer<typeof MyPluginConfig>;
 
@@ -64,5 +74,6 @@ For CLI‑driven, arbitrary‑command plugins (like cmd/batch), you may offer `p
 The host surfaces config validation errors as exceptions by default (fail fast). If you want to warn and continue for non‑fatal cases, validate again locally in `setup` and provide user‑friendly guidance, but keep the schema strict to prevent silent misconfiguration.
 
 See also:
+
 - Config files and overlays: ../config.md
 - Authoring — Diagnostics: ./authoring-diagnostics.md

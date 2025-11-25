@@ -1,8 +1,8 @@
 ---
-title: Batch plugin
+title: batch
 ---
 
-# Batch plugin
+# Shipped Plugins: batch
 
 Execute a command across multiple working directories, each inheriting the
 current dotenv context. Output is streamed sequentially for legibility.

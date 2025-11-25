@@ -1,8 +1,8 @@
 ---
-title: AWS plugin
+title: aws
 ---
 
-# AWS plugin
+# Shipped Plugins: aws
 
 The AWS plugin resolves profile/region and acquires credentials using a safe cascade, writes them to `process.env` (when enabled), and mirrors the results under `ctx.plugins.aws`. It also provides an `aws` subcommand to establish a session and optionally forward to the AWS CLI.
 
@@ -77,7 +77,7 @@ Forwarded tokens appear after `--`. The subprocess is invoked with:
 
 - Explicit env injection: `{ ...process.env, ...ctx.dotenv }`
 - `stdio`: inherits by default; use `--capture` or `GETDOTENV_STDIO=pipe` for deterministic buffering in CI.
-- Shell resolution: honors per‑script overrides and the global shell setting (see the [Shell execution behavior](../../shell.md) guide).
+- Shell resolution: honors per‑script overrides and the global shell setting (see the [Shell execution behavior](../shell.md) guide).
 
 ## Usage examples
 
