@@ -1,0 +1,86 @@
+---
+title: Authoring — Lifecycle and Wiring
+---
+
+# Authoring — Lifecycle and Wiring
+
+Plugins are small modules that register commands and behavior against the plugin‑first host. The host resolves dotenv context once per invocation, overlays config, validates, and then runs your plugin’s setup and optional afterResolve hooks.
+
+## Minimal plugin
+
+```ts
+import type { GetDotenvCliPublic } from '@karmaniverous/get-dotenv/cliHost';
+import { definePlugin } from '@karmaniverous/get-dotenv/cliHost';
+
+export const helloPlugin = () =>
+  definePlugin({
+    id: 'hello',
+    setup(cli: GetDotenvCliPublic) {
+      cli.ns('hello').description('Say hello').action(() => {
+        const ctx = cli.getCtx();
+        console.log('hello', Object.keys(ctx?.dotenv ?? {}).length);
+      });
+    },
+  });
+```
+
+## Wiring a host
+
+```ts
+#!/usr/bin/env node
+import type { Command } from 'commander';
+import { GetDotenvCli } from '@karmaniverous/get-dotenv/cliHost';
+import { cmdPlugin, batchPlugin, awsPlugin, initPlugin } from '@karmaniverous/get-dotenv/plugins';
+import { helloPlugin } from './plugins/hello';
+
+const program: Command = new GetDotenvCli('toolbox');
+await (program as unknown as GetDotenvCli).brand({
+  importMetaUrl: import.meta.url,
+  description: 'Toolbox CLI',
+});
+
+program
+  .attachRootOptions({ loadProcess: false })
+  .use(cmdPlugin({ asDefault: true, optionAlias: '-c, --cmd <command...>' }))
+  .use(batchPlugin())
+  .use(awsPlugin())
+  .use(initPlugin())
+  .use(helloPlugin())
+  .passOptions({ loadProcess: false });
+
+await program.parseAsync();
+```
+
+Notes:
+- `attachRootOptions()` installs base flags (env/paths/shell/trace/etc.).
+- `passOptions()` merges flags (parent < current), resolves dotenv context once, validates against config, and persists the merged options bag for nested flows.
+
+## Branding the host
+
+Use brand() to set CLI name/description and a versioned header:
+
+```ts
+await (program as unknown as GetDotenvCli).brand({
+  importMetaUrl: import.meta.url, // resolve version from nearest package.json
+  description: 'Toolbox CLI',
+});
+```
+
+## Accessing context and options
+
+Inside actions, prefer the structural helpers:
+
+```ts
+import { readMergedOptions } from '@karmaniverous/get-dotenv/cliHost';
+
+cli.ns('print').action((_args, _opts, thisCommand) => {
+  const bag = readMergedOptions(thisCommand) ?? {};
+  const ctx = cli.getCtx();
+  // bag contains merged root options (scripts, shell, capture, trace, etc.)
+  // ctx.dotenv contains the final merged env (after overlays and dynamics)
+});
+```
+
+See also:
+- Authoring — Config and Validation: ./authoring-config.md
+- Executing shell commands: ./exec.md
