@@ -92,5 +92,5 @@ cli.ns('print').action((_args, _opts, thisCommand) => {
 
 See also:
 
-- Authoring — Config and Validation: ./authoring-config.md
-- Executing shell commands: ./exec.md
+- [Config & Validation](./config.md)
+- [Executing Shell Commands](./exec.md)

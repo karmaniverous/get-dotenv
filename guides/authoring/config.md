@@ -75,5 +75,4 @@ The host surfaces config validation errors as exceptions by default (fail fast).
 
 See also:
 
-- Config files and overlays: ../config.md
-- Authoring — Diagnostics: ./authoring-diagnostics.md
+- [Diagnostics](./diagnostics.md)

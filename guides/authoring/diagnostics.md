@@ -58,5 +58,5 @@ Prefer concise, single‑line status headers per run. Avoid verbose per‑line p
 
 See also:
 
-- Executing shell commands: ./exec.md
-- Shell execution behavior and quoting: ../shell.md
+- [Executing Shell Commands](./exec.md)
+- [Shell Execution Behavior](../shell.md)

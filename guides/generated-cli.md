@@ -4,7 +4,7 @@ title: Generated CLI
 
 # Generated CLI
 
-get-dotenv can power a standalone, generated CLI that you embed in your projects. This approach is great when you want a fixed command surface with minimal code in the host repository.
+`get-dotenv` can power a standalone, generated CLI that you embed in your projects. This approach is great when you want a fixed command surface with minimal code in the host repository.
 
 ## When to use the generated CLI
 
@@ -80,8 +80,6 @@ The generated CLI uses the same always-on loader and post-composition checks as 
 
 See also:
 
-- Config files and overlays: ./config.md
-- Shell execution behavior and quoting: ./shell.md
-- Plugin-first host and plugins: ./plugins.md
-
-See the [Generated CLI guide](https://docs.karmanivero.us/get-dotenv/guides/generated-cli) for details.
+- [Config Files & Overlays](./config.md)
+- [Shell Execution Behavior](./shell.md)
+- [Plugin-First Host](./authoring/index.md)

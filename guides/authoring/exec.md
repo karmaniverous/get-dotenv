@@ -197,5 +197,5 @@ Notes:
 
 See also:
 
-- Shell execution behavior and quoting: ../shell.md
-- Authoring — Diagnostics: ./authoring-diagnostics.md
+- [Shell Execution Behavior](../shell.md)
+- [Diagnostics](./diagnostics.md)

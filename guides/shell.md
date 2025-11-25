@@ -8,7 +8,7 @@ This page documents the root shell behavior controlled by the host’s global `-
 
 # Shell execution behavior
 
-get-dotenv executes commands via [execa](https://github.com/sindresorhus/execa) and normalizes shell behavior across platforms.
+`get-dotenv` executes commands via [execa](https://github.com/sindresorhus/execa) and normalizes shell behavior across platforms.
 
 ## Resolution rules
 

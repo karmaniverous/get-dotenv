@@ -4,11 +4,12 @@ title: Cascade and precedence
 
 # Cascade and precedence
 
-get-dotenv loads variables from a deterministic cascade of dotenv files, per input path, then merges across paths.
+`get-dotenv` loads variables from a deterministic cascade of dotenv files, per input path, then merges across paths.
 
 ## File naming
 
 Given:
+
 - dotenvToken: `.env` (configurable)
 - privateToken: `local` (configurable)
 - env: `<ENV>` (optional)
@@ -24,14 +25,16 @@ If a file is missing, it is silently skipped. Parsed values from later files ove
 
 ## Multiple paths
 
-When `paths` contains more than one directory, get-dotenv visits each directory in the order they appear in the array. For each directory, the same four-file cascade is applied and merged into the overall result. Later paths override earlier paths for colliding keys.
+When `paths` contains more than one directory, `get-dotenv` visits each directory in the order they appear in the array. For each directory, the same four-file cascade is applied and merged into the overall result. Later paths override earlier paths for colliding keys.
 
 Example:
+
 ```json
 {
   "paths": ["./", "./packages/app"]
 }
 ```
+
 Values from `./packages/app` win over `./` if the same key appears in both.
 
 ## Dynamic variables
@@ -48,6 +51,7 @@ See the README “Dynamic Processing” section for details.
 ## Expansion and defaults
 
 After merging, values are expanded recursively using:- `$VAR[:default]` or `${VAR[:default]}`
+
 - Unknown variables expand to an empty string unless a default is provided.
 
 See the API docs for `dotenvExpand` and `dotenvExpandAll` for precise behavior.

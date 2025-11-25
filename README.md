@@ -199,7 +199,7 @@ export default {
 };
 ```
 
-If `esbuild` is not installed and a direct import fails, get-dotenv attempts a simple fallback for single-file `.ts` modules without imports; otherwise it will throw with clear guidance to install `esbuild`.
+If `esbuild` is not installed and a direct import fails, `get-dotenv` attempts a simple fallback for single-file `.ts` modules without imports; otherwise it will throw with clear guidance to install `esbuild`.
 
 Programmatic users can skip files entirely and pass dynamic variables directly:
 
