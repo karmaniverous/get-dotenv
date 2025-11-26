@@ -4,6 +4,35 @@ title: Generated CLI
 
 # Generated CLI
 
+> Deprecated: Prefer the plugin‑first host. If you previously used a generated child CLI or the get‑dotenv‑child repo, migrate by wiring a small host and choosing your plugins:
+>
+> ```ts
+> #!/usr/bin/env node
+> import type { Command } from 'commander';
+> import { GetDotenvCli } from '@karmaniverous/get-dotenv/cliHost';
+> import { cmdPlugin, batchPlugin, awsPlugin, initPlugin } from '@karmaniverous/get-dotenv/plugins';
+> // import { demoPlugin } from '@karmaniverous/get-dotenv/plugins/demo'; // optional
+>
+> const program: Command = new GetDotenvCli('mycli');
+> await (program as unknown as GetDotenvCli).brand({
+>   importMetaUrl: import.meta.url,
+>   description: 'mycli',
+> });
+>
+> program
+>   .attachRootOptions({ loadProcess: false })
+>   .use(cmdPlugin({ asDefault: true, optionAlias: '-c, --cmd <command...>' }))
+>   .use(batchPlugin())
+>   .use(awsPlugin())
+>   .use(initPlugin())
+>   // .use(demoPlugin()) // omit demo by default
+>   .passOptions({ loadProcess: false });
+>
+> await program.parseAsync();
+> ```
+>
+> See [Authoring Plugins → Lifecycle & Wiring](./authoring/lifecycle.md) for details.
+
 `get-dotenv` can power a standalone, generated CLI that you embed in your projects. This approach is great when you want a fixed command surface with minimal code in the host repository.
 
 ## When to use the generated CLI

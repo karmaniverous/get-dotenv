@@ -1,6 +1,7 @@
 ---
 title: Guides
 children:
+  - ./getting-started.md
   - ./cascade.md
   - ./shell.md
   - ./config.md
@@ -13,6 +14,7 @@ children:
 
 This section collects practical guides for using `get-dotenv`. Start here:
 
+- [Getting Started](./getting-started.md) - Fast on‑ramps for CLI, programmatic API, embedding, and scaffolding.
 - [Cascade and precedence](./cascade.md) - How variables load and merge across
   paths and public/private/env axes.
 - [Shell execution behavior](./shell.md) - How commands run cross‑platform;

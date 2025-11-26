@@ -210,3 +210,9 @@ When updated: 2025-10-19T00:00:00Z
     strict ESLint rules.
 
 - Docs: fix relative link to Shell guide in guides/plugins/shipped/aws.md after plugin docs refactor; ensure root vs per‑plugin shell scope is documented and cross‑linked.
+
+- Docs: README on‑ramp and deprecation cleanup
+  - Added "Getting Started" guide and surfaced it from Guides and README.
+  - Removed long inlined CLI help block; point to `-h` and shipped plugin pages.
+  - Replaced links to the deprecated child repo with plugin‑first host guidance.
+  - Added a “Custom host (wire plugins)” example omitting demo by default; fixed shipped plugins index typo; added a migration callout to the Generated CLI guide.
