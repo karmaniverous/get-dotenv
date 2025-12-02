@@ -3,11 +3,11 @@ import fs from 'fs-extra';
 import { packageDirectory } from 'package-directory';
 import { join } from 'path';
 
-import type { RootOptionsShape } from './cliCore/types';
 import {
   baseGetDotenvCliOptions,
   type GetDotenvCliOptions,
-} from './generateGetDotenvCli/GetDotenvCliOptions';
+} from './cliCore/GetDotenvCliOptions';
+import type { RootOptionsShape } from './cliCore/types';
 import { defaultsDeep } from './util/defaultsDeep';
 export const getDotenvOptionsFilename = 'getdotenv.config.json';
 
@@ -258,11 +258,20 @@ export const resolveGetDotenvOptions = async (
     ? join(localPkgDir, getDotenvOptionsFilename)
     : undefined;
 
-  const localOptions = (
-    localOptionsPath && (await fs.exists(localOptionsPath))
-      ? JSON.parse((await fs.readFile(localOptionsPath)).toString())
-      : {}
-  ) as Partial<GetDotenvCliOptions>;
+  // Safely read local CLI-facing defaults (defensive typing to satisfy strict linting).
+  let localOptions: Partial<GetDotenvCliOptions> = {};
+  if (localOptionsPath && (await fs.exists(localOptionsPath))) {
+    try {
+      const txt = await fs.readFile(localOptionsPath, 'utf-8');
+      const parsed = JSON.parse(txt) as unknown;
+      if (parsed && typeof parsed === 'object') {
+        localOptions = parsed as Partial<GetDotenvCliOptions>;
+      }
+    } catch {
+      // Malformed or unreadable local options are treated as absent.
+      localOptions = {};
+    }
+  }
 
   // Merge order: base < local < custom (custom has highest precedence)
   const mergedCli = defaultsDeep(

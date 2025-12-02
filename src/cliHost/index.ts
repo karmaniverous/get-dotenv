@@ -35,7 +35,7 @@ export class GetDotenvCli extends BaseGetDotenvCli {
     opts?: { includeCommandOption?: boolean },
   ): this {
     const d = (defaults ?? baseRootOptionDefaults) as Partial<RootOptionsShape>;
-    attachRootOptionsBuilder(this as unknown as Command, d, opts);
+    attachRootOptionsBuilder(this as unknown as BaseGetDotenvCli, d, opts);
     return this;
   }
 

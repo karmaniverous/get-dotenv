@@ -3,7 +3,7 @@ import fs from 'fs-extra';
 import { packageDirectory } from 'package-directory';
 import { fileURLToPath } from 'url';
 
-import type { GetDotenvCliOptions } from '../generateGetDotenvCli/GetDotenvCliOptions';
+import type { GetDotenvCliOptions } from '../cliCore/GetDotenvCliOptions';
 import type { ProcessEnv } from '../GetDotenvOptions';
 // NOTE: host class kept thin; heavy context computation lives in computeContext.
 import {

@@ -122,4 +122,12 @@ When updated: 2025-10-19T00:00:00Z
   showing effective defaults from resolved config (fallback to static when unavailable).- Help path perf/stability: top-level "-h/--help" now resolves config with
 - Help path perf/stability: top-level "-h/--help" now resolves config with
   runAfterResolve=false to skip plugin afterResolve hooks during help rendering,
-  preventing long-running side-effects and fixing help-time test timeouts.
+  preventing long-running side-effects and fixing help-time test timeouts.
+
+- Generator removal follow-through: replaced lingering imports from
+  generateGetDotenvCli/* with cliCore equivalents across host, options,
+  schema, and cmd plugin; fixed host attachRootOptions call site typing.
+- Lint hygiene: removed unused destructured defaults in attachRootOptions and
+  hardened local config JSON parsing in GetDotenvOptions to satisfy strict
+  no-unsafe-* rules.
+- Docs: scrubbed README link to deprecated Generated CLI guide.

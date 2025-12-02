@@ -183,7 +183,12 @@ When you want full control over the command surface, construct a host directly a
 #!/usr/bin/env node
 import type { Command } from 'commander';
 import { GetDotenvCli } from '@karmaniverous/get-dotenv/cliHost';
-import { cmdPlugin, batchPlugin, awsPlugin, initPlugin } from '@karmaniverous/get-dotenv/plugins';
+import {
+  cmdPlugin,
+  batchPlugin,
+  awsPlugin,
+  initPlugin,
+} from '@karmaniverous/get-dotenv/plugins';
 // import { demoPlugin } from '@karmaniverous/get-dotenv/plugins/demo'; // optional
 // import { helloPlugin } from './plugins/hello'; // your plugin
 
@@ -388,7 +393,6 @@ Diagnostics and CI capture:
   apply privacy/source overlays (always‑on).
 - [Authoring Plugins](./guides/authoring/index.md) - Compose CLIs with once‑per‑invoke dotenv context and plugin lifecycles.
 - [Shipped Plugins](./guides/shipped/index.md) - The get‑dotenv host ships a small set of plugins that cover needs.
-- [Generated CLI](./guides/generated-cli.md) - Deprecated in favor of the plugin‑first host. Migration guidance included.
 
 The guides are also included in the [hosted API docs](https://docs.karmanivero.us/get-dotenv).
 

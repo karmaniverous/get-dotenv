@@ -2,13 +2,13 @@ import type { GetDotenvCli } from '@karmaniverous/get-dotenv/cliHost';
 import { Command } from 'commander';
 
 import { runCommand } from '../../cliCore/exec';
+import type { GetDotenvCliOptions } from '../../cliCore/GetDotenvCliOptions';
 import { buildSpawnEnv } from '../../cliCore/spawnEnv';
 import type { CommandWithOptions } from '../../cliCore/types';
 import { definePlugin } from '../../cliHost/definePlugin';
 import type { EntropyOptions } from '../../diagnostics/entropy';
 import { maybeWarnEntropy } from '../../diagnostics/entropy';
 import { redactTriple } from '../../diagnostics/redact';
-import type { GetDotenvCliOptions } from '../../generateGetDotenvCli/GetDotenvCliOptions';
 import type { Logger } from '../../GetDotenvOptions';
 import { resolveCommand, resolveShell } from '../../services/batch/resolve';
 import { attachParentAlias } from './alias';
