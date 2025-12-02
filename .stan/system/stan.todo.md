@@ -4,6 +4,21 @@ When updated: 2025-10-19T00:00:00Z
 
 ## Next up (near‑term, actionable)
 
+- Remove generated CLI completely (code/exports/tests/docs)
+  - Delete src/generateGetDotenvCli/** and all imports/exports from index/rollup/types.
+  - Remove generator tests; ensure no rollup/type bundles reference it.
+  - Scrub docs: remove guides/generated-cli.md and all references across README and guides (no migration notes).
+
+- Move and type attachRootOptions (host-only)
+  - Move builder into cliHost (e.g., src/cliHost/attachRootOptions.ts).
+  - Type program: GetDotenvCli; remove duck-typed fallbacks.
+  - Use dynamicOption/createDynamicOption for any flag that displays defaults.
+
+- Adopt dynamic help for all default-displaying flags
+  - Root: shell/shell-off, load-process/on-off, exclude* families, log/on-off, entropy-warn/on-off.
+  - Plugins: batch defaults (pkg-cwd, root-path, globs) from merged/interpolated plugin config; keep cmd/aws static unless showing defaults.
+  - Add tests for -h vs "help <cmd>" parity and default labels; update E2E help assertions.
+
 - Build outputs: sanity‑check Rollup tree‑shaking for the non‑type Option import across ESM/CJS bundles to ensure no accidental retention of unused code in consumers.
 - Dynamic help: implement and adopt Commander‑compatible APIs
   - Implement `dynamicOption(flags, (config) => string, parser?, defaultValue?)` on the GetDotenvCli subclass; compute a read‑only ResolvedConfig for help (`-h` and `help <cmd>`), with overlays and dynamic enabled, no logging, and `loadProcess=false`; evaluate description functions before printing help; ensure createCommand() returns the subclass so subcommands chain `dynamicOption(...)`.
@@ -20,6 +35,11 @@ When updated: 2025-10-19T00:00:00Z
   - Config Files & Overlays: add a new “Plugin config” subsection describing location (plugins.<id>), interpolation timing against `{ ...dotenv, ...process.env }`, privacy/source precedence, and how those resolved values surface in `dynamicOption` descriptions.
   - Shell/CLI guides: note that root flags and plugin flags display help defaults derived from the same resolved config and that top‑level `-h` evaluates dynamic safely (no env mutation).
   - Add a brief before/after docs snippet demonstrating dynamic default rendering in help (e.g., shell/load‑process ON/OFF tags).
+  - Remove any and all mentions of a “Generated CLI” across docs (no migration notes).
+
+- Tests and CI updates (post-removal)
+  - Drop generator runtime tests; ensure coverage thresholds remain meaningful.
+  - Keep existing smoke/E2E stable; adjust expected help strings for dynamic defaults where necessary.
 
 - Replace CLI entry with get-dotenv host
   - Create a GetDotenvCli-based host in src/cli/index.ts (or src/cli/host.ts and re-export).
@@ -75,6 +95,7 @@ When updated: 2025-10-19T00:00:00Z
   - Dev guide: stage precedence; recommend plugins.smoz.stage mapping; strict/diagnostics notes.
   - Troubleshooting: add safe tracing and quoting recipes for cmd; clarify Windows path hygiene is handled by spawn-env.
   - Config Files & Overlays: expand with a “Plugin config” section (location, interpolation timing, precedence) and examples used by dynamic help.
+  - Remove any outdated references to generator paths from all guides/README.
 
 ## Completed (recent)
 
@@ -99,5 +120,6 @@ When updated: 2025-10-19T00:00:00Z
   and smoke runs quiet by default; enable with GETDOTENV_DEBUG=1 when needed.
 - Root help (dynamic): migrated -l/--log and --entropy-warn toggles to dynamicOption,
   showing effective defaults from resolved config (fallback to static when unavailable).- Help path perf/stability: top-level "-h/--help" now resolves config with
+- Help path perf/stability: top-level "-h/--help" now resolves config with
   runAfterResolve=false to skip plugin afterResolve hooks during help rendering,
   preventing long-running side-effects and fixing help-time test timeouts.
