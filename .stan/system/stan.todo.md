@@ -4,6 +4,7 @@ When updated: 2025-10-19T00:00:00Z
 
 ## Next up (near‑term, actionable)
 
+- Build outputs: sanity‑check Rollup tree‑shaking for the non‑type Option import across ESM/CJS bundles to ensure no accidental retention of unused code in consumers.
 - Dynamic help: implement and adopt Commander‑compatible APIs
   - Implement `dynamicOption(flags, (config) => string, parser?, defaultValue?)` on the GetDotenvCli subclass; compute a read‑only ResolvedConfig for help (`-h` and `help <cmd>`), with overlays and dynamic enabled, no logging, and `loadProcess=false`; evaluate description functions before printing help; ensure createCommand() returns the subclass so subcommands chain `dynamicOption(...)`.
   - Implement `createDynamicOption(flags, (config) => string, parser?, defaultValue?)` returning an Option carrying dynamic metadata; primarily for cases that build then add with `addOption`.
@@ -18,6 +19,7 @@ When updated: 2025-10-19T00:00:00Z
   - Authoring Plugins: add a “Dynamic option descriptions” section with examples for `dynamicOption` and `createDynamicOption`, including root vs plugin defaults and boolean/string patterns.
   - Config Files & Overlays: add a new “Plugin config” subsection describing location (plugins.<id>), interpolation timing against `{ ...dotenv, ...process.env }`, privacy/source precedence, and how those resolved values surface in `dynamicOption` descriptions.
   - Shell/CLI guides: note that root flags and plugin flags display help defaults derived from the same resolved config and that top‑level `-h` evaluates dynamic safely (no env mutation).
+  - Add a brief before/after docs snippet demonstrating dynamic default rendering in help (e.g., shell/load‑process ON/OFF tags).
 
 - Replace CLI entry with get-dotenv host
   - Create a GetDotenvCli-based host in src/cli/index.ts (or src/cli/host.ts and re-export).
@@ -65,6 +67,8 @@ When updated: 2025-10-19T00:00:00Z
   - Dev: stage precedence matrix; inline/offline spawn-env normalization; Windows CI smoke.
   - Add cmd/batch smoke tests (quote handling and env propagation).
   - Verify help header branding and flags (-e/--strict/--trace/-V).
+  - Reduce remaining test noise: optionally gate help printing under tests (suppress outputHelp when GETDOTENV_TEST=1 or GETDOTENV_STDIO=pipe) or refactor help‑flow tests to assert helpInformation() instead of printing.
+  - Investigate occasional timeout in interop/createCli.esm.test.ts on Windows; consider bumping that test’s timeout to 20s or micro‑optimizing the top‑level help path.
 
 - Documentation updates
   - CLI: clarify host-based design; new commands (cmd/batch); global flags; getdotenv.config.\* surfaces.
