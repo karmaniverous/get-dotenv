@@ -1,0 +1,93 @@
+#!/usr/bin/env node
+/**
+ * Verify dist bundles keep Commander external (tree-shaken) and do not inline it.
+ *
+ * Checks representative ESM/CJS outputs for explicit import/require of 'commander'
+ * and fails when the files are missing or do not reference commander externally.
+ *
+ * Intended coverage:
+ *  - dist/index.mjs / dist/index.cjs
+ *  - dist/cliHost.mjs / dist/cliHost.cjs
+ *
+ * Notes:
+ * - Rollup externalizes dependencies; this check guards against regressions where
+ *   commander might be bundled or dead-import removed in a way that changes surface.
+ * - This is a heuristic: we assert the presence of external imports, not the absence
+ *   of every possible inlining form. Good enough to catch common config mistakes.
+ */
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import process from 'node:process';
+
+const DIST = 'dist';
+const targets = [
+  { file: 'index.mjs', type: 'esm' },
+  { file: 'index.cjs', type: 'cjs' },
+  { file: 'cliHost.mjs', type: 'esm' },
+  { file: 'cliHost.cjs', type: 'cjs' },
+];
+
+const hasCommanderImport = (txt) =>
+  /from\s+['"]commander['"]/.test(txt) ||
+  /import\s+['"]commander['"]/.test(txt);
+const hasCommanderRequire = (txt) => /require\(['"]commander['"]\)/.test(txt);
+
+const err = (msg) => {
+  // Keep errors concise and deterministic; exit non-zero.
+  console.error('verify-bundle-imports: FAILED');
+  console.error(msg);
+  process.exit(1);
+};
+const ok = (msg) => {
+  console.log('verify-bundle-imports: OK');
+  console.log(msg);
+};
+
+const main = async () => {
+  // Ensure dist exists
+  try {
+    const stat = await fs.stat(DIST);
+    if (!stat.isDirectory()) {
+      err(
+        `"${DIST}" exists but is not a directory. Build before verify-bundle.`,
+      );
+    }
+  } catch {
+    err(`"${DIST}" not found. Build before verify-bundle.`);
+  }
+
+  const results = [];
+  for (const t of targets) {
+    const p = path.join(DIST, t.file);
+    let txt = '';
+    try {
+      txt = await fs.readFile(p, 'utf-8');
+    } catch {
+      results.push({ file: t.file, ok: false, reason: 'missing' });
+      continue;
+    }
+    const good =
+      t.type === 'esm' ? hasCommanderImport(txt) : hasCommanderRequire(txt);
+    results.push({
+      file: t.file,
+      ok: good,
+      reason: good ? undefined : 'no external commander reference',
+    });
+  }
+
+  const bad = results.filter((r) => !r.ok);
+  if (bad.length > 0) {
+    const lines = bad
+      .map((r) => `- ${r.file}: ${r.reason ?? 'invalid'}`)
+      .join('\n');
+    err(`One or more bundles failed sanity checks:\n${lines}`);
+  }
+  const lines = results
+    .map((r) => `- ${r.file}: external commander reference`)
+    .join('\n');
+  ok(lines);
+};
+
+main().catch((e) => {
+  err(String(e?.stack ?? e));
+});

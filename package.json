@@ -253,6 +253,7 @@
     "verify:types": "node tools/verify-types.js",
     "verify:package": "node tools/verify-package.js",
     "verify:smoke": "node tools/smoke.js",
+    "verify:bundle": "node tools/verify-bundle-imports.js",
     "verify:tarball": "node tools/verify-tarball.js"
   },
   "type": "module",

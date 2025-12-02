@@ -161,4 +161,8 @@ When updated: 2025-10-19T00:00:00Z
   - Added a “Plugin config” subsection to Config files & overlays (location, precedence, interpolation timing, dynamic help visibility).
 
 - Docs: shell dynamic defaults
-  - Documented dynamic help defaults in Shell guide with concise excerpts for root and batch flags.
+  - Documented dynamic help defaults in Shell guide with concise excerpts for root and batch flags.
+
+- Build outputs: bundle sanity check
+  - Added tools/verify-bundle-imports.js and wired "verify:bundle" to assert
+    Commander remains external in dist ESM/CJS outputs.
