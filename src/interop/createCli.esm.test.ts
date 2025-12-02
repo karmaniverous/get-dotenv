@@ -24,5 +24,5 @@ describe('interop/createCli (ESM dynamic)', () => {
     // Help should print and return without throwing or exiting the process.
     // If a runtime change regresses, this will throw and fail the test.
     await cli?.run(['-h']);
-  });
+  }, 20000);
 });

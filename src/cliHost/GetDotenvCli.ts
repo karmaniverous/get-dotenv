@@ -157,6 +157,7 @@ export class GetDotenvCli<
    * The returned Option may be configured (conflicts, default, parser) and
    * added via addOption().
    */
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters
   createDynamicOption<TPlugins = Record<string, unknown>>(
     flags: string,
     desc: (cfg: ResolvedHelpConfig & { plugins: TPlugins }) => string,
@@ -177,6 +178,7 @@ export class GetDotenvCli<
    * Chainable helper mirroring .option(), but with a dynamic description.
    * Equivalent to addOption(createDynamicOption(...)).
    */
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters
   dynamicOption<TPlugins = Record<string, unknown>>(
     flags: string,
     desc: (cfg: ResolvedHelpConfig & { plugins: TPlugins }) => string,

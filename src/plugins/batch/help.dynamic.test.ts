@@ -1,4 +1,3 @@
-import type { Command } from 'commander';
 import { describe, expect, it } from 'vitest';
 
 import { GetDotenvCli } from '../../cliHost';
@@ -23,12 +22,8 @@ describe('plugins/batch dynamic help', () => {
       },
     });
 
-    // Grab the 'batch' subcommand and render its help text
-    const batch = (
-      (cli as unknown as { commands?: Command[] }).commands ?? []
-    ).find((c) => c.name() === 'batch');
-    expect(batch).toBeDefined();
-    const help = (batch as Command).helpInformation();
+    // Render root help; grouped plugin options are appended
+    const help = (cli as unknown as GetDotenvCli).helpInformation();
 
     // pkg-cwd: ON (default)
     expect(help).toMatch(/-p, --pkg-cwd[\s\S]*\(default\)/i);

@@ -146,4 +146,9 @@ When updated: 2025-10-19T00:00:00Z
 - Dynamic help typing & grouping
   - createDynamicOption/dynamicOption now accept a generic plugin-slice type, enabling inference in callbacks (no casts).
   - ResolvedHelpConfig is Partial<GetDotenvOptions> for help-time evaluation.
-  - Tagged batch options into 'plugin:batch' for grouped help rendering under subcommand help.
+  - Tagged batch options into 'plugin:batch' for grouped help rendering under subcommand help.
+
+- Type inference & tests
+  - Removed explicit casts in batch dynamic callbacks via generic dynamicOption; cfg typed automatically.
+  - Root help asserted in dynamic help test (grouped plugin options appended).
+  - Increased ESM interop help test timeout to 20s.
