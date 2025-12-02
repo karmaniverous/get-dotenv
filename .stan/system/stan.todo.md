@@ -9,19 +9,7 @@ When updated: 2025-10-19T00:00:00Z
   - Remove generator tests; ensure no rollup/type bundles reference it.
   - Scrub docs: remove guides/generated-cli.md and all references across README and guides (no migration notes).
 
-- Adopt dynamic help for all default-displaying flags
-  - Root: shell/shell-off, load-process/on-off, exclude\* families, log/on-off, entropy-warn/on-off.
-  - Plugins: batch defaults (pkg-cwd, root-path, globs) from merged/interpolated plugin config; keep cmd/aws static unless showing defaults.
-  - Add tests for -h vs "help <cmd>" parity and default labels; update E2E help assertions.
-
 - Build outputs: sanity‑check Rollup tree‑shaking for the non‑type Option import across ESM/CJS bundles to ensure no accidental retention of unused code in consumers.
-
-- Documentation updates (host and guides)
-  - Authoring Plugins: add a “Dynamic option descriptions” section with examples for `dynamicOption` and `createDynamicOption`, including root vs plugin defaults and boolean/string patterns.
-  - Config Files & Overlays: add a new “Plugin config” subsection describing location (plugins.<id>), interpolation timing against `{ ...dotenv, ...process.env }`, privacy/source precedence, and how those resolved values surface in `dynamicOption` descriptions.
-  - Shell/CLI guides: note that root flags and plugin flags display help defaults derived from the same resolved config and that top‑level `-h` evaluates dynamic safely (no env mutation).
-  - Add a brief before/after docs snippet demonstrating dynamic default rendering in help (e.g., shell/load‑process ON/OFF tags).
-  - Remove any and all mentions of a “Generated CLI” across docs (no migration notes).
 
 - Tests and CI updates (post-removal)
   - Drop generator runtime tests; ensure coverage thresholds remain meaningful.
