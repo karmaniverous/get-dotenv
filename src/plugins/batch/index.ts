@@ -1,10 +1,15 @@
 import type { GetDotenvCliPublic } from '@karmaniverous/get-dotenv/cliHost';
+import type { GetDotenvCli } from '@karmaniverous/get-dotenv/cliHost';
 import { Command as Commander } from 'commander';
 
 import { definePlugin } from '../../cliHost/definePlugin';
 import { buildDefaultCmdAction } from './actions/defaultCmdAction';
 import { buildParentAction } from './actions/parentAction';
-import { BatchConfigSchema, type BatchPluginOptions } from './types';
+import {
+  type BatchConfig,
+  BatchConfigSchema,
+  type BatchPluginOptions,
+} from './types';
 
 /**
  * Batch plugin for the GetDotenv CLI host.
@@ -22,25 +27,57 @@ export const batchPlugin = (opts: BatchPluginOptions = {}) =>
     setup(cli: GetDotenvCliPublic) {
       const ns = cli.ns('batch');
       const batchCmd = ns; // capture the parent "batch" command for default-subcommand context
+      const host = cli as unknown as GetDotenvCli;
+      const pluginId = 'batch';
 
       ns.description(
         'Batch command execution across multiple working directories.',
       )
         .enablePositionalOptions()
         .passThroughOptions()
-        .option(
-          '-p, --pkg-cwd',
-          'use nearest package directory as current working directory',
+        // Dynamic help: show effective defaults from the merged/interpolated plugin config slice.
+        .addOption(
+          host.createDynamicOption('-p, --pkg-cwd', (cfg) => {
+            const slice = ((
+              cfg as unknown as {
+                plugins?: Record<string, unknown>;
+              }
+            ).plugins?.[pluginId] ?? {}) as BatchConfig;
+            const on = !!slice.pkgCwd;
+            return `use nearest package directory as current working directory${on ? ' (default)' : ''}`;
+          }),
         )
-        .option(
-          '-r, --root-path <string>',
-          'path to batch root directory from current working directory',
-          './',
+        .addOption(
+          host.createDynamicOption('-r, --root-path <string>', (cfg) => {
+            const slice = ((
+              cfg as unknown as {
+                plugins?: Record<string, unknown>;
+              }
+            ).plugins?.[pluginId] ?? {}) as BatchConfig;
+            const def =
+              typeof slice.rootPath === 'string' && slice.rootPath.length > 0
+                ? slice.rootPath
+                : './';
+            return `path to batch root directory from current working directory (default: ${JSON.stringify(
+              def,
+            )})`;
+          }),
         )
-        .option(
-          '-g, --globs <string>',
-          'space-delimited globs from root path',
-          '*',
+        .addOption(
+          host.createDynamicOption('-g, --globs <string>', (cfg) => {
+            const slice = ((
+              cfg as unknown as {
+                plugins?: Record<string, unknown>;
+              }
+            ).plugins?.[pluginId] ?? {}) as BatchConfig;
+            const def =
+              typeof slice.globs === 'string' && slice.globs.length > 0
+                ? slice.globs
+                : '*';
+            return `space-delimited globs from root path (default: ${JSON.stringify(
+              def,
+            )})`;
+          }),
         )
         .option(
           '-c, --command <string>',
