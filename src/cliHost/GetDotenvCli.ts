@@ -73,13 +73,16 @@ export class GetDotenvCli<
     // append App/Plugin sections after default help.
     this.configureHelp({
       visibleOptions: (cmd: Command): Option[] => {
-        const all =
-          (cmd as unknown as { options?: Option[] }).options ??
-          ([] as Option[]);
-        const base = all.filter((opt) => {
-          const group = (opt as unknown as { __group?: string }).__group;
-          return group === 'base';
-        });
+        const all = (cmd as unknown as { options?: Option[] }).options ?? [];
+        const parent =
+          (cmd as unknown as { parent?: Command | null }).parent ?? null;
+        const isRoot = parent === null;
+        const list = isRoot
+          ? all.filter((opt) => {
+              const group = (opt as unknown as { __group?: string }).__group;
+              return group === 'base';
+            })
+          : all.slice(); // subcommands: show all options
         // Sort: short-aliased options first, then long-only; stable by flags.
         const hasShort = (opt: Option) => {
           const flags = (opt as unknown as { flags?: string }).flags ?? '';
@@ -88,12 +91,12 @@ export class GetDotenvCli<
         };
         const byFlags = (opt: Option) =>
           (opt as unknown as { flags?: string }).flags ?? '';
-        base.sort((a, b) => {
+        list.sort((a, b) => {
           const aS = hasShort(a) ? 1 : 0;
           const bS = hasShort(b) ? 1 : 0;
           return bS - aS || byFlags(a).localeCompare(byFlags(b));
         });
-        return base;
+        return list;
       },
     });
     this.addHelpText('beforeAll', () => {

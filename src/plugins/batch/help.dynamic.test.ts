@@ -24,10 +24,13 @@ describe('plugins/batch dynamic help', () => {
 
     // Render batch subcommand help; plugin options should appear here.
     const commands = ((
-      cli as unknown as { commands?: Array<{ name: () => string }> }
-    ).commands ?? []) as Array<
-      { name: () => string; helpInformation: () => string } & unknown
-    >;
+      cli as unknown as {
+        commands?: Array<{ name: () => string; helpInformation: () => string }>;
+      }
+    ).commands ?? []) as Array<{
+      name: () => string;
+      helpInformation: () => string;
+    }>;
     const batch = commands.find(
       (c) => typeof c.name === 'function' && c.name() === 'batch',
     );

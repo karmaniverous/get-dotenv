@@ -165,3 +165,8 @@ When updated: 2025-10-19T00:00:00Z
 - Help behavior tweak
   - Reverted recursive display of plugin options in root help; plugin flags
     remain visible in their subcommand help (e.g., "getdotenv batch -h").
+
+- Help visibility (root vs subcommand)
+  - Root help now filters Options to base-only (no plugin groups).
+  - Subcommand help shows all options, so plugin flags appear under the subcommand’s
+    Options section (e.g., batch dynamic defaults visible in "help batch").
