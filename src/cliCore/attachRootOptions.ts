@@ -334,16 +334,56 @@ export const attachRootOptions = (
       ).conflicts('excludePublic'),
     )
     .addOption(
-      new Option(
-        '-l, --log',
-        `console log loaded variables ON${log ? ' (default)' : ''}`,
-      ).conflicts('logOff'),
+      (() => {
+        const anyProg = program as unknown as {
+          createDynamicOption?: (
+            flags: string,
+            desc: (cfg: { log?: boolean }) => string,
+            parser?: (v: string) => unknown,
+            def?: unknown,
+          ) => Option;
+        };
+        if (typeof anyProg.createDynamicOption === 'function') {
+          return anyProg
+            .createDynamicOption(
+              '-l, --log',
+              (cfg) =>
+                `console log loaded variables ON${cfg.log ? ' (default)' : ''}`,
+            )
+            .conflicts('logOff');
+        }
+        return new Option(
+          '-l, --log',
+          `console log loaded variables ON${log ? ' (default)' : ''}`,
+        ).conflicts('logOff');
+      })(),
     )
     .addOption(
-      new Option(
-        '-L, --log-off',
-        `console log loaded variables OFF${!log ? ' (default)' : ''}`,
-      ).conflicts('log'),
+      (() => {
+        const anyProg = program as unknown as {
+          createDynamicOption?: (
+            flags: string,
+            desc: (cfg: { log?: boolean }) => string,
+            parser?: (v: string) => unknown,
+            def?: unknown,
+          ) => Option;
+        };
+        if (typeof anyProg.createDynamicOption === 'function') {
+          return anyProg
+            .createDynamicOption(
+              '-L, --log-off',
+              (cfg) =>
+                `console log loaded variables OFF${
+                  cfg.log ? '' : ' (default)'
+                }`,
+            )
+            .conflicts('log');
+        }
+        return new Option(
+          '-L, --log-off',
+          `console log loaded variables OFF${!log ? ' (default)' : ''}`,
+        ).conflicts('log');
+      })(),
     )
     .option('--capture', 'capture child process stdio for commands (tests/CI)')
     .option(
@@ -426,15 +466,59 @@ export const attachRootOptions = (
   // Entropy diagnostics (presentation-only)
   p = p
     .addOption(
-      new Option(
-        '--entropy-warn',
-        'enable entropy warnings (default on)',
-      ).conflicts('entropyWarnOff'),
+      (() => {
+        const anyProg = program as unknown as {
+          createDynamicOption?: (
+            flags: string,
+            desc: (cfg: { warnEntropy?: boolean }) => string,
+            parser?: (v: string) => unknown,
+            def?: unknown,
+          ) => Option;
+        };
+        if (typeof anyProg.createDynamicOption === 'function') {
+          return anyProg
+            .createDynamicOption(
+              '--entropy-warn',
+              (cfg) =>
+                // Default is effectively ON when warnEntropy is true or undefined.
+                `enable entropy warnings${
+                  cfg.warnEntropy === false ? '' : ' (default on)'
+                }`,
+            )
+            .conflicts('entropyWarnOff');
+        }
+        return new Option(
+          '--entropy-warn',
+          'enable entropy warnings (default on)',
+        ).conflicts('entropyWarnOff');
+      })(),
     )
     .addOption(
-      new Option('--entropy-warn-off', 'disable entropy warnings').conflicts(
-        'entropyWarn',
-      ),
+      (() => {
+        const anyProg = program as unknown as {
+          createDynamicOption?: (
+            flags: string,
+            desc: (cfg: { warnEntropy?: boolean }) => string,
+            parser?: (v: string) => unknown,
+            def?: unknown,
+          ) => Option;
+        };
+        if (typeof anyProg.createDynamicOption === 'function') {
+          return anyProg
+            .createDynamicOption(
+              '--entropy-warn-off',
+              (cfg) =>
+                `disable entropy warnings${
+                  cfg.warnEntropy === false ? ' (default)' : ''
+                }`,
+            )
+            .conflicts('entropyWarn');
+        }
+        return new Option(
+          '--entropy-warn-off',
+          'disable entropy warnings',
+        ).conflicts('entropyWarn');
+      })(),
     )
     .option(
       '--entropy-threshold <number>',

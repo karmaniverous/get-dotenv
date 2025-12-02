@@ -97,3 +97,5 @@ When updated: 2025-10-19T00:00:00Z
 
 - Demo plugin: gate afterResolve breadcrumb behind GETDOTENV_DEBUG to keep tests
   and smoke runs quiet by default; enable with GETDOTENV_DEBUG=1 when needed.
+- Root help (dynamic): migrated -l/--log and --entropy-warn toggles to dynamicOption,
+  showing effective defaults from resolved config (fallback to static when unavailable).
