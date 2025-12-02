@@ -359,6 +359,23 @@ Host responsibilities (smoz is a get-dotenv host):
   - Publishing:
     - setEnv (default true): write AWS\_\* and AWS_REGION into process.env.
     - addCtx (default true): mirror `{ profile, region, credentials }` into ctx.plugins.aws.
+
+  - Dynamic option descriptions (help):
+    - The host exposes two Commander‑compatible helpers on the GetDotenvCli subclass to render help text from the resolved configuration instead of static strings:
+      - `dynamicOption(flags, (config) => string, parser?, defaultValue?)` — chainable, mirrors `command.option`, but the second parameter is a description function that receives a read‑only ResolvedConfig computed for help rendering.
+      - `createDynamicOption(flags, (config) => string, parser?, defaultValue?)` — factory that returns a Commander Option instance carrying the dynamic description; useful when building then adding via `addOption`.
+    - ResolvedConfig shape:
+      - Top‑level keys are the resolved get‑dotenv options (post overlays and dynamic).
+      - A `plugins` bag contains merged, interpolated per‑plugin config slices keyed by plugin id. Config string leaves are interpolated against `{ ...dotenv, ...process.env }` prior to help rendering to match runtime semantics.
+    - Help rendering behavior:
+      - Top‑level `-h/--help`: the host computes a read‑only resolved config with overlays and dynamic enabled (no logging; `loadProcess=false`; no env mutation), evaluates all dynamic descriptions, then prints help and returns without `process.exit`.
+      - `help <cmd>`: after normal pre‑subcommand resolution, the host refreshes dynamic descriptions and Commander prints help. Both paths produce identical help text.
+    - Subcommand typing and DX:
+      - The host overrides `createCommand()` so subcommands are instances of the GetDotenvCli subclass (not plain Commander), enabling `ns().dynamicOption(...)` to chain naturally alongside native `option(...)`.
+      - Use native `option(...)` for static strings; use `dynamicOption(...)` when the help text must display an effective default derived from resolved config or plugin config.
+    - Consistency requirement:
+      - Root flags that display defaults in help (e.g., shell, loadProcess, exclude\* families) must be authored with `dynamicOption(...)` so they use the same resolved source of truth and semantics as plugin options. Static text remains acceptable where no default needs to be displayed.
+
 - Stage resolution (dev) — explicit precedence:
   1. --stage (CLI wins).
   2. plugins.smoz.stage from get-dotenv config (interpolated; e.g., "${ENV:dev}").

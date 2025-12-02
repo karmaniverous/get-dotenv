@@ -4,6 +4,21 @@ When updated: 2025-10-19T00:00:00Z
 
 ## Next up (near‑term, actionable)
 
+- Dynamic help: implement and adopt Commander‑compatible APIs
+  - Implement `dynamicOption(flags, (config) => string, parser?, defaultValue?)` on the GetDotenvCli subclass; compute a read‑only ResolvedConfig for help (`-h` and `help <cmd>`), with overlays and dynamic enabled, no logging, and `loadProcess=false`; evaluate description functions before printing help; ensure createCommand() returns the subclass so subcommands chain `dynamicOption(...)`.
+  - Implement `createDynamicOption(flags, (config) => string, parser?, defaultValue?)` returning an Option carrying dynamic metadata; primarily for cases that build then add with `addOption`.
+  - Refactor root options (attachRootOptions) to use `dynamicOption(...)` for flags that display defaults (shell, loadProcess, exclude* families) so root and plugin defaults render from the same resolved source of truth.
+  - Refactor included plugins (batch/cmd/aws/init and demo where relevant) to use `dynamicOption(...)` for any options that display effective defaults (e.g., batch: pkg-cwd, root-path, globs, shell tag for `--command`); keep purely behavioral flags on native `.option(...)`.
+  - Tests:
+    - Ensure top‑level `-h` renders dynamic defaults (string and boolean cases) and returns without `process.exit`.
+    - Ensure `help <cmd>` renders the same text after preSubcommand resolution.
+    - Confirm dynamic evaluation uses overlays + dynamic and does not write to `process.env`.
+
+- Documentation updates (host and guides)
+  - Authoring Plugins: add a “Dynamic option descriptions” section with examples for `dynamicOption` and `createDynamicOption`, including root vs plugin defaults and boolean/string patterns.
+  - Config Files & Overlays: add a new “Plugin config” subsection describing location (plugins.<id>), interpolation timing against `{ ...dotenv, ...process.env }`, privacy/source precedence, and how those resolved values surface in `dynamicOption` descriptions.
+  - Shell/CLI guides: note that root flags and plugin flags display help defaults derived from the same resolved config and that top‑level `-h` evaluates dynamic safely (no env mutation).
+
 - Replace CLI entry with get-dotenv host
   - Create a GetDotenvCli-based host in src/cli/index.ts (or src/cli/host.ts and re-export).
   - Branding: “smoz vX.Y.Z”; global flags: -e/--env, --strict, --trace, -V/--verbose.
@@ -55,6 +70,7 @@ When updated: 2025-10-19T00:00:00Z
   - CLI: clarify host-based design; new commands (cmd/batch); global flags; getdotenv.config.\* surfaces.
   - Dev guide: stage precedence; recommend plugins.smoz.stage mapping; strict/diagnostics notes.
   - Troubleshooting: add safe tracing and quoting recipes for cmd; clarify Windows path hygiene is handled by spawn-env.
+  - Config Files & Overlays: expand with a “Plugin config” section (location, interpolation timing, precedence) and examples used by dynamic help.
 
 ## Completed (recent)
 
