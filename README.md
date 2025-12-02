@@ -392,12 +392,4 @@ Diagnostics and CI capture:
 
 The guides are also included in the [hosted API docs](https://docs.karmanivero.us/get-dotenv).
 
-## Generated CLI (Deprecated)
-
-This package still supports generating a standalone CLI for your projects. For most use cases we recommend the new plugin-first host because it resolves dotenv context once per invocation, supports composable plugins, and provides better subprocess control and diagnostics. If you prefer a thin, fixed command surface with defaults baked into config, the generated CLI can be a good fit.
-
-See the [Generated CLI guide](https://docs.karmanivero.us/get-dotenv/guides/generated-cli) for details
-
----
-
 See more great templates & tools on [my GitHub Profile](https://github.com/karmaniverous)!

@@ -12,7 +12,6 @@ export {
   dotenvExpandAll,
   dotenvExpandFromProcessEnv,
 } from './dotenvExpand';
-export { generateGetDotenvCli } from './generateGetDotenvCli';
 export { getDotenv } from './getDotenv';
 export {
   defineDynamic,

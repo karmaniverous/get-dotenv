@@ -1,6 +1,5 @@
 import type { Command } from 'commander';
 
-import { attachRootOptions as attachRootOptionsBuilder } from '../cliCore/attachRootOptions';
 import { baseRootOptionDefaults } from '../cliCore/defaults';
 import type { GetDotenvCliOptions } from '../cliCore/GetDotenvCliOptions';
 import { resolveCliOptions } from '../cliCore/resolveCliOptions';
@@ -8,6 +7,7 @@ import type { CommandWithOptions, RootOptionsShape } from '../cliCore/types';
 import { resolveGetDotenvConfigSources } from '../config/loader';
 import { validateEnvAgainstSources } from '../config/validate';
 import { getDotenvCliOptions2Options } from '../GetDotenvOptions';
+import { attachRootOptions as attachRootOptionsBuilder } from './attachRootOptions';
 import type { ResolvedHelpConfig } from './GetDotenvCli';
 import { GetDotenvCli as BaseGetDotenvCli } from './GetDotenvCli';
 
