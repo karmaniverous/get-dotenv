@@ -128,6 +128,39 @@ export default {
 };
 ```
 
+## Plugin config
+
+Plugin configuration is discovered under `plugins.<id>` in the same packaged/project public/local files. The host merges slices by precedence (packaged → project/public → project/local) and deep‑interpolates string leaves once against `{ ...ctx.dotenv, ...process.env }` (process.env wins for plugin slices).
+
+Location and shape:
+
+```json
+{
+  "plugins": {
+    "batch": {
+      "rootPath": "./work",
+      "globs": "apps/*",
+      "pkgCwd": true,
+      "scripts": {
+        "build": { "cmd": "npm run build", "shell": "/bin/bash" }
+      },
+      "shell": false
+    }
+  }
+}
+```
+
+Precedence and timing:
+
+- Source/Privacy: project/local > project/public > packaged.
+- Strings are interpolated once just before validation/afterResolve; later consumers (e.g., dynamic help callbacks) receive the already‑interpolated value.
+- Plugin config appears in dynamic help callbacks under `cfg.plugins.<id>`, allowing help text to show effective defaults (e.g., `(default)` or `(default: "...")`).
+
+Notes:
+
+- Keep plugin config focused on data. Any per‑plugin scripts may use the object form `{ cmd, shell }` to override shell behavior for that script only.
+- Validation: export and attach a Zod schema in your plugin (the host validates the merged slice before afterResolve).
+
 ## Diagnostics (redaction and entropy)
 
 Presentation‑only diagnostics help audit values without altering runtime behavior:

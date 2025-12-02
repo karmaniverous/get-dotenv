@@ -164,4 +164,13 @@ When updated: 2025-10-19T00:00:00Z
   - Fixed typecheck by typing the evaluation bag as ResolvedHelpConfig in the test.
 
 - Root dynamic help tests (follow-up 2)
-  - Resolved TS2353 by constructing the config bag and casting via unknown to ResolvedHelpConfig.
+  - Resolved TS2353 by constructing the config bag and casting via unknown to ResolvedHelpConfig.
+
+- Docs: dynamic option descriptions
+  - Added a “Dynamic option descriptions” section with examples for dynamicOption and createDynamicOption in Authoring → Lifecycle.
+
+- Docs: plugin config
+  - Added a “Plugin config” subsection to Config files & overlays (location, precedence, interpolation timing, dynamic help visibility).
+
+- Docs: shell dynamic defaults
+  - Documented dynamic help defaults in Shell guide with concise excerpts for root and batch flags.

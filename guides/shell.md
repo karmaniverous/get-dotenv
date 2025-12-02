@@ -87,3 +87,31 @@ By default, child process output is streamed live (`stdio: 'inherit'`). For dete
 - Env: `GETDOTENV_STDIO=pipe`
 
 When capture is enabled, stdout/stderr are buffered and re‑emitted after the child completes. Batch and AWS forwarding also honor capture, ensuring stable output ordering in automated environments. Live streaming remains available by omitting the flag/env (the default).
+
+## Dynamic help defaults
+
+Root and plugin flags display effective defaults derived from the same resolved configuration (overlays + dynamic), evaluated safely at help time:
+
+- Top‑level `-h/--help` computes a read‑only resolved config and evaluates dynamic descriptions (no logging; no `process.env` mutation).
+- `help <cmd>` refreshes dynamic descriptions after normal parsing; both paths render the same text.
+
+Examples (concise excerpts):
+
+```text
+# getdotenv -h
+  -S, --shell-off                     command execution shell OFF (default)
+  -P, --load-process-off              load variables to process.env OFF (default)
+  -L, --log-off                       console log loaded variables OFF (default)
+```
+
+```text
+# getdotenv help batch
+  -r, --root-path <string>  path to batch root directory from current working directory (default: "./")
+  -g, --globs <string>      space-delimited globs from root path (default: "*")
+  -p, --pkg-cwd             use nearest package directory as current working directory (default)
+```
+
+Notes:
+
+- For plugin defaults, set values under `plugins.<id>` in your config; dynamic help callbacks read them from `cfg.plugins.<id>`.
+- Use ON/OFF labels (“(default)”) for boolean toggles and `"(default: \"...\")"` for string defaults to keep output concise and consistent.

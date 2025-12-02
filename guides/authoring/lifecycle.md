@@ -94,3 +94,54 @@ See also:
 
 - [Config & Validation](./config.md)
 - [Executing Shell Commands](./exec.md)
+
+## Dynamic option descriptions
+
+Use dynamicOption (or createDynamicOption + addOption) to render help text that reflects the resolved configuration at help time. The host evaluates dynamic descriptions with overlays and dynamic enabled, without logging or mutating the environment.
+
+Key points:
+
+- dynamicOption(flags, (cfg) => string, parser?, defaultValue?) is chainable like option().
+- The callback receives a read‑only resolved help config: top‑level get‑dotenv options and cfg.plugins slices (merged, interpolated).
+- Top‑level “-h/--help” computes a read‑only config and evaluates dynamic text; “help <cmd>” refreshes dynamic text after preSubcommand resolution. Both paths render the same defaults.
+
+Example (plugin flag with ON/OFF default label):
+
+```ts
+import { definePlugin } from '@karmaniverous/get-dotenv/cliHost';
+
+export const helloPlugin = () =>
+  definePlugin({
+    id: 'hello',
+    setup(cli) {
+      cli
+        .ns('hello')
+        .description('Say hello with current dotenv context')
+        .dynamicOption(
+          '--loud',
+          (cfg) => {
+            const on = !!(cfg.plugins as { hello?: { loud?: boolean } })?.hello?.loud;
+            return `print greeting in ALL CAPS${on ? ' (default)' : ''}`;
+          },
+        )
+        .action((_args, _opts) => {
+          // …
+        });
+    },
+  });
+```
+
+Or build the Option first:
+
+```ts
+const opt = (cli as any).createDynamicOption('--color <string>', (cfg) => {
+  const col = (cfg.plugins as { hello?: { color?: string } })?.hello?.color || 'blue';
+  return `text color (default: ${JSON.stringify(col)})`;
+});
+cli.addOption(opt);
+```
+
+Notes:
+
+- Plugin config lives under plugins.<id> (see “Plugin config” in Config files & overlays); strings are deep‑interpolated once against { ...ctx.dotenv, ...process.env } (process.env wins for plugin slices).
+- Use concise labels for ON/OFF toggles (e.g., “(default)”) and “(default: "...")” for string defaults.
