@@ -77,6 +77,7 @@ export function createCli(opts: CreateCliOptions = {}): {
       // across environments (CJS/ESM) and to return immediately under dynamic
       // ESM without performing extra IO. Before printing help, compute a
       // read-only resolved config and evaluate dynamic descriptions.
+      // Note: Only suppress printing under tests when not explicitly piping.
       if (argv.some((a) => a === '-h' || a === '--help')) {
         await program.brand({
           name: alias,
@@ -98,8 +99,11 @@ export function createCli(opts: CreateCliOptions = {}): {
           ...(ctx.optionsResolved as unknown as Record<string, unknown>),
           plugins: ctx.pluginConfigs ?? {},
         } as unknown as ResolvedHelpConfig);
-        // Suppress noisy help output in unit/interop tests; E2E help remains unaffected.
-        if (underTests) {
+        // Suppress noisy help output only for in-process tests; allow E2E to capture.
+        const piping =
+          process.env.GETDOTENV_STDIO === 'pipe' ||
+          process.env.GETDOTENV_STDOUT === 'pipe'; // future-proof alias
+        if (underTests && !piping) {
           // Force materialization of the help text without emitting to stdout.
           // This preserves any lazy evaluation side-effects while keeping logs quiet.
           void program.helpInformation();

@@ -136,3 +136,6 @@ When updated: 2025-10-19T00:00:00Z
 - Tests: suppress help output under tests
   - In createCli().run(['-h']), use helpInformation() instead of outputHelp()
     when GETDOTENV_TEST/VITEST_WORKER_ID is set to keep passing test logs quiet.
+
+- Tests: allow E2E to capture help
+  - Refined help suppression to print when GETDOTENV_STDIO=pipe, fixing the E2E "displays cli help" assertion while keeping interop/unit runs quiet.
