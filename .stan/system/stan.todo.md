@@ -9,26 +9,12 @@ When updated: 2025-10-19T00:00:00Z
   - Remove generator tests; ensure no rollup/type bundles reference it.
   - Scrub docs: remove guides/generated-cli.md and all references across README and guides (no migration notes).
 
-- Move and type attachRootOptions (host-only)
-  - Move builder into cliHost (e.g., src/cliHost/attachRootOptions.ts).
-  - Type program: GetDotenvCli; remove duck-typed fallbacks.
-  - Use dynamicOption/createDynamicOption for any flag that displays defaults.
-
 - Adopt dynamic help for all default-displaying flags
   - Root: shell/shell-off, load-process/on-off, exclude\* families, log/on-off, entropy-warn/on-off.
   - Plugins: batch defaults (pkg-cwd, root-path, globs) from merged/interpolated plugin config; keep cmd/aws static unless showing defaults.
   - Add tests for -h vs "help <cmd>" parity and default labels; update E2E help assertions.
 
 - Build outputs: sanity‑check Rollup tree‑shaking for the non‑type Option import across ESM/CJS bundles to ensure no accidental retention of unused code in consumers.
-- Dynamic help: implement and adopt Commander‑compatible APIs
-  - Implement `dynamicOption(flags, (config) => string, parser?, defaultValue?)` on the GetDotenvCli subclass; compute a read‑only ResolvedConfig for help (`-h` and `help <cmd>`), with overlays and dynamic enabled, no logging, and `loadProcess=false`; evaluate description functions before printing help; ensure createCommand() returns the subclass so subcommands chain `dynamicOption(...)`.
-  - Implement `createDynamicOption(flags, (config) => string, parser?, defaultValue?)` returning an Option carrying dynamic metadata; primarily for cases that build then add with `addOption`.
-  - Refactor root options (attachRootOptions) to use `dynamicOption(...)` for flags that display defaults (shell, loadProcess, exclude\* families) so root and plugin defaults render from the same resolved source of truth.
-  - Refactor included plugins (batch/cmd/aws/init and demo where relevant) to use `dynamicOption(...)` for any options that display effective defaults (e.g., batch: pkg-cwd, root-path, globs, shell tag for `--command`); keep purely behavioral flags on native `.option(...)`.
-  - Tests:
-    - Ensure top‑level `-h` renders dynamic defaults (string and boolean cases) and returns without `process.exit`.
-    - Ensure `help <cmd>` renders the same text after preSubcommand resolution.
-    - Confirm dynamic evaluation uses overlays + dynamic and does not write to `process.env`.
 
 - Documentation updates (host and guides)
   - Authoring Plugins: add a “Dynamic option descriptions” section with examples for `dynamicOption` and `createDynamicOption`, including root vs plugin defaults and boolean/string patterns.
@@ -169,4 +155,4 @@ When updated: 2025-10-19T00:00:00Z
 - Help visibility (root vs subcommand)
   - Root help now filters Options to base-only (no plugin groups).
   - Subcommand help shows all options, so plugin flags appear under the subcommand’s
-    Options section (e.g., batch dynamic defaults visible in "help batch").
+    Options section (e.g., batch dynamic defaults visible in "help batch").
