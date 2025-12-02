@@ -86,4 +86,6 @@ When updated: 2025-10-19T00:00:00Z
 
 - Fix: eliminate Commander option conflicts from dynamic root flags by returning dynamic Options directly (no pre‑add + placeholder). Resolved duplicate '-s, --shell' and related toggles; unit/E2E flows proceed.
 - Fix: Vitest 3 typing — updated onConsoleLog to a typed 2‑arg handler and accessed optional task via arguments[2]; maintains “logs only on failure” behavior.
-- Lint: suppressed false‑positive @typescript-eslint/no-deprecated in GetDotenvCli tagAppOptions where we temporarily wrap Command.option for tagging.
+- Lint: suppressed false‑positive @typescript-eslint/no-deprecated in GetDotenvCli tagAppOptions where we temporarily wrap Command.option for tagging.
+
+- Lint: vitest.config — rename param to "_log" and suppress prefer-rest-params at the single “arguments” usage to keep type compatibility with Vitest while satisfying ESLint.

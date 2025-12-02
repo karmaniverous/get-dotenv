@@ -4,10 +4,11 @@ import { configDefaults, defineConfig } from 'vitest/config';
 export default defineConfig({
   plugins: [tsconfigPaths()],
   test: {
-    onConsoleLog(log, _type) {
+    onConsoleLog(_log, _type) {
       // Show console output only for failing tests; suppress otherwise.
       // Vitest types expose (log, type); some runtimes also pass a third 'task'.
       // Access via arguments[2] when present to detect failing tasks.
+      // eslint-disable-next-line prefer-rest-params
       const maybeArgs = arguments as unknown as IArguments;
       const task =
         (maybeArgs[2] as { result?: { state?: string } } | undefined) ??
