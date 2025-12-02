@@ -162,3 +162,6 @@ When updated: 2025-10-19T00:00:00Z
 
 - Root dynamic help tests (follow-up)
   - Fixed typecheck by typing the evaluation bag as ResolvedHelpConfig in the test.
+
+- Root dynamic help tests (follow-up 2)
+  - Resolved TS2353 by constructing the config bag and casting via unknown to ResolvedHelpConfig.
