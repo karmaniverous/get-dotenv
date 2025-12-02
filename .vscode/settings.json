@@ -23,5 +23,6 @@
   "javascript.updateImportsOnFileMove.enabled": "always",
   "prettier.prettierPath": "./node_modules/prettier",
   "prettier.singleQuote": true,
-  "yaml.format.singleQuote": true
+  "yaml.format.singleQuote": true,
+  "typescript.tsdk": "node_modules\\typescript\\lib"
 }

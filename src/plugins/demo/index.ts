@@ -175,13 +175,19 @@ export const demoPlugin = () =>
     },
     /**
      * Optional: afterResolve can initialize per-plugin state using ctx.dotenv.
-     * For the demo we just log once to hint where such logic would live.
+     * For the demo we emit a single breadcrumb only when GETDOTENV_DEBUG is set,
+     * keeping default runs (tests/CI/smoke) quiet.
      */
     afterResolve(_cli, ctx) {
-      const keys = Object.keys(ctx.dotenv);
-      if (keys.length > 0) {
-        // Keep noise low; a single-line breadcrumb is sufficient for the demo.
-        console.error('[demo] afterResolve: dotenv keys loaded:', keys.length);
+      if (process.env.GETDOTENV_DEBUG) {
+        const keys = Object.keys(ctx.dotenv);
+        if (keys.length > 0) {
+          // Keep noise low; a single-line breadcrumb is sufficient for the demo.
+          console.error(
+            '[demo] afterResolve: dotenv keys loaded:',
+            keys.length,
+          );
+        }
       }
     },
   });
