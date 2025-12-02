@@ -1,6 +1,4 @@
-/* eslint-disable @typescript-eslint/no-deprecated */
-import type { AddHelpTextContext, Option } from 'commander';
-import { Command } from 'commander';
+import { type AddHelpTextContext, Command, Option } from 'commander';
 import fs from 'fs-extra';
 import { packageDirectory } from 'package-directory';
 import { fileURLToPath } from 'url';

@@ -1,4 +1,5 @@
 import { GetDotenvCli } from './cliHost';
+import type { ResolvedHelpConfig } from './cliHost/GetDotenvCli';
 import { awsPlugin } from './plugins/aws';
 import { batchPlugin } from './plugins/batch';
 import { cmdPlugin } from './plugins/cmd';
@@ -94,7 +95,7 @@ export function createCli(opts: CreateCliOptions = {}): {
         (program as unknown as GetDotenvCli).evaluateDynamicOptions({
           ...(ctx.optionsResolved as unknown as Record<string, unknown>),
           plugins: ctx.pluginConfigs ?? {},
-        } as unknown as import('./cliHost/GetDotenvCli').ResolvedHelpConfig);
+        } as unknown as ResolvedHelpConfig);
         program.outputHelp();
         return;
       }

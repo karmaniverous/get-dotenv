@@ -4,6 +4,14 @@ import { configDefaults, defineConfig } from 'vitest/config';
 export default defineConfig({
   plugins: [tsconfigPaths()],
   test: {
+    onConsoleLog(_log, _type, task) {
+      // Show console output only for failing tests; suppress otherwise.
+      // Vitest passes the current task; when absent, default to suppress.
+      const state = (task as { result?: { state?: string } } | undefined)
+        ?.result?.state;
+      if (state === 'fail') return;
+      return false;
+    },
     environment: 'node',
     // Avoid picking up transformed caches and keep node_modules excluded
     exclude: [

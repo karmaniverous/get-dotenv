@@ -8,6 +8,7 @@ import type { CommandWithOptions, RootOptionsShape } from '../cliCore/types';
 import { resolveGetDotenvConfigSources } from '../config/loader';
 import { validateEnvAgainstSources } from '../config/validate';
 import { getDotenvCliOptions2Options } from '../GetDotenvOptions';
+import type { ResolvedHelpConfig } from './GetDotenvCli';
 import { GetDotenvCli as BaseGetDotenvCli } from './GetDotenvCli';
 
 export type { DefineSpec, GetDotenvCliPlugin } from './definePlugin';
@@ -75,7 +76,7 @@ export class GetDotenvCli extends BaseGetDotenvCli {
           (this as unknown as BaseGetDotenvCli).evaluateDynamicOptions({
             ...(ctx?.optionsResolved as unknown as Record<string, unknown>),
             plugins: ctx?.pluginConfigs ?? {},
-          } as unknown as import('./GetDotenvCli').ResolvedHelpConfig);
+          } as unknown as ResolvedHelpConfig);
         } catch {
           /* best-effort */
         }
@@ -133,7 +134,7 @@ export class GetDotenvCli extends BaseGetDotenvCli {
             (this as unknown as BaseGetDotenvCli).evaluateDynamicOptions({
               ...(ctx?.optionsResolved as unknown as Record<string, unknown>),
               plugins: ctx?.pluginConfigs ?? {},
-            } as unknown as import('./GetDotenvCli').ResolvedHelpConfig);
+            } as unknown as ResolvedHelpConfig);
           } catch {
             /* tolerate */
           }
