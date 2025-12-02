@@ -5,7 +5,7 @@ When updated: 2025-10-19T00:00:00Z
 ## Next up (near‑term, actionable)
 
 - Remove generated CLI completely (code/exports/tests/docs)
-  - Delete src/generateGetDotenvCli/** and all imports/exports from index/rollup/types.
+  - Delete src/generateGetDotenvCli/\*\* and all imports/exports from index/rollup/types.
   - Remove generator tests; ensure no rollup/type bundles reference it.
   - Scrub docs: remove guides/generated-cli.md and all references across README and guides (no migration notes).
 
@@ -15,7 +15,7 @@ When updated: 2025-10-19T00:00:00Z
   - Use dynamicOption/createDynamicOption for any flag that displays defaults.
 
 - Adopt dynamic help for all default-displaying flags
-  - Root: shell/shell-off, load-process/on-off, exclude* families, log/on-off, entropy-warn/on-off.
+  - Root: shell/shell-off, load-process/on-off, exclude\* families, log/on-off, entropy-warn/on-off.
   - Plugins: batch defaults (pkg-cwd, root-path, globs) from merged/interpolated plugin config; keep cmd/aws static unless showing defaults.
   - Add tests for -h vs "help <cmd>" parity and default labels; update E2E help assertions.
 
@@ -119,15 +119,20 @@ When updated: 2025-10-19T00:00:00Z
 - Demo plugin: gate afterResolve breadcrumb behind GETDOTENV_DEBUG to keep tests
   and smoke runs quiet by default; enable with GETDOTENV_DEBUG=1 when needed.
 - Root help (dynamic): migrated -l/--log and --entropy-warn toggles to dynamicOption,
-  showing effective defaults from resolved config (fallback to static when unavailable).- Help path perf/stability: top-level "-h/--help" now resolves config with
+  showing effective defaults from resolved config (fallback to static when unavailable).
+- Help path perf/stability: top-level "-h/--help" now resolves config with
 - Help path perf/stability: top-level "-h/--help" now resolves config with
   runAfterResolve=false to skip plugin afterResolve hooks during help rendering,
   preventing long-running side-effects and fixing help-time test timeouts.
 
 - Generator removal follow-through: replaced lingering imports from
-  generateGetDotenvCli/* with cliCore equivalents across host, options,
+  generateGetDotenvCli/\* with cliCore equivalents across host, options,
   schema, and cmd plugin; fixed host attachRootOptions call site typing.
 - Lint hygiene: removed unused destructured defaults in attachRootOptions and
   hardened local config JSON parsing in GetDotenvOptions to satisfy strict
-  no-unsafe-* rules.
-- Docs: scrubbed README link to deprecated Generated CLI guide.
+  no-unsafe-\* rules.
+- Docs: scrubbed README link to deprecated Generated CLI guide.
+
+- Tests: suppress help output under tests
+  - In createCli().run(['-h']), use helpInformation() instead of outputHelp()
+    when GETDOTENV_TEST/VITEST_WORKER_ID is set to keep passing test logs quiet.

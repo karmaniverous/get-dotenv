@@ -98,7 +98,14 @@ export function createCli(opts: CreateCliOptions = {}): {
           ...(ctx.optionsResolved as unknown as Record<string, unknown>),
           plugins: ctx.pluginConfigs ?? {},
         } as unknown as ResolvedHelpConfig);
-        program.outputHelp();
+        // Suppress noisy help output in unit/interop tests; E2E help remains unaffected.
+        if (underTests) {
+          // Force materialization of the help text without emitting to stdout.
+          // This preserves any lazy evaluation side-effects while keeping logs quiet.
+          void program.helpInformation();
+        } else {
+          program.outputHelp();
+        }
         return;
       }
       await program.brand({
