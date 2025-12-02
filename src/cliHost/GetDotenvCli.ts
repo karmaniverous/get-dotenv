@@ -17,7 +17,7 @@ import type { GetDotenvCliPlugin, GetDotenvCliPublic } from './definePlugin';
 // Dynamic help support: attach a private symbol to Option for description fns.
 const DYN_DESC_SYM = Symbol('getdotenv.dynamic.description');
 
-export type ResolvedHelpConfig = GetDotenvOptions & {
+export type ResolvedHelpConfig = Partial<GetDotenvOptions> & {
   plugins: Record<string, unknown>;
 };
 
@@ -157,9 +157,9 @@ export class GetDotenvCli<
    * The returned Option may be configured (conflicts, default, parser) and
    * added via addOption().
    */
-  createDynamicOption(
+  createDynamicOption<TPlugins = Record<string, unknown>>(
     flags: string,
-    desc: (cfg: ResolvedHelpConfig) => string,
+    desc: (cfg: ResolvedHelpConfig & { plugins: TPlugins }) => string,
     parser?: (value: string, previous?: unknown) => unknown,
     defaultValue?: unknown,
   ): Option {
@@ -177,13 +177,18 @@ export class GetDotenvCli<
    * Chainable helper mirroring .option(), but with a dynamic description.
    * Equivalent to addOption(createDynamicOption(...)).
    */
-  dynamicOption(
+  dynamicOption<TPlugins = Record<string, unknown>>(
     flags: string,
-    desc: (cfg: ResolvedHelpConfig) => string,
+    desc: (cfg: ResolvedHelpConfig & { plugins: TPlugins }) => string,
     parser?: (value: string, previous?: unknown) => unknown,
     defaultValue?: unknown,
   ): this {
-    const opt = this.createDynamicOption(flags, desc, parser, defaultValue);
+    const opt = this.createDynamicOption<TPlugins>(
+      flags,
+      desc,
+      parser,
+      defaultValue,
+    );
     this.addOption(opt);
     return this;
   }

@@ -141,4 +141,9 @@ When updated: 2025-10-19T00:00:00Z
   - Refined help suppression to print when GETDOTENV_STDIO=pipe, fixing the E2E "displays cli help" assertion while keeping interop/unit runs quiet.
 - Batch plugin dynamic help
   - Implemented dynamicOption() for pkg-cwd/root-path/globs to display effective defaults from plugins.batch config.
-  - Added unit test verifying dynamic defaults appear in "help batch".
+  - Added unit test verifying dynamic defaults appear in "help batch".
+
+- Dynamic help typing & grouping
+  - createDynamicOption/dynamicOption now accept a generic plugin-slice type, enabling inference in callbacks (no casts).
+  - ResolvedHelpConfig is Partial<GetDotenvOptions> for help-time evaluation.
+  - Tagged batch options into 'plugin:batch' for grouped help rendering under subcommand help.
