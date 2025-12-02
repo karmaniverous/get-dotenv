@@ -57,17 +57,10 @@ export const batchPlugin = (opts: BatchPluginOptions = {}) =>
           (() => {
             const opt = host.createDynamicOption<{ batch?: BatchConfig }>(
               '-r, --root-path <string>',
-              (cfg) => {
-                const slice = cfg.plugins.batch ?? {};
-                const def =
-                  typeof slice.rootPath === 'string' &&
-                  slice.rootPath.length > 0
-                    ? slice.rootPath
-                    : './';
-                return `path to batch root directory from current working directory (default: ${JSON.stringify(
-                  def,
-                )})`;
-              },
+              (cfg) =>
+                `path to batch root directory from current working directory (default: ${JSON.stringify(
+                  cfg.plugins.batch?.rootPath || './',
+                )})`,
             );
             (opt as unknown as { __group?: string }).__group = GROUP;
             return opt;
@@ -77,16 +70,10 @@ export const batchPlugin = (opts: BatchPluginOptions = {}) =>
           (() => {
             const opt = host.createDynamicOption<{ batch?: BatchConfig }>(
               '-g, --globs <string>',
-              (cfg) => {
-                const slice = cfg.plugins.batch ?? {};
-                const def =
-                  typeof slice.globs === 'string' && slice.globs.length > 0
-                    ? slice.globs
-                    : '*';
-                return `space-delimited globs from root path (default: ${JSON.stringify(
-                  def,
-                )})`;
-              },
+              (cfg) =>
+                `space-delimited globs from root path (default: ${JSON.stringify(
+                  cfg.plugins.batch?.globs || '*',
+                )})`,
             );
             (opt as unknown as { __group?: string }).__group = GROUP;
             return opt;

@@ -138,7 +138,8 @@ When updated: 2025-10-19T00:00:00Z
     when GETDOTENV_TEST/VITEST_WORKER_ID is set to keep passing test logs quiet.
 
 - Tests: allow E2E to capture help
-  - Refined help suppression to print when GETDOTENV_STDIO=pipe, fixing the E2E "displays cli help" assertion while keeping interop/unit runs quiet.
+  - Refined help suppression to print when GETDOTENV_STDIO=pipe, fixing the E2E "displays cli help" assertion while keeping interop/unit runs quiet.
+
 - Batch plugin dynamic help
   - Implemented dynamicOption() for pkg-cwd/root-path/globs to display effective defaults from plugins.batch config.
   - Added unit test verifying dynamic defaults appear in "help batch".
@@ -151,4 +152,12 @@ When updated: 2025-10-19T00:00:00Z
 - Type inference & tests
   - Removed explicit casts in batch dynamic callbacks via generic dynamicOption; cfg typed automatically.
   - Root help asserted in dynamic help test (grouped plugin options appended).
-  - Increased ESM interop help test timeout to 20s.
+  - Increased ESM interop help test timeout to 20s.
+
+- Batch dynamic help (refactor)
+  - Simplified --root-path and --globs dynamic help callbacks to use optional
+    chaining with concise fallbacks (cfg.plugins.batch?.rootPath || './', globs || '\*').
+
+- Help (plugin groups in root)
+  - Root help now recursively collects options from subcommands and appends
+    grouped “Plugin options — <id>” sections, so batch/cmd plugin flags render in root help.

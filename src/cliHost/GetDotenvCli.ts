@@ -381,7 +381,18 @@ export class GetDotenvCli<
 
   // Render App/Plugin grouped options appended after default help.
   #renderOptionGroups(cmd: Command): string {
-    const all = (cmd as unknown as { options?: unknown[] }).options ?? [];
+    // Collect options from the root and all descendants so subcommand-scoped
+    // plugin options (tagged with __group = 'plugin:*') can be rendered at the
+    // root help footer.
+    const collectOptions = (c: Command): Option[] => {
+      const local = (c as unknown as { options?: Option[] }).options ?? [];
+      const children =
+        (c as unknown as { commands?: Command[] }).commands ?? [];
+      // Depth-first: local first (for stable ordering), then recurse
+      return local.concat(children.flatMap((child) => collectOptions(child)));
+    };
+    const all = collectOptions(cmd);
+
     type Row = { flags: string; description: string };
     const byGroup = new Map<string, Row[]>();
     for (const o of all) {
