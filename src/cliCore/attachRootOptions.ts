@@ -127,24 +127,18 @@ export const attachRootOptions = (
             parser?: (v: string) => unknown,
             def?: unknown,
           ) => Option;
-          addOption?: (opt: Option) => Command;
         };
         if (typeof anyProg.createDynamicOption === 'function') {
-          const opt = anyProg.createDynamicOption(
-            '-s, --shell [string]',
-            (cfg) => {
+          return anyProg
+            .createDynamicOption('-s, --shell [string]', (cfg) => {
               const s = cfg.shell;
               let tag = '';
               if (typeof s === 'boolean' && s) tag = ' (default OS shell)';
               else if (typeof s === 'string' && s.length > 0)
                 tag = ` (default ${s})`;
               return `command execution shell, no argument for default OS shell or provide shell string${tag}`;
-            },
-          );
-          opt.conflicts('shellOff');
-          anyProg.addOption?.(opt);
-          // placeholder Option is returned to satisfy chaining; actual add already performed
-          return new Option('-s, --shell [string]');
+            })
+            .conflicts('shellOff');
         }
         // Static fallback (computed from defaults)
         const defaultLabel =
@@ -170,19 +164,17 @@ export const attachRootOptions = (
             parser?: (v: string) => unknown,
             def?: unknown,
           ) => Option;
-          addOption?: (opt: Option) => Command;
         };
         if (typeof anyProg.createDynamicOption === 'function') {
-          const opt = anyProg.createDynamicOption(
-            '-S, --shell-off',
-            (cfg) =>
-              `command execution shell OFF${
-                cfg.shell === false ? ' (default)' : ''
-              }`,
-          );
-          opt.conflicts('shell');
-          anyProg.addOption?.(opt);
-          return new Option('-S, --shell-off');
+          return anyProg
+            .createDynamicOption(
+              '-S, --shell-off',
+              (cfg) =>
+                `command execution shell OFF${
+                  cfg.shell === false ? ' (default)' : ''
+                }`,
+            )
+            .conflicts('shell');
         }
         return new Option(
           '-S, --shell-off',
@@ -199,19 +191,17 @@ export const attachRootOptions = (
             parser?: (v: string) => unknown,
             def?: unknown,
           ) => Option;
-          addOption?: (opt: Option) => Command;
         };
         if (typeof anyProg.createDynamicOption === 'function') {
-          const opt = anyProg.createDynamicOption(
-            '-p, --load-process',
-            (cfg) =>
-              `load variables to process.env ON${
-                cfg.loadProcess ? ' (default)' : ''
-              }`,
-          );
-          opt.conflicts('loadProcessOff');
-          anyProg.addOption?.(opt);
-          return new Option('-p, --load-process');
+          return anyProg
+            .createDynamicOption(
+              '-p, --load-process',
+              (cfg) =>
+                `load variables to process.env ON${
+                  cfg.loadProcess ? ' (default)' : ''
+                }`,
+            )
+            .conflicts('loadProcessOff');
         }
         return new Option(
           '-p, --load-process',
@@ -228,19 +218,17 @@ export const attachRootOptions = (
             parser?: (v: string) => unknown,
             def?: unknown,
           ) => Option;
-          addOption?: (opt: Option) => Command;
         };
         if (typeof anyProg.createDynamicOption === 'function') {
-          const opt = anyProg.createDynamicOption(
-            '-P, --load-process-off',
-            (cfg) =>
-              `load variables to process.env OFF${
-                cfg.loadProcess ? '' : ' (default)'
-              }`,
-          );
-          opt.conflicts('loadProcess');
-          anyProg.addOption?.(opt);
-          return new Option('-P, --load-process-off');
+          return anyProg
+            .createDynamicOption(
+              '-P, --load-process-off',
+              (cfg) =>
+                `load variables to process.env OFF${
+                  cfg.loadProcess ? '' : ' (default)'
+                }`,
+            )
+            .conflicts('loadProcess');
         }
         return new Option(
           '-P, --load-process-off',

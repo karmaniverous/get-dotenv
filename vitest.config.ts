@@ -4,11 +4,15 @@ import { configDefaults, defineConfig } from 'vitest/config';
 export default defineConfig({
   plugins: [tsconfigPaths()],
   test: {
-    onConsoleLog(_log, _type, task) {
+    onConsoleLog(log, _type) {
       // Show console output only for failing tests; suppress otherwise.
-      // Vitest passes the current task; when absent, default to suppress.
-      const state = (task as { result?: { state?: string } } | undefined)
-        ?.result?.state;
+      // Vitest types expose (log, type); some runtimes also pass a third 'task'.
+      // Access via arguments[2] when present to detect failing tasks.
+      const maybeArgs = arguments as unknown as IArguments;
+      const task =
+        (maybeArgs[2] as { result?: { state?: string } } | undefined) ??
+        undefined;
+      const state = task?.result?.state;
       if (state === 'fail') return;
       return false;
     },

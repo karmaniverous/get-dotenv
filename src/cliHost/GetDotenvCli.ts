@@ -243,6 +243,7 @@ export class GetDotenvCli<
   tagAppOptions<T>(fn: (root: Command) => T): T {
     const root = this as unknown as Command;
     const originalAddOption = root.addOption.bind(root);
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     const originalOption = root.option.bind(root) as unknown as (
       ...args: unknown[]
     ) => Command;
@@ -257,6 +258,7 @@ export class GetDotenvCli<
       (opt as unknown as Record<string, unknown>).__group = 'app';
       return originalAddOption(opt);
     } as Command['addOption'];
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     root.option = function patchedOption(
       this: Command,
       ...args: Parameters<Command['option']>
@@ -269,6 +271,7 @@ export class GetDotenvCli<
       return fn(root);
     } finally {
       root.addOption = originalAddOption;
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       root.option = originalOption as unknown as Command['option'];
     }
   }
