@@ -114,10 +114,17 @@ export class GetDotenvCli<
   }
 
   /**
-   * Resolve options (strict) and compute dotenv context.   * Stores the context on the instance under a symbol.
+   * Resolve options (strict) and compute dotenv context.
+   * Stores the context on the instance under a symbol.
+   *
+   * Options:
+   * - opts.runAfterResolve (default true): when false, skips running plugin
+   *   afterResolve hooks. Useful for top-level help rendering to avoid
+   *   long-running side-effects while still evaluating dynamic help text.
    */
   async resolveAndLoad(
     customOptions: Partial<TOptions> = {},
+    opts?: { runAfterResolve?: boolean },
   ): Promise<GetDotenvCliCtx<TOptions>> {
     // Resolve defaults, then validate strictly under the new host.
     const optionsResolved = await resolveGetDotenvOptions(
@@ -138,7 +145,9 @@ export class GetDotenvCli<
 
     // Ensure plugins are installed exactly once, then run afterResolve.
     await this.install();
-    await this._runAfterResolve(ctx);
+    if (opts?.runAfterResolve ?? true) {
+      await this._runAfterResolve(ctx);
+    }
 
     return ctx;
   }

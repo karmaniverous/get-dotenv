@@ -88,10 +88,13 @@ export function createCli(opts: CreateCliOptions = {}): {
             : {}),
         });
         // Resolve context once without log/side-effects for help rendering.
-        const ctx = await program.resolveAndLoad({
-          loadProcess: false,
-          log: false,
-        });
+        const ctx = await program.resolveAndLoad(
+          {
+            loadProcess: false,
+            log: false,
+          },
+          { runAfterResolve: false },
+        );
         (program as unknown as GetDotenvCli).evaluateDynamicOptions({
           ...(ctx.optionsResolved as unknown as Record<string, unknown>),
           plugins: ctx.pluginConfigs ?? {},
