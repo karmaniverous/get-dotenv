@@ -22,8 +22,19 @@ describe('plugins/batch dynamic help', () => {
       },
     });
 
-    // Render root help; grouped plugin options are appended
-    const help = (cli as unknown as GetDotenvCli).helpInformation();
+    // Render batch subcommand help; plugin options should appear here.
+    const commands = ((
+      cli as unknown as { commands?: Array<{ name: () => string }> }
+    ).commands ?? []) as Array<
+      { name: () => string; helpInformation: () => string } & unknown
+    >;
+    const batch = commands.find(
+      (c) => typeof c.name === 'function' && c.name() === 'batch',
+    );
+    const help =
+      typeof batch?.helpInformation === 'function'
+        ? batch.helpInformation()
+        : '';
 
     // pkg-cwd: ON (default)
     expect(help).toMatch(/-p, --pkg-cwd[\s\S]*\(default\)/i);

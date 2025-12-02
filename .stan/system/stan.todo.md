@@ -160,4 +160,8 @@ When updated: 2025-10-19T00:00:00Z
 
 - Help (plugin groups in root)
   - Root help now recursively collects options from subcommands and appends
-    grouped “Plugin options — <id>” sections, so batch/cmd plugin flags render in root help.
+    grouped “Plugin options — <id>” sections, so batch/cmd plugin flags render in root help.
+
+- Help behavior tweak
+  - Reverted recursive display of plugin options in root help; plugin flags
+    remain visible in their subcommand help (e.g., "getdotenv batch -h").
