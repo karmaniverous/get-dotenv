@@ -156,3 +156,6 @@ When updated: 2025-10-19T00:00:00Z
   - Root help now filters Options to base-only (no plugin groups).
   - Subcommand help shows all options, so plugin flags appear under the subcommand’s
     Options section (e.g., batch dynamic defaults visible in "help batch").
+
+- Root dynamic help tests
+  - Added unit test verifying default labels for shell-off, load-process-off, and log-off appear in root help.
