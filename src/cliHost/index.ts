@@ -69,6 +69,16 @@ export class GetDotenvCli extends BaseGetDotenvCli {
         const serviceOptions = getDotenvCliOptions2Options(merged);
         await this.resolveAndLoad(serviceOptions);
 
+        // Refresh dynamic option descriptions using resolved config + plugin slices
+        try {
+          const ctx = this.getCtx();
+          (this as unknown as BaseGetDotenvCli).evaluateDynamicOptions({
+            ...(ctx?.optionsResolved as unknown as Record<string, unknown>),
+            plugins: ctx?.pluginConfigs ?? {},
+          } as unknown as import('./GetDotenvCli').ResolvedHelpConfig);
+        } catch {
+          /* best-effort */
+        }
         // Global validation: once after Phase C using config sources.
         try {
           const ctx = this.getCtx();
@@ -118,6 +128,15 @@ export class GetDotenvCli extends BaseGetDotenvCli {
         if (!this.getCtx()) {
           const serviceOptions = getDotenvCliOptions2Options(merged);
           await this.resolveAndLoad(serviceOptions);
+          try {
+            const ctx = this.getCtx();
+            (this as unknown as BaseGetDotenvCli).evaluateDynamicOptions({
+              ...(ctx?.optionsResolved as unknown as Record<string, unknown>),
+              plugins: ctx?.pluginConfigs ?? {},
+            } as unknown as import('./GetDotenvCli').ResolvedHelpConfig);
+          } catch {
+            /* tolerate */
+          }
           try {
             const ctx = this.getCtx();
             const dotenv = (ctx?.dotenv ?? {}) as Record<

@@ -16,6 +16,13 @@ import { getDotenvOptionsSchemaResolved } from '../schema/getDotenvOptions';
 import { computeContext } from './computeContext';
 import type { GetDotenvCliPlugin, GetDotenvCliPublic } from './definePlugin';
 
+// Dynamic help support: attach a private symbol to Option for description fns.
+const DYN_DESC_SYM = Symbol('getdotenv.dynamic.description');
+
+export type ResolvedHelpConfig = GetDotenvOptions & {
+  plugins: Record<string, unknown>;
+};
+
 /** * Per-invocation context shared with plugins and actions. */
 export type GetDotenvCliCtx<
   TOptions extends GetDotenvOptions = GetDotenvOptions,
@@ -51,6 +58,13 @@ export class GetDotenvCli<
   private _installed = false;
   /** Optional header line to prepend in help output */
   private [HELP_HEADER_SYMBOL]: string | undefined;
+  /**
+   * Create a subcommand using the same subclass, preserving helpers like
+   * dynamicOption on children.
+   */
+  override createCommand(name?: string): Command {
+    return new (this.constructor as typeof GetDotenvCli)(name);
+  }
   constructor(alias = 'getdotenv') {
     super(alias);
     // Ensure subcommands that use passThroughOptions can be attached safely.
@@ -129,6 +143,69 @@ export class GetDotenvCli<
     await this._runAfterResolve(ctx);
 
     return ctx;
+  }
+
+  /**
+   * Create a Commander Option that computes its description at help time.
+   * The returned Option may be configured (conflicts, default, parser) and
+   * added via addOption().
+   */
+  createDynamicOption(
+    flags: string,
+    desc: (cfg: ResolvedHelpConfig) => string,
+    parser?: (value: string, previous?: unknown) => unknown,
+    defaultValue?: unknown,
+  ): Option {
+    const opt = new (Option as unknown as {
+      new (f: string, d?: string): Option;
+    })(flags, '');
+    // Keep the function on a private symbol so it survives through Commander.
+    (opt as unknown as Record<symbol, unknown>)[DYN_DESC_SYM] = desc;
+    if (parser) opt.argParser(parser as (value: string) => unknown);
+    if (defaultValue !== undefined) opt.default(defaultValue as unknown);
+    return opt;
+  }
+
+  /**
+   * Chainable helper mirroring .option(), but with a dynamic description.
+   * Equivalent to addOption(createDynamicOption(...)).
+   */
+  dynamicOption(
+    flags: string,
+    desc: (cfg: ResolvedHelpConfig) => string,
+    parser?: (value: string, previous?: unknown) => unknown,
+    defaultValue?: unknown,
+  ): this {
+    const opt = this.createDynamicOption(flags, desc, parser, defaultValue);
+    this.addOption(opt);
+    return this;
+  }
+
+  /**
+   * Evaluate dynamic descriptions for this command and all descendants using
+   * the provided resolved configuration. Mutates the Option.description in
+   * place so Commander help renders updated text.
+   */
+  evaluateDynamicOptions(resolved: ResolvedHelpConfig): void {
+    const visit = (cmd: Command) => {
+      const arr = (cmd as unknown as { options?: Option[] }).options ?? [];
+      for (const o of arr) {
+        const dyn = (o as unknown as Record<symbol, unknown>)[DYN_DESC_SYM];
+        if (typeof dyn === 'function') {
+          try {
+            const txt = (dyn as (c: ResolvedHelpConfig) => string)(resolved);
+            // Commander Option has a public "description" field used by help.
+            (o as unknown as { description?: string }).description = txt;
+          } catch {
+            // Best-effort: leave description as-is on evaluation failure.
+          }
+        }
+      }
+      const children =
+        (cmd as unknown as { commands?: Command[] }).commands ?? [];
+      for (const c of children) visit(c);
+    };
+    visit(this as unknown as Command);
   }
 
   /**

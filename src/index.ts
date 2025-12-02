@@ -75,8 +75,26 @@ export function createCli(opts: CreateCliOptions = {}): {
     async run(argv: string[]) {
       // Always short-circuit help to avoid Commander-triggered process.exit
       // across environments (CJS/ESM) and to return immediately under dynamic
-      // ESM without performing extra IO. Prints help and returns.
+      // ESM without performing extra IO. Before printing help, compute a
+      // read-only resolved config and evaluate dynamic descriptions.
       if (argv.some((a) => a === '-h' || a === '--help')) {
+        await program.brand({
+          name: alias,
+          importMetaUrl: import.meta.url,
+          description: 'Base CLI.',
+          ...(typeof opts.branding === 'string' && opts.branding.length > 0
+            ? { helpHeader: opts.branding }
+            : {}),
+        });
+        // Resolve context once without log/side-effects for help rendering.
+        const ctx = await program.resolveAndLoad({
+          loadProcess: false,
+          log: false,
+        });
+        (program as unknown as GetDotenvCli).evaluateDynamicOptions({
+          ...(ctx.optionsResolved as unknown as Record<string, unknown>),
+          plugins: ctx.pluginConfigs ?? {},
+        } as unknown as import('./cliHost/GetDotenvCli').ResolvedHelpConfig);
         program.outputHelp();
         return;
       }

@@ -9,8 +9,8 @@ stan-core:
     - package-lock.json
   imports:
     smoz:
-      - ../smoz/.stan/system/stan.requirements.md
-      - ../smoz/.stan/system/stan.todo.md
+      # - ../smoz/.stan/system/stan.requirements.md
+      # - ../smoz/.stan/system/stan.todo.md
       - ../smoz/.stan/interop/get-dotenv/**
 stan-cli:
   scripts:

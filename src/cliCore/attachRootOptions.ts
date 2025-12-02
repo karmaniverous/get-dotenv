@@ -2,6 +2,7 @@
 import type { Command } from 'commander';
 import { Option } from 'commander';
 
+// dynamicOption support detected at runtime (GetDotenvCli subclass)
 // NOTE: grouped-help tagging is applied by temporarily wrapping adders below.
 import { dotenvExpandFromProcessEnv } from '../dotenvExpand';
 import type { RootOptionsShape } from './types';
@@ -116,40 +117,136 @@ export const attachRootOptions = (
       outputPath,
     )
     .addOption(
-      new Option(
-        '-s, --shell [string]',
-        (() => {
-          let defaultLabel = '';
-          if (shell !== undefined) {
-            if (typeof shell === 'boolean') {
-              defaultLabel = ' (default OS shell)';
-            } else if (typeof shell === 'string') {
-              // Safe string interpolation
-              defaultLabel = ` (default ${shell})`;
-            }
-          }
-
-          return `command execution shell, no argument for default OS shell or provide shell string${defaultLabel}`;
-        })(),
-      ).conflicts('shellOff'),
+      // Prefer dynamic descriptions when available so help reflects resolved config.
+      // Fallback to static strings computed from provided defaults.
+      (() => {
+        const anyProg = program as unknown as {
+          createDynamicOption?: (
+            flags: string,
+            desc: (cfg: { shell?: string | boolean }) => string,
+            parser?: (v: string) => unknown,
+            def?: unknown,
+          ) => Option;
+          addOption?: (opt: Option) => Command;
+        };
+        if (typeof anyProg.createDynamicOption === 'function') {
+          const opt = anyProg.createDynamicOption(
+            '-s, --shell [string]',
+            (cfg) => {
+              const s = cfg.shell;
+              let tag = '';
+              if (typeof s === 'boolean' && s) tag = ' (default OS shell)';
+              else if (typeof s === 'string' && s.length > 0)
+                tag = ` (default ${s})`;
+              return `command execution shell, no argument for default OS shell or provide shell string${tag}`;
+            },
+          );
+          opt.conflicts('shellOff');
+          anyProg.addOption?.(opt);
+          // placeholder Option is returned to satisfy chaining; actual add already performed
+          return new Option('-s, --shell [string]');
+        }
+        // Static fallback (computed from defaults)
+        const defaultLabel =
+          shell !== undefined
+            ? typeof shell === 'boolean'
+              ? ' (default OS shell)'
+              : typeof shell === 'string'
+                ? ` (default ${shell})`
+                : ''
+            : '';
+        return new Option(
+          '-s, --shell [string]',
+          `command execution shell, no argument for default OS shell or provide shell string${defaultLabel}`,
+        ).conflicts('shellOff');
+      })(),
     )
     .addOption(
-      new Option(
-        '-S, --shell-off',
-        `command execution shell OFF${!shell ? ' (default)' : ''}`,
-      ).conflicts('shell'),
+      (() => {
+        const anyProg = program as unknown as {
+          createDynamicOption?: (
+            flags: string,
+            desc: (cfg: { shell?: string | boolean }) => string,
+            parser?: (v: string) => unknown,
+            def?: unknown,
+          ) => Option;
+          addOption?: (opt: Option) => Command;
+        };
+        if (typeof anyProg.createDynamicOption === 'function') {
+          const opt = anyProg.createDynamicOption(
+            '-S, --shell-off',
+            (cfg) =>
+              `command execution shell OFF${
+                cfg.shell === false ? ' (default)' : ''
+              }`,
+          );
+          opt.conflicts('shell');
+          anyProg.addOption?.(opt);
+          return new Option('-S, --shell-off');
+        }
+        return new Option(
+          '-S, --shell-off',
+          `command execution shell OFF${!shell ? ' (default)' : ''}`,
+        ).conflicts('shell');
+      })(),
     )
     .addOption(
-      new Option(
-        '-p, --load-process',
-        `load variables to process.env ON${loadProcess ? ' (default)' : ''}`,
-      ).conflicts('loadProcessOff'),
+      (() => {
+        const anyProg = program as unknown as {
+          createDynamicOption?: (
+            flags: string,
+            desc: (cfg: { loadProcess?: boolean }) => string,
+            parser?: (v: string) => unknown,
+            def?: unknown,
+          ) => Option;
+          addOption?: (opt: Option) => Command;
+        };
+        if (typeof anyProg.createDynamicOption === 'function') {
+          const opt = anyProg.createDynamicOption(
+            '-p, --load-process',
+            (cfg) =>
+              `load variables to process.env ON${
+                cfg.loadProcess ? ' (default)' : ''
+              }`,
+          );
+          opt.conflicts('loadProcessOff');
+          anyProg.addOption?.(opt);
+          return new Option('-p, --load-process');
+        }
+        return new Option(
+          '-p, --load-process',
+          `load variables to process.env ON${loadProcess ? ' (default)' : ''}`,
+        ).conflicts('loadProcessOff');
+      })(),
     )
     .addOption(
-      new Option(
-        '-P, --load-process-off',
-        `load variables to process.env OFF${!loadProcess ? ' (default)' : ''}`,
-      ).conflicts('loadProcess'),
+      (() => {
+        const anyProg = program as unknown as {
+          createDynamicOption?: (
+            flags: string,
+            desc: (cfg: { loadProcess?: boolean }) => string,
+            parser?: (v: string) => unknown,
+            def?: unknown,
+          ) => Option;
+          addOption?: (opt: Option) => Command;
+        };
+        if (typeof anyProg.createDynamicOption === 'function') {
+          const opt = anyProg.createDynamicOption(
+            '-P, --load-process-off',
+            (cfg) =>
+              `load variables to process.env OFF${
+                cfg.loadProcess ? '' : ' (default)'
+              }`,
+          );
+          opt.conflicts('loadProcess');
+          anyProg.addOption?.(opt);
+          return new Option('-P, --load-process-off');
+        }
+        return new Option(
+          '-P, --load-process-off',
+          `load variables to process.env OFF${!loadProcess ? ' (default)' : ''}`,
+        ).conflicts('loadProcess');
+      })(),
     )
     .addOption(
       new Option(
