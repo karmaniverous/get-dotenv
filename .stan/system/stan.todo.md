@@ -267,3 +267,9 @@ resolveGetDotenvOptions to avoid Record/unknown double‑casts; used generics
 on defaultsDeep; simplified paths/vars parsing. • computeContext: dropped
 double‑cast on getDotenv() call; prefer customOptions.logger to avoid
 unknown cast. • batch/defaultCmdAction: removed redundant shell casts.
+
+— Fix inference pass fallout: restore typecheck/lint green by sanitizing
+  validated options before calling getDotenv (exactOptionalPropertyTypes),
+  simplifying splitBy to avoid unnecessary-condition lint, and reverting
+  over‑strict defaultsDeep generics at call sites in favor of a single
+  result cast. Removed an unnecessary optional chain on customOptions.logger.

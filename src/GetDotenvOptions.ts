@@ -171,10 +171,15 @@ export const getDotenvCliOptions2Options = ({
 }: RootOptionsShapeCompat): GetDotenvOptions => {
   // Split helper for delimited strings or regex patterns
   const splitBy = (
-    value: string | undefined,
+    value?: string,
     delim?: string,
     pattern?: string,
-  ) => (value ? value.split(pattern ? RegExp(pattern) : (delim ?? ' ')) : []);
+  ): string[] => {
+    if (!value) return [];
+    if (pattern) return value.split(RegExp(pattern));
+    if (typeof delim === 'string') return value.split(delim);
+    return value.split(' ');
+  };
 
   // Tolerate vars as either a CLI string ("A=1 B=2") or an object map.
   let parsedVars: ProcessEnv | undefined;
@@ -263,17 +268,17 @@ export const resolveGetDotenvOptions = async (
   }
 
   // Merge order: base < local < custom (custom has highest precedence)
-  const mergedCli = defaultsDeep<GetDotenvCliOptions>(
+  const mergedCli = defaultsDeep(
     baseGetDotenvCliOptions,
     localOptions,
-  );
+  ) as GetDotenvCliOptions;
 
   const defaultsFromCli = getDotenvCliOptions2Options(mergedCli);
 
-  const result = defaultsDeep<GetDotenvOptions>(
+  const result = defaultsDeep(
     defaultsFromCli as Partial<GetDotenvOptions>,
     customOptions,
-  );
+  ) as GetDotenvOptions;
 
   return {
     ...result, // Keep explicit empty strings/zeros; drop only undefined

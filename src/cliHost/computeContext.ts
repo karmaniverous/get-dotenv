@@ -39,14 +39,21 @@ export const computeContext = async <
   const validated = getDotenvOptionsSchemaResolved.parse(optionsResolved);
   // Always-on loader path
   // 1) Base from files only (no dynamic, no programmatic vars)
+  // Sanitize to avoid passing properties explicitly set to undefined
+  // (exactOptionalPropertyTypes).
+  const cleanedValidated = Object.fromEntries(
+    Object.entries(validated).filter(([, v]) => v !== undefined),
+  ) as Partial<GetDotenvOptions>;
+
   const base = await getDotenv({
-    ...validated,
+    ...cleanedValidated,
     // Build a pure base without side effects or logging.
     excludeDynamic: true,
     vars: {},
     log: false,
     loadProcess: false,
-    outputPath: undefined,
+    // Intentionally omit outputPath for the base pass; including a key with
+    // undefined would violate exactOptionalPropertyTypes on the Partial target.
   });
   // 2) Discover config sources and overlay
   const sources = await resolveGetDotenvConfigSources(hostMetaUrl);
@@ -132,7 +139,7 @@ export const computeContext = async <
     );
   }
   const logger: Logger =
-    (customOptions as { logger?: Logger })?.logger ?? console;
+    (customOptions as { logger?: Logger }).logger ?? console;
   if (validated.log) logger.log(dotenv);
   if (validated.loadProcess) Object.assign(process.env, dotenv);
 
