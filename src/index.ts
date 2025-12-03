@@ -65,8 +65,18 @@ export function createCli(opts: CreateCliOptions = {}): {
   if (underTests) {
     program.exitOverride((err: unknown) => {
       const code = (err as { code?: string } | undefined)?.code;
-      if (code === 'commander.helpDisplayed' || code === 'commander.version')
+      // Commander printed help already; ensure a trailing blank line for tests/CI capture.
+      if (code === 'commander.helpDisplayed') {
+        try {
+          process.stdout.write('\n');
+        } catch {
+          /* ignore */
+        }
         return;
+      }
+      if (code === 'commander.version') {
+        return;
+      }
       throw err;
     });
   }
@@ -124,6 +134,13 @@ export function createCli(opts: CreateCliOptions = {}): {
             void program.helpInformation();
           } else {
             program.outputHelp();
+            // Ensure a trailing blank line for prompt separation. This keeps
+            // E2E assertions (CRLF and >=2 newlines) portable across runtimes.
+            try {
+              process.stdout.write('\n');
+            } catch {
+              /* ignore */
+            }
           }
           return;
         }

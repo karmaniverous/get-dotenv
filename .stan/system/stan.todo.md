@@ -157,4 +157,8 @@ to verify two trailing newlines on batch/aws/cmd/root help output.
 — Help E2E (newline portability): relaxed trailing-blank-line assertions to
 accept CRLF and two-or-more trailing newlines `/(?:\r?\n){2,}$/`, matching
 Windows and Commander’s potential extra newline while preserving the “blank
-line after help” guarantee.
+line after help” guarantee.
+
+— Help trailing newline (tests/CI): ensured an extra blank line is printed after
+help in both paths without modifying Commander:
+  • root (-h) short‑circuit: write an extra '\n' after outputHelp();  • subcommand help: in exitOverride for 'commander.helpDisplayed', write '\n'.
