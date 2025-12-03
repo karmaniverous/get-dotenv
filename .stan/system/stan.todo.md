@@ -195,3 +195,10 @@ owns the alias). Minimized type casts in dynamic help callbacks by using direct
 cfg._ properties (shell, loadProcess, log, exclude_, warnEntropy) per
 ResolvedHelpConfig, relying on proper inference. Kept createDynamicOptionaddOption
 where .conflicts/Option-level config is required.
+
++— Dynamic help typing & parity: changed ResolvedHelpConfig to include CLI
++options (Partial<GetDotenvCliOptions>) so callbacks can read shell/log/
++loadProcess/exclude\*/warnEntropy without casts. In passOptions(), evaluate
++dynamic options against the merged CLI bag; for top-level “-h/--help”, compute
++defaults-only merged CLI options (resolveCliOptions + baseRootOptionDefaults)
++and evaluate against that for perfect parity without side effects.

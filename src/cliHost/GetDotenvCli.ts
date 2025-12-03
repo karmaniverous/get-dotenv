@@ -17,7 +17,7 @@ import type { GetDotenvCliPlugin, GetDotenvCliPublic } from './definePlugin';
 // Dynamic help support: attach a private symbol to Option for description fns.
 const DYN_DESC_SYM = Symbol('getdotenv.dynamic.description');
 
-export type ResolvedHelpConfig = Partial<GetDotenvOptions> & {
+export type ResolvedHelpConfig = Partial<GetDotenvCliOptions> & {
   plugins: Record<string, unknown>;
 };
 

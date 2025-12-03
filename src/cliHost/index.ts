@@ -32,7 +32,7 @@ export class GetDotenvCli extends BaseGetDotenvCli {
    */
   attachRootOptions(defaults?: Partial<RootOptionsShape>): this {
     const d = (defaults ?? baseRootOptionDefaults) as Partial<RootOptionsShape>;
-    attachRootOptionsBuilder(this as unknown as BaseGetDotenvCli, d);
+    attachRootOptionsBuilder(this, d);
     return this;
   }
 
@@ -51,17 +51,14 @@ export class GetDotenvCli extends BaseGetDotenvCli {
       async (thisCommand: CommandWithOptions<GetDotenvCliOptions>) => {
         const raw = thisCommand.opts();
         const { merged } = resolveCliOptions<GetDotenvCliOptions>(
-          raw as unknown,
-          d as Partial<GetDotenvCliOptions>,
+          raw,
+          d,
           process.env.getDotenvCliOptions,
         );
 
         // Persist merged options (for nested behavior and ergonomic access).
-        thisCommand.getDotenvCliOptions =
-          merged as unknown as GetDotenvCliOptions;
-        (this as unknown as BaseGetDotenvCli)._setOptionsBag(
-          merged as unknown as GetDotenvCliOptions,
-        );
+        thisCommand.getDotenvCliOptions = merged;
+        this._setOptionsBag(merged);
 
         // Build service options and compute context (always-on loader path).
         const serviceOptions = getDotenvCliOptions2Options(merged);
@@ -70,25 +67,22 @@ export class GetDotenvCli extends BaseGetDotenvCli {
         // Refresh dynamic option descriptions using resolved config + plugin slices
         try {
           const ctx = this.getCtx();
-          (this as unknown as BaseGetDotenvCli).evaluateDynamicOptions({
-            ...(ctx?.optionsResolved as unknown as Record<string, unknown>),
+          const helpCfg: ResolvedHelpConfig = {
+            ...merged,
             plugins: ctx?.pluginConfigs ?? {},
-          } as unknown as ResolvedHelpConfig);
+          };
+          this.evaluateDynamicOptions(helpCfg);
         } catch {
           /* best-effort */
         }
         // Global validation: once after Phase C using config sources.
         try {
           const ctx = this.getCtx();
-          const dotenv = (ctx?.dotenv ?? {}) as Record<
-            string,
-            string | undefined
-          >;
+          const dotenv = ctx?.dotenv ?? {};
           const sources = await resolveGetDotenvConfigSources(import.meta.url);
           const issues = validateEnvAgainstSources(dotenv, sources);
           if (Array.isArray(issues) && issues.length > 0) {
-            const logger = ((merged as unknown as { logger?: unknown })
-              .logger ?? console) as {
+            const logger = (merged.logger ?? console) as {
               log: (...a: unknown[]) => void;
               error?: (...a: unknown[]) => void;
             };
@@ -96,9 +90,7 @@ export class GetDotenvCli extends BaseGetDotenvCli {
             issues.forEach((m) => {
               emit(m);
             });
-            if ((merged as unknown as { strict?: boolean }).strict) {
-              process.exit(1);
-            }
+            if (merged.strict) process.exit(1);
           }
         } catch {
           // Be tolerant: do not crash non-strict flows on unexpected validator failures.
@@ -113,25 +105,23 @@ export class GetDotenvCli extends BaseGetDotenvCli {
       async (thisCommand: CommandWithOptions<GetDotenvCliOptions>) => {
         const raw = thisCommand.opts();
         const { merged } = resolveCliOptions<GetDotenvCliOptions>(
-          raw as unknown,
-          d as Partial<GetDotenvCliOptions>,
+          raw,
+          d,
           process.env.getDotenvCliOptions,
         );
-        thisCommand.getDotenvCliOptions =
-          merged as unknown as GetDotenvCliOptions;
-        (this as unknown as BaseGetDotenvCli)._setOptionsBag(
-          merged as unknown as GetDotenvCliOptions,
-        );
+        thisCommand.getDotenvCliOptions = merged;
+        this._setOptionsBag(merged);
         // Avoid duplicate heavy work if a context is already present.
         if (!this.getCtx()) {
           const serviceOptions = getDotenvCliOptions2Options(merged);
           await this.resolveAndLoad(serviceOptions);
           try {
             const ctx = this.getCtx();
-            (this as unknown as BaseGetDotenvCli).evaluateDynamicOptions({
-              ...(ctx?.optionsResolved as unknown as Record<string, unknown>),
+            const helpCfg: ResolvedHelpConfig = {
+              ...merged,
               plugins: ctx?.pluginConfigs ?? {},
-            } as unknown as ResolvedHelpConfig);
+            };
+            this.evaluateDynamicOptions(helpCfg);
           } catch {
             /* tolerate */
           }
