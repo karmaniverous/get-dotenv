@@ -165,4 +165,9 @@ help in both paths without modifying Commander:
 
 — Help newline (subcommands): configured Commander output via program.configureOutput
 to ensure help prints end with a blank line consistently (>= 2 trailing newlines
-when captured), avoiding test flakes without modifying Commander internals.
+when captured), avoiding test flakes without modifying Commander internals.
+
+— Help newline (recursive): applied the output writer to the entire command tree
+(root and all subcommands) so batch/aws/cmd help also ends with a blank line.
+This fixes remaining E2E help failures without touching Commander internals or
+test stdout suppression (GETDOTENV_STDIO=pipe already bypasses it).

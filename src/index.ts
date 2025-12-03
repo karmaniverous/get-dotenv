@@ -1,3 +1,5 @@
+import type { Command } from 'commander';
+
 import { GetDotenvCli } from './cliHost';
 import type { ResolvedHelpConfig } from './cliHost/GetDotenvCli';
 import { awsPlugin } from './plugins/aws';
@@ -51,7 +53,7 @@ export function createCli(opts: CreateCliOptions = {}): {
   // Normalize Commander output so help prints always end with a blank line.
   // This keeps E2E assertions (CRLF and >=2 trailing newlines) portable across
   // runtimes and capture modes without altering Commander internals.
-  program.configureOutput({
+  const outputCfg = {
     writeOut(str: string) {
       const txt = typeof str === 'string' ? str : '';
       const hasTwo = /(?:\r?\n){2,}$/.test(txt);
@@ -63,8 +65,23 @@ export function createCli(opts: CreateCliOptions = {}): {
         /* ignore */
       }
     },
-    writeErr: (str: string) => process.stderr.write(str),
-  });
+    writeErr(str: string) {
+      process.stderr.write(str);
+    },
+  };
+  // Apply to root and recursively to subcommands so all help paths are normalized.
+  program.configureOutput(outputCfg);
+  const applyOutputRecursively = (cmd: Command) => {
+    cmd.configureOutput(
+      outputCfg as unknown as {
+        writeOut: (s: string) => void;
+        writeErr: (s: string) => void;
+      },
+    );
+    const kids = (cmd as unknown as { commands?: Command[] }).commands ?? [];
+    for (const child of kids) applyOutputRecursively(child);
+  };
+  applyOutputRecursively(program as unknown as Command);
   // Install base root flags and included plugins; resolve context once per run.
   program
     .attachRootOptions({ loadProcess: false })
