@@ -153,3 +153,8 @@ ensure no "Global Options:" section and no "Plugin options — aws" is shown.
 — Help trailing blank line: ensure helpInformation() for root and subcommands
 always ends with a blank line for prompt separation. Added E2E assertions
 to verify two trailing newlines on batch/aws/cmd/root help output.
+
+— Help E2E (newline portability): relaxed trailing-blank-line assertions to
+accept CRLF and two-or-more trailing newlines `/(?:\r?\n){2,}$/`, matching
+Windows and Commander’s potential extra newline while preserving the “blank
+line after help” guarantee.

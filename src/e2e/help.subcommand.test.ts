@@ -21,8 +21,9 @@ describe('E2E help (subcommand and ordering)', () => {
     expect(stdout).toMatch(/Usage:\s+getdotenv batch/i);
     // Subcommand help should not render a self "Plugin options — batch" section.
     expect(stdout.includes('Plugin options — batch')).toBe(false);
-    // Must end with a blank line for prompt separation
-    expect(/\n\n$/.test(stdout)).toBe(true);
+    // Must end with at least one blank line for prompt separation (CRLF-safe)
+    // Accept two or more trailing newlines to tolerate Commander adding a final newline.
+    expect(/(?:\r?\n){2,}$/.test(stdout)).toBe(true);
   }, 30000);
 
   it('aws -h prints aws help without global options and no self plugin group', async () => {
@@ -36,8 +37,9 @@ describe('E2E help (subcommand and ordering)', () => {
     expect(stdout.includes('Global Options:')).toBe(false);
     // No self plugin group duplication
     expect(stdout.includes('Plugin options — aws')).toBe(false);
-    // Must end with a blank line for prompt separation
-    expect(/\n\n$/.test(stdout)).toBe(true);
+    // Must end with at least one blank line for prompt separation (CRLF-safe)
+    // Accept two or more trailing newlines to tolerate Commander adding a final newline.
+    expect(/(?:\r?\n){2,}$/.test(stdout)).toBe(true);
   }, 30000);
 
   it('cmd -h prints cmd help', async () => {
@@ -46,8 +48,9 @@ describe('E2E help (subcommand and ordering)', () => {
     });
     expect(exitCode).toBe(0);
     expect(stdout).toMatch(/Usage:\s+getdotenv cmd/i);
-    // Must end with a blank line for prompt separation
-    expect(/\n\n$/.test(stdout)).toBe(true);
+    // Must end with at least one blank line for prompt separation (CRLF-safe)
+    // Accept two or more trailing newlines to tolerate Commander adding a final newline.
+    expect(/(?:\r?\n){2,}$/.test(stdout)).toBe(true);
   }, 30000);
 
   it('root -h shows plugin options before commands (hybrid ordering)', async () => {
@@ -70,7 +73,8 @@ describe('E2E help (subcommand and ordering)', () => {
 
     expect(idxOptions).toBeLessThan(idxPluginCmd);
     expect(idxPluginCmd).toBeLessThan(idxCommands);
-    // Must end with a blank line for prompt separation
-    expect(/\n\n$/.test(stdout)).toBe(true);
+    // Must end with at least one blank line for prompt separation (CRLF-safe)
+    // Accept two or more trailing newlines to tolerate Commander adding a final newline.
+    expect(/(?:\r?\n){2,}$/.test(stdout)).toBe(true);
   }, 30000);
 });
