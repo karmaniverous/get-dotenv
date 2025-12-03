@@ -31,6 +31,7 @@
 import type { GetDotenvCliPublic } from '@karmaniverous/get-dotenv/cliHost';
 
 import { runCommand } from '../../cliCore/exec';
+import { buildSpawnEnv } from '../../cliCore/spawnEnv';
 import { definePlugin } from '../../cliHost/definePlugin';
 import type { Logger } from '../../GetDotenvOptions';
 import { resolveCommand, resolveShell } from '../../services/batch/resolve';
@@ -102,7 +103,10 @@ export const demoPlugin = () =>
 
           // Inherit stdio for an interactive demo. Use --capture for CI.
           await runCommand(['node', '-e', code], false, {
-            env: { ...process.env, ...dotenv },
+            env: buildSpawnEnv(
+              process.env,
+              dotenv,
+            ) as unknown as NodeJS.ProcessEnv,
             stdio: 'inherit',
           });
         });
@@ -167,7 +171,10 @@ export const demoPlugin = () =>
               string | undefined
             >;
             await runCommand(resolved, shell, {
-              env: { ...process.env, ...dotenv },
+              env: buildSpawnEnv(
+                process.env,
+                dotenv,
+              ) as unknown as NodeJS.ProcessEnv,
               stdio: 'inherit',
             });
           },

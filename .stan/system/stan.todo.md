@@ -31,6 +31,8 @@ When updated: 2025-10-19T00:00:00Z
 
 **CRITICAL: Append-only list. Add new completed items at the end. Prune old completed entries from the top. Do not edit existing entries.**
 
+— Demo plugin: switched child env injection to buildSpawnEnv for normalized cross‑platform behavior (run/script commands).
+
 — Batch env normalization: inject ctx.dotenv into batch child processes using buildSpawnEnv; preserved getDotenvCliOptions propagation. Applies to parent and default subcommand paths; list-only path unaffected.
 
 - Dynamic help (phase 1): added GetDotenvCli dynamicOption/createDynamicOption, help-time evaluator, and createCommand override so subcommands are GetDotenvCli instances.
