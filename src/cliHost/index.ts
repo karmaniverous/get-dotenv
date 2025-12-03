@@ -30,12 +30,9 @@ export class GetDotenvCli extends BaseGetDotenvCli {
    * Attach legacy root flags to this CLI instance. Defaults come from
    * baseRootOptionDefaults when none are provided.
    */
-  attachRootOptions(
-    defaults?: Partial<RootOptionsShape>,
-    opts?: { includeCommandOption?: boolean },
-  ): this {
+  attachRootOptions(defaults?: Partial<RootOptionsShape>): this {
     const d = (defaults ?? baseRootOptionDefaults) as Partial<RootOptionsShape>;
-    attachRootOptionsBuilder(this as unknown as BaseGetDotenvCli, d, opts);
+    attachRootOptionsBuilder(this as unknown as BaseGetDotenvCli, d);
     return this;
   }
 

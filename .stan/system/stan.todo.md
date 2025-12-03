@@ -161,7 +161,7 @@ line after help” guarantee.
 
 — Help trailing newline (tests/CI): ensured an extra blank line is printed after
 help in both paths without modifying Commander:
-  • root (-h) short‑circuit: write an extra '\n' after outputHelp();  • subcommand help: in exitOverride for 'commander.helpDisplayed', write '\n'.
+• root (-h) short‑circuit: write an extra '\n' after outputHelp(); • subcommand help: in exitOverride for 'commander.helpDisplayed', write '\n'.
 
 — Help newline (subcommands): configured Commander output via program.configureOutput
 to ensure help prints end with a blank line consistently (>= 2 trailing newlines
@@ -187,4 +187,11 @@ blank-line guarantee.
 — Help tests (execa strip): set stripFinalNewline: false in E2E help captures
 so the printed trailing blank line is preserved in stdout. This, combined with
 the tolerant endsWithBlankLine() helper, eliminates remaining false negatives
-without altering Commander or runtime behavior.
+without altering Commander or runtime behavior.
+
+— Root options cleanup: removed obsolete includeCommandOption parameter from
+attachRootOptions and deleted the legacy root "-c, --command" flag (cmd plugin
+owns the alias). Minimized type casts in dynamic help callbacks by using direct
+cfg._ properties (shell, loadProcess, log, exclude_, warnEntropy) per
+ResolvedHelpConfig, relying on proper inference. Kept createDynamicOptionaddOption
+where .conflicts/Option-level config is required.

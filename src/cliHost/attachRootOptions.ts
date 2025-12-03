@@ -13,10 +13,6 @@ import type { GetDotenvCli } from './GetDotenvCli';
 export const attachRootOptions = (
   program: GetDotenvCli,
   defaults?: Partial<RootOptionsShape>,
-  opts?: {
-    // When true, include a legacy root "-c, --command" (normally omit; cmd plugin provides parent alias).
-    includeCommandOption?: boolean;
-  },
 ) => {
   // Install temporary wrappers to tag all options added here as "base" for grouped help.
   const GROUP = 'base';
@@ -95,14 +91,6 @@ export const attachRootOptions = (
     dotenvExpandFromProcessEnv,
   );
 
-  if (opts?.includeCommandOption === true) {
-    p = p.option(
-      '-c, --command <string>',
-      'command executed according to the --shell option, conflicts with cmd subcommand (dotenv-expanded)',
-      dotenvExpandFromProcessEnv,
-    );
-  }
-
   // Output path (interpolated later; help can remain static)
   p = p.option(
     '-o, --output-path <string>',
@@ -116,7 +104,7 @@ export const attachRootOptions = (
     .addOption(
       program
         .createDynamicOption('-s, --shell [string]', (cfg) => {
-          const s = (cfg as { shell?: string | boolean }).shell;
+          const s = cfg.shell;
           let tag = '';
           if (typeof s === 'boolean' && s) tag = ' (default OS shell)';
           else if (typeof s === 'string' && s.length > 0)
@@ -129,7 +117,7 @@ export const attachRootOptions = (
     .addOption(
       program
         .createDynamicOption('-S, --shell-off', (cfg) => {
-          const s = (cfg as { shell?: string | boolean }).shell;
+          const s = cfg.shell;
           return `command execution shell OFF${s === false ? ' (default)' : ''}`;
         })
         .conflicts('shell'),
@@ -142,7 +130,7 @@ export const attachRootOptions = (
         .createDynamicOption(
           '-p, --load-process',
           (cfg) =>
-            `load variables to process.env ${onOff(true, Boolean((cfg as { loadProcess?: boolean }).loadProcess))}`,
+            `load variables to process.env ${onOff(true, Boolean(cfg.loadProcess))}`,
         )
         .conflicts('loadProcessOff'),
     )
@@ -151,7 +139,7 @@ export const attachRootOptions = (
         .createDynamicOption(
           '-P, --load-process-off',
           (cfg) =>
-            `load variables to process.env ${onOff(false, !(cfg as { loadProcess?: boolean }).loadProcess)}`,
+            `load variables to process.env ${onOff(false, !cfg.loadProcess)}`,
         )
         .conflicts('loadProcess'),
     );
@@ -161,17 +149,10 @@ export const attachRootOptions = (
     .addOption(
       program
         .createDynamicOption('-a, --exclude-all', (cfg) => {
-          const c = cfg as {
-            excludeDynamic?: boolean;
-            excludeEnv?: boolean;
-            excludeGlobal?: boolean;
-            excludePrivate?: boolean;
-            excludePublic?: boolean;
-          };
           const allOn =
-            !!c.excludeDynamic &&
-            ((!!c.excludeEnv && !!c.excludeGlobal) ||
-              (!!c.excludePrivate && !!c.excludePublic));
+            !!cfg.excludeDynamic &&
+            ((!!cfg.excludeEnv && !!cfg.excludeGlobal) ||
+              (!!cfg.excludePrivate && !!cfg.excludePublic));
           const suffix = allOn ? ' (default)' : '';
           return `exclude all dotenv variables from loading ON${suffix}`;
         })
@@ -191,7 +172,7 @@ export const attachRootOptions = (
         .createDynamicOption(
           '-z, --exclude-dynamic',
           (cfg) =>
-            `exclude dynamic dotenv variables from loading ${onOff(true, Boolean((cfg as { excludeDynamic?: boolean }).excludeDynamic))}`,
+            `exclude dynamic dotenv variables from loading ${onOff(true, Boolean(cfg.excludeDynamic))}`,
         )
         .conflicts('excludeDynamicOff'),
     )
@@ -200,7 +181,7 @@ export const attachRootOptions = (
         .createDynamicOption(
           '-Z, --exclude-dynamic-off',
           (cfg) =>
-            `exclude dynamic dotenv variables from loading ${onOff(false, !(cfg as { excludeDynamic?: boolean }).excludeDynamic)}`,
+            `exclude dynamic dotenv variables from loading ${onOff(false, !cfg.excludeDynamic)}`,
         )
         .conflicts('excludeDynamic'),
     )
@@ -209,7 +190,7 @@ export const attachRootOptions = (
         .createDynamicOption(
           '-n, --exclude-env',
           (cfg) =>
-            `exclude environment-specific dotenv variables from loading ${onOff(true, Boolean((cfg as { excludeEnv?: boolean }).excludeEnv))}`,
+            `exclude environment-specific dotenv variables from loading ${onOff(true, Boolean(cfg.excludeEnv))}`,
         )
         .conflicts('excludeEnvOff'),
     )
@@ -218,7 +199,7 @@ export const attachRootOptions = (
         .createDynamicOption(
           '-N, --exclude-env-off',
           (cfg) =>
-            `exclude environment-specific dotenv variables from loading ${onOff(false, !(cfg as { excludeEnv?: boolean }).excludeEnv)}`,
+            `exclude environment-specific dotenv variables from loading ${onOff(false, !cfg.excludeEnv)}`,
         )
         .conflicts('excludeEnv'),
     )
@@ -227,7 +208,7 @@ export const attachRootOptions = (
         .createDynamicOption(
           '-g, --exclude-global',
           (cfg) =>
-            `exclude global dotenv variables from loading ${onOff(true, Boolean((cfg as { excludeGlobal?: boolean }).excludeGlobal))}`,
+            `exclude global dotenv variables from loading ${onOff(true, Boolean(cfg.excludeGlobal))}`,
         )
         .conflicts('excludeGlobalOff'),
     )
@@ -236,7 +217,7 @@ export const attachRootOptions = (
         .createDynamicOption(
           '-G, --exclude-global-off',
           (cfg) =>
-            `exclude global dotenv variables from loading ${onOff(false, !(cfg as { excludeGlobal?: boolean }).excludeGlobal)}`,
+            `exclude global dotenv variables from loading ${onOff(false, !cfg.excludeGlobal)}`,
         )
         .conflicts('excludeGlobal'),
     )
@@ -245,7 +226,7 @@ export const attachRootOptions = (
         .createDynamicOption(
           '-r, --exclude-private',
           (cfg) =>
-            `exclude private dotenv variables from loading ${onOff(true, Boolean((cfg as { excludePrivate?: boolean }).excludePrivate))}`,
+            `exclude private dotenv variables from loading ${onOff(true, Boolean(cfg.excludePrivate))}`,
         )
         .conflicts('excludePrivateOff'),
     )
@@ -254,7 +235,7 @@ export const attachRootOptions = (
         .createDynamicOption(
           '-R, --exclude-private-off',
           (cfg) =>
-            `exclude private dotenv variables from loading ${onOff(false, !(cfg as { excludePrivate?: boolean }).excludePrivate)}`,
+            `exclude private dotenv variables from loading ${onOff(false, !cfg.excludePrivate)}`,
         )
         .conflicts('excludePrivate'),
     )
@@ -263,7 +244,7 @@ export const attachRootOptions = (
         .createDynamicOption(
           '-u, --exclude-public',
           (cfg) =>
-            `exclude public dotenv variables from loading ${onOff(true, Boolean((cfg as { excludePublic?: boolean }).excludePublic))}`,
+            `exclude public dotenv variables from loading ${onOff(true, Boolean(cfg.excludePublic))}`,
         )
         .conflicts('excludePublicOff'),
     )
@@ -272,7 +253,7 @@ export const attachRootOptions = (
         .createDynamicOption(
           '-U, --exclude-public-off',
           (cfg) =>
-            `exclude public dotenv variables from loading ${onOff(false, !(cfg as { excludePublic?: boolean }).excludePublic)}`,
+            `exclude public dotenv variables from loading ${onOff(false, !cfg.excludePublic)}`,
         )
         .conflicts('excludePublic'),
     );
@@ -284,7 +265,7 @@ export const attachRootOptions = (
         .createDynamicOption(
           '-l, --log',
           (cfg) =>
-            `console log loaded variables ${onOff(true, Boolean((cfg as { log?: boolean }).log))}`,
+            `console log loaded variables ${onOff(true, Boolean(cfg.log))}`,
         )
         .conflicts('logOff'),
     )
@@ -292,8 +273,7 @@ export const attachRootOptions = (
       program
         .createDynamicOption(
           '-L, --log-off',
-          (cfg) =>
-            `console log loaded variables ${onOff(false, !(cfg as { log?: boolean }).log)}`,
+          (cfg) => `console log loaded variables ${onOff(false, !cfg.log)}`,
         )
         .conflicts('log'),
     );
@@ -381,7 +361,7 @@ export const attachRootOptions = (
     .addOption(
       program
         .createDynamicOption('--entropy-warn', (cfg) => {
-          const warn = (cfg as { warnEntropy?: boolean }).warnEntropy;
+          const warn = cfg.warnEntropy;
           // Default is effectively ON when warnEntropy is true or undefined.
           return `enable entropy warnings${warn === false ? '' : ' (default on)'}`;
         })
@@ -392,7 +372,7 @@ export const attachRootOptions = (
         .createDynamicOption(
           '--entropy-warn-off',
           (cfg) =>
-            `disable entropy warnings${(cfg as { warnEntropy?: boolean }).warnEntropy === false ? ' (default)' : ''}`,
+            `disable entropy warnings${cfg.warnEntropy === false ? ' (default)' : ''}`,
         )
         .conflicts('entropyWarn'),
     )
