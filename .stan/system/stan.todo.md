@@ -277,4 +277,8 @@ unknown cast. • batch/defaultCmdAction: removed redundant shell casts.
 — Typecheck/lint follow-up: cast defaultsDeep results via unknown to concrete
   option types in GetDotenvOptions (fix TS2352 under exact optionals) and drop
   redundant typeof key check in Object.entries() filter (fix no‑unnecessary‑
-  condition).
+  condition).
+
+— Lint cleanup (final): remove an unnecessary condition in the vars object-map
+  branch of getDotenvCliOptions2Options (the filter was redundant for a
+  Record<string, string | undefined>); rely on the later undefined-drop step.

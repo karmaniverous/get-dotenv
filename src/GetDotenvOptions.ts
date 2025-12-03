@@ -197,11 +197,9 @@ export const getDotenvCliOptions2Options = ({
     >;
     parsedVars = Object.fromEntries(kvPairs);
   } else if (vars && typeof vars === 'object' && !Array.isArray(vars)) {
-    // Keep only string or undefined values to match ProcessEnv.
-    const entries = Object.entries(vars).filter(
-      ([, v]) => typeof v === 'string' || v === undefined,
-    );
-    parsedVars = Object.fromEntries(entries);
+    // Accept provided object map of string | undefined; drop undefined values
+    // in the normalization step below to produce a ProcessEnv-compatible bag.
+    parsedVars = Object.fromEntries(Object.entries(vars));
   }
 
   // Drop undefined-valued entries at the converter stage to match ProcessEnv
