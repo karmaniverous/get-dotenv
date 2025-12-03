@@ -117,13 +117,11 @@ export const helloPlugin = () =>
       cli
         .ns('hello')
         .description('Say hello with current dotenv context')
-        .dynamicOption(
-          '--loud',
-          (cfg) => {
-            const on = !!(cfg.plugins as { hello?: { loud?: boolean } })?.hello?.loud;
-            return `print greeting in ALL CAPS${on ? ' (default)' : ''}`;
-          },
-        )
+        .dynamicOption('--loud', (cfg) => {
+          const on = !!(cfg.plugins as { hello?: { loud?: boolean } })?.hello
+            ?.loud;
+          return `print greeting in ALL CAPS${on ? ' (default)' : ''}`;
+        })
         .action((_args, _opts) => {
           // …
         });
@@ -135,7 +133,8 @@ Or build the Option first:
 
 ```ts
 const opt = (cli as any).createDynamicOption('--color <string>', (cfg) => {
-  const col = (cfg.plugins as { hello?: { color?: string } })?.hello?.color || 'blue';
+  const col =
+    (cfg.plugins as { hello?: { color?: string } })?.hello?.color || 'blue';
   return `text color (default: ${JSON.stringify(col)})`;
 });
 cli.addOption(opt);
@@ -144,4 +143,9 @@ cli.addOption(opt);
 Notes:
 
 - Plugin config lives under plugins.<id> (see “Plugin config” in Config files & overlays); strings are deep‑interpolated once against { ...ctx.dotenv, ...process.env } (process.env wins for plugin slices).
-- Use concise labels for ON/OFF toggles (e.g., “(default)”) and “(default: "...")” for string defaults.
+- Use concise labels for ON/OFF toggles (e.g., “(default)”) and “(default: "...")” for string defaults.
+
+See also:
+
+- Config files & overlays → “Plugin config” for where defaults come from and how they’re merged.
+- Shell execution behavior for examples of dynamic default labels at root and in plugins.

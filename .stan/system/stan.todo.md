@@ -4,10 +4,6 @@ When updated: 2025-10-19T00:00:00Z
 
 ## Next up (near‑term, actionable)
 
-- Remove deprecated Zod usage
-  - Replace any lingering z.any() placeholders in templates/docs with z.unknown().
-  - Use .catchall(z.unknown()) instead of .passthrough() in examples/doc snippets.
-
 - Tests and CI updates
   - Register/openapi/package outputs remain byte-for-byte identical.
   - Dev: stage precedence matrix; inline/offline spawn-env normalization; Windows CI smoke.
@@ -17,11 +13,13 @@ When updated: 2025-10-19T00:00:00Z
   - CLI: clarify host-based design; new commands (cmd/batch); global flags; getdotenv.config.\* surfaces.
   - Dev guide: stage precedence; recommend plugins.smoz.stage mapping; strict/diagnostics notes.
   - Troubleshooting: add safe tracing and quoting recipes for cmd; clarify Windows path hygiene is handled by spawn-env.
-  - Config Files & Overlays: (follow-ups) ensure cross-links to plugin config and dynamic help examples are complete.
+  - Config Files & Overlays: follow-ups as needed (major cross-links landed).
 
 ## Completed (recent)
 
 **CRITICAL: Append-only list. Add new completed items at the end. Prune old completed entries from the top. Do not edit existing entries.**
+
+— Zod cleanup (docs): added guidance to prefer z.unknown over z.any and .catchall(z.unknown()) over .passthrough(); cross-linked relevant sections.
 
 — Spawn‑env normalization everywhere: verified cmd and aws already use buildSpawnEnv; implemented for batch and demo (child env injection normalized across all CLI child exec paths).
 
@@ -48,7 +46,6 @@ When updated: 2025-10-19T00:00:00Z
   and smoke runs quiet by default; enable with GETDOTENV_DEBUG=1 when needed.
 - Root help (dynamic): migrated -l/--log and --entropy-warn toggles to dynamicOption,
   showing effective defaults from resolved config (fallback to static when unavailable).
-- Help path perf/stability: top-level "-h/--help" now resolves config with
 - Help path perf/stability: top-level "-h/--help" now resolves config with
   runAfterResolve=false to skip plugin afterResolve hooks during help rendering,
   preventing long-running side-effects and fixing help-time test timeouts.

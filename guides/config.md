@@ -161,6 +161,11 @@ Notes:
 - Keep plugin config focused on data. Any per‑plugin scripts may use the object form `{ cmd, shell }` to override shell behavior for that script only.
 - Validation: export and attach a Zod schema in your plugin (the host validates the merged slice before afterResolve).
 
+See also:
+
+- Authoring → Lifecycle: “Dynamic option descriptions” for how to surface plugin defaults in help (`dynamicOption`).
+- Shell execution behavior: dynamic default labels for root and plugin flags.
+
 ## Diagnostics (redaction and entropy)
 
 Presentation‑only diagnostics help audit values without altering runtime behavior:
