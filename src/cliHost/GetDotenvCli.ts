@@ -53,7 +53,7 @@ export class GetDotenvCli<TOptions extends GetDotenvOptions = GetDotenvOptions>
   implements GetDotenvCliPublic<TOptions>
 {
   /** Registered top-level plugins (composition happens via .use()) */
-  private _plugins: GetDotenvCliPlugin[] = [];
+  private _plugins: GetDotenvCliPlugin<TOptions>[] = [];
   /** One-time installation guard */
   private _installed = false;
   /** Optional header line to prepend in help output */
@@ -80,9 +80,8 @@ export class GetDotenvCli<TOptions extends GetDotenvOptions = GetDotenvOptions>
     // we will insert App/Plugin sections before Commands in helpInformation().
     this.configureHelp({
       visibleOptions: (cmd: Command): Option[] => {
-        const all = cmd.options ?? [];
-        const parent = cmd.parent ?? null;
-        const isRoot = parent === null;
+        const all = cmd.options;
+        const isRoot = cmd.parent === null;
         const list = isRoot
           ? all.filter((opt) => {
               const group = GROUP_TAG.get(opt);
@@ -206,7 +205,7 @@ export class GetDotenvCli<TOptions extends GetDotenvOptions = GetDotenvOptions>
    */
   evaluateDynamicOptions(resolved: ResolvedHelpConfig): void {
     const visit = (cmd: Command) => {
-      const arr = cmd.options ?? [];
+      const arr = cmd.options;
       for (const o of arr) {
         const dyn = DYN_DESC.get(o);
         if (typeof dyn === 'function') {
@@ -219,8 +218,7 @@ export class GetDotenvCli<TOptions extends GetDotenvOptions = GetDotenvOptions>
           }
         }
       }
-      const children = (cmd.commands ?? []) as Command[];
-      for (const c of children) visit(c);
+      for (const c of cmd.commands) visit(c);
     };
     visit(this);
   }
@@ -258,11 +256,9 @@ export class GetDotenvCli<TOptions extends GetDotenvOptions = GetDotenvOptions>
   tagAppOptions<T>(fn: (root: Command) => T): T {
     const root = this as Command;
     const originalAddOption = root.addOption.bind(root);
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    const originalOption = root.option.bind(root);
     const tagLatest = (cmd: Command, group: string) => {
       const optsArr = cmd.options;
-      if (Array.isArray(optsArr) && optsArr.length > 0) {
+      if (optsArr.length > 0) {
         const last = optsArr[optsArr.length - 1] as Option;
         this.setOptionGroup(last, group);
       }
@@ -271,21 +267,10 @@ export class GetDotenvCli<TOptions extends GetDotenvOptions = GetDotenvOptions>
       (root as GetDotenvCli).setOptionGroup(opt, 'app');
       return originalAddOption(opt);
     } as Command['addOption'];
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    root.option = function patchedOption(
-      this: Command,
-      ...args: Parameters<Command['option']>
-    ) {
-      const ret = originalOption(...args);
-      tagLatest(this, 'app');
-      return ret;
-    } as Command['option'];
     try {
       return fn(root);
     } finally {
       root.addOption = originalAddOption;
-      // eslint-disable-next-line @typescript-eslint/no-deprecated
-      root.option = originalOption;
     }
   }
 
@@ -418,7 +403,7 @@ export class GetDotenvCli<TOptions extends GetDotenvOptions = GetDotenvOptions>
 
   // Render App/Plugin grouped options (used by helpInformation override).
   #renderOptionGroups(cmd: Command): string {
-    const all = cmd.options ?? [];
+    const all = cmd.options;
     type Row = { flags: string; description: string };
     const byGroup = new Map<string, Row[]>();
     for (const o of all) {
@@ -428,7 +413,7 @@ export class GetDotenvCli<TOptions extends GetDotenvOptions = GetDotenvOptions>
       const rows = byGroup.get(g) ?? [];
       rows.push({
         flags: opt.flags,
-        description: opt.description ?? '',
+        description: opt.description,
       });
       byGroup.set(g, rows);
     }

@@ -28,6 +28,7 @@ export type GetDotenvCliPublic<
   getCtx: () => GetDotenvCliCtx<TOptions> | undefined;
   resolveAndLoad: (
     customOptions?: Partial<TOptions>,
+    opts?: { runAfterResolve?: boolean },
   ) => Promise<GetDotenvCliCtx<TOptions>>;
   setOptionGroup: (opt: Option, group: string) => void;
 };

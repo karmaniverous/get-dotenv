@@ -209,4 +209,17 @@ Changed createCommand to `new GetDotenvCli(name)` (explicit semantics). Host now
 implements GetDotenvCliPublic. Made GetDotenvCliPlugin generic over TOptions and
 updated definePlugin. Replaced remaining “unknown” Commander casts with typed
 properties (options/commands/parent/flags/description). This removes a large
-portion of casts from GetDotenvCli without altering behavior.
+portion of casts from GetDotenvCli without altering behavior.
+
+— Type plumbing and help parity:
+  - Updated GetDotenvCliPublic.resolveAndLoad to accept the optional opts argument
+    (runAfterResolve) and to be generic over TOptions. Matches the class method and
+    fixes TS2345 when passing `this` into plugin afterResolve.
+  - Parameterized host plugin storage: private _plugins: GetDotenvCliPlugin<TOptions>[].
+    Aligns generics end-to-end and eliminates resolveAndLoad signature mismatch.
+  - Root help grouping restored: the cmd parent alias option is now tagged via
+    cli.setOptionGroup(..., 'plugin:cmd'), so “Plugin options — cmd” appears in
+    root help. E2E “root -h” assertion passes.
+  - Lint cleanup: removed unnecessary ??/?. on typed Commander fields (options,
+    commands, parent, description). Reworked tagAppOptions to avoid wrapping
+    Command.option (deprecated); we tag via addOption + setOptionGroup only.

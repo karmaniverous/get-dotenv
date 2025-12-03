@@ -7,6 +7,7 @@ const dbg = (...args: unknown[]) => {
 };
 import type { GetDotenvCli } from '@karmaniverous/get-dotenv/cliHost';
 import type { Command } from 'commander';
+import type { Option } from 'commander';
 
 import { baseRootOptionDefaults } from '../../cliCore/defaults';
 import { runCommand } from '../../cliCore/exec';
@@ -47,15 +48,11 @@ export const attachParentAlias = (
     aliasSpec.description ??
     'alias of cmd subcommand; provide command tokens (variadic)';
   cli.option(aliasSpec.flags, desc);
-  // Tag the just-added parent option for grouped help rendering.
-  try {
-    const optsArr = (cli as unknown as { options?: unknown[] }).options;
-    if (Array.isArray(optsArr) && optsArr.length > 0) {
-      const last = optsArr[optsArr.length - 1] as Record<string, unknown>;
-      last.__group = 'plugin:cmd';
-    }
-  } catch {
-    /* noop */
+  // Tag the just-added parent option for grouped help rendering at the root.
+  const optsArr = (cli as unknown as { options: Option[] }).options;
+  if (optsArr.length > 0) {
+    const last = optsArr[optsArr.length - 1] as Option;
+    (cli as unknown as GetDotenvCli).setOptionGroup(last, 'plugin:cmd');
   }
 
   // Shared alias executor for either preAction or preSubcommand hooks.

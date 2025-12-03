@@ -75,14 +75,8 @@ export function createCli(opts: CreateCliOptions = {}): {
   // Apply to root and recursively to subcommands so all help paths are normalized.
   program.configureOutput(outputCfg);
   const applyOutputRecursively = (cmd: Command) => {
-    cmd.configureOutput(
-      outputCfg as unknown as {
-        writeOut: (s: string) => void;
-        writeErr: (s: string) => void;
-      },
-    );
-    const kids = (cmd as unknown as { commands?: Command[] }).commands ?? [];
-    for (const child of kids) applyOutputRecursively(child);
+    cmd.configureOutput(outputCfg);
+    for (const child of cmd.commands) applyOutputRecursively(child);
   };
   applyOutputRecursively(program as unknown as Command);
   // Install base root flags and included plugins; resolve context once per run.
@@ -128,12 +122,10 @@ export function createCli(opts: CreateCliOptions = {}): {
       if (helpIdx >= 0) {
         // Build a set of known subcommand names/aliases on the root.
         const subs = new Set<string>();
-        const cmds =
-          (
-            program as unknown as {
-              commands?: Array<{ name(): string; aliases(): string[] }>;
-            }
-          ).commands ?? [];
+        const cmds = program.commands as Array<{
+          name(): string;
+          aliases(): string[];
+        }>;
         for (const c of cmds) {
           subs.add(c.name());
           for (const a of c.aliases()) subs.add(a);
