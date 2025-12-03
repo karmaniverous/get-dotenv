@@ -1,6 +1,6 @@
 # Development Plan
 
-When updated: 2025-10-19T00:00:00Z
+When updated: 2025-12-03T00:00:00Z
 
 ## Next up (near‑term, actionable)
 
@@ -139,3 +139,12 @@ to cases without a preceding subcommand token. Reordered help sections to
 Options → Plugin options → Commands at every command level. Added E2E tests:
 subcommand "-h" prints subcommand help; root help shows "Plugin options — cmd"
 before "Commands".
+
+— Help grouping (subcommand): hide self plugin group on subcommand help
+("Plugin options — <self>") to avoid duplication. Continue to render only
+child‑injected plugin groups at the current level. Added assertion to batch -h
+E2E ensuring "Plugin options — batch" is absent.
+— AWS help (subcommand): removed Commander showGlobalOptions on the aws
+subcommand so "getdotenv aws -h" shows only aws options (and any child
+plugin groups), not the root/global options block. Added E2E assertion to
+ensure no "Global Options:" section and no "Plugin options — aws" is shown.

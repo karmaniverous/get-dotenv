@@ -50,7 +50,6 @@ export const cmdPlugin = (options: CmdPluginOptions = {}) =>
         .description(
           'Execute command according to the --shell option, conflicts with --command option (default subcommand)',
         )
-        .configureHelp({ showGlobalOptions: true })
         .enablePositionalOptions()
         .passThroughOptions()
         .argument('[command...]')

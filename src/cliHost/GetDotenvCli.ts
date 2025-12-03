@@ -453,11 +453,15 @@ export class GetDotenvCli<
     const pluginKeys = Array.from(byGroup.keys()).filter((k) =>
       k.startsWith('plugin:'),
     );
+    const currentName =
+      (cmd as unknown as { name?: () => string }).name?.() ?? '';
     pluginKeys.sort((a, b) => a.localeCompare(b));
     for (const k of pluginKeys) {
       const id = k.slice('plugin:'.length) || '(unknown)';
       const rows = byGroup.get(k) ?? [];
-      if (rows.length > 0) {
+      // Do not show a "Plugin options — <self>" section on the command that owns those options.
+      // Only child-injected plugin groups should render at this level.
+      if (rows.length > 0 && id !== currentName) {
         out += renderRows(`Plugin options — ${id}`, rows);
       }
     }

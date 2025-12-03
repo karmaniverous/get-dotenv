@@ -19,6 +19,21 @@ describe('E2E help (subcommand and ordering)', () => {
     });
     expect(exitCode).toBe(0);
     expect(stdout).toMatch(/Usage:\s+getdotenv batch/i);
+    // Subcommand help should not render a self "Plugin options — batch" section.
+    expect(stdout.includes('Plugin options — batch')).toBe(false);
+  }, 30000);
+
+  it('aws -h prints aws help without global options and no self plugin group', async () => {
+    const { stdout, exitCode } = await execa(nodeBin, CLI('aws', '-h'), {
+      env: { ...process.env, GETDOTENV_STDIO: 'pipe' },
+    });
+    expect(exitCode).toBe(0);
+    // Subcommand usage
+    expect(stdout).toMatch(/Usage:\s+getdotenv aws/i);
+    // No Commander "Global Options:" block (we do not show root flags here)
+    expect(stdout.includes('Global Options:')).toBe(false);
+    // No self plugin group duplication
+    expect(stdout.includes('Plugin options — aws')).toBe(false);
   }, 30000);
 
   it('cmd -h prints cmd help', async () => {

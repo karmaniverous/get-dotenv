@@ -20,7 +20,6 @@ export const awsPlugin = () =>
         .description(
           'Establish an AWS session and optionally forward to the AWS CLI',
         )
-        .configureHelp({ showGlobalOptions: true })
         .enablePositionalOptions()
         .passThroughOptions()
         .allowUnknownOption(true)
