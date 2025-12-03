@@ -5,6 +5,7 @@ import path from 'path';
 import { runCommand } from '../../cliCore/exec';
 import { buildSpawnEnv } from '../../cliCore/spawnEnv';
 import type { Logger } from '../../GetDotenvOptions';
+
 type ExecShellCommandBatchOptions = {
   globs: string;
   logger: Logger;
@@ -53,6 +54,7 @@ const globPaths = async ({
 export const execShellCommandBatch = async ({
   command,
   getDotenvCliOptions,
+  dotenvEnv,
   globs,
   ignoreErrors,
   list,
@@ -76,7 +78,9 @@ export const execShellCommandBatch = async ({
     process.env.GETDOTENV_STDIO === 'pipe' ||
     Boolean(
       (getDotenvCliOptions as { capture?: boolean } | undefined)?.capture,
-    ); // Require a command only when not listing. In list mode, a command is optional.
+    );
+
+  // Require a command only when not listing. In list mode, a command is optional.
   if (!command && !list) {
     logger.error(`No command provided. Use --command or --list.`);
     process.exit(0);
@@ -139,23 +143,26 @@ export const execShellCommandBatch = async ({
         (typeof command === 'string' && command.length > 0) ||
         (Array.isArray(command) && command.length > 0);
       if (hasCmd) {
-        // Compose child env: ctx.dotenv (when provided) + serialized merged CLI options
-        const envMerged: Record<string, string | undefined> | undefined =
-          getDotenvCliOptions !== undefined || dotenvEnv
-            ? {
-                ...(dotenvEnv ?? {}),
-                ...(getDotenvCliOptions !== undefined
-                  ? {
-                      getDotenvCliOptions: JSON.stringify(getDotenvCliOptions),
-                    }
-                  : {}),
-              }
-            : undefined;
+        // Compose child env overlay from dotenv (drop undefined) and merged options
+        const overlay: Record<string, string> = {};
+        if (dotenvEnv) {
+          for (const [k, v] of Object.entries(dotenvEnv)) {
+            if (typeof v === 'string') overlay[k] = v;
+          }
+        }
+        if (getDotenvCliOptions !== undefined) {
+          try {
+            overlay.getDotenvCliOptions = JSON.stringify(getDotenvCliOptions);
+          } catch {
+            // best-effort: omit if serialization fails
+          }
+        }
+
         await runCommand(command, shell, {
           cwd: path,
           env: buildSpawnEnv(
             process.env,
-            envMerged,
+            overlay,
           ) as unknown as NodeJS.ProcessEnv,
           stdio: capture ? 'pipe' : 'inherit',
         });
