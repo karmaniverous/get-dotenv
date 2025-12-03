@@ -132,3 +132,10 @@ When updated: 2025-10-19T00:00:00Z
 - CI hooks: verify:bundle and verify:tarball are already included under release-it after:init; no additional CI wiring needed at this time.
 
 - Docs: shipped plugins index typo — fixed "imit" → "init" in guides/shipped/index.md.
+
+— Help behavior: route "getdotenv <plugin> -h" to the plugin help for all
+plugins (shipped and third‑party) by gating the top‑level -h short‑circuit
+to cases without a preceding subcommand token. Reordered help sections to
+Options → Plugin options → Commands at every command level. Added E2E tests:
+subcommand "-h" prints subcommand help; root help shows "Plugin options — cmd"
+before "Commands".

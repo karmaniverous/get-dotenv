@@ -1,4 +1,4 @@
-import { type AddHelpTextContext, Command, Option } from 'commander';
+import { Command, Option } from 'commander';
 import fs from 'fs-extra';
 import { packageDirectory } from 'package-directory';
 import { fileURLToPath } from 'url';
@@ -70,7 +70,7 @@ export class GetDotenvCli<
     // child uses passThroughOptions.
     this.enablePositionalOptions();
     // Configure grouped help: show only base options in default "Options";
-    // append App/Plugin sections after default help.
+    // we will insert App/Plugin sections before Commands in helpInformation().
     this.configureHelp({
       visibleOptions: (cmd: Command): Option[] => {
         const all = (cmd as unknown as { options?: Option[] }).options ?? [];
@@ -82,7 +82,7 @@ export class GetDotenvCli<
               const group = (opt as unknown as { __group?: string }).__group;
               return group === 'base';
             })
-          : all.slice(); // subcommands: show all options
+          : all.slice(); // subcommands: show all options (their own "Options:" block)
         // Sort: short-aliased options first, then long-only; stable by flags.
         const hasShort = (opt: Option) => {
           const flags = (opt as unknown as { flags?: string }).flags ?? '';
@@ -103,9 +103,6 @@ export class GetDotenvCli<
       const header = this[HELP_HEADER_SYMBOL];
       return header && header.length > 0 ? `${header}\n\n` : '';
     });
-    this.addHelpText('afterAll', (ctx: AddHelpTextContext) =>
-      this.#renderOptionGroups(ctx.command),
-    );
     // Skeleton preSubcommand hook: produce a context if absent, without
     // mutating process.env. The passOptions hook (when installed) will    // compute the final context using merged CLI options; keeping
     // loadProcess=false here avoids leaking dotenv values into the parent
@@ -337,6 +334,30 @@ export class GetDotenvCli<
     }
     return this;
   }
+
+  /**
+   * Insert grouped plugin/app options between "Options" and "Commands" for
+   * hybrid ordering. Applies to root and any parent command.
+   */
+  override helpInformation(): string {
+    // Base help text first (includes beforeAll/after hooks).
+    const base = super.helpInformation();
+    const groups = this.#renderOptionGroups(this as unknown as Command);
+    const block = typeof groups === 'string' ? groups.trim() : '';
+    if (!block) return base;
+
+    // Insert just before "Commands:" when present.
+    const marker = '\nCommands:';
+    const idx = base.indexOf(marker);
+    if (idx >= 0) {
+      const toInsert = groups.startsWith('\n') ? groups : `\n${groups}`;
+      return `${base.slice(0, idx)}${toInsert}${base.slice(idx)}`;
+    }
+    // Otherwise append.
+    const sep = base.endsWith('\n') || groups.startsWith('\n') ? '' : '\n';
+    return `${base}${sep}${groups}`;
+  }
+
   /**
    * Register a plugin for installation (parent level).
    * Installation occurs on first resolveAndLoad() (or explicit install()).
@@ -382,7 +403,7 @@ export class GetDotenvCli<
     for (const p of this._plugins) await run(p);
   }
 
-  // Render App/Plugin grouped options appended after default help.
+  // Render App/Plugin grouped options (used by helpInformation override).
   #renderOptionGroups(cmd: Command): string {
     const all = (cmd as unknown as { options?: unknown[] }).options ?? [];
     type Row = { flags: string; description: string };

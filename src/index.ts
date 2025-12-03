@@ -73,44 +73,62 @@ export function createCli(opts: CreateCliOptions = {}): {
 
   return {
     async run(argv: string[]) {
-      // Always short-circuit help to avoid Commander-triggered process.exit
-      // across environments (CJS/ESM) and to return immediately under dynamic
-      // ESM without performing extra IO. Before printing help, compute a
-      // read-only resolved config and evaluate dynamic descriptions.
-      // Note: Only suppress printing under tests when not explicitly piping.
-      if (argv.some((a) => a === '-h' || a === '--help')) {
-        await program.brand({
-          name: alias,
-          importMetaUrl: import.meta.url,
-          description: 'Base CLI.',
-          ...(typeof opts.branding === 'string' && opts.branding.length > 0
-            ? { helpHeader: opts.branding }
-            : {}),
-        });
-        // Resolve context once without log/side-effects for help rendering.
-        const ctx = await program.resolveAndLoad(
-          {
-            loadProcess: false,
-            log: false,
-          },
-          { runAfterResolve: false },
-        );
-        (program as unknown as GetDotenvCli).evaluateDynamicOptions({
-          ...(ctx.optionsResolved as unknown as Record<string, unknown>),
-          plugins: ctx.pluginConfigs ?? {},
-        } as unknown as ResolvedHelpConfig);
-        // Suppress noisy help output only for in-process tests; allow E2E to capture.
-        const piping =
-          process.env.GETDOTENV_STDIO === 'pipe' ||
-          process.env.GETDOTENV_STDOUT === 'pipe'; // future-proof alias
-        if (underTests && !piping) {
-          // Force materialization of the help text without emitting to stdout.
-          // This preserves any lazy evaluation side-effects while keeping logs quiet.
-          void program.helpInformation();
-        } else {
-          program.outputHelp();
+      // Help handling:
+      // - Short-circuit ONLY for true top-level -h/--help (no subcommand before flag).
+      // - If a subcommand token appears before -h/--help, defer to Commander
+      //   to render that subcommand's help.
+      const helpIdx = argv.findIndex((a) => a === '-h' || a === '--help');
+      if (helpIdx >= 0) {
+        // Build a set of known subcommand names/aliases on the root.
+        const subs = new Set<string>();
+        const cmds =
+          (
+            program as unknown as {
+              commands?: Array<{ name(): string; aliases(): string[] }>;
+            }
+          ).commands ?? [];
+        for (const c of cmds) {
+          subs.add(c.name());
+          for (const a of c.aliases()) subs.add(a);
         }
-        return;
+        const hasSubBeforeHelp = argv
+          .slice(0, helpIdx)
+          .some((tok) => subs.has(tok));
+
+        if (!hasSubBeforeHelp) {
+          await program.brand({
+            name: alias,
+            importMetaUrl: import.meta.url,
+            description: 'Base CLI.',
+            ...(typeof opts.branding === 'string' && opts.branding.length > 0
+              ? { helpHeader: opts.branding }
+              : {}),
+          });
+          // Resolve context once without side effects for help rendering.
+          const ctx = await program.resolveAndLoad(
+            {
+              loadProcess: false,
+              log: false,
+            },
+            { runAfterResolve: false },
+          );
+          (program as unknown as GetDotenvCli).evaluateDynamicOptions({
+            ...(ctx.optionsResolved as unknown as Record<string, unknown>),
+            plugins: ctx.pluginConfigs ?? {},
+          } as unknown as ResolvedHelpConfig);
+          // Suppress output only during unit tests; allow E2E to capture.
+          const piping =
+            process.env.GETDOTENV_STDIO === 'pipe' ||
+            process.env.GETDOTENV_STDOUT === 'pipe';
+          if (underTests && !piping) {
+            void program.helpInformation();
+          } else {
+            program.outputHelp();
+          }
+          return;
+        }
+        // Subcommand token exists before -h: fall through to normal parsing,
+        // letting Commander print that subcommand's help.
       }
       await program.brand({
         name: alias,
