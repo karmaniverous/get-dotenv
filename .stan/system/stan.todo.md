@@ -143,8 +143,13 @@ before "Commands".
 — Help grouping (subcommand): hide self plugin group on subcommand help
 ("Plugin options — <self>") to avoid duplication. Continue to render only
 child‑injected plugin groups at the current level. Added assertion to batch -h
-E2E ensuring "Plugin options — batch" is absent.
+E2E ensuring "Plugin options — batch" is absent.
+
 — AWS help (subcommand): removed Commander showGlobalOptions on the aws
 subcommand so "getdotenv aws -h" shows only aws options (and any child
 plugin groups), not the root/global options block. Added E2E assertion to
-ensure no "Global Options:" section and no "Plugin options — aws" is shown.
+ensure no "Global Options:" section and no "Plugin options — aws" is shown.
+
+— Help trailing blank line: ensure helpInformation() for root and subcommands
+always ends with a blank line for prompt separation. Added E2E assertions
+to verify two trailing newlines on batch/aws/cmd/root help output.

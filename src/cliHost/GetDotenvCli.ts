@@ -344,18 +344,30 @@ export class GetDotenvCli<
     const base = super.helpInformation();
     const groups = this.#renderOptionGroups(this as unknown as Command);
     const block = typeof groups === 'string' ? groups.trim() : '';
-    if (!block) return base;
+    let out = base;
+    if (!block) {
+      // Ensure a trailing blank line even when no extra groups render.
+      if (!out.endsWith('\n\n'))
+        out = out.endsWith('\n') ? `${out}\n` : `${out}\n\n`;
+      return out;
+    }
 
     // Insert just before "Commands:" when present.
     const marker = '\nCommands:';
     const idx = base.indexOf(marker);
     if (idx >= 0) {
       const toInsert = groups.startsWith('\n') ? groups : `\n${groups}`;
-      return `${base.slice(0, idx)}${toInsert}${base.slice(idx)}`;
+      out = `${base.slice(0, idx)}${toInsert}${base.slice(idx)}`;
+    } else {
+      // Otherwise append.
+      const sep = base.endsWith('\n') || groups.startsWith('\n') ? '' : '\n';
+      out = `${base}${sep}${groups}`;
     }
-    // Otherwise append.
-    const sep = base.endsWith('\n') || groups.startsWith('\n') ? '' : '\n';
-    return `${base}${sep}${groups}`;
+    // Ensure a trailing blank line for prompt separation.
+    if (!out.endsWith('\n\n')) {
+      out = out.endsWith('\n') ? `${out}\n` : `${out}\n\n`;
+    }
+    return out;
   }
 
   /**
