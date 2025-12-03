@@ -122,11 +122,7 @@ export function createCli(opts: CreateCliOptions = {}): {
       if (helpIdx >= 0) {
         // Build a set of known subcommand names/aliases on the root.
         const subs = new Set<string>();
-        const cmds = program.commands as Array<{
-          name(): string;
-          aliases(): string[];
-        }>;
-        for (const c of cmds) {
+        for (const c of program.commands) {
           subs.add(c.name());
           for (const a of c.aliases()) subs.add(a);
         }

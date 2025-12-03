@@ -222,4 +222,13 @@ portion of casts from GetDotenvCli without altering behavior.
     root help. E2E “root -h” assertion passes.
   - Lint cleanup: removed unnecessary ??/?. on typed Commander fields (options,
     commands, parent, description). Reworked tagAppOptions to avoid wrapping
-    Command.option (deprecated); we tag via addOption + setOptionGroup only.
+    Command.option (deprecated); we tag via addOption + setOptionGroup only.
+
+— Generic alignment & lint cleanup (follow-up):
+  - computeContext: plugins parameter is now GetDotenvCliPlugin<TOptions>[],
+    fixing plugin array variance and afterResolve typing at the class seam.
+  - GetDotenvCli: use(plugin: GetDotenvCliPlugin<TOptions>); _runAfterResolve
+    invokes p.afterResolve(this, ctx) without casts; child traversal typed.
+  - Removed unnecessary nullish checks on typed fields and an unused local in
+    tagAppOptions; use cmd.name() directly. index.ts no longer casts readonly
+    commands; iterate directly to satisfy ts/eslint.

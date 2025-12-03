@@ -90,11 +90,11 @@ export class GetDotenvCli<TOptions extends GetDotenvOptions = GetDotenvOptions>
           : all.slice(); // subcommands: show all options (their own "Options:" block)
         // Sort: short-aliased options first, then long-only; stable by flags.
         const hasShort = (opt: Option) => {
-          const flags = opt.flags ?? '';
+          const flags = opt.flags;
           // Matches "-x," or starting "-x " before any long
           return /(^|\s|,)-[A-Za-z]/.test(flags);
         };
-        const byFlags = (opt: Option) => opt.flags ?? '';
+        const byFlags = (opt: Option) => opt.flags;
         list.sort((a, b) => {
           const aS = hasShort(a) ? 1 : 0;
           const bS = hasShort(b) ? 1 : 0;
@@ -256,13 +256,6 @@ export class GetDotenvCli<TOptions extends GetDotenvOptions = GetDotenvOptions>
   tagAppOptions<T>(fn: (root: Command) => T): T {
     const root = this as Command;
     const originalAddOption = root.addOption.bind(root);
-    const tagLatest = (cmd: Command, group: string) => {
-      const optsArr = cmd.options;
-      if (optsArr.length > 0) {
-        const last = optsArr[optsArr.length - 1] as Option;
-        this.setOptionGroup(last, group);
-      }
-    };
     root.addOption = function patchedAdd(this: Command, opt: Option) {
       (root as GetDotenvCli).setOptionGroup(opt, 'app');
       return originalAddOption(opt);
@@ -363,10 +356,10 @@ export class GetDotenvCli<TOptions extends GetDotenvOptions = GetDotenvOptions>
    * Register a plugin for installation (parent level).
    * Installation occurs on first resolveAndLoad() (or explicit install()).
    */
-  use(plugin: GetDotenvCliPlugin): this {
+  use(plugin: GetDotenvCliPlugin<TOptions>): this {
     this._plugins.push(plugin);
     // Immediately run setup so subcommands exist before parsing.
-    const setupOne = (p: GetDotenvCliPlugin) => {
+    const setupOne = (p: GetDotenvCliPlugin<TOptions>) => {
       const maybe = p.setup(this);
       // Best-effort: ignore async completion for registration-only setup.
       void maybe;
@@ -393,9 +386,8 @@ export class GetDotenvCli<TOptions extends GetDotenvOptions = GetDotenvOptions>
   private async _runAfterResolve(
     ctx: GetDotenvCliCtx<TOptions>,
   ): Promise<void> {
-    const run = async (p: GetDotenvCliPlugin) => {
-      if (p.afterResolve)
-        await p.afterResolve(this, ctx as unknown as GetDotenvCliCtx);
+    const run = async (p: GetDotenvCliPlugin<TOptions>) => {
+      if (p.afterResolve) await p.afterResolve(this, ctx);
       for (const child of p.children) await run(child);
     };
     for (const p of this._plugins) await run(p);
@@ -447,7 +439,7 @@ export class GetDotenvCli<TOptions extends GetDotenvOptions = GetDotenvOptions>
     const pluginKeys = Array.from(byGroup.keys()).filter((k) =>
       k.startsWith('plugin:'),
     );
-    const currentName = cmd.name?.() ?? '';
+    const currentName = cmd.name();
     pluginKeys.sort((a, b) => a.localeCompare(b));
     for (const k of pluginKeys) {
       const id = k.slice('plugin:'.length) || '(unknown)';

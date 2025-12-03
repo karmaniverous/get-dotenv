@@ -26,12 +26,13 @@ import type { GetDotenvCliCtx } from './GetDotenvCli';
  *
  * @param customOptions - Partial options from the current invocation.
  * @param plugins - Installed plugins (for config validation).
- * @param hostMetaUrl - import.meta.url of the host module (for packaged root discovery). */
+ * @param hostMetaUrl - import.meta.url of the host module (for packaged root discovery).
+ */
 export const computeContext = async <
   TOptions extends GetDotenvOptions = GetDotenvOptions,
 >(
   customOptions: Partial<TOptions>,
-  plugins: GetDotenvCliPlugin[],
+  plugins: GetDotenvCliPlugin<TOptions>[],
   hostMetaUrl: string,
 ): Promise<GetDotenvCliCtx<TOptions>> => {
   const optionsResolved = await resolveGetDotenvOptions(customOptions);
@@ -123,7 +124,9 @@ export const computeContext = async <
       validated.outputPath,
       Object.keys(dotenv).reduce((contents, key) => {
         const value = dotenv[key] ?? '';
-        return `${contents}${key}=${value.includes('\n') ? `"${value}"` : value}\n`;
+        return `${contents}${key}=${
+          value.includes('\n') ? `"${value}"` : value
+        }\n`;
       }, ''),
       { encoding: 'utf-8' },
     );
