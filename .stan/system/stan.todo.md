@@ -4,14 +4,6 @@ When updated: 2025-10-19T00:00:00Z
 
 ## Next up (near‑term, actionable)
 
-- Adopt spawn-env normalization everywhere
-  - Use get-dotenv’s buildSpawnEnv(base, ctx.dotenv) for:
-    - tsx inline server
-    - serverless offline
-    - serverless package/deploy hooks
-    - prettier/typedoc/other child tools
-  - Log the normalized env snapshot in verbose mode (masked).
-
 - Remove deprecated Zod usage
   - Replace any lingering z.any() placeholders in templates/docs with z.unknown().
   - Use .catchall(z.unknown()) instead of .passthrough() in examples/doc snippets.
@@ -30,6 +22,8 @@ When updated: 2025-10-19T00:00:00Z
 ## Completed (recent)
 
 **CRITICAL: Append-only list. Add new completed items at the end. Prune old completed entries from the top. Do not edit existing entries.**
+
+— Spawn‑env normalization everywhere: verified cmd and aws already use buildSpawnEnv; implemented for batch and demo (child env injection normalized across all CLI child exec paths).
 
 — Demo plugin: switched child env injection to buildSpawnEnv for normalized cross‑platform behavior (run/script commands).
 
