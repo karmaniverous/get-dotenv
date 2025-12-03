@@ -63,6 +63,7 @@ export const execShellCommandBatch = async ({
 }: {
   command?: string | string[];
   getDotenvCliOptions?: Record<string, unknown>;
+  dotenvEnv?: Record<string, string | undefined>;
   globs: string;
   ignoreErrors?: boolean;
   list?: boolean;
@@ -138,15 +139,23 @@ export const execShellCommandBatch = async ({
         (typeof command === 'string' && command.length > 0) ||
         (Array.isArray(command) && command.length > 0);
       if (hasCmd) {
-        const envBag =
-          getDotenvCliOptions !== undefined
-            ? { getDotenvCliOptions: JSON.stringify(getDotenvCliOptions) }
+        // Compose child env: ctx.dotenv (when provided) + serialized merged CLI options
+        const envMerged: Record<string, string | undefined> | undefined =
+          getDotenvCliOptions !== undefined || dotenvEnv
+            ? {
+                ...(dotenvEnv ?? {}),
+                ...(getDotenvCliOptions !== undefined
+                  ? {
+                      getDotenvCliOptions: JSON.stringify(getDotenvCliOptions),
+                    }
+                  : {}),
+              }
             : undefined;
         await runCommand(command, shell, {
           cwd: path,
           env: buildSpawnEnv(
             process.env,
-            envBag,
+            envMerged,
           ) as unknown as NodeJS.ProcessEnv,
           stdio: capture ? 'pipe' : 'inherit',
         });

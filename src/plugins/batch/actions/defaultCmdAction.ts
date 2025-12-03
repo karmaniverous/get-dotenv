@@ -34,6 +34,7 @@ export const buildDefaultCmdAction =
     const ctx = cli.getCtx();
     const cfgRaw = (ctx?.pluginConfigs?.['batch'] ?? {}) as unknown;
     const cfg = (cfgRaw || {}) as BatchConfig;
+    const dotenvEnv = (ctx?.dotenv ?? {}) as Record<string, string | undefined>;
 
     // Resolve batch flags from the captured parent (batch) command.
     const raw = batchCmd.opts();
@@ -70,6 +71,7 @@ export const buildDefaultCmdAction =
       if (typeof commandOpt === 'string') {
         await execShellCommandBatch({
           command: resolveCommand(scripts, commandOpt),
+          dotenvEnv,
           globs,
           ignoreErrors,
           list: false,
@@ -84,6 +86,14 @@ export const buildDefaultCmdAction =
         return;
       }
       if (raw.list || localList) {
+        const shellBag = ((
+          (batchCmd.parent as
+            | (GetDotenvCliPublic & {
+                getDotenvCliOptions?: { shell?: string | boolean };
+              })
+            | undefined) ?? undefined
+        )?.getDotenvCliOptions ?? {}) as { shell?: string | boolean };
+
         await execShellCommandBatch({
           globs,
           ignoreErrors,
@@ -91,7 +101,10 @@ export const buildDefaultCmdAction =
           logger: loggerLocal,
           ...(pkgCwd ? { pkgCwd } : {}),
           rootPath,
-          shell: (shell ?? false) as unknown as string | boolean | URL,
+          shell: (shell ?? shellBag.shell ?? false) as unknown as
+            | string
+            | boolean
+            | URL,
         });
         return;
       }
@@ -207,6 +220,7 @@ export const buildDefaultCmdAction =
 
     await execShellCommandBatch({
       command: commandArg,
+      dotenvEnv,
       ...(envBag ? { getDotenvCliOptions: envBag } : {}),
       globs,
       ignoreErrors,

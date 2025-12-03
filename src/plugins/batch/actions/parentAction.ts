@@ -20,6 +20,7 @@ export const buildParentAction =
 
     // Ensure context exists (host preSubcommand on root creates if missing).
     const ctx = cli.getCtx();
+    const dotenvEnv = (ctx?.dotenv ?? {}) as Record<string, string | undefined>;
     const cfgRaw = (ctx?.pluginConfigs?.['batch'] ?? {}) as unknown;
     const cfg = (cfgRaw || {}) as BatchConfig;
 
@@ -63,6 +64,7 @@ export const buildParentAction =
 
       await execShellCommandBatch({
         command: commandArg,
+        dotenvEnv,
         globs,
         ignoreErrors,
         list: false,
@@ -122,6 +124,7 @@ export const buildParentAction =
 
       await execShellCommandBatch({
         command: resolveCommand(scriptsOpt, commandOpt),
+        dotenvEnv,
         globs,
         ignoreErrors,
         list,
