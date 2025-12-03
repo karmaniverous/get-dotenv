@@ -4,24 +4,9 @@ When updated: 2025-10-19T00:00:00Z
 
 ## Next up (near‑term, actionable)
 
-- Remove generated CLI completely (code/exports/tests/docs)
-  - Delete src/generateGetDotenvCli/\*\* and all imports/exports from index/rollup/types.
-  - Remove generator tests; ensure no rollup/type bundles reference it.
-  - Scrub docs: remove guides/generated-cli.md and all references across README and guides (no migration notes).
-
 - Tests and CI updates (post-removal)
   - Drop generator runtime tests; ensure coverage thresholds remain meaningful.
   - Keep existing smoke/E2E stable; adjust expected help strings for dynamic defaults where necessary.
-
-- Replace CLI entry with get-dotenv host
-  - Create a GetDotenvCli-based host in src/cli/index.ts (or src/cli/host.ts and re-export).
-  - Branding: “smoz vX.Y.Z”; global flags: -e/--env, --strict, --trace, -V/--verbose.
-  - Remove Commander wiring; no fallback path.
-
-- Install and wire plugins in the host
-  - Always install get-dotenv AWS base plugin (inert unless configured).
-  - Install smoz plugins: init, add, register, openapi, dev (thin wrappers over runInit/runAdd/runRegister/runOpenapi/runDev).
-  - Expose get-dotenv cmd and batch commands alongside smoz commands.
 
 - Validation and diagnostics posture
   - Host-level validation: Zod (JS/TS) or requiredKeys (JSON/YAML) once per invocation.
@@ -36,23 +21,9 @@ When updated: 2025-10-19T00:00:00Z
     - prettier/typedoc/other child tools
   - Log the normalized env snapshot in verbose mode (masked).
 
-- Stage resolution (dev) implementation
-  - Precedence: --stage > plugins.smoz.stage (interpolated) > process.env.STAGE > default inference (first non-”default” stage; else “dev”).
-  - Do not bind -e to stage implicitly; document plugins.smoz.stage: "${ENV:dev}" as the recommended opt-in.
-  - Pass final stage to children via spawn-env (ensure STAGE present for serverless/offline).
-
-- Expose cmd and batch
-  - cmd: honor shell semantics from get-dotenv; ensure quoting guidance documented (single quotes to avoid outer-shell expansion).
-  - batch: implement flags `--concurrency <n>` (default 1) and `--live`; verify buffered capture and end-of-run summary paths; keep logs consistent with get-dotenv.
-
 - Remove deprecated Zod usage
   - Replace any lingering z.any() placeholders in templates/docs with z.unknown().
   - Use .catchall(z.unknown()) instead of .passthrough() in examples/doc snippets.
-
-- Serverless STAGE simplification (follow-on)
-  - Inject STAGE from provider.stage/provider.environment.
-  - Remove STAGE from stage.params/schema in the app fixture and template.
-  - Update tests/templates/docs accordingly.
 
 - Tests and CI updates
   - Register/openapi/package outputs remain byte-for-byte identical.
@@ -164,3 +135,12 @@ When updated: 2025-10-19T00:00:00Z
 - Build outputs: bundle sanity check
   - Added tools/verify-bundle-imports.js and wired "verify:bundle" to assert
     Commander remains external in dist ESM/CJS outputs.
+
+- Cleanup: knip unused file
+  - Removed unused src/config/resolveWithLoader.ts flagged by knip.
+
+- Docs follow-through (discoverability): Added a README note linking to dynamic help docs — Authoring → Lifecycle (dynamicOption), Config files & overlays (plugin config), and Shell (dynamic defaults).
+
+- Sanity review: Confirmed generated CLI removal; repository contains no generateGetDotenvCli paths. No further action required.
+
+- CI hooks: verify:bundle and verify:tarball are already included under release-it after:init; no additional CI wiring needed at this time.

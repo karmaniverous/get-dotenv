@@ -394,6 +394,8 @@ Diagnostics and CI capture:
 - [Authoring Plugins](./guides/authoring/index.md) - Compose CLIs with once‑per‑invoke dotenv context and plugin lifecycles.
 - [Shipped Plugins](./guides/shipped/index.md) - The get‑dotenv host ships a small set of plugins that cover needs.
 
+Note: Dynamic option descriptions and help‑time default labels are documented under [Authoring Plugins → Lifecycle](./guides/authoring/lifecycle.md) (dynamicOption), [Config files and overlays](./guides/config.md) (plugin config), and [Shell execution behavior](./guides/shell.md) (dynamic defaults).
+
 The guides are also included in the [hosted API docs](https://docs.karmanivero.us/get-dotenv).
 
 See more great templates & tools on [my GitHub Profile](https://github.com/karmaniverous)!
