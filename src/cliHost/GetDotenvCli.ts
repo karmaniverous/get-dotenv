@@ -14,8 +14,9 @@ import { getDotenvOptionsSchemaResolved } from '../schema/getDotenvOptions';
 import { computeContext } from './computeContext';
 import type { GetDotenvCliPlugin, GetDotenvCliPublic } from './definePlugin';
 
-// Dynamic help support: attach a private symbol to Option for description fns.
-const DYN_DESC_SYM = Symbol('getdotenv.dynamic.description');
+// Host-owned metadata stores (no Commander mutation).
+const DYN_DESC = new WeakMap<Option, (cfg: ResolvedHelpConfig) => string>();
+const GROUP_TAG = new WeakMap<Option, string>();
 
 export type ResolvedHelpConfig = Partial<GetDotenvCliOptions> & {
   plugins: Record<string, unknown>;
@@ -47,21 +48,27 @@ const HELP_HEADER_SYMBOL = Symbol('GetDotenvCli.helpHeader');
  *
  * NOTE: This host is additive and does not alter the legacy CLI.
  */
-export class GetDotenvCli<
-  TOptions extends GetDotenvOptions = GetDotenvOptions,
-> extends Command {
+export class GetDotenvCli<TOptions extends GetDotenvOptions = GetDotenvOptions>
+  extends Command
+  implements GetDotenvCliPublic<TOptions>
+{
   /** Registered top-level plugins (composition happens via .use()) */
   private _plugins: GetDotenvCliPlugin[] = [];
   /** One-time installation guard */
   private _installed = false;
   /** Optional header line to prepend in help output */
   private [HELP_HEADER_SYMBOL]: string | undefined;
+  /** Context/options stored under symbols (typed) */
+  private [CTX_SYMBOL]?: GetDotenvCliCtx<TOptions>;
+  private [OPTS_SYMBOL]?: GetDotenvCliOptions;
+
   /**
    * Create a subcommand using the same subclass, preserving helpers like
    * dynamicOption on children.
    */
   override createCommand(name?: string): Command {
-    return new (this.constructor as typeof GetDotenvCli)(name);
+    // Explicitly construct a GetDotenvCli (drop subclass constructor semantics).
+    return new GetDotenvCli(name);
   }
   constructor(alias = 'getdotenv') {
     super(alias);
@@ -73,24 +80,22 @@ export class GetDotenvCli<
     // we will insert App/Plugin sections before Commands in helpInformation().
     this.configureHelp({
       visibleOptions: (cmd: Command): Option[] => {
-        const all = (cmd as unknown as { options?: Option[] }).options ?? [];
-        const parent =
-          (cmd as unknown as { parent?: Command | null }).parent ?? null;
+        const all = cmd.options ?? [];
+        const parent = cmd.parent ?? null;
         const isRoot = parent === null;
         const list = isRoot
           ? all.filter((opt) => {
-              const group = (opt as unknown as { __group?: string }).__group;
+              const group = GROUP_TAG.get(opt);
               return group === 'base';
             })
           : all.slice(); // subcommands: show all options (their own "Options:" block)
         // Sort: short-aliased options first, then long-only; stable by flags.
         const hasShort = (opt: Option) => {
-          const flags = (opt as unknown as { flags?: string }).flags ?? '';
+          const flags = opt.flags ?? '';
           // Matches "-x," or starting "-x " before any long
           return /(^|\s|,)-[A-Za-z]/.test(flags);
         };
-        const byFlags = (opt: Option) =>
-          (opt as unknown as { flags?: string }).flags ?? '';
+        const byFlags = (opt: Option) => opt.flags ?? '';
         list.sort((a, b) => {
           const aS = hasShort(a) ? 1 : 0;
           const bS = hasShort(b) ? 1 : 0;
@@ -134,14 +139,13 @@ export class GetDotenvCli<
 
     // Delegate the heavy lifting to the shared helper (guarded path supported).
     const ctx = await computeContext<TOptions>(
-      optionsResolved as unknown as Partial<TOptions>,
+      optionsResolved as Partial<TOptions>,
       this._plugins,
       HOST_META_URL,
     );
 
     // Persist context on the instance for later access.
-    (this as unknown as Record<symbol, GetDotenvCliCtx<TOptions>>)[CTX_SYMBOL] =
-      ctx;
+    this[CTX_SYMBOL] = ctx;
 
     // Ensure plugins are installed exactly once, then run afterResolve.
     await this.install();
@@ -164,13 +168,13 @@ export class GetDotenvCli<
     parser?: (value: string, previous?: unknown) => unknown,
     defaultValue?: unknown,
   ): Option {
-    const opt = new (Option as unknown as {
-      new (f: string, d?: string): Option;
-    })(flags, '');
-    // Keep the function on a private symbol so it survives through Commander.
-    (opt as unknown as Record<symbol, unknown>)[DYN_DESC_SYM] = desc;
+    const opt = new Option(flags, '');
+    // Store dynamic description in a WeakMap, wrapping the generic plugins slice.
+    const wrapped = (c: ResolvedHelpConfig) =>
+      desc(c as ResolvedHelpConfig & { plugins: TPlugins });
+    DYN_DESC.set(opt, wrapped);
     if (parser) opt.argParser(parser as (value: string) => unknown);
-    if (defaultValue !== undefined) opt.default(defaultValue as unknown);
+    if (defaultValue !== undefined) opt.default(defaultValue);
     return opt;
   }
 
@@ -202,33 +206,30 @@ export class GetDotenvCli<
    */
   evaluateDynamicOptions(resolved: ResolvedHelpConfig): void {
     const visit = (cmd: Command) => {
-      const arr = (cmd as unknown as { options?: Option[] }).options ?? [];
+      const arr = cmd.options ?? [];
       for (const o of arr) {
-        const dyn = (o as unknown as Record<symbol, unknown>)[DYN_DESC_SYM];
+        const dyn = DYN_DESC.get(o);
         if (typeof dyn === 'function') {
           try {
-            const txt = (dyn as (c: ResolvedHelpConfig) => string)(resolved);
+            const txt = dyn(resolved);
             // Commander Option has a public "description" field used by help.
-            (o as unknown as { description?: string }).description = txt;
+            o.description = txt;
           } catch {
             // Best-effort: leave description as-is on evaluation failure.
           }
         }
       }
-      const children =
-        (cmd as unknown as { commands?: Command[] }).commands ?? [];
+      const children = (cmd.commands ?? []) as Command[];
       for (const c of children) visit(c);
     };
-    visit(this as unknown as Command);
+    visit(this);
   }
 
   /**
    * Retrieve the current invocation context (if any).
    */
   getCtx(): GetDotenvCliCtx<TOptions> | undefined {
-    return (this as unknown as Record<symbol, GetDotenvCliCtx<TOptions>>)[
-      CTX_SYMBOL
-    ];
+    return this[CTX_SYMBOL];
   }
 
   /**
@@ -236,14 +237,12 @@ export class GetDotenvCli<
    * Downstream-safe: no generics required.
    */
   getOptions(): GetDotenvCliOptions | undefined {
-    return (this as unknown as Record<symbol, GetDotenvCliOptions | undefined>)[
-      OPTS_SYMBOL
-    ];
+    return this[OPTS_SYMBOL];
   }
 
   /** Internal: set the merged root options bag for this run. */
   _setOptionsBag(bag: GetDotenvCliOptions): void {
-    (this as unknown as Record<symbol, GetDotenvCliOptions>)[OPTS_SYMBOL] = bag;
+    this[OPTS_SYMBOL] = bag;
   }
 
   /**   * Convenience helper to create a namespaced subcommand.
@@ -257,21 +256,19 @@ export class GetDotenvCli<
    * Allows downstream apps to demarcate their root-level options.
    */
   tagAppOptions<T>(fn: (root: Command) => T): T {
-    const root = this as unknown as Command;
+    const root = this as Command;
     const originalAddOption = root.addOption.bind(root);
     // eslint-disable-next-line @typescript-eslint/no-deprecated
-    const originalOption = root.option.bind(root) as unknown as (
-      ...args: unknown[]
-    ) => Command;
+    const originalOption = root.option.bind(root);
     const tagLatest = (cmd: Command, group: string) => {
-      const optsArr = (cmd as unknown as { options?: unknown[] }).options;
+      const optsArr = cmd.options;
       if (Array.isArray(optsArr) && optsArr.length > 0) {
-        const last = optsArr[optsArr.length - 1] as Record<string, unknown>;
-        last.__group = group;
+        const last = optsArr[optsArr.length - 1] as Option;
+        this.setOptionGroup(last, group);
       }
     };
     root.addOption = function patchedAdd(this: Command, opt: Option) {
-      (opt as unknown as Record<string, unknown>).__group = 'app';
+      (root as GetDotenvCli).setOptionGroup(opt, 'app');
       return originalAddOption(opt);
     } as Command['addOption'];
     // eslint-disable-next-line @typescript-eslint/no-deprecated
@@ -279,7 +276,7 @@ export class GetDotenvCli<
       this: Command,
       ...args: Parameters<Command['option']>
     ) {
-      const ret = originalOption(...(args as unknown[]));
+      const ret = originalOption(...args);
       tagLatest(this, 'app');
       return ret;
     } as Command['option'];
@@ -288,7 +285,7 @@ export class GetDotenvCli<
     } finally {
       root.addOption = originalAddOption;
       // eslint-disable-next-line @typescript-eslint/no-deprecated
-      root.option = originalOption as unknown as Command['option'];
+      root.option = originalOption;
     }
   }
 
@@ -342,7 +339,7 @@ export class GetDotenvCli<
   override helpInformation(): string {
     // Base help text first (includes beforeAll/after hooks).
     const base = super.helpInformation();
-    const groups = this.#renderOptionGroups(this as unknown as Command);
+    const groups = this.#renderOptionGroups(this as Command);
     const block = typeof groups === 'string' ? groups.trim() : '';
     let out = base;
     if (!block) {
@@ -371,6 +368,13 @@ export class GetDotenvCli<
   }
 
   /**
+   * Public: tag an Option with a display group for help (root/app/plugin:<id>).
+   */
+  setOptionGroup(opt: Option, group: string): void {
+    GROUP_TAG.set(opt, group);
+  }
+
+  /**
    * Register a plugin for installation (parent level).
    * Installation occurs on first resolveAndLoad() (or explicit install()).
    */
@@ -378,7 +382,7 @@ export class GetDotenvCli<
     this._plugins.push(plugin);
     // Immediately run setup so subcommands exist before parsing.
     const setupOne = (p: GetDotenvCliPlugin) => {
-      const maybe = p.setup(this as unknown as GetDotenvCliPublic);
+      const maybe = p.setup(this);
       // Best-effort: ignore async completion for registration-only setup.
       void maybe;
       for (const child of p.children) setupOne(child);
@@ -406,10 +410,7 @@ export class GetDotenvCli<
   ): Promise<void> {
     const run = async (p: GetDotenvCliPlugin) => {
       if (p.afterResolve)
-        await p.afterResolve(
-          this as unknown as GetDotenvCliPublic,
-          ctx as unknown as GetDotenvCliCtx,
-        );
+        await p.afterResolve(this, ctx as unknown as GetDotenvCliCtx);
       for (const child of p.children) await run(child);
     };
     for (const p of this._plugins) await run(p);
@@ -417,20 +418,16 @@ export class GetDotenvCli<
 
   // Render App/Plugin grouped options (used by helpInformation override).
   #renderOptionGroups(cmd: Command): string {
-    const all = (cmd as unknown as { options?: unknown[] }).options ?? [];
+    const all = cmd.options ?? [];
     type Row = { flags: string; description: string };
     const byGroup = new Map<string, Row[]>();
     for (const o of all) {
-      const opt = o as {
-        flags?: string;
-        description?: string;
-        __group?: string;
-      };
-      const g = opt.__group;
+      const opt = o;
+      const g = GROUP_TAG.get(opt);
       if (!g || g === 'base') continue; // base handled by default help
       const rows = byGroup.get(g) ?? [];
       rows.push({
-        flags: opt.flags ?? '',
+        flags: opt.flags,
         description: opt.description ?? '',
       });
       byGroup.set(g, rows);
@@ -465,8 +462,7 @@ export class GetDotenvCli<
     const pluginKeys = Array.from(byGroup.keys()).filter((k) =>
       k.startsWith('plugin:'),
     );
-    const currentName =
-      (cmd as unknown as { name?: () => string }).name?.() ?? '';
+    const currentName = cmd.name?.() ?? '';
     pluginKeys.sort((a, b) => a.localeCompare(b));
     for (const k of pluginKeys) {
       const id = k.slice('plugin:'.length) || '(unknown)';

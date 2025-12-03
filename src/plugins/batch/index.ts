@@ -43,13 +43,10 @@ export const batchPlugin = (opts: BatchPluginOptions = {}) =>
           (() => {
             const opt = host.createDynamicOption<{ batch?: BatchConfig }>(
               '-p, --pkg-cwd',
-              (cfg) => {
-                const slice = cfg.plugins.batch ?? {};
-                const on = !!slice.pkgCwd;
-                return `use nearest package directory as current working directory${on ? ' (default)' : ''}`;
-              },
+              (cfg) =>
+                `use nearest package directory as current working directory${cfg.plugins.batch?.pkgCwd ? ' (default)' : ''}`,
             );
-            (opt as unknown as { __group?: string }).__group = GROUP;
+            cli.setOptionGroup(opt, GROUP);
             return opt;
           })(),
         )
@@ -62,7 +59,7 @@ export const batchPlugin = (opts: BatchPluginOptions = {}) =>
                   cfg.plugins.batch?.rootPath || './',
                 )})`,
             );
-            (opt as unknown as { __group?: string }).__group = GROUP;
+            cli.setOptionGroup(opt, GROUP);
             return opt;
           })(),
         )
@@ -75,7 +72,7 @@ export const batchPlugin = (opts: BatchPluginOptions = {}) =>
                   cfg.plugins.batch?.globs || '*',
                 )})`,
             );
-            (opt as unknown as { __group?: string }).__group = GROUP;
+            cli.setOptionGroup(opt, GROUP);
             return opt;
           })(),
         )

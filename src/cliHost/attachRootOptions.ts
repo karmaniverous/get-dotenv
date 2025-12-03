@@ -17,10 +17,10 @@ export const attachRootOptions = (
   // Install temporary wrappers to tag all options added here as "base" for grouped help.
   const GROUP = 'base';
   const tagLatest = (cmd: GetDotenvCli, group: string) => {
-    const optsArr = (cmd as unknown as { options?: unknown[] }).options;
+    const optsArr = (cmd as unknown as { options?: Option[] }).options ?? [];
     if (Array.isArray(optsArr) && optsArr.length > 0) {
-      const last = optsArr[optsArr.length - 1] as Record<string, unknown>;
-      last.__group = group;
+      const last = optsArr[optsArr.length - 1] as Option;
+      program.setOptionGroup(last, group);
     }
   };
   const originalAddOption = program.addOption.bind(program);
@@ -29,7 +29,7 @@ export const attachRootOptions = (
     ...args: unknown[]
   ) => GetDotenvCli;
   program.addOption = function patchedAdd(opt: Option) {
-    (opt as unknown as Record<string, unknown>).__group = GROUP;
+    program.setOptionGroup(opt, GROUP);
     return originalAddOption(opt);
   } as GetDotenvCli['addOption'];
 

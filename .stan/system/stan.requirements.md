@@ -213,168 +213,88 @@ Nice-to-have (next):
 7. Enhanced `--trace` diff (origin/value/overridden-by).
 8. Troubleshooting doc (common shell pitfalls and quoting recipes).
 
-## Architecture: Plugin-first CLI host and schema-driven config
+## Architecture: Services‑first (Ports & Adapters)
 
-Purpose
+Adopt a services‑first architecture with clear ports (interfaces) and thin adapters:
 
-- Compose environment-aware CLIs. Validate options, resolve dotenv context once per invocation, and expose lifecycle hooks for plugins.
+- Ports (service interfaces)
+  - Define the core use‑cases and inputs/outputs as pure TypeScript types.
+  - Keep business logic in services that depend only on ports; avoid hard process/fs/network dependencies.
 
-### Architectural split
+- Adapters (CLI, HTTP, worker, GUI, etc.)
+  - Map from the edge (flags, HTTP params, env) to service inputs; format service outputs for the edge.
+  - Remain thin: no business logic, no hidden state management, no cross‑cutting behavior beyond mapping/presentation.
+  - Side effects (fs/process/network/clipboard) live at adapter boundaries or in small leaf helpers wired through ports.
 
-- Core service (unchanged):
-  - getDotenv(options): deterministic env resolution engine.
-  - File cascade and dotenv expansion semantics preserved.
+- Composition and seams
+  - Wire adapters to services in a small composition layer; prefer dependency injection via ports.
+  - Make seams testable: unit tests for services (pure), integration tests for adapters over minimal end‑to‑end slices.
 
-- CLI host:
-  - class GetDotenvCli extends Commander.Command.
-  - Responsibilities:
-    - Discover and layer configs (packaged root → consumer repo public → consumer repo .local → invocation).
-    - Validate and normalize options with Zod (raw → resolved).
-    - Resolve env with getDotenv and attach a per-invocation context.
-    - Expose a plugin API to register commands/subcommands.
-  - Context:
-    - `ctx = { optionsResolved, dotenv, plugins?: Record<string, unknown> }`.
-    - Produced once per invocation in a preSubcommand hook.
-    - If `loadProcess` is true, merge ctx.dotenv into process.env; regardless, plugins can read ctx.dotenv and pass it explicitly to subprocesses.
+- Code organization
+  - Prefer many small modules over large ones (see long‑file guidance).
+  - Co‑locate tests with modules for discoverability.
 
-- Plugin API:
-  - `definePlugin({ id?, setup(cli), afterResolve?(cli, ctx) })`.
-  - Composition:
-    - `plugin.use(childPlugin)` returns the parent; the host installs children pre-order (parent → children).
-  - Setup phase: register commands/subcommands under the host (e.g., `cli.ns('aws').command(...)`).
-  - AfterResolve phase: initialize clients/secrets using ctx.dotenv or previously-attached plugin state, then attach to `ctx.plugins` (optional; namespaced by convention).
+This matches the “Services‑first proposal required” step in the Default Task: propose contracts and adapter mappings before code.
 
-- Built-in commands as plugins:
-  - batch
-  - cmd
-  - aws (session bootstrap + optional forwarding)
-  - init
-  - demo (educational)
-  - The shipped getdotenv CLI installs these plugins, preserving user-facing behavior.
+## Testing architecture
 
-### Zod schemas (single source of truth)
+Principles
 
-- Raw vs Resolved:
-  - Raw schemas: all fields optional (undefined = inherit).
-  - Resolved schemas: service-boundary contracts after defaults/inheritance.
-- Schemas:
-  - getDotenvOptionsSchemaRaw/Resolved
-  - getDotenvCliOptionsSchemaRaw/Resolved (extends programmatic shapes with CLI string fields and splitters)
-- Types:
-  - `export type GetDotenvOptions = z.infer<typeof getDotenvOptionsSchemaResolved>`
-  - `export type GetDotenvCliOptions = z.infer<typeof getDotenvCliOptionsSchemaResolved>`
-- Validation policy:
-  - Host: strict (schema.parse) by default; tolerant safeParse may be used where non-fatal.
+- Pair every non‑trivial module with a test file; co‑locate tests (e.g., `foo.ts` with `foo.test.ts`).
+- Favor small, focused unit tests for pure services (ports) and targeted integration tests for adapters/seams.
+- Exercise happy paths and representative error paths; avoid brittle, end‑to‑end fixtures unless necessary.
 
-### Config system
+Regression and coverage
 
-- Packaged root defaults (library root):
-  - getdotenv.config.json|yaml|yml|js|ts at package root.
-  - No `.local` at package level; no parent above it.
-  - Must validate under schemas; missing required defaults are fatal (packaging error).
+- Add minimal, high‑value tests that pin down discovered bugs or branchy behavior.
+- Keep coverage meaningful (prefer covering branches/decisions over chasing 100% lines).
 
-- Consumer repo configs (project root):
-  - Public: `getdotenv.config.{json|yaml|yml|js|ts}`
-  - Local (gitignored): `getdotenv.config.local.{json|yaml|yml|js|ts}`
-  - JSON/YAML: pure data only.
-  - JS/TS: may export `dynamic` (GetDotenvDynamic) and (optionally) a schema.
+## System‑level lint policy
 
-- Config-provided values as an alternative to .env files (pure data):
-  - `vars?: Record<string, string>` (global, public)
-  - `envVars?: Record<string, Record<string,string>>` (per-env, public)
-  - Private values live in `.local` configs with the same keys (privacy derives from filename).
-  - These insert into env overlay with three axes:
-    1. kind: `dynamic` > `env` > `global`
-    2. privacy: `local` > `public`
-    3. source: `project` > `packaged` > `base`
-  - Programmatic dynamic remains the top of the dynamic tier.
+Formatting and linting are enforced by the repository configuration; this system prompt sets expectations:
 
-- Dynamic from config (JS/TS only):
-  - `dynamic?: GetDotenvDynamic`
-  - Order among dynamics (highest → lowest):
-    - programmatic dynamic (passed to getDotenv)
-    - config dynamic (JS/TS configs; .local prioritized via privacy)
-    - file dynamic (`dynamicPath`)
+- Prettier is the single source of truth for formatting (including prose policy: no manual wrapping outside commit messages or code blocks).
+- ESLint defers to Prettier for formatting concerns and enforces TypeScript/ordering rules (see repo config).
+- Prefer small, automated style fixes over manual formatting in patches.
+- Keep imports sorted (per repo tooling) and avoid dead code.
 
-### Backward compatibility
+Assistant guidance
 
-- Preserve existing surfaces:
-  - getDotenv(options): no signature/semantic changes.
-  - Shipped getdotenv CLI: flags/help/behavior live solely on the host-based CLI.
+- When emitting patches, respect house style; do not rewrap narrative Markdown outside the allowed contexts.
+- Opportunistic repair is allowed for local sections you are already modifying (e.g., unwrap manually wrapped paragraphs), but avoid repo‑wide reflows as part of unrelated changes.
 
-## Concurrency policy (design)
+## Host typing and help metadata (durable rules)
 
-- Default execution for `batch` is sequential for safety and legibility.
-- Concurrency is explicit and opt-in:
-  - `--concurrency <n>` enables a pool (n workers). Default remains 1.
-  - When `n > 1`, force capture and aggregate per-job output (buffer, then flush).
-  - Write full logs per job to `.tsbuild/batch/<run-id>/<sanitized-path>.{out,err}.log`.
-  - Provide `--live` to stream interleaved updates with `[cwd]` prefixes (optional).
-- Failure policy:
-  - Honor `--ignore-errors`. When false (default), bail early on first failure or stop launching new jobs; print a summary.
-  - When true, run all and summarize at the end.
-- Per-script hints:
-  - Extend scripts entries with `parallel?: boolean` and `concurrency?: number`.
-  - When hints are present, they override the global concurrency for that script.
+- Dynamic help storage
+  - The CLI host must store dynamic option description callbacks in a host‑owned WeakMap keyed by Commander.Option. Do not mutate Option via symbol properties.
+  - The CLI host must store option grouping metadata (for help rendering) in a host‑owned WeakMap keyed by Option. Do not add ad‑hoc properties (e.g., “\_\_group”) to Option.
+  - Expose a public API `setOptionGroup(opt: Option, group: string)` on the host so builders/plugins can tag groups without mutating Commander.Option.
 
-## AWS base plugin (plugin-first host)
+- Command creation semantics
+  - The host’s createCommand(name?) override must construct child commands via `new GetDotenvCli(name)` explicitly. We do not rely on `(this.constructor as …)` to support subclassing semantics. This keeps help/dynamic behaviors consistent on subcommands.
 
-Purpose
+- Public interface and generics
+  - The host class implements the structural public interface GetDotenvCliPublic<TOptions>.
+  - The plugin contract is generic on TOptions: `GetDotenvCliPlugin<TOptions>` so afterResolve/setup receive correctly typed ctx/cli when plugins depend on option typing.
+  - The `definePlugin()` helper returns a generic `GetDotenvCliPlugin<TOptions>`, preserving plugin type identity.
 
-- Provide a minimal “auth context” for AWS that other plugins can rely on, without bundling any domain logic and without adding an AWS SDK dependency here.
-- Works with the plugin-first host (GetDotenvCli).
+- Help evaluation typing
+  - ResolvedHelpConfig is `Partial<GetDotenvCliOptions> & { plugins: Record<string, unknown> }` so callbacks can read shell/log/loadProcess/exclude\*/warnEntropy without casts.
+  - Dynamic help must be evaluated against:
+    - The merged CLI options bag in normal flows (preSubcommand/preAction).
+    - A defaults‑only merged CLI bag (resolveCliOptions + baseRootOptionDefaults) in the top‑level “-h/--help” flow (no side effects), for parity.
 
-Behavior (session bootstrap + optional forwarding)
+- Commander usage
+  - The host must use Commander’s public typed properties (options, commands, parent, flags, description). Avoid “unknown” casts.
 
-- It resolves profile/region, acquires credentials (supporting SSO and non‑SSO profiles), publishes them to process.env when enabled, and mirrors them into `ctx.plugins.aws`. It also provides an `aws` subcommand to optionally forward to the AWS CLI with explicit env injection and normalized shell semantics.
+# Context window exhaustion (termination rule)
 
-Inputs and where they come from
+When context is tight or replies risk truncation:
 
-- Values may come from dotenv (public/local) or getdotenv config (JSON/YAML/TS/JS):
-  - Profiles typically live in local dotenv per environment (e.g., `.env.local`, `.env.dev.local`).
-  - Region is non‑secret and may live in public dotenv or config.
-  - The plugin reads the already‑resolved dotenv (`ctx.dotenv`) first, then optional config overrides under `plugins.aws`.
-
-Resolution precedence
-
-- Profile:
-  1. `plugins.aws.profile` (explicit override in getdotenv config)
-  2. `ctx.dotenv['AWS_LOCAL_PROFILE']` (default key)
-  3. `ctx.dotenv['AWS_PROFILE']` (fallback key)
-  4. undefined
-- Region:
-  1. `plugins.aws.region` (explicit override)
-  2. `ctx.dotenv['AWS_REGION']` (default key)
-  3. If a profile was resolved and region is still missing, best‑effort `aws configure get region --profile <profile>`
-  4. `plugins.aws.defaultRegion` (optional fallback)
-  5. undefined
-- Advanced (optional) key renames:
-  - `plugins.aws.profileKey` (default `'AWS_LOCAL_PROFILE'`)
-  - `plugins.aws.profileFallbackKey` (default `'AWS_PROFILE'`)
-  - `plugins.aws.regionKey` (default `'AWS_REGION'`)
-
-Credentials acquisition (SSO and non‑SSO)
-
-- Env‑first: if `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` are already set, use them and stop.
-- Otherwise, when a `profile` is present and strategy is enabled:
-  1. Try CLI export (modern AWS CLI):
-     `aws configure export-credentials --profile <profile>` (argv array, shell-off).
-  2. If export fails:
-     - Detect SSO hints (e.g., `sso_session`).
-     - If SSO and `loginOnDemand === true`, run `aws sso login --profile <profile>` once, then retry export once.
-     - Otherwise fall back to static reads:
-       `aws configure get aws_access_key_id/secret_access_key[/aws_session_token] --profile <profile>`.
-
-Publishing outputs
-
-- `setEnv` (default true): write region/credentials to `process.env` (and `AWS_DEFAULT_REGION` if unset).
-- `addCtx` (default true): mirror `{ profile?, region?, credentials? }` to `ctx.plugins.aws`.
-
-## Codebase constraints (v6 and beyond)
-
-- No generator path:
-  - The codebase contains only the plugin-first host and shipped plugins. There is no “generated CLI” implementation, exports, tests, or documentation.
-- Host-only root options builder:
-  - `attachRootOptions` is provided for GetDotenvCli instances only and uses dynamic descriptions for any flag that displays an effective default.
-- Help semantics:
-  - Top-level `-h/--help` and `help <cmd>` produce identical dynamic help text for the same inputs and never mutate the environment or exit the process (host may exit on other code paths as usual).
+1. Stop before partial output. Do not emit incomplete patches or listings.
+2. Prefer a handoff:
+   - Output a fresh “Handoff — <project> for next thread” block per the handoff rules.
+   - Keep it concise and deterministic (no user‑facing instructions).
+3. Wait for the next thread:
+   - The user will start a new chat with the handoff and attach archives.
+   - Resume under the bootloader with full, reproducible context.

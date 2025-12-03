@@ -202,3 +202,11 @@ where .conflicts/Option-level config is required.
 +dynamic options against the merged CLI bag; for top-level “-h/--help”, compute
 +defaults-only merged CLI options (resolveCliOptions + baseRootOptionDefaults)
 +and evaluate against that for perfect parity without side effects.
+
+— Host metadata & typing cleanup: stored dynamic descriptions and help groups in
+host-owned WeakMaps (no Option mutation); added public setOptionGroup(opt,group).
+Changed createCommand to `new GetDotenvCli(name)` (explicit semantics). Host now
+implements GetDotenvCliPublic. Made GetDotenvCliPlugin generic over TOptions and
+updated definePlugin. Replaced remaining “unknown” Commander casts with typed
+properties (options/commands/parent/flags/description). This removes a large
+portion of casts from GetDotenvCli without altering behavior.
