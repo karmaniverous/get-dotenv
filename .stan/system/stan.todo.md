@@ -212,46 +212,58 @@ properties (options/commands/parent/flags/description). This removes a large
 portion of casts from GetDotenvCli without altering behavior.
 
 — Type plumbing and help parity:
-  - Updated GetDotenvCliPublic.resolveAndLoad to accept the optional opts argument
-    (runAfterResolve) and to be generic over TOptions. Matches the class method and
-    fixes TS2345 when passing `this` into plugin afterResolve.
- 
+
+- Updated GetDotenvCliPublic.resolveAndLoad to accept the optional opts argument
+  (runAfterResolve) and to be generic over TOptions. Matches the class method and
+  fixes TS2345 when passing `this` into plugin afterResolve.
+
 — Inference pass (env): made buildSpawnEnv return NodeJS.ProcessEnv and removed
 unnecessary env casts across the codebase:
-  - Updated src/cliCore/spawnEnv.ts to return NodeJS.ProcessEnv.
-  - Dropped as unknown as NodeJS.ProcessEnv at all runCommand call sites in cmd,
-    cmd alias, batch, aws, and demo plugins.
-  - Parameterized host plugin storage: private _plugins: GetDotenvCliPlugin<TOptions>[].
-    Aligns generics end-to-end and eliminates resolveAndLoad signature mismatch.
-  - Root help grouping restored: the cmd parent alias option is now tagged via
-    cli.setOptionGroup(..., 'plugin:cmd'), so “Plugin options — cmd” appears in
-    root help. E2E “root -h” assertion passes.
-  - Lint cleanup: removed unnecessary ??/?. on typed Commander fields (options,
-    commands, parent, description). Reworked tagAppOptions to avoid wrapping
-    Command.option (deprecated); we tag via addOption + setOptionGroup only.
+
+- Updated src/cliCore/spawnEnv.ts to return NodeJS.ProcessEnv.
+- Dropped as unknown as NodeJS.ProcessEnv at all runCommand call sites in cmd,
+  cmd alias, batch, aws, and demo plugins.
+- Parameterized host plugin storage: private \_plugins: GetDotenvCliPlugin<TOptions>[].
+  Aligns generics end-to-end and eliminates resolveAndLoad signature mismatch.
+- Root help grouping restored: the cmd parent alias option is now tagged via
+  cli.setOptionGroup(..., 'plugin:cmd'), so “Plugin options — cmd” appears in
+  root help. E2E “root -h” assertion passes.
+- Lint cleanup: removed unnecessary ??/?. on typed Commander fields (options,
+  commands, parent, description). Reworked tagAppOptions to avoid wrapping
+  Command.option (deprecated); we tag via addOption + setOptionGroup only.
 
 — Generic alignment & lint cleanup (follow-up):
-  - computeContext: plugins parameter is now GetDotenvCliPlugin<TOptions>[],
-    fixing plugin array variance and afterResolve typing at the class seam.
-  - GetDotenvCli: use(plugin: GetDotenvCliPlugin<TOptions>); _runAfterResolve
-    invokes p.afterResolve(this, ctx) without casts; child traversal typed.
-  - Removed unnecessary nullish checks on typed fields and an unused local in
-    tagAppOptions; use cmd.name() directly. index.ts no longer casts readonly
-    commands; iterate directly to satisfy ts/eslint.
+
+- computeContext: plugins parameter is now GetDotenvCliPlugin<TOptions>[],
+  fixing plugin array variance and afterResolve typing at the class seam.
+- GetDotenvCli: use(plugin: GetDotenvCliPlugin<TOptions>); \_runAfterResolve
+  invokes p.afterResolve(this, ctx) without casts; child traversal typed.
+- Removed unnecessary nullish checks on typed fields and an unused local in
+  tagAppOptions; use cmd.name() directly. index.ts no longer casts readonly
+  commands; iterate directly to satisfy ts/eslint.
 
 — Inference pass (casts/annotations cleanup):
-  - alias.ts: dropped redundant GetDotenvCli/Option casts; switched to
-    baseGetDotenvCliOptions; simplified logger/debug, resolveShell, and JSON
-    stringify paths; only retained the required env cast at runCommand seam.
-  - index.ts: removed Command cast and explicit ResolvedHelpConfig local; inline
-    evaluateDynamicOptions payload and simplified help suppression branch.
-  - GetDotenvCli.createDynamicOption: removed parser cast by wrapping the
-    callback to Commander’s argParser signature without changing behavior.
-— Inference pass (follow-up: shells/env & alias helper):
-  - Removed remaining “as unknown as string | boolean | URL” shell casts across
-    cmd, batch (parent/default actions), and aws; resolveShell typing suffices.
-  - Passed ctx?.dotenv directly to buildSpawnEnv in aws/demo (both command paths),
-    eliminating Record and ProcessEnv casts.
-  - Updated cmd alias helper to accept GetDotenvCliPublic; dropped the concrete
-    class cast at call sites and created the subcommand via cli.createCommand()
-    without casting.
+
+- alias.ts: dropped redundant GetDotenvCli/Option casts; switched to
+  baseGetDotenvCliOptions; simplified logger/debug, resolveShell, and JSON
+  stringify paths; only retained the required env cast at runCommand seam.
+- index.ts: removed Command cast and explicit ResolvedHelpConfig local; inline
+  evaluateDynamicOptions payload and simplified help suppression branch.
+- GetDotenvCli.createDynamicOption: removed parser cast by wrapping the
+  callback to Commander’s argParser signature without changing behavior.
+  — Inference pass (follow-up: shells/env & alias helper):
+- Removed remaining “as unknown as string | boolean | URL” shell casts across
+  cmd, batch (parent/default actions), and aws; resolveShell typing suffices.
+- Passed ctx?.dotenv directly to buildSpawnEnv in aws/demo (both command paths),
+  eliminating Record and ProcessEnv casts.
+- Updated cmd alias helper to accept GetDotenvCliPublic; dropped the concrete
+  class cast at call sites and created the subcommand via cli.createCommand()
+  without casting.
+
+— Inference pass (cleanup): removed unnecessary casts and explicit parameter
+types to maximize inference across core modules:
+• GetDotenvOptions: refactored getDotenvCliOptions2Options and
+resolveGetDotenvOptions to avoid Record/unknown double‑casts; used generics
+on defaultsDeep; simplified paths/vars parsing. • computeContext: dropped
+double‑cast on getDotenv() call; prefer customOptions.logger to avoid
+unknown cast. • batch/defaultCmdAction: removed redundant shell casts.

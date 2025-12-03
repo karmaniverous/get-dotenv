@@ -78,10 +78,7 @@ export const buildDefaultCmdAction =
           logger: loggerLocal,
           ...(pkgCwd ? { pkgCwd } : {}),
           rootPath,
-          shell: resolveShell(scripts, commandOpt, shell) as unknown as
-            | string
-            | boolean
-            | URL,
+          shell: resolveShell(scripts, commandOpt, shell),
         });
         return;
       }
@@ -101,10 +98,7 @@ export const buildDefaultCmdAction =
           logger: loggerLocal,
           ...(pkgCwd ? { pkgCwd } : {}),
           rootPath,
-          shell: (shell ?? shellBag.shell ?? false) as unknown as
-            | string
-            | boolean
-            | URL,
+          shell: shell ?? shellBag.shell ?? false,
         });
         return;
       }
@@ -139,10 +133,7 @@ export const buildDefaultCmdAction =
         logger: loggerLocal,
         ...(pkgCwd ? { pkgCwd } : {}),
         rootPath,
-        shell: (shell ?? shellBag.shell ?? false) as unknown as
-          | string
-          | boolean
-          | URL,
+        shell: shell ?? shellBag.shell ?? false,
       });
       return;
     }

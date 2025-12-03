@@ -164,23 +164,12 @@ export const getDotenvCliOptions2Options = ({
   varsAssignorPattern,
   varsDelimiter,
   varsDelimiterPattern,
+  // drop CLI-only keys from the pass-through bag
+  debug: _debug,
+  scripts: _scripts,
   ...rest
 }: RootOptionsShapeCompat): GetDotenvOptions => {
-  /**
-   * Convert CLI-facing string options into {@link GetDotenvOptions}.
-   *
-   * - Splits {@link GetDotenvCliOptions.paths} using either a delimiter   *   or a regular expression pattern into a string array.   * - Parses {@link GetDotenvCliOptions.vars} as space-separated `KEY=VALUE`
-   *   pairs (configurable delimiters) into a {@link ProcessEnv}.
-   * - Drops CLI-only keys that have no programmatic equivalent.
-   *
-   * @remarks
-   * Follows exact-optional semantics by not emitting undefined-valued entries.
-   */
-  // Drop CLI-only keys (debug/scripts) without relying on Record casts.
-  // Create a shallow copy then delete optional CLI-only keys if present.
-  const restObj = { ...(rest as unknown as Record<string, unknown>) };
-  delete restObj.debug;
-  delete restObj.scripts;
+  // Split helper for delimited strings or regex patterns
   const splitBy = (
     value: string | undefined,
     delim?: string,
@@ -190,21 +179,24 @@ export const getDotenvCliOptions2Options = ({
   // Tolerate vars as either a CLI string ("A=1 B=2") or an object map.
   let parsedVars: ProcessEnv | undefined;
   if (typeof vars === 'string') {
-    const kvPairs = splitBy(vars, varsDelimiter, varsDelimiterPattern).map(
-      (v) =>
+    const kvPairs = splitBy(vars, varsDelimiter, varsDelimiterPattern)
+      .map((v) =>
         v.split(
           varsAssignorPattern
             ? RegExp(varsAssignorPattern)
             : (varsAssignor ?? '='),
         ),
-    ) as [string, string][];
+      )
+      .filter(([k]) => typeof k === 'string' && k.length > 0) as Array<
+      [string, string]
+    >;
     parsedVars = Object.fromEntries(kvPairs);
   } else if (vars && typeof vars === 'object' && !Array.isArray(vars)) {
     // Keep only string or undefined values to match ProcessEnv.
-    const entries = Object.entries(vars as Record<string, unknown>).filter(
+    const entries = Object.entries(vars).filter(
       ([k, v]) =>
         typeof k === 'string' && (typeof v === 'string' || v === undefined),
-    ) as [string, string | undefined][];
+    );
     parsedVars = Object.fromEntries(entries);
   }
 
@@ -217,16 +209,13 @@ export const getDotenvCliOptions2Options = ({
   }
 
   // Tolerate paths as either a delimited string or string[]
-  // Use a locally cast union type to avoid lint warnings about always-falsy conditions
-  // under the RootOptionsShape (which declares paths as string | undefined).
-  const pathsAny = paths as unknown as string[] | string | undefined;
-  const pathsOut = Array.isArray(pathsAny)
-    ? pathsAny.filter((p): p is string => typeof p === 'string')
-    : splitBy(pathsAny, pathsDelimiter, pathsDelimiterPattern);
+  const pathsOut = Array.isArray(paths)
+    ? paths.filter((p): p is string => typeof p === 'string')
+    : splitBy(paths, pathsDelimiter, pathsDelimiterPattern);
 
   // Preserve exactOptionalPropertyTypes: only include keys when defined.
   return {
-    ...(restObj as Partial<GetDotenvOptions>),
+    ...(rest as Partial<GetDotenvOptions>),
     ...(pathsOut.length > 0 ? { paths: pathsOut } : {}),
     ...(parsedVars !== undefined ? { vars: parsedVars } : {}),
   } as GetDotenvOptions;
@@ -274,17 +263,17 @@ export const resolveGetDotenvOptions = async (
   }
 
   // Merge order: base < local < custom (custom has highest precedence)
-  const mergedCli = defaultsDeep(
+  const mergedCli = defaultsDeep<GetDotenvCliOptions>(
     baseGetDotenvCliOptions,
     localOptions,
-  ) as unknown as GetDotenvCliOptions;
+  );
 
   const defaultsFromCli = getDotenvCliOptions2Options(mergedCli);
 
-  const result = defaultsDeep(
+  const result = defaultsDeep<GetDotenvOptions>(
     defaultsFromCli as Partial<GetDotenvOptions>,
     customOptions,
-  ) as unknown as GetDotenvOptions;
+  );
 
   return {
     ...result, // Keep explicit empty strings/zeros; drop only undefined

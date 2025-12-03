@@ -47,7 +47,7 @@ export const computeContext = async <
     log: false,
     loadProcess: false,
     outputPath: undefined,
-  } as unknown as Partial<GetDotenvOptions>);
+  });
   // 2) Discover config sources and overlay
   const sources = await resolveGetDotenvConfigSources(hostMetaUrl);
   const dotenvOverlaid = overlayEnv({
@@ -132,7 +132,7 @@ export const computeContext = async <
     );
   }
   const logger: Logger =
-    (validated as unknown as { logger?: Logger }).logger ?? console;
+    (customOptions as { logger?: Logger })?.logger ?? console;
   if (validated.log) logger.log(dotenv);
   if (validated.loadProcess) Object.assign(process.env, dotenv);
 
