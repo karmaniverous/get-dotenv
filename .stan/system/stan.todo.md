@@ -170,4 +170,8 @@ when captured), avoiding test flakes without modifying Commander internals.
 — Help newline (recursive): applied the output writer to the entire command tree
 (root and all subcommands) so batch/aws/cmd help also ends with a blank line.
 This fixes remaining E2E help failures without touching Commander internals or
-test stdout suppression (GETDOTENV_STDIO=pipe already bypasses it).
+test stdout suppression (GETDOTENV_STDIO=pipe already bypasses it).
+
+— cmd help trailing newline: made the 'cmd' subcommand a GetDotenvCli child
+via createCommand('cmd') so it uses the host’s helpInformation override that
+guarantees a trailing blank line.

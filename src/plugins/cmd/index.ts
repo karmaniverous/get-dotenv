@@ -1,5 +1,4 @@
 import type { GetDotenvCli } from '@karmaniverous/get-dotenv/cliHost';
-import { Command } from 'commander';
 
 import { runCommand } from '../../cliCore/exec';
 import type { GetDotenvCliOptions } from '../../cliCore/GetDotenvCliOptions';
@@ -45,8 +44,9 @@ export const cmdPlugin = (options: CmdPluginOptions = {}) =>
         return name.replace(/-([a-z])/g, (_m, c: string) => c.toUpperCase());
       };
       const aliasKey = aliasSpec ? deriveKey(aliasSpec.flags) : undefined;
-      const cmd = new Command()
-        .name('cmd')
+      // Create as a GetDotenvCli child so helpInformation includes a trailing blank line.
+      const cmd = (cli as unknown as GetDotenvCli)
+        .createCommand('cmd')
         .description(
           'Execute command according to the --shell option, conflicts with --command option (default subcommand)',
         )
