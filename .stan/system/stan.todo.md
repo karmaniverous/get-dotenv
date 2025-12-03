@@ -9,8 +9,6 @@ When updated: 2025-10-19T00:00:00Z
   - Remove generator tests; ensure no rollup/type bundles reference it.
   - Scrub docs: remove guides/generated-cli.md and all references across README and guides (no migration notes).
 
-- Build outputs: sanity‑check Rollup tree‑shaking for the non‑type Option import across ESM/CJS bundles to ensure no accidental retention of unused code in consumers.
-
 - Tests and CI updates (post-removal)
   - Drop generator runtime tests; ensure coverage thresholds remain meaningful.
   - Keep existing smoke/E2E stable; adjust expected help strings for dynamic defaults where necessary.
