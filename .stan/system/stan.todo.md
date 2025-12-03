@@ -4,15 +4,6 @@ When updated: 2025-10-19T00:00:00Z
 
 ## Next up (near‑term, actionable)
 
-- Tests and CI updates (post-removal)
-  - Drop generator runtime tests; ensure coverage thresholds remain meaningful.
-  - Keep existing smoke/E2E stable; adjust expected help strings for dynamic defaults where necessary.
-
-- Validation and diagnostics posture
-  - Host-level validation: Zod (JS/TS) or requiredKeys (JSON/YAML) once per invocation.
-  - Warn by default; fail with --strict.
-  - In verbose/trace, print layered trace with masking and entropy warnings (once per key).
-
 - Adopt spawn-env normalization everywhere
   - Use get-dotenv’s buildSpawnEnv(base, ctx.dotenv) for:
     - tsx inline server
