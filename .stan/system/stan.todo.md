@@ -215,6 +215,12 @@ portion of casts from GetDotenvCli without altering behavior.
   - Updated GetDotenvCliPublic.resolveAndLoad to accept the optional opts argument
     (runAfterResolve) and to be generic over TOptions. Matches the class method and
     fixes TS2345 when passing `this` into plugin afterResolve.
+ 
+— Inference pass (env): made buildSpawnEnv return NodeJS.ProcessEnv and removed
+unnecessary env casts across the codebase:
+  - Updated src/cliCore/spawnEnv.ts to return NodeJS.ProcessEnv.
+  - Dropped as unknown as NodeJS.ProcessEnv at all runCommand call sites in cmd,
+    cmd alias, batch, aws, and demo plugins.
   - Parameterized host plugin storage: private _plugins: GetDotenvCliPlugin<TOptions>[].
     Aligns generics end-to-end and eliminates resolveAndLoad signature mismatch.
   - Root help grouping restored: the cmd parent alias option is now tagged via
@@ -240,4 +246,4 @@ portion of casts from GetDotenvCli without altering behavior.
   - index.ts: removed Command cast and explicit ResolvedHelpConfig local; inline
     evaluateDynamicOptions payload and simplified help suppression branch.
   - GetDotenvCli.createDynamicOption: removed parser cast by wrapping the
-    callback to Commander’s argParser signature without changing behavior.
+    callback to Commander’s argParser signature without changing behavior.

@@ -160,10 +160,7 @@ export const execShellCommandBatch = async ({
 
         await runCommand(command, shell, {
           cwd: path,
-          env: buildSpawnEnv(
-            process.env,
-            overlay,
-          ) as unknown as NodeJS.ProcessEnv,
+          env: buildSpawnEnv(process.env, overlay),
           stdio: capture ? 'pipe' : 'inherit',
         });
       } else {

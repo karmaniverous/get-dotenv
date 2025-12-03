@@ -103,10 +103,7 @@ export const demoPlugin = () =>
 
           // Inherit stdio for an interactive demo. Use --capture for CI.
           await runCommand(['node', '-e', code], false, {
-            env: buildSpawnEnv(
-              process.env,
-              dotenv,
-            ) as unknown as NodeJS.ProcessEnv,
+            env: buildSpawnEnv(process.env, dotenv),
             stdio: 'inherit',
           });
         });

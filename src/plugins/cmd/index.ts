@@ -242,10 +242,7 @@ export const cmdPlugin = (options: CmdPluginOptions = {}) =>
               env: buildSpawnEnv(process.env, {
                 ...dotenv,
                 getDotenvCliOptions: JSON.stringify(envBag),
-              } as Record<
-                string,
-                string | undefined
-              >) as unknown as NodeJS.ProcessEnv,
+              }),
               stdio: capture ? 'pipe' : 'inherit',
             });
           },

@@ -158,10 +158,7 @@ export const awsPlugin = () =>
                 string | undefined
               >;
               const exit = await runCommand(argv, shellSetting, {
-                env: buildSpawnEnv(
-                  process.env,
-                  ctxDotenv,
-                ) as unknown as NodeJS.ProcessEnv,
+                env: buildSpawnEnv(process.env, ctxDotenv),
                 stdio: capture ? 'pipe' : 'inherit',
               });
               // Deterministic termination (suppressed under tests)

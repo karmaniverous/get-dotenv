@@ -12,8 +12,6 @@
  *
  * Adapter responsibility: pure mapping; no business logic.
  */
-export type SpawnEnv = Readonly<Partial<Record<string, string>>>;
-
 const dropUndefined = (
   bag: Record<string, string | undefined>,
 ): Record<string, string> =>
@@ -27,7 +25,7 @@ const dropUndefined = (
 export const buildSpawnEnv = (
   base?: NodeJS.ProcessEnv,
   overlay?: Record<string, string | undefined>,
-): SpawnEnv => {
+): NodeJS.ProcessEnv => {
   const raw: Record<string, string | undefined> = {
     ...(base ?? {}),
     ...(overlay ?? {}),

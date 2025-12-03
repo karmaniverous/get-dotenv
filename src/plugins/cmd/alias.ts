@@ -253,7 +253,7 @@ export const attachParentAlias = (
         env: buildSpawnEnv(process.env, {
           ...dotenv,
           getDotenvCliOptions: nestedBag,
-        }) as unknown as NodeJS.ProcessEnv,
+        }),
         stdio: capture ? 'pipe' : 'inherit',
       });
       dbg('run:done', { exitCode });
