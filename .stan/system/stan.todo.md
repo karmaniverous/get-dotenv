@@ -182,4 +182,9 @@ to satisfy TS and ESLint after switching to createCommand('cmd').
 — Help tests (false negatives): relaxed E2E trailing-newline assertions to a
 robust “ends with blank line” helper that strips trailing spaces and accepts
 CRLF/LF, avoiding false negatives from chunked writes while preserving the
-blank-line guarantee.
+blank-line guarantee.
+
+— Help tests (execa strip): set stripFinalNewline: false in E2E help captures
+so the printed trailing blank line is preserved in stdout. This, combined with
+the tolerant endsWithBlankLine() helper, eliminates remaining false negatives
+without altering Commander or runtime behavior.

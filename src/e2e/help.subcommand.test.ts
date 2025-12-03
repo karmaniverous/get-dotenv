@@ -23,6 +23,7 @@ describe('E2E help (subcommand and ordering)', () => {
   it('batch -h prints batch help', async () => {
     const { stdout, exitCode } = await execa(nodeBin, CLI('batch', '-h'), {
       env: { ...process.env, GETDOTENV_STDIO: 'pipe' },
+      stripFinalNewline: false,
     });
     expect(exitCode).toBe(0);
     expect(stdout).toMatch(/Usage:\s+getdotenv batch/i);
@@ -36,6 +37,7 @@ describe('E2E help (subcommand and ordering)', () => {
   it('aws -h prints aws help without global options and no self plugin group', async () => {
     const { stdout, exitCode } = await execa(nodeBin, CLI('aws', '-h'), {
       env: { ...process.env, GETDOTENV_STDIO: 'pipe' },
+      stripFinalNewline: false,
     });
     expect(exitCode).toBe(0);
     // Subcommand usage
@@ -52,6 +54,7 @@ describe('E2E help (subcommand and ordering)', () => {
   it('cmd -h prints cmd help', async () => {
     const { stdout, exitCode } = await execa(nodeBin, CLI('cmd', '-h'), {
       env: { ...process.env, GETDOTENV_STDIO: 'pipe' },
+      stripFinalNewline: false,
     });
     expect(exitCode).toBe(0);
     expect(stdout).toMatch(/Usage:\s+getdotenv cmd/i);
@@ -63,6 +66,7 @@ describe('E2E help (subcommand and ordering)', () => {
   it('root -h shows plugin options before commands (hybrid ordering)', async () => {
     const { stdout, exitCode } = await execa(nodeBin, CLI('-h'), {
       env: { ...process.env, GETDOTENV_STDIO: 'pipe' },
+      stripFinalNewline: false,
     });
     expect(exitCode).toBe(0);
     // Basic sanity: must be root help
