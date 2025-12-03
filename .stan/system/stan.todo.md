@@ -177,4 +177,9 @@ via createCommand('cmd') so it uses the host’s helpInformation override that
 guarantees a trailing blank line.
 
 — cmd types: added a type-only import for Commander’s Command in the cmd plugin
-to satisfy TS and ESLint after switching to createCommand('cmd').
+to satisfy TS and ESLint after switching to createCommand('cmd').
+
+— Help tests (false negatives): relaxed E2E trailing-newline assertions to a
+robust “ends with blank line” helper that strips trailing spaces and accepts
+CRLF/LF, avoiding false negatives from chunked writes while preserving the
+blank-line guarantee.
