@@ -174,4 +174,7 @@ test stdout suppression (GETDOTENV_STDIO=pipe already bypasses it).
 
 — cmd help trailing newline: made the 'cmd' subcommand a GetDotenvCli child
 via createCommand('cmd') so it uses the host’s helpInformation override that
-guarantees a trailing blank line.
+guarantees a trailing blank line.
+
+— cmd types: added a type-only import for Commander’s Command in the cmd plugin
+to satisfy TS and ESLint after switching to createCommand('cmd').

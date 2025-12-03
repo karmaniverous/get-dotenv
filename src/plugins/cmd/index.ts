@@ -1,4 +1,5 @@
 import type { GetDotenvCli } from '@karmaniverous/get-dotenv/cliHost';
+import type { Command } from 'commander';
 
 import { runCommand } from '../../cliCore/exec';
 import type { GetDotenvCliOptions } from '../../cliCore/GetDotenvCliOptions';
