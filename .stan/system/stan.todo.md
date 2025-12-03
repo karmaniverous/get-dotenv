@@ -161,4 +161,8 @@ line after help” guarantee.
 
 — Help trailing newline (tests/CI): ensured an extra blank line is printed after
 help in both paths without modifying Commander:
-  • root (-h) short‑circuit: write an extra '\n' after outputHelp();  • subcommand help: in exitOverride for 'commander.helpDisplayed', write '\n'.
+  • root (-h) short‑circuit: write an extra '\n' after outputHelp();  • subcommand help: in exitOverride for 'commander.helpDisplayed', write '\n'.
+
+— Help newline (subcommands): configured Commander output via program.configureOutput
+to ensure help prints end with a blank line consistently (>= 2 trailing newlines
+when captured), avoiding test flakes without modifying Commander internals.

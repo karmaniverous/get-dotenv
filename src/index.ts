@@ -48,6 +48,23 @@ export function createCli(opts: CreateCliOptions = {}): {
       : 'getdotenv';
 
   const program: GetDotenvCli = new GetDotenvCli(alias);
+  // Normalize Commander output so help prints always end with a blank line.
+  // This keeps E2E assertions (CRLF and >=2 trailing newlines) portable across
+  // runtimes and capture modes without altering Commander internals.
+  program.configureOutput({
+    writeOut(str: string) {
+      const txt = typeof str === 'string' ? str : '';
+      const hasTwo = /(?:\r?\n){2,}$/.test(txt);
+      const hasOne = /\r?\n$/.test(txt);
+      const out = hasTwo ? txt : hasOne ? txt + '\n' : txt + '\n\n';
+      try {
+        process.stdout.write(out);
+      } catch {
+        /* ignore */
+      }
+    },
+    writeErr: (str: string) => process.stderr.write(str),
+  });
   // Install base root flags and included plugins; resolve context once per run.
   program
     .attachRootOptions({ loadProcess: false })
@@ -134,13 +151,6 @@ export function createCli(opts: CreateCliOptions = {}): {
             void program.helpInformation();
           } else {
             program.outputHelp();
-            // Ensure a trailing blank line for prompt separation. This keeps
-            // E2E assertions (CRLF and >=2 newlines) portable across runtimes.
-            try {
-              process.stdout.write('\n');
-            } catch {
-              /* ignore */
-            }
           }
           return;
         }
