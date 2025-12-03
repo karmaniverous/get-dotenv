@@ -38,7 +38,6 @@ When updated: 2025-10-19T00:00:00Z
   - Dev guide: stage precedence; recommend plugins.smoz.stage mapping; strict/diagnostics notes.
   - Troubleshooting: add safe tracing and quoting recipes for cmd; clarify Windows path hygiene is handled by spawn-env.
   - Config Files & Overlays: expand with a “Plugin config” section (location, interpolation timing, precedence) and examples used by dynamic help.
-  - Remove any outdated references to generator paths from all guides/README.
 
 ## Completed (recent)
 
