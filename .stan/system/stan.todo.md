@@ -28,16 +28,13 @@ When updated: 2025-10-19T00:00:00Z
 - Tests and CI updates
   - Register/openapi/package outputs remain byte-for-byte identical.
   - Dev: stage precedence matrix; inline/offline spawn-env normalization; Windows CI smoke.
-  - Add cmd/batch smoke tests (quote handling and env propagation).
   - Verify help header branding and flags (-e/--strict/--trace/-V).
-  - Reduce remaining test noise: optionally gate help printing under tests (suppress outputHelp when GETDOTENV_TEST=1 or GETDOTENV_STDIO=pipe) or refactor help‑flow tests to assert helpInformation() instead of printing.
-  - Investigate occasional timeout in interop/createCli.esm.test.ts on Windows; consider bumping that test’s timeout to 20s or micro‑optimizing the top‑level help path.
 
 - Documentation updates
   - CLI: clarify host-based design; new commands (cmd/batch); global flags; getdotenv.config.\* surfaces.
   - Dev guide: stage precedence; recommend plugins.smoz.stage mapping; strict/diagnostics notes.
   - Troubleshooting: add safe tracing and quoting recipes for cmd; clarify Windows path hygiene is handled by spawn-env.
-  - Config Files & Overlays: expand with a “Plugin config” section (location, interpolation timing, precedence) and examples used by dynamic help.
+  - Config Files & Overlays: (follow-ups) ensure cross-links to plugin config and dynamic help examples are complete.
 
 ## Completed (recent)
 
