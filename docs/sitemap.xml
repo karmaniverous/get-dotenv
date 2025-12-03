@@ -2,858 +2,734 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/index.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/modules.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/hierarchy.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/documents/Guides.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/documents/Guides.Getting_Started.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/documents/Guides.Cascade_and_precedence.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/documents/Guides.Shell_execution_behavior.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/documents/Guides.Config_files_and_overlays.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/documents/Guides.Authoring_Plugins.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/documents/Guides.Authoring_Plugins.Lifecycle___Wiring.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/documents/Guides.Authoring_Plugins.Config___Validation.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/documents/Guides.Authoring_Plugins.Diagnostics___Errors.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/documents/Guides.Authoring_Plugins.Executing_Shell_Commands.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/documents/Guides.Shipped_Plugins.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/documents/Guides.Shipped_Plugins.aws.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/documents/Guides.Shipped_Plugins.batch.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/documents/Guides.Shipped_Plugins.cmd.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/documents/Guides.Shipped_Plugins.init.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/documents/Guides.Shipped_Plugins.demo.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
-	</url>
-	<url>
-		<loc>https://docs.karmanivero.us/get-dotenv/documents/Guides.Generated_CLI.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/documents/CHANGELOG.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/modules/cli_getdotenv.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
-	</url>
-	<url>
-		<loc>https://docs.karmanivero.us/get-dotenv/modules/cliCore_attachRootOptions.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
-	</url>
-	<url>
-		<loc>https://docs.karmanivero.us/get-dotenv/functions/cliCore_attachRootOptions.attachRootOptions.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/modules/cliCore_defaults.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/variables/cliCore_defaults.baseRootOptionDefaults.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/modules/cliCore_exec.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/functions/cliCore_exec.runCommand.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/functions/cliCore_exec.runCommandResult.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/modules/cliCore_flagUtils.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/functions/cliCore_flagUtils.resolveExclusion.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/functions/cliCore_flagUtils.resolveExclusionAll.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/functions/cliCore_flagUtils.setOptionalFlag.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/modules/cliCore_GetDotenvCliOptions.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/interfaces/cliCore_GetDotenvCliOptions.GetDotenvCliOptions.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/types/cliCore_GetDotenvCliOptions.Scripts.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/variables/cliCore_GetDotenvCliOptions.baseGetDotenvCliOptions.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/modules/cliCore_resolveCliOptions.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/functions/cliCore_resolveCliOptions.resolveCliOptions.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/modules/cliCore_spawnEnv.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/types/cliCore_spawnEnv.SpawnEnv.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/functions/cliCore_spawnEnv.buildSpawnEnv.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/modules/cliCore_types.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/types/cliCore_types.CommandWithOptions.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/types/cliCore_types.RootOptionsShape.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/types/cliCore_types.ScriptsTable.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/modules/cliHost.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/classes/cliHost.GetDotenvCli.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/functions/cliHost.readMergedOptions.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
+	</url>
+	<url>
+		<loc>https://docs.karmanivero.us/get-dotenv/modules/cliHost_attachRootOptions.html</loc>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
+	</url>
+	<url>
+		<loc>https://docs.karmanivero.us/get-dotenv/functions/cliHost_attachRootOptions.attachRootOptions.html</loc>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/modules/cliHost_computeContext.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/functions/cliHost_computeContext.computeContext.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/modules/cliHost_definePlugin.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/interfaces/cliHost_definePlugin.GetDotenvCliPlugin.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/types/cliHost_definePlugin.DefineSpec.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/types/cliHost_definePlugin.GetDotenvCliPublic.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/functions/cliHost_definePlugin.definePlugin.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/modules/cliHost_GetDotenvCli.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/classes/cliHost_GetDotenvCli.GetDotenvCli.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/types/cliHost_GetDotenvCli.GetDotenvCliCtx.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
+	</url>
+	<url>
+		<loc>https://docs.karmanivero.us/get-dotenv/types/cliHost_GetDotenvCli.ResolvedHelpConfig.html</loc>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/modules/config.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/modules/config_loader.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/types/config_loader.ConfigFile.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/types/config_loader.ConfigPrivacy.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/types/config_loader.ConfigScope.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/types/config_loader.ResolvedConfigSources.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/functions/config_loader.discoverConfigFiles.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/functions/config_loader.loadConfigFile.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/functions/config_loader.resolveGetDotenvConfigSources.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/functions/config_loader.toFileUrl.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
-	</url>
-	<url>
-		<loc>https://docs.karmanivero.us/get-dotenv/modules/config_resolveWithLoader.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
-	</url>
-	<url>
-		<loc>https://docs.karmanivero.us/get-dotenv/functions/config_resolveWithLoader.resolveDotenvWithConfigLoader.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/modules/config_validate.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/functions/config_validate.validateEnvAgainstSources.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/modules/diagnostics_entropy.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/types/diagnostics_entropy.EntropyOptions.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/functions/diagnostics_entropy.maybeWarnEntropy.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/modules/diagnostics_redact.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/types/diagnostics_redact.RedactOptions.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/functions/diagnostics_redact.redactDisplay.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/functions/diagnostics_redact.redactObject.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/functions/diagnostics_redact.redactTriple.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/modules/dotenvExpand.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/functions/dotenvExpand.dotenvExpand.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/functions/dotenvExpand.dotenvExpandAll.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/functions/dotenvExpand.dotenvExpandFromProcessEnv.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/modules/env_overlay.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/types/env_overlay.OverlayConfigSources.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/functions/env_overlay.overlayEnv.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
-	</url>
-	<url>
-		<loc>https://docs.karmanivero.us/get-dotenv/modules/generateGetDotenvCli.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
-	</url>
-	<url>
-		<loc>https://docs.karmanivero.us/get-dotenv/functions/generateGetDotenvCli.generateGetDotenvCli.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
-	</url>
-	<url>
-		<loc>https://docs.karmanivero.us/get-dotenv/modules/generateGetDotenvCli_batchCommand.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
-	</url>
-	<url>
-		<loc>https://docs.karmanivero.us/get-dotenv/types/generateGetDotenvCli_batchCommand.BatchCommandOptions.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
-	</url>
-	<url>
-		<loc>https://docs.karmanivero.us/get-dotenv/variables/generateGetDotenvCli_batchCommand.batchCommand.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
-	</url>
-	<url>
-		<loc>https://docs.karmanivero.us/get-dotenv/modules/generateGetDotenvCli_batchCommand_cmdCommand.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
-	</url>
-	<url>
-		<loc>https://docs.karmanivero.us/get-dotenv/variables/generateGetDotenvCli_batchCommand_cmdCommand.cmdCommand.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
-	</url>
-	<url>
-		<loc>https://docs.karmanivero.us/get-dotenv/modules/generateGetDotenvCli_batchCommand_execShellCommandBatch.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
-	</url>
-	<url>
-		<loc>https://docs.karmanivero.us/get-dotenv/modules/generateGetDotenvCli_buildRootCommand.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
-	</url>
-	<url>
-		<loc>https://docs.karmanivero.us/get-dotenv/functions/generateGetDotenvCli_buildRootCommand.createRootCommand.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
-	</url>
-	<url>
-		<loc>https://docs.karmanivero.us/get-dotenv/modules/generateGetDotenvCli_cmdCommand.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
-	</url>
-	<url>
-		<loc>https://docs.karmanivero.us/get-dotenv/variables/generateGetDotenvCli_cmdCommand.cmdCommand.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
-	</url>
-	<url>
-		<loc>https://docs.karmanivero.us/get-dotenv/modules/generateGetDotenvCli_flagUtils.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
-	</url>
-	<url>
-		<loc>https://docs.karmanivero.us/get-dotenv/modules/generateGetDotenvCli_GetDotenvCliGenerateOptions.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
-	</url>
-	<url>
-		<loc>https://docs.karmanivero.us/get-dotenv/interfaces/generateGetDotenvCli_GetDotenvCliGenerateOptions.GetDotenvCliCommand.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
-	</url>
-	<url>
-		<loc>https://docs.karmanivero.us/get-dotenv/interfaces/generateGetDotenvCli_GetDotenvCliGenerateOptions.GetDotenvCliGenerateOptions.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
-	</url>
-	<url>
-		<loc>https://docs.karmanivero.us/get-dotenv/types/generateGetDotenvCli_GetDotenvCliGenerateOptions.GetDotenvCliPostHookCallback.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
-	</url>
-	<url>
-		<loc>https://docs.karmanivero.us/get-dotenv/types/generateGetDotenvCli_GetDotenvCliGenerateOptions.GetDotenvCliPreHookCallback.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
-	</url>
-	<url>
-		<loc>https://docs.karmanivero.us/get-dotenv/functions/generateGetDotenvCli_GetDotenvCliGenerateOptions.resolveGetDotenvCliGenerateOptions.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
-	</url>
-	<url>
-		<loc>https://docs.karmanivero.us/get-dotenv/modules/generateGetDotenvCli_GetDotenvCliOptions.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
-	</url>
-	<url>
-		<loc>https://docs.karmanivero.us/get-dotenv/modules/generateGetDotenvCli_preSubcommandHook.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
-	</url>
-	<url>
-		<loc>https://docs.karmanivero.us/get-dotenv/types/generateGetDotenvCli_preSubcommandHook.PreSubHookContext.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
-	</url>
-	<url>
-		<loc>https://docs.karmanivero.us/get-dotenv/functions/generateGetDotenvCli_preSubcommandHook.makePreSubcommandHook.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
-	</url>
-	<url>
-		<loc>https://docs.karmanivero.us/get-dotenv/modules/generateGetDotenvCli_resolve.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/modules/getDotenv.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/functions/getDotenv.getDotenv.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/modules/GetDotenvOptions.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/interfaces/GetDotenvOptions.GetDotenvOptions.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/types/GetDotenvOptions.GetDotenvDynamic.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/types/GetDotenvOptions.GetDotenvDynamicFunction.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/types/GetDotenvOptions.Logger.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/types/GetDotenvOptions.ProcessEnv.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/types/GetDotenvOptions.RootOptionsShapeCompat.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/variables/GetDotenvOptions.getDotenvOptionsFilename.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/functions/GetDotenvOptions.defineDynamic.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/functions/GetDotenvOptions.getDotenvCliOptions2Options.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/functions/GetDotenvOptions.resolveGetDotenvOptions.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/modules/index.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/types/index.CreateCliOptions.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/functions/index.createCli.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/modules/plugins.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/modules/plugins_aws.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/functions/plugins_aws.awsPlugin.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/modules/plugins_aws_service.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/functions/plugins_aws_service.parseExportCredentialsEnv.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/functions/plugins_aws_service.parseExportCredentialsJson.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/functions/plugins_aws_service.resolveAwsContext.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/modules/plugins_aws_types.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/types/plugins_aws_types.AwsContext.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/types/plugins_aws_types.AwsCredentials.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/types/plugins_aws_types.AwsPluginConfig.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/types/plugins_aws_types.AwsPluginConfigResolved.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/variables/plugins_aws_types.AwsPluginConfigSchema.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/modules/plugins_batch.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/functions/plugins_batch.batchPlugin.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/modules/plugins_batch_actions_defaultCmdAction.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/functions/plugins_batch_actions_defaultCmdAction.buildDefaultCmdAction.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/modules/plugins_batch_actions_parentAction.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/functions/plugins_batch_actions_parentAction.buildParentAction.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/modules/plugins_batch_types.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/types/plugins_batch_types.BatchConfig.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/types/plugins_batch_types.BatchPluginOptions.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/variables/plugins_batch_types.BatchConfigSchema.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/variables/plugins_batch_types.ScriptSchema.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/modules/plugins_cmd.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/types/plugins_cmd.CmdPluginOptions.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/functions/plugins_cmd.cmdPlugin.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/modules/plugins_cmd_alias.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/functions/plugins_cmd_alias.attachParentAlias.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/modules/plugins_cmd_tokenize.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/functions/plugins_cmd_tokenize.tokenize.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/modules/plugins_demo.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/functions/plugins_demo.demoPlugin.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/modules/plugins_init.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/types/plugins_init.InitPluginOptions.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/functions/plugins_init.initPlugin.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/modules/plugins_init_constants.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/variables/plugins_init_constants.TEMPLATES_ROOT.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/modules/plugins_init_io.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/functions/plugins_init_io.copyTextFile.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/functions/plugins_init_io.ensureDir.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/functions/plugins_init_io.ensureLines.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/functions/plugins_init_io.writeFile.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/modules/plugins_init_plan.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/functions/plugins_init_plan.planCliCopies.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/functions/plugins_init_plan.planConfigCopies.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/modules/plugins_init_prompts.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/functions/plugins_init_prompts.isNonInteractive.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/functions/plugins_init_prompts.promptDecision.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/modules/readDotenv.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/functions/readDotenv.readDotenv.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/functions/readDotenv.readDotenvSync.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
-	</url>
-	<url>
-		<loc>https://docs.karmanivero.us/get-dotenv/modules/schema_getDotenvCliGenerateOptions.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
-	</url>
-	<url>
-		<loc>https://docs.karmanivero.us/get-dotenv/types/schema_getDotenvCliGenerateOptions.GetDotenvCliGenerateOptionsRaw.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
-	</url>
-	<url>
-		<loc>https://docs.karmanivero.us/get-dotenv/types/schema_getDotenvCliGenerateOptions.GetDotenvCliGenerateOptionsResolved.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
-	</url>
-	<url>
-		<loc>https://docs.karmanivero.us/get-dotenv/variables/schema_getDotenvCliGenerateOptions.getDotenvCliGenerateOptionsSchemaRaw.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
-	</url>
-	<url>
-		<loc>https://docs.karmanivero.us/get-dotenv/variables/schema_getDotenvCliGenerateOptions.getDotenvCliGenerateOptionsSchemaResolved.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/modules/schema_getDotenvCliOptions.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/types/schema_getDotenvCliOptions.GetDotenvCliOptionsRaw.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/types/schema_getDotenvCliOptions.GetDotenvCliOptionsResolved.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/variables/schema_getDotenvCliOptions.getDotenvCliOptionsSchemaRaw.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/variables/schema_getDotenvCliOptions.getDotenvCliOptionsSchemaResolved.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/modules/schema_getDotenvConfig.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/types/schema_getDotenvConfig.GetDotenvConfigRaw.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/types/schema_getDotenvConfig.GetDotenvConfigResolved.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/variables/schema_getDotenvConfig.getDotenvConfigSchemaRaw.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/variables/schema_getDotenvConfig.getDotenvConfigSchemaResolved.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/functions/schema_getDotenvConfig.parseResolveConfig.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/modules/schema_getDotenvOptions.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/types/schema_getDotenvOptions.GetDotenvOptionsRaw.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/types/schema_getDotenvOptions.GetDotenvOptionsResolved.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/variables/schema_getDotenvOptions.getDotenvOptionsSchemaRaw.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/variables/schema_getDotenvOptions.getDotenvOptionsSchemaResolved.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/variables/schema_getDotenvOptions.processEnvSchema.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/modules/services_batch_execShellCommandBatch.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/functions/services_batch_execShellCommandBatch.execShellCommandBatch.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/modules/services_batch_resolve.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/types/services_batch_resolve.Scripts.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/functions/services_batch_resolve.resolveCommand.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/functions/services_batch_resolve.resolveShell.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/modules/util_defaultsDeep.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/functions/util_defaultsDeep.defaultsDeep.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/modules/util_interpolateDeep.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/functions/util_interpolateDeep.interpolateDeep.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/modules/util_loadModuleDefault.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 	<url>
 		<loc>https://docs.karmanivero.us/get-dotenv/functions/util_loadModuleDefault.loadModuleDefault.html</loc>
-		<lastmod>2025-11-26T03:49:44.753Z</lastmod>
+		<lastmod>2025-12-03T13:16:04.766Z</lastmod>
 	</url>
 </urlset>
