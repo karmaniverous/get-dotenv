@@ -201,11 +201,7 @@ export const buildDefaultCmdAction =
     const scriptsExec = scripts ?? mergedExec.scripts;
     const shellExec = shell ?? mergedExec.shell;
     const resolved = resolveCommand(scriptsExec, input);
-    const shellSetting = resolveShell(
-      scriptsExec,
-      input,
-      shellExec,
-    ) as unknown as string | boolean | URL;
+    const shellSetting = resolveShell(scriptsExec, input, shellExec);
     // Preserve argv array only for shell-off Node -e snippets to avoid
     // lossy re-tokenization (Windows/PowerShell quoting). For simple
     // commands (e.g., "echo OK") keep string form to satisfy unit tests.

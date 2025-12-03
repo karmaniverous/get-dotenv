@@ -1,4 +1,3 @@
-import type { GetDotenvCli } from '@karmaniverous/get-dotenv/cliHost';
 import type { Command } from 'commander';
 
 import { runCommand } from '../../cliCore/exec';
@@ -46,7 +45,7 @@ export const cmdPlugin = (options: CmdPluginOptions = {}) =>
       };
       const aliasKey = aliasSpec ? deriveKey(aliasSpec.flags) : undefined;
       // Create as a GetDotenvCli child so helpInformation includes a trailing blank line.
-      const cmd = (cli as unknown as GetDotenvCli)
+      const cmd = cli
         .createCommand('cmd')
         .description(
           'Execute command according to the --shell option, conflicts with --command option (default subcommand)',
@@ -127,10 +126,7 @@ export const cmdPlugin = (options: CmdPluginOptions = {}) =>
 
             // Round-trip CLI options for nested getdotenv invocations.
             // Omit logger (functions are not serializable).
-            const { logger: _omit, ...envBag } = merged as unknown as Record<
-              string,
-              unknown
-            >;
+            const { logger: _omit, ...envBag } = merged;
             const capture =
               process.env.GETDOTENV_STDIO === 'pipe' ||
               Boolean((merged as { capture?: boolean }).capture);
@@ -219,11 +215,7 @@ export const cmdPlugin = (options: CmdPluginOptions = {}) =>
                 );
               }
             }
-            const shellSetting = resolveShell(
-              scripts,
-              input,
-              shell,
-            ) as unknown as string | boolean | URL;
+            const shellSetting = resolveShell(scripts, input, shell);
             /**
              * Preserve original argv array when:
              * - shell is OFF (plain execa), and
@@ -251,7 +243,6 @@ export const cmdPlugin = (options: CmdPluginOptions = {}) =>
       else cli.addCommand(cmd);
 
       // Parent-attached option alias (optional).
-      if (aliasSpec)
-        attachParentAlias(cli as unknown as GetDotenvCli, options, cmd);
+      if (aliasSpec) attachParentAlias(cli, options, cmd);
     },
   });

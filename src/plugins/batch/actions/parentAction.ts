@@ -1,6 +1,7 @@
 import type { GetDotenvCliPublic } from '@karmaniverous/get-dotenv/cliHost';
 import type { Command } from 'commander';
 
+import type { Logger } from '../../../GetDotenvOptions';
 import { execShellCommandBatch } from '../../../services/batch/execShellCommandBatch';
 import type { Scripts } from '../../../services/batch/resolve';
 import { resolveCommand, resolveShell } from '../../../services/batch/resolve';
@@ -16,7 +17,7 @@ export const buildParentAction =
     commandParts: string[] | undefined,
     thisCommand: Command,
   ): Promise<void> => {
-    const logger = opts.logger ?? console;
+    const loggerLocal: Logger = opts.logger ?? console;
 
     // Ensure context exists (host preSubcommand on root creates if missing).
     const ctx = cli.getCtx();
@@ -54,11 +55,7 @@ export const buildParentAction =
       const scriptsAll = opts.scripts ?? cfg.scripts ?? mergedBag.scripts;
       const shellAll = opts.shell ?? cfg.shell ?? mergedBag.shell;
       const resolved = resolveCommand(scriptsAll, input);
-      const shellSetting = resolveShell(
-        scriptsAll,
-        input,
-        shellAll,
-      ) as unknown as string | boolean | URL;
+      const shellSetting = resolveShell(scriptsAll, input, shellAll);
       // Parent path: pass a string; executor handles shell-specific details.
       const commandArg = resolved;
 
@@ -68,7 +65,7 @@ export const buildParentAction =
         globs,
         ignoreErrors,
         list: false,
-        logger,
+        logger: loggerLocal,
         ...(pkgCwd ? { pkgCwd } : {}),
         rootPath,
         shell: shellSetting,
@@ -86,23 +83,22 @@ export const buildParentAction =
             })
           | null) ?? null
       )?.getDotenvCliOptions ?? {}) as { shell?: string | boolean };
+
+      const shellMerged = opts.shell ?? cfg.shell ?? mergedBag.shell ?? false;
       await execShellCommandBatch({
         globs,
         ignoreErrors,
         list: true,
-        logger,
+        logger: loggerLocal,
         ...(pkgCwd ? { pkgCwd } : {}),
         rootPath,
-        shell: (opts.shell ?? cfg.shell ?? mergedBag.shell ?? false) as
-          | string
-          | boolean
-          | URL,
+        shell: shellMerged,
       });
       return;
     }
 
     if (!commandOpt && !list) {
-      logger.error(`No command provided. Use --command or --list.`);
+      loggerLocal.error(`No command provided. Use --command or --list.`);
       process.exit(0);
     }
     if (typeof commandOpt === 'string') {
@@ -128,13 +124,10 @@ export const buildParentAction =
         globs,
         ignoreErrors,
         list,
-        logger,
+        logger: loggerLocal,
         ...(pkgCwd ? { pkgCwd } : {}),
         rootPath,
-        shell: resolveShell(scriptsOpt, commandOpt, shellOpt) as unknown as
-          | string
-          | boolean
-          | URL,
+        shell: resolveShell(scriptsOpt, commandOpt, shellOpt),
       });
       return;
     }
@@ -153,18 +146,15 @@ export const buildParentAction =
       scripts?: Scripts;
       shell?: string | boolean;
     };
-    const shellOnly = (opts.shell ?? cfg.shell ?? mergedBag.shell ?? false) as
-      | string
-      | boolean
-      | undefined;
+    const shellOnly = opts.shell ?? cfg.shell ?? mergedBag.shell ?? false;
 
     await execShellCommandBatch({
       globs,
       ignoreErrors,
       list: true,
-      logger,
+      logger: loggerLocal,
       ...(pkgCwd ? { pkgCwd } : {}),
       rootPath,
-      shell: (shellOnly ?? false) as unknown as string | boolean | URL,
+      shell: shellOnly,
     });
   };

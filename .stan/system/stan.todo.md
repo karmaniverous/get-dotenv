@@ -247,3 +247,11 @@ unnecessary env casts across the codebase:
     evaluateDynamicOptions payload and simplified help suppression branch.
   - GetDotenvCli.createDynamicOption: removed parser cast by wrapping the
     callback to Commander’s argParser signature without changing behavior.
+— Inference pass (follow-up: shells/env & alias helper):
+  - Removed remaining “as unknown as string | boolean | URL” shell casts across
+    cmd, batch (parent/default actions), and aws; resolveShell typing suffices.
+  - Passed ctx?.dotenv directly to buildSpawnEnv in aws/demo (both command paths),
+    eliminating Record and ProcessEnv casts.
+  - Updated cmd alias helper to accept GetDotenvCliPublic; dropped the concrete
+    class cast at call sites and created the subcommand via cli.createCommand()
+    without casting.

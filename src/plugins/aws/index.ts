@@ -152,13 +152,9 @@ export const awsPlugin = () =>
                 rootOpts?.scripts,
                 'aws',
                 rootOpts?.shell,
-              ) as unknown as string | boolean | URL;
-              const ctxDotenv = (ctx?.dotenv ?? {}) as Record<
-                string,
-                string | undefined
-              >;
+              );
               const exit = await runCommand(argv, shellSetting, {
-                env: buildSpawnEnv(process.env, ctxDotenv),
+                env: buildSpawnEnv(process.env, ctx?.dotenv),
                 stdio: capture ? 'pipe' : 'inherit',
               });
               // Deterministic termination (suppressed under tests)

@@ -5,7 +5,7 @@ const dbg = (...args: unknown[]) => {
     console.error('[getdotenv:alias]', ...args);
   }
 };
-import type { GetDotenvCli } from '@karmaniverous/get-dotenv/cliHost';
+import type { GetDotenvCliPublic } from '@karmaniverous/get-dotenv/cliHost';
 import type { Command } from 'commander';
 
 import { runCommand } from '../../cliCore/exec';
@@ -23,7 +23,7 @@ import { resolveCommand, resolveShell } from '../../services/batch/resolve';
 import type { CmdPluginOptions } from './index';
 import { tokenize } from './tokenize';
 export const attachParentAlias = (
-  cli: GetDotenvCli,
+  cli: GetDotenvCliPublic,
   options: CmdPluginOptions,
   _cmd: Command,
 ) => {
