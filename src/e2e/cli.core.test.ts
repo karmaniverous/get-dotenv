@@ -22,6 +22,26 @@ const CLI = (...args: string[]) => [
 const TROOT = path.posix.join('.tsbuild', 'e2e-cli');
 
 describe('E2E CLI (core options and plugins)', () => {
+  it('displays cli version', async () => {
+    const { stdout, exitCode } = await execa(nodeBin, CLI('-V'), {
+      env: { ...process.env, GETDOTENV_STDIO: 'pipe' },
+    });
+    expect(exitCode).toBe(0);
+    // Commander prints the version string (e.g., "5.2.6")
+    expect(/^\d+\.\d+\.\d+/.test(stdout.trim())).toBe(true);
+  }, 30000);
+
+  it('runs a default shell command (no --shell-off) and echoes OK', async () => {
+    const { stdout, exitCode } = await execa(
+      nodeBin,
+      CLI('cmd', 'echo', 'OK'),
+      {
+        env: { ...process.env, GETDOTENV_STDIO: 'pipe' },
+      },
+    );
+    expect(exitCode).toBe(0);
+    expect(stdout.trim()).toContain('OK');
+  }, 30000);
   it('displays cli help', async () => {
     const { stdout, exitCode } = await execa(nodeBin, CLI('-h'), {
       env: { ...process.env, GETDOTENV_STDIO: 'pipe' },

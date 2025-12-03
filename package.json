@@ -219,6 +219,7 @@
         "npm run build",
         "npm run verify:types",
         "npm run verify:package",
+        "npm run verify:bundle",
         "npm run verify:tarball"
       ],
       "after:release": [
