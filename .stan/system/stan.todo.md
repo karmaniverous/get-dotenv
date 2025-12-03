@@ -231,4 +231,13 @@ portion of casts from GetDotenvCli without altering behavior.
     invokes p.afterResolve(this, ctx) without casts; child traversal typed.
   - Removed unnecessary nullish checks on typed fields and an unused local in
     tagAppOptions; use cmd.name() directly. index.ts no longer casts readonly
-    commands; iterate directly to satisfy ts/eslint.
+    commands; iterate directly to satisfy ts/eslint.
+
+— Inference pass (casts/annotations cleanup):
+  - alias.ts: dropped redundant GetDotenvCli/Option casts; switched to
+    baseGetDotenvCliOptions; simplified logger/debug, resolveShell, and JSON
+    stringify paths; only retained the required env cast at runCommand seam.
+  - index.ts: removed Command cast and explicit ResolvedHelpConfig local; inline
+    evaluateDynamicOptions payload and simplified help suppression branch.
+  - GetDotenvCli.createDynamicOption: removed parser cast by wrapping the
+    callback to Commander’s argParser signature without changing behavior.

@@ -7,11 +7,10 @@ const dbg = (...args: unknown[]) => {
 };
 import type { GetDotenvCli } from '@karmaniverous/get-dotenv/cliHost';
 import type { Command } from 'commander';
-import type { Option } from 'commander';
 
-import { baseRootOptionDefaults } from '../../cliCore/defaults';
 import { runCommand } from '../../cliCore/exec';
 import type { GetDotenvCliOptions } from '../../cliCore/GetDotenvCliOptions';
+import { baseGetDotenvCliOptions } from '../../cliCore/GetDotenvCliOptions';
 import { resolveCliOptions } from '../../cliCore/resolveCliOptions';
 import { buildSpawnEnv } from '../../cliCore/spawnEnv';
 import type { CommandWithOptions } from '../../cliCore/types';
@@ -49,10 +48,10 @@ export const attachParentAlias = (
     'alias of cmd subcommand; provide command tokens (variadic)';
   cli.option(aliasSpec.flags, desc);
   // Tag the just-added parent option for grouped help rendering at the root.
-  const optsArr = (cli as unknown as { options: Option[] }).options;
+  const optsArr = cli.options;
   if (optsArr.length > 0) {
-    const last = optsArr[optsArr.length - 1] as Option;
-    (cli as unknown as GetDotenvCli).setOptionGroup(last, 'plugin:cmd');
+    const last = optsArr[optsArr.length - 1];
+    if (last) cli.setOptionGroup(last, 'plugin:cmd');
   }
 
   // Shared alias executor for either preAction or preSubcommand hooks.
@@ -90,14 +89,13 @@ export const attachParentAlias = (
     dbg('alias-only invocation detected');
     // Merge CLI options and resolve dotenv context.
     const { merged } = resolveCliOptions<GetDotenvCliOptions>(
-      o as unknown,
-      // cast through unknown to avoid readonly -> mutable incompatibilities
-      baseRootOptionDefaults as unknown as Partial<GetDotenvCliOptions>,
+      o,
+      baseGetDotenvCliOptions,
       process.env.getDotenvCliOptions,
     );
-    const logger: Logger = (merged as { logger?: Logger }).logger ?? console;
+    const logger: Logger = merged.logger ?? console;
     const serviceOptions = getDotenvCliOptions2Options(merged);
-    await (cli as unknown as GetDotenvCli).resolveAndLoad(serviceOptions);
+    await cli.resolveAndLoad(serviceOptions);
 
     // Normalize alias value.
     const joined =
@@ -113,17 +111,12 @@ export const attachParentAlias = (
 
     dbg('resolved input', { input });
     const resolved = resolveCommand(merged.scripts, input);
-    const lg = logger as unknown as {
-      debug?: (...a: unknown[]) => void;
-      log: (...a: unknown[]) => void;
-    };
     if ((merged as { debug?: boolean }).debug) {
-      (lg.debug ?? lg.log)('\n*** command ***\n', `'${resolved}'`);
+      logger.log('\n*** command ***\n', `'${resolved}'`);
     }
-    const { logger: _omit, ...envBag } = merged as unknown as Record<
-      string,
-      unknown
-    >;
+    // Build env overlay propagation for nested CLI behavior
+    // (stringify merged bag; JSON will naturally drop functions like logger methods).
+    const nestedBag = JSON.stringify(merged);
     // Test guard: when running under tests, prefer stdio: 'inherit' to avoid
     // assertions depending on captured stdio; ignore GETDOTENV_STDIO/capture.
     const underTests =
@@ -132,16 +125,15 @@ export const attachParentAlias = (
     const forceExit = process.env.GETDOTENV_FORCE_EXIT === '1';
     const capture =
       !underTests &&
-      (process.env.GETDOTENV_STDIO === 'pipe' ||
-        Boolean((merged as unknown as { capture?: boolean }).capture));
+      (process.env.GETDOTENV_STDIO === 'pipe' || Boolean(merged.capture));
     dbg('run:start', { capture, shell: merged.shell });
     // Prefer explicit env injection: include resolved dotenv map to avoid leaking
     // parent process.env secrets when exclusions are set.
-    const ctx = (cli as unknown as GetDotenvCli).getCtx();
+    const ctx = cli.getCtx();
     const dotenv = (ctx?.dotenv ?? {}) as Record<string, string | undefined>;
     // Diagnostics: --trace [keys...]
     const traceOpt = (
-      merged as unknown as {
+      merged as {
         trace?: boolean | string[];
       }
     ).trace;
@@ -206,11 +198,7 @@ export const attachParentAlias = (
     let exitCode = Number.NaN;
     try {
       // Resolve shell and preserve argv for Node -e snippets under shell-off.
-      const shellSetting = resolveShell(
-        merged.scripts,
-        input,
-        merged.shell,
-      ) as unknown as string | boolean | URL;
+      const shellSetting = resolveShell(merged.scripts, input, merged.shell);
 
       let commandArg: string | string[] = resolved;
       /**       * Special-case: when shell is OFF and no script alias remap occurred
@@ -264,11 +252,8 @@ export const attachParentAlias = (
       exitCode = await runCommand(commandArg, shellSetting, {
         env: buildSpawnEnv(process.env, {
           ...dotenv,
-          getDotenvCliOptions: JSON.stringify(envBag),
-        } as Record<
-          string,
-          string | undefined
-        >) as unknown as NodeJS.ProcessEnv,
+          getDotenvCliOptions: nestedBag,
+        }) as unknown as NodeJS.ProcessEnv,
         stdio: capture ? 'pipe' : 'inherit',
       });
       dbg('run:done', { exitCode });

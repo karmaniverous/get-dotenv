@@ -172,7 +172,9 @@ export class GetDotenvCli<TOptions extends GetDotenvOptions = GetDotenvOptions>
     const wrapped = (c: ResolvedHelpConfig) =>
       desc(c as ResolvedHelpConfig & { plugins: TPlugins });
     DYN_DESC.set(opt, wrapped);
-    if (parser) opt.argParser(parser as (value: string) => unknown);
+    if (parser) {
+      opt.argParser((value, previous) => parser(value, previous));
+    }
     if (defaultValue !== undefined) opt.default(defaultValue);
     return opt;
   }

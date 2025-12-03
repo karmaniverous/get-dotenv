@@ -4,7 +4,6 @@ import { baseRootOptionDefaults } from './cliCore/defaults';
 import type { GetDotenvCliOptions } from './cliCore/GetDotenvCliOptions';
 import { resolveCliOptions } from './cliCore/resolveCliOptions';
 import { GetDotenvCli } from './cliHost';
-import type { ResolvedHelpConfig } from './cliHost/GetDotenvCli';
 import { awsPlugin } from './plugins/aws';
 import { batchPlugin } from './plugins/batch';
 import { cmdPlugin } from './plugins/cmd';
@@ -78,7 +77,7 @@ export function createCli(opts: CreateCliOptions = {}): {
     cmd.configureOutput(outputCfg);
     for (const child of cmd.commands) applyOutputRecursively(child);
   };
-  applyOutputRecursively(program as unknown as Command);
+  applyOutputRecursively(program);
   // Install base root flags and included plugins; resolve context once per run.
   program
     .attachRootOptions({ loadProcess: false })
@@ -154,18 +153,15 @@ export function createCli(opts: CreateCliOptions = {}): {
               baseRootOptionDefaults as unknown as Partial<GetDotenvCliOptions>,
               undefined,
             );
-          const helpCfg: ResolvedHelpConfig = {
+          program.evaluateDynamicOptions({
             ...defaultsMerged,
             plugins: ctx.pluginConfigs ?? {},
-          };
-          (program as unknown as GetDotenvCli).evaluateDynamicOptions(helpCfg);
+          });
           // Suppress output only during unit tests; allow E2E to capture.
           const piping =
             process.env.GETDOTENV_STDIO === 'pipe' ||
             process.env.GETDOTENV_STDOUT === 'pipe';
-          if (underTests && !piping) {
-            void program.helpInformation();
-          } else {
+          if (!(underTests && !piping)) {
             program.outputHelp();
           }
           return;
