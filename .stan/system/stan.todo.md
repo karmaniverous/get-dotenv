@@ -272,4 +272,9 @@ unknown cast. • batch/defaultCmdAction: removed redundant shell casts.
   validated options before calling getDotenv (exactOptionalPropertyTypes),
   simplifying splitBy to avoid unnecessary-condition lint, and reverting
   over‑strict defaultsDeep generics at call sites in favor of a single
-  result cast. Removed an unnecessary optional chain on customOptions.logger.
+  result cast. Removed an unnecessary optional chain on customOptions.logger.
+
+— Typecheck/lint follow-up: cast defaultsDeep results via unknown to concrete
+  option types in GetDotenvOptions (fix TS2352 under exact optionals) and drop
+  redundant typeof key check in Object.entries() filter (fix no‑unnecessary‑
+  condition).

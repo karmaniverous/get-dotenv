@@ -199,8 +199,7 @@ export const getDotenvCliOptions2Options = ({
   } else if (vars && typeof vars === 'object' && !Array.isArray(vars)) {
     // Keep only string or undefined values to match ProcessEnv.
     const entries = Object.entries(vars).filter(
-      ([k, v]) =>
-        typeof k === 'string' && (typeof v === 'string' || v === undefined),
+      ([, v]) => typeof v === 'string' || v === undefined,
     );
     parsedVars = Object.fromEntries(entries);
   }
@@ -271,14 +270,14 @@ export const resolveGetDotenvOptions = async (
   const mergedCli = defaultsDeep(
     baseGetDotenvCliOptions,
     localOptions,
-  ) as GetDotenvCliOptions;
+  ) as unknown as GetDotenvCliOptions;
 
   const defaultsFromCli = getDotenvCliOptions2Options(mergedCli);
 
   const result = defaultsDeep(
     defaultsFromCli as Partial<GetDotenvOptions>,
     customOptions,
-  ) as GetDotenvOptions;
+  ) as unknown as GetDotenvOptions;
 
   return {
     ...result, // Keep explicit empty strings/zeros; drop only undefined
