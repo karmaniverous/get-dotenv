@@ -65,6 +65,36 @@ export const myPlugin = () =>
   });
 ```
 
+## Typed accessor (DX)
+
+When your plugin declares a config schema, prefer the typed helper to read the
+validated slice ergonomically at call sites. The helper is compile‑time only
+and preserves runtime behavior; the host still validates the interpolated slice
+against your schema before `afterResolve`.
+
+```ts
+import { z } from 'zod';
+import { definePlugin, readPluginConfig } from '@karmaniverous/get-dotenv/cliHost';
+
+export const MyPluginConfig = z.object({
+  toolPath: z.string().optional(),
+  color: z.string().optional(),
+});
+export type MyPluginConfig = z.infer<typeof MyPluginConfig>;
+
+export const myPlugin = () =>
+  definePlugin({
+    id: 'my',
+    configSchema: MyPluginConfig,
+    setup(cli) {
+      cli.ns('my').action(() => {
+        const cfg = readPluginConfig<MyPluginConfig>(cli, 'my') ?? {};
+        // cfg is validated and strings are already interpolated once
+      });
+    },
+  });
+```
+
 ## Plugin-scoped scripts (rare)
 
 For CLI‑driven, arbitrary‑command plugins (like cmd/batch), you may offer `plugins.<id>.scripts`. Prefer plugin‑scoped scripts over root scripts for clarity, and optionally fall back to root scripts when it improves UX. Use the object form to allow rare per‑script shell overrides; otherwise rely on the root shell.

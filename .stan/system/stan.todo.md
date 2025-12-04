@@ -123,4 +123,8 @@ require a brief design discussion recorded in the dev plan.
 - readPluginConfig: asserted non-null ctx via `getCtx()!` to satisfy TS2532.
 - readPluginConfig lint: replaced non-null assertion on `getCtx()` with a small
   runtime guard (`const ctx = cli.getCtx(); if (!ctx) return undefined;`) to
-  satisfy @typescript-eslint/no-non-null-assertion. Behavior unchanged.
+  satisfy @typescript-eslint/no-non-null-assertion. Behavior unchanged.
+
+- Docs: Authoring/Config — added “Typed accessor (DX)” section showing
+  readPluginConfig<T>() usage together with configSchema so plugin authors can
+  retrieve validated, typed slices ergonomically.
