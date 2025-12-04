@@ -85,6 +85,27 @@ You can set default `scripts`, `shell`, `rootPath`, `globs`, and `pkgCwd` under
 }
 ```
 
+## Typed config (DX)
+
+Use the typed accessor to read the validated `plugins.batch` slice:
+
+```ts
+import {
+  definePlugin,
+  readPluginConfig,
+} from '@karmaniverous/get-dotenv/cliHost';
+import type { BatchConfig } from '@karmaniverous/get-dotenv/plugins/batch';
+
+export const myBatchAwarePlugin = () =>
+  definePlugin({
+    id: 'my-batch',
+    setup(cli) {
+      const cfg = readPluginConfig<BatchConfig>(cli, 'batch') ?? {};
+      // cfg.scripts / cfg.shell / cfg.rootPath / cfg.globs / cfg.pkgCwd are strongly typed here
+    },
+  });
+```
+
 ## Behavior and diagnostics
 
 - Sequential execution reduces noise and preserves legibility. A future

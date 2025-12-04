@@ -1,6 +1,7 @@
 import type { GetDotenvCliPublic } from '@karmaniverous/get-dotenv/cliHost';
 import type { Command } from 'commander';
 
+import { readPluginConfig } from '../../../cliHost';
 import type { Logger } from '../../../GetDotenvOptions';
 import { execShellCommandBatch } from '../../../services/batch/execShellCommandBatch';
 import type { Scripts } from '../../../services/batch/resolve';
@@ -20,10 +21,11 @@ export const buildParentAction =
     const loggerLocal: Logger = opts.logger ?? console;
 
     // Ensure context exists (host preSubcommand on root creates if missing).
-    const ctx = cli.getCtx();
-    const dotenvEnv = (ctx?.dotenv ?? {}) as Record<string, string | undefined>;
-    const cfgRaw = (ctx?.pluginConfigs?.['batch'] ?? {}) as unknown;
-    const cfg = (cfgRaw || {}) as BatchConfig;
+    const dotenvEnv = (cli.getCtx()?.dotenv ?? {}) as Record<
+      string,
+      string | undefined
+    >;
+    const cfg = readPluginConfig<BatchConfig>(cli, 'batch') ?? {};
 
     const raw = thisCommand.opts();
     const commandOpt =

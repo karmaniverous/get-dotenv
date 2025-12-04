@@ -2,14 +2,15 @@ import type { GetDotenvCliPublic } from '@karmaniverous/get-dotenv/cliHost';
 
 import { runCommand } from '../../cliCore/exec';
 import { buildSpawnEnv } from '../../cliCore/spawnEnv';
+import { readPluginConfig } from '../../cliHost';
 import { definePlugin } from '../../cliHost/definePlugin';
-import type { Logger } from '../../GetDotenvOptions';
+import type { GetDotenvOptions, Logger } from '../../GetDotenvOptions';
 import { resolveShell } from '../../services/batch/resolve';
 import { resolveAwsContext } from './service';
 import { type AwsPluginConfigResolved, AwsPluginConfigSchema } from './types';
 
 export const awsPlugin = () =>
-  definePlugin({
+  definePlugin<GetDotenvOptions, AwsPluginConfigResolved>({
     id: 'aws',
     // Host validates this slice when the loader path is active.
     configSchema: AwsPluginConfigSchema,
@@ -80,8 +81,8 @@ export const awsPlugin = () =>
 
             // Build overlay cfg from subcommand flags layered over discovered config.
             const ctx = cli.getCtx();
-            const cfgBase = (ctx?.pluginConfigs?.['aws'] ??
-              {}) as AwsPluginConfigResolved;
+            const cfgBase =
+              readPluginConfig<AwsPluginConfigResolved>(cli, 'aws') ?? {};
             const overlay: Partial<AwsPluginConfigResolved> = {};
             // Map boolean toggles (respect explicit --no-*)
             if (Object.prototype.hasOwnProperty.call(opts, 'loginOnDemand'))
@@ -181,8 +182,7 @@ export const awsPlugin = () =>
     },
     async afterResolve(_cli, ctx) {
       const log: Logger = console;
-      const cfgRaw = (ctx.pluginConfigs?.['aws'] ?? {}) as unknown;
-      const cfg = (cfgRaw || {}) as AwsPluginConfigResolved;
+      const cfg = readPluginConfig<AwsPluginConfigResolved>(_cli, 'aws') ?? {};
 
       const out = await resolveAwsContext({
         dotenv: ctx.dotenv,

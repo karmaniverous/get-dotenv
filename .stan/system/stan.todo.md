@@ -11,6 +11,10 @@ When updated: 2025-12-04T00:00:00Z
   - Tests: add compile-only types exercise under src/types to assert
     inference; keep existing runtime tests green (util/defaultsDeep.test.ts).
 
+- Public API/build verification:
+  • Run: npm run build && npm run verify:types && npm run verify:bundle && npm run verify:tarball.
+  • Sanity‑check dist d.ts bundles include DynamicFn/DynamicMap and overlayEnv overloads.
+
 - Type-only generics (P1): dotenvExpandAll key-preserving result (DONE)
   - Make dotenvExpandAll generic on input map; return {[K in keyof T]:
     string | undefined}.
@@ -120,7 +124,8 @@ require a brief design discussion recorded in the dev plan.
   TS2554 in resolveCliOptions, computeContext, and tests without changing
   runtime behavior.
 
-- readPluginConfig: asserted non-null ctx via `getCtx()!` to satisfy TS2532.
+- readPluginConfig: asserted non-null ctx via `getCtx()!` to satisfy TS2532.
+
 - readPluginConfig lint: replaced non-null assertion on `getCtx()` with a small
   runtime guard (`const ctx = cli.getCtx(); if (!ctx) return undefined;`) to
   satisfy @typescript-eslint/no-non-null-assertion. Behavior unchanged.
@@ -154,4 +159,8 @@ require a brief design discussion recorded in the dev plan.
 
 - Docs (Config): added a “Compile‑time key preservation (overlayEnv)” note and
   example showing that overlayEnv returns B when no programmaticVars is provided
-  and B & P when it is, with a short code snippet illustrating the behavior.
+  and B & P when it is, with a short code snippet illustrating the behavior.
+
+- Shipped plugins typed config (DX): adopted readPluginConfig<T>() in aws and batch to access validated, merged slices ergonomically; showcased definePlugin<TConfig> usage in both plugins (compile‑time only). No runtime behavior changes.
+
+- Docs follow‑through (typed config): added short “Typed config (DX)” snippets to shipped plugin pages (aws, batch) referencing readPluginConfig<T>() so authors can retrieve typed slices with minimal ceremony.

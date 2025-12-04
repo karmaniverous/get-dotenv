@@ -123,6 +123,27 @@ Per‑plugin subpaths remain available when needed:
 import { awsPlugin } from '@karmaniverous/get-dotenv/plugins/aws';
 ```
 
+## Typed config (DX)
+
+You can retrieve the validated, merged plugin config slice with strong typing using the helper:
+
+```ts
+import {
+  definePlugin,
+  readPluginConfig,
+} from '@karmaniverous/get-dotenv/cliHost';
+import type { AwsPluginConfigResolved } from '@karmaniverous/get-dotenv/plugins/aws';
+
+export const myAwsAwarePlugin = () =>
+  definePlugin({
+    id: 'my-aws',
+    setup(cli) {
+      const cfg = readPluginConfig<AwsPluginConfigResolved>(cli, 'aws') ?? {};
+      // cfg.profile / cfg.region / cfg.strategy ... are strongly typed here
+    },
+  });
+```
+
 ## Notes and caveats
 
 - When `setEnv` is enabled, the plugin ensures `AWS_REGION` is set and copies it to `AWS_DEFAULT_REGION` if that var is unset for broader compatibility.

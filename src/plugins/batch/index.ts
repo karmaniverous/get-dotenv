@@ -4,6 +4,7 @@ import type { GetDotenvCli } from '@karmaniverous/get-dotenv/cliHost';
 import { Command } from 'commander';
 
 import { definePlugin } from '../../cliHost/definePlugin';
+import type { GetDotenvOptions } from '../../GetDotenvOptions';
 import { buildDefaultCmdAction } from './actions/defaultCmdAction';
 import { buildParentAction } from './actions/parentAction';
 import {
@@ -21,7 +22,7 @@ import {
  * - logger: defaults to console.
  */
 export const batchPlugin = (opts: BatchPluginOptions = {}) =>
-  definePlugin({
+  definePlugin<GetDotenvOptions, BatchConfig>({
     id: 'batch',
     // Host validates this when config-loader is enabled; plugins may also
     // re-validate at action time as a safety belt.

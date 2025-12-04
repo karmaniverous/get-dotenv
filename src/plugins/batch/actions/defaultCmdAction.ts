@@ -1,6 +1,7 @@
 import type { GetDotenvCliPublic } from '@karmaniverous/get-dotenv/cliHost';
 import type { Command } from 'commander';
 
+import { readPluginConfig } from '../../../cliHost';
 import type { Logger } from '../../../GetDotenvOptions';
 import { execShellCommandBatch } from '../../../services/batch/execShellCommandBatch';
 import type { Scripts } from '../../../services/batch/resolve';
@@ -31,10 +32,11 @@ export const buildDefaultCmdAction =
       : argsRaw;
 
     // Access merged per-plugin config from host context (if any).
-    const ctx = cli.getCtx();
-    const cfgRaw = (ctx?.pluginConfigs?.['batch'] ?? {}) as unknown;
-    const cfg = (cfgRaw || {}) as BatchConfig;
-    const dotenvEnv = (ctx?.dotenv ?? {}) as Record<string, string | undefined>;
+    const cfg = readPluginConfig<BatchConfig>(cli, 'batch') ?? {};
+    const dotenvEnv = (cli.getCtx()?.dotenv ?? {}) as Record<
+      string,
+      string | undefined
+    >;
 
     // Resolve batch flags from the captured parent (batch) command.
     const raw = batchCmd.opts();
