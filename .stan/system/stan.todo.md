@@ -4,11 +4,6 @@ When updated: 2025-12-04T00:00:00Z
 
 ## Next up (near‑term, actionable)
 
-- Host (instance‑bound plugin config; no by‑id)
-  - computeContext: store validated/interpolated plugin config per plugin instance in a WeakMap<GetDotenvCliPlugin, unknown>. Stop writing ctx.pluginConfigs publicly.
-  - definePlugin<TOptions, TConfig>: add plugin.readConfig(cli): TConfig | undefined and plugin.createPluginDynamicOption(flags, (bag, cfg) => string).
-  - GetDotenvCli.ns(name): guard against same‑level duplicate command names with a clear early error; add a small unit test.
-
 - Public API cleanup (remove by‑id)
   - Remove readPluginConfig<T>(cli, id) from cliHost public exports and delete internal usages.
   - Eliminate any remaining by‑id references in source/tests/docs (including cfg.plugins.<id> in help callbacks).
@@ -18,9 +13,6 @@ When updated: 2025-12-04T00:00:00Z
   - batch: same migration as aws (instance‑bound reads; plugin‑bound dynamic help).
   - cmd: confirm no plugin config; ensure help/alias behavior unaffected.
   - Tests: update unit/E2E to assert plugin.readConfig(cli) path and plugin‑bound help; remove by‑id assumptions.
-
-- Templates
-  - Scaffold “hello” plugin: demonstrate p.readConfig(cli) usage (minimal config shape; no schema dependency) and show a simple plugin‑bound dynamic option label.
 
 - Type/input DX polish (compile‑only)
   - Broaden inputs: accept Readonly<Record<string, string | undefined>> in dotenvExpandAll and overlayEnv.
@@ -56,4 +48,19 @@ When updated: 2025-12-04T00:00:00Z
   - Typed plugin-config WeakMap to GetDotenvOptions for constraint compliance; adjusted set/get casts.
   - Simplified dynamic help fallback checks to satisfy “unnecessary-condition”.
   - Added targeted eslint suppressions for single‑use generics on typed helpers.
-  - Removed unused imports in batch plugin.
+  - Removed unused imports in batch plugin.
+
+- Instance helpers: make required on definePlugin return type
+  - Returned plugin type now includes required readConfig(cli) and createPluginDynamicOption(cli, …) helpers (intersection type).
+  - Fixed TS errors in aws/batch plugins without adding non-null assertions.
+  - Kept public interface optional for ad‑hoc/test plugins; targeted ESLint suppressions added for single‑use generics.
+
+- Duplicate command name guard
+  - GetDotenvCli.ns(name) now throws a clear error on same‑level duplicate names.
+  - Added unit test (src/cliHost/ns.duplicate.test.ts) to assert guard behavior.
+
+- Templates update
+  - hello plugin template now passes cli into plugin.createPluginDynamicOption(cli, …) and continues to use plugin.readConfig(cli).
+
+- Lint hygiene
+  - Suppressed @typescript-eslint/no-unnecessary-type-parameters where generics are intentionally single-use (overloads and helper methods).

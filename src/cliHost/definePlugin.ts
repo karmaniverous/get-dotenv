@@ -13,6 +13,7 @@ import type { ZodType } from 'zod';
 import type { GetDotenvOptions } from '../GetDotenvOptions';
 import { _getPluginConfigForInstance } from './computeContext';
 import type { GetDotenvCliCtx, ResolvedHelpConfig } from './GetDotenvCli';
+import type { GetDotenvCli } from './GetDotenvCli';
 
 /**
  * Structural public interface for the host exposed to plugins.
@@ -100,6 +101,28 @@ export interface GetDotenvCliPlugin<
 }
 
 /**
+ * Compile-time helper type: the plugin object returned by definePlugin always
+ * includes the instance-bound helpers as required members. Keeping the public
+ * interface optional preserves compatibility for ad-hoc/test plugins, while
+ * return types from definePlugin provide stronger DX for shipped/typed plugins.
+ */
+type PluginWithInstanceHelpers<
+  TOptions extends GetDotenvOptions = GetDotenvOptions,
+> = GetDotenvCliPlugin<TOptions> & {
+  readConfig<TCfg>(cli: GetDotenvCliPublic<TOptions>): TCfg | undefined;
+  createPluginDynamicOption<TCfg>(
+    cli: GetDotenvCliPublic<TOptions>,
+    flags: string,
+    desc: (
+      cfg: ResolvedHelpConfig & { plugins: Record<string, unknown> },
+      pluginCfg: TCfg | undefined,
+    ) => string,
+    parser?: (value: string, previous?: unknown) => unknown,
+    defaultValue?: unknown,
+  ): Option;
+};
+
+/**
  * Public spec type for defining a plugin with optional children.
  * Exported to ensure TypeDoc links and navigation resolve correctly.
  */
@@ -117,19 +140,20 @@ export type DefineSpec<TOptions extends GetDotenvOptions = GetDotenvOptions> =
  *   .use(childB);
  */
 // Overload carrying a typed config schema (compile-time aid only).
+
 export function definePlugin<
   TOptions extends GetDotenvOptions = GetDotenvOptions,
   TConfig = unknown,
 >(
   spec: DefineSpec<TOptions> & { configSchema?: ZodType<TConfig> },
-): GetDotenvCliPlugin<TOptions>;
+): PluginWithInstanceHelpers<TOptions>;
 // Base overload (no typed config schema)
 export function definePlugin<
   TOptions extends GetDotenvOptions = GetDotenvOptions,
->(spec: DefineSpec<TOptions>): GetDotenvCliPlugin<TOptions>;
+>(spec: DefineSpec<TOptions>): PluginWithInstanceHelpers<TOptions>;
 export function definePlugin<
   TOptions extends GetDotenvOptions = GetDotenvOptions,
->(spec: DefineSpec<TOptions>): GetDotenvCliPlugin<TOptions> {
+>(spec: DefineSpec<TOptions>): PluginWithInstanceHelpers<TOptions> {
   const { children = [], ...rest } = spec;
   // Build base plugin first, then extend with instance-bound helpers.
   const base: GetDotenvCliPlugin<TOptions> = {
@@ -152,6 +176,7 @@ export function definePlugin<
     ) as TConfig | undefined;
   };
   // Plugin-bound dynamic option factory
+
   (
     extended as Required<GetDotenvCliPlugin<TOptions>>
   ).createPluginDynamicOption = function <TConfig>(
@@ -185,5 +210,5 @@ export function definePlugin<
       defaultValue,
     );
   };
-  return extended;
+  return extended as PluginWithInstanceHelpers<TOptions>;
 }

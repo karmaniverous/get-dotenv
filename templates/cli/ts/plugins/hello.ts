@@ -14,6 +14,7 @@ export const helloPlugin = () => {
         .description('Say hello with current dotenv context')
         .addOption(
           plugin.createPluginDynamicOption<HelloConfig>(
+            cli,
             '--loud',
             (_bag, cfg) =>
               `print greeting in ALL CAPS${cfg?.loud ? ' (default)' : ''}`,

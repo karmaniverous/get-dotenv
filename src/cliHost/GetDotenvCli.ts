@@ -248,6 +248,13 @@ export class GetDotenvCli<TOptions extends GetDotenvOptions = GetDotenvOptions>
   /**   * Convenience helper to create a namespaced subcommand.
    */
   ns(name: string): Command {
+    // Guard against same-level duplicate command names for clearer diagnostics.
+    // Commander may also enforce this in some flows, but we prefer an explicit,
+    // early error to avoid subtle help/parse behavior differences.
+    const exists = this.commands.some((c) => c.name() === name);
+    if (exists) {
+      throw new Error(`Duplicate command name: ${name}`);
+    }
     return this.command(name);
   }
 
