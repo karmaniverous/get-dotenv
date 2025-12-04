@@ -43,3 +43,11 @@ When updated: 2025-12-04T00:00:00Z
 ## Completed (recent)
 
 **CRITICAL: Append-only list. Add new completed items at the end. Prune old completed entries from the top. Do not edit existing entries.**
+
+- Host plugin seam: added instance‑bound helpers and structural host support
+  - GetDotenvCliPublic now exposes createDynamicOption (structural typing).
+  - definePlugin returns plugins with readConfig(cli) and createPluginDynamicOption(cli, …) helpers.
+  - Removed unsafe “arguments” usage and any‑typed generics in definePlugin; computeContext plugin store typed to GetDotenvOptions.
+- Batch/AWS migration (initial)
+  - Batch uses plugin.createPluginDynamicOption(cli, …) for dynamic defaults.
+  - AWS action path fixed self redeclaration; uses plugin.readConfig(cli) correctly.

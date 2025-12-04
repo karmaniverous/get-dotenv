@@ -25,18 +25,15 @@ import type { GetDotenvCliCtx } from './GetDotenvCli';
  * provides a typed accessor that reads from this store for the calling
  * plugin instance.
  */
-const PLUGIN_CONFIG_STORE: WeakMap<
-  GetDotenvCliPlugin<any>,
-  unknown
-> = new WeakMap();
+const PLUGIN_CONFIG_STORE: WeakMap<GetDotenvCliPlugin, unknown> = new WeakMap();
 export const _setPluginConfigForInstance = (
-  plugin: GetDotenvCliPlugin<any>,
+  plugin: GetDotenvCliPlugin,
   cfg: unknown,
 ) => {
   PLUGIN_CONFIG_STORE.set(plugin, cfg);
 };
 export const _getPluginConfigForInstance = <T>(
-  plugin: GetDotenvCliPlugin<any>,
+  plugin: GetDotenvCliPlugin,
 ): T | undefined => PLUGIN_CONFIG_STORE.get(plugin) as T | undefined;
 
 /**

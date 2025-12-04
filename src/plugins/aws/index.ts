@@ -53,9 +53,9 @@ export const awsPlugin = () => {
             opts: Record<string, unknown>,
             thisCommand: unknown,
           ) => {
-            const self = plugin;
-            const self = thisCommand as { parent?: unknown };
-            const parent = (self.parent ?? null) as
+            const pluginInst = plugin;
+            const cmdSelf = thisCommand as { parent?: unknown };
+            const parent = (cmdSelf.parent ?? null) as
               | (GetDotenvCliPublic & {
                   getDotenvCliOptions?: {
                     scripts?: Record<
@@ -81,7 +81,8 @@ export const awsPlugin = () => {
 
             // Build overlay cfg from subcommand flags layered over discovered config.
             const ctx = cli.getCtx();
-            const cfgBase = self.readConfig<AwsPluginConfigResolved>(cli) ?? {};
+            const cfgBase =
+              pluginInst.readConfig<AwsPluginConfigResolved>(cli) ?? {};
             const overlay: Partial<AwsPluginConfigResolved> = {};
             // Map boolean toggles (respect explicit --no-*)
             if (Object.prototype.hasOwnProperty.call(opts, 'loginOnDemand'))

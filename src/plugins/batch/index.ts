@@ -43,6 +43,7 @@ export const batchPlugin = (opts: BatchPluginOptions = {}) => {
         .addOption(
           (() => {
             const opt = plugin.createPluginDynamicOption<BatchConfig>(
+              cli,
               '-p, --pkg-cwd',
               (_bag, cfg) =>
                 `use nearest package directory as current working directory${cfg?.pkgCwd ? ' (default)' : ''}`,
@@ -54,6 +55,7 @@ export const batchPlugin = (opts: BatchPluginOptions = {}) => {
         .addOption(
           (() => {
             const opt = plugin.createPluginDynamicOption<BatchConfig>(
+              cli,
               '-r, --root-path <string>',
               (_bag, cfg) =>
                 `path to batch root directory from current working directory (default: ${JSON.stringify(
@@ -67,6 +69,7 @@ export const batchPlugin = (opts: BatchPluginOptions = {}) => {
         .addOption(
           (() => {
             const opt = plugin.createPluginDynamicOption<BatchConfig>(
+              cli,
               '-g, --globs <string>',
               (_bag, cfg) =>
                 `space-delimited globs from root path (default: ${JSON.stringify(
