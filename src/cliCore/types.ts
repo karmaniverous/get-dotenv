@@ -55,7 +55,7 @@ export type RootOptionsShape = {
  * Scripts table shape (configurable shell type).
  */
 export type ScriptsTable<TShell extends string | boolean = string | boolean> =
-  Record<string, string | { cmd: string; shell?: TShell }>;
+  Record<string, string | { cmd: string; shell?: TShell | undefined }>;
 
 /**
  * Commander command augmented with a typed opts() and an options bag

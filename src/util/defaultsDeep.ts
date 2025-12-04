@@ -79,7 +79,7 @@ export function defaultsDeep<
   e?: Partial<E>,
 ): A & B & C & D & E;
 // Implementation: variadic, unchanged semantics.
-export function defaultsDeep<T extends Record<string, unknown>>(
+export function defaultsDeep<T extends object>(
   ...layers: Array<Partial<T> | undefined>
 ): T {
   const result = layers

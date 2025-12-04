@@ -80,20 +80,36 @@ When updated: 2025-12-04T00:00:00Z
   and lint return green with no runtime changes.
 
 — Follow-up (types): Relaxed defaultsDeep overload bounds from
-  Record<string, unknown> to object so Partial<T> and similar structured
-  types without string index signatures match 2–5 arg overloads. No runtime
-  behavior changes; resolves TS2554 at multi-arg call sites.
+Record<string, unknown> to object so Partial<T> and similar structured
+types without string index signatures match 2–5 arg overloads. No runtime
+behavior changes; resolves TS2554 at multi-arg call sites.
+
 — P1 (scripts typing): Unified Scripts typing across CLI/core/services by
-  using ScriptsTable<TShell>. Refactored services/batch/resolve to import the
-  generic table and updated resolveShell to be generic returning TShell | false.
-  Kept the exported Scripts alias for back-compat. No runtime changes.
+using ScriptsTable<TShell>. Refactored services/batch/resolve to import the
+generic table and updated resolveShell to be generic returning TShell | false.
+Kept the exported Scripts alias for back-compat. No runtime changes.
 
 — P1 (plugin config accessor): Added cliHost/readPluginConfig<T>() and
-  exported it from cliHost/index. Introduced a definePlugin overload that
-  carries a typed configSchema parameter (compile-time aid only; runtime
-  behavior unchanged). Shipped plugins to adopt overload in a follow-up.
+exported it from cliHost/index. Introduced a definePlugin overload that
+carries a typed configSchema parameter (compile-time aid only; runtime
+behavior unchanged). Shipped plugins to adopt overload in a follow-up.
 
 — Project prompt (typing & DX): Added a HARD RULE section to stan.project.md
-  mandating inference-first design (generics over casts), public APIs that
-  infer without explicit type parameters, and DX as a non-negotiable. Exceptions
-  require a brief design discussion recorded in the dev plan.
+mandating inference-first design (generics over casts), public APIs that
+infer without explicit type parameters, and DX as a non-negotiable. Exceptions
+require a brief design discussion recorded in the dev plan.
+
+- Fix overload compatibility (types only): aligned defaultsDeep implementation
+  signature to `T extends object` to match object-based overload heads. Resolved
+  TS2554 (“Expected 0–1 arguments”) at multi-arg call sites (resolveCliOptions,
+  computeContext, defaultsDeep tests). No runtime behavior changes.
+
+- Scripts typing (exactOptionalPropertyTypes): widened
+  `ScriptsTable<TShell>` to `shell?: TShell | undefined` and adjusted
+  resolveShell’s internal cast accordingly. This accepts merged shapes that may
+  carry `shell?: string | boolean | undefined` without casts, resolving TS2345
+  in batch/actions.
+
+- readPluginConfig DX/lint: removed the unnecessary optional chain on
+  `cli.getCtx()`; locally disabled `no-unnecessary-type-parameters` with a
+  rationale (typed accessor for downstream inference). No runtime changes.

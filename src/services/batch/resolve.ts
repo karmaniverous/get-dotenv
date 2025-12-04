@@ -40,5 +40,5 @@ export const resolveShell = <TShell extends string | boolean>(
   shell: TShell | undefined,
 ): TShell | false =>
   scripts && typeof scripts[command] === 'object'
-    ? ((scripts[command] as { shell?: TShell }).shell ?? false)
+    ? ((scripts[command] as { shell?: TShell | undefined }).shell ?? false)
     : (shell ?? false);

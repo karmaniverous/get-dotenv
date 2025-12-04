@@ -5,11 +5,13 @@
  */
 import type { GetDotenvCliPublic } from './definePlugin';
 
+// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters -- DX: typed accessor; generic exists for downstream inference without burdensome casts
 export function readPluginConfig<T>(
   cli: GetDotenvCliPublic,
   id: string,
 ): T | undefined {
-  const cfg = cli.getCtx?.()?.pluginConfigs?.[id];
+  // Host guarantees getCtx exists when plugins execute; keep slice optional.
+  const cfg = cli.getCtx().pluginConfigs?.[id];
   // Cast-only; return undefined when slice is absent.
   return (cfg as T) ?? undefined;
 }
