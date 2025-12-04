@@ -111,4 +111,7 @@ require a brief design discussion recorded in the dev plan.
   catches regressions in public type bundles.
 
 - Amendment: verify-types.js lint cleanup (no-unused-vars) by tracking selected
-  declaration files (indexFound/overlayFound); no behavior change.
+  declaration files (indexFound/overlayFound); no behavior change.
+
+- Amendment: verify-types.js overlayEnv detection — allow optional generic
+  parameter list (e.g., overlayEnv<T>(...)) to avoid false negatives.

@@ -121,7 +121,10 @@ const main = async () => {
       msg: 'missing (build before verify-types)',
     });
   } else {
-    if (!/overlayEnv\s*\(/.test(overlayTxt)) {
+    // Match either direct function form or generic form, e.g.:
+    //   export declare function overlayEnv(args: ...)
+    //   export declare function overlayEnv<T>(args: ...)
+    if (!/overlayEnv\s*(?:<[^>]*>)?\s*\(/.test(overlayTxt)) {
       issues.push({
         file: overlayFound || 'env-overlay.d.ts',
         msg: 'overlayEnv declaration not found in env overlay types',
