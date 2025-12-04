@@ -67,6 +67,76 @@ const main = async () => {
       });
     }
   }
+
+  // Additional public API sanity checks
+  // 1) index.d.ts (or index.d.mts) should expose DynamicFn/DynamicMap (directly or via re-export).
+  const indexCandidates = ['index.d.ts', 'index.d.mts'];
+  let indexTxt = '';
+  for (const cand of indexCandidates) {
+    try {
+      indexTxt = await fs.readFile(path.join(DIST, cand), 'utf-8');
+      if (indexTxt) break;
+    } catch {
+      /* try next */
+    }
+  }
+  if (!indexTxt) {
+    issues.push({
+      file: indexCandidates.join(' | '),
+      msg: 'missing (build before verify-types)',
+    });
+  } else {
+    if (!/DynamicFn\b/.test(indexTxt)) {
+      issues.push({
+        file:
+          indexCandidates.find((n) => indexTxt.includes('')) ?? 'index.d.ts',
+        msg: 'DynamicFn not found in public types (expected export or re-export)',
+      });
+    }
+    if (!/DynamicMap\b/.test(indexTxt)) {
+      issues.push({
+        file:
+          indexCandidates.find((n) => indexTxt.includes('')) ?? 'index.d.ts',
+        msg: 'DynamicMap not found in public types (expected export or re-export)',
+      });
+    }
+  }
+
+  // 2) env-overlay.d.ts (or .d.mts) should declare overlayEnv with programmaticVars in the args type (overload surface).
+  const overlayCandidates = ['env-overlay.d.ts', 'env-overlay.d.mts'];
+  let overlayTxt = '';
+  for (const cand of overlayCandidates) {
+    try {
+      overlayTxt = await fs.readFile(path.join(DIST, cand), 'utf-8');
+      if (overlayTxt) break;
+    } catch {
+      /* try next */
+    }
+  }
+  if (!overlayTxt) {
+    issues.push({
+      file: overlayCandidates.join(' | '),
+      msg: 'missing (build before verify-types)',
+    });
+  } else {
+    if (!/overlayEnv\s*\(/.test(overlayTxt)) {
+      issues.push({
+        file:
+          overlayCandidates.find((n) => overlayTxt.includes('')) ??
+          'env-overlay.d.ts',
+        msg: 'overlayEnv declaration not found in env overlay types',
+      });
+    }
+    if (!/programmaticVars\??:/.test(overlayTxt)) {
+      issues.push({
+        file:
+          overlayCandidates.find((n) => overlayTxt.includes('')) ??
+          'env-overlay.d.ts',
+        msg: 'programmaticVars parameter not detected in overlayEnv types (overload surface)',
+      });
+    }
+  }
+
   if (issues.length > 0) {
     console.error('verify-types: FAILED');
     for (const it of issues) {

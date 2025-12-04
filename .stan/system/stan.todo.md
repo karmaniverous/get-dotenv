@@ -4,10 +4,6 @@ When updated: 2025-12-04T00:00:00Z
 
 ## Next up (near‑term, actionable)
 
-- Public API/build verification:
-  - Run: npm run build && npm run verify:types && npm run verify:bundle && npm run verify:tarball.
-  - Sanity‑check dist d.ts bundles include DynamicFn/DynamicMap and overlayEnv overloads.
-
 - Release hygiene:
   - Bump version as appropriate and run smoke/CI (typecheck, lint, test, build, verify:\*).
 
@@ -108,3 +104,8 @@ require a brief design discussion recorded in the dev plan.
 - Shipped plugins typed config (DX): adopted readPluginConfig<T>() in aws and batch to access validated, merged slices ergonomically; showcased definePlugin<TConfig> usage in both plugins (compile‑time only). No runtime behavior changes.
 
 - Docs follow‑through (typed config): added short “Typed config (DX)” snippets to shipped plugin pages (aws, batch) referencing readPluginConfig<T>() so authors can retrieve typed slices with minimal ceremony.
+
+- Public API/build verification: augmented tools/verify-types.js to assert
+  presence of DynamicFn/DynamicMap in index.d.ts (or .d.mts) and to detect
+  overlayEnv/programmaticVars surface in env-overlay.d.ts (or .d.mts) so CI
+  catches regressions in public type bundles.
