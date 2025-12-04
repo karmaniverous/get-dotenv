@@ -40,6 +40,17 @@ const applyConfigSlice = (
  * Programmatic explicit vars (if provided) override all config slices.
  * Progressive expansion is applied within each slice.
  */
+export function overlayEnv<B extends ProcessEnv>(args: {
+  base: B;
+  env: string | undefined;
+  configs: OverlayConfigSources;
+}): B;
+export function overlayEnv<B extends ProcessEnv, P extends ProcessEnv>(args: {
+  base: B;
+  env: string | undefined;
+  configs: OverlayConfigSources;
+  programmaticVars: P;
+}): B & P;
 export const overlayEnv = ({
   base,
   env,

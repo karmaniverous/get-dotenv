@@ -130,4 +130,12 @@ require a brief design discussion recorded in the dev plan.
   retrieve validated, typed slices ergonomically.
 
 - Docs: Shipped Plugins index — fixed a typo in the plugin list (“imit” →
-  “init”) so the link text matches the actual init plugin and its page.
+  “init”) so the link text matches the actual init plugin and its page.
+
+- P2 (types): defineDynamic Vars-aware generics — added DynamicFn/DynamicMap
+  types and an overload to bind Vars for improved inference; preserved the
+  legacy defineDynamic signature for backward compatibility (runtime unchanged).
+
+- P2 (types): overlayEnv key-preserving overloads — added call signatures so
+  the result is B when no programmaticVars is provided and B & P when it is;
+  implementation unchanged (progressive expansion per slice).

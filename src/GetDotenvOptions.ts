@@ -2,6 +2,7 @@
 import fs from 'fs-extra';
 import { packageDirectory } from 'package-directory';
 import { join } from 'path';
+import type {} from 'zod';
 
 import {
   baseGetDotenvCliOptions,
@@ -43,10 +44,29 @@ export type Logger =
   | typeof console;
 
 /**
- * Helper to define a dynamic map with strong inference.
+ * Vars-aware dynamic helpers (compile-time DX).
+ * DynamicFn: receive the current expanded variables and optional env.
+ */
+export type DynamicFn<Vars extends Record<string, string | undefined>> = (
+  vars: Vars,
+  env?: string,
+) => string | undefined;
+export type DynamicMap<Vars extends Record<string, string | undefined>> =
+  Record<string, DynamicFn<Vars> | ReturnType<DynamicFn<Vars>>>;
+
+/**
+ * Helper to define a dynamic map with strong inference (Vars-aware).
  *
- * @example
- * const dynamic = defineDynamic(\{ KEY: (\{ FOO = '' \}) =\> FOO + '-x' \});
+ * Overload A (preferred): bind Vars to your intended key set for improved inference.
+ */
+export function defineDynamic<
+  Vars extends Record<string, string | undefined>,
+  T extends DynamicMap<Vars>,
+>(d: T): T;
+/**
+ * Overload B (backward-compatible): generic over legacy GetDotenvDynamic.
+ *
+ * Accepts legacy GetDotenvDynamic without Vars binding.
  */
 export const defineDynamic = <T extends GetDotenvDynamic>(d: T): T => d;
 
