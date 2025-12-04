@@ -13,25 +13,25 @@ Behavior: In the shipped CLI (plugin-first host) and the generator path, the loa
 When enabled, the loader discovers up to three configs in the following order:
 
 1. Packaged root (the library’s own package root, “public” only)
-   - `getdotenv.config.json`
-   - `getdotenv.config.yaml` / `.yml`
-   - `getdotenv.config.js` / `.mjs` / `.cjs`
-   - `getdotenv.config.ts` / `.mts` / `.cts`
+   - getdotenv.config.json
+   - getdotenv.config.yaml / .yml
+   - getdotenv.config.js / .mjs / .cjs
+   - getdotenv.config.ts / .mts / .cts
 2. Project root (your repository)
    - Public:
-     - `getdotenv.config.json`
-     - `getdotenv.config.yaml` / `.yml`
-     - `getdotenv.config.js` / `.mjs` / `.cjs`
-     - `getdotenv.config.ts` / `.mts` / `.cts`
+     - getdotenv.config.json
+     - getdotenv.config.yaml / .yml
+     - getdotenv.config.js / .mjs / .cjs
+     - getdotenv.config.ts / .mts / .cts
    - Local (private, gitignored conventionally):
-     - `getdotenv.config.local.json`
-     - `getdotenv.config.local.yaml` / `.yml`
-     - `getdotenv.config.local.js` / `.mjs` / `.cjs`
-     - `getdotenv.config.local.ts` / `.mts` / `.cts`
+     - getdotenv.config.local.json
+     - getdotenv.config.local.yaml / .yml
+     - getdotenv.config.local.js / .mjs / .cjs
+     - getdotenv.config.local.ts / .mts / .cts
 
 Notes:
 
-- Packaged `.local` is not expected by policy and is ignored.
+- Packaged .local is not expected by policy and is ignored.
 - The first matching “public” file per scope is used; the same for “local”.
 
 ## Formats
@@ -39,21 +39,22 @@ Notes:
 JSON/YAML (data only, always-on; no-op when no files are present):
 
 - Allowed keys:
-  - `dotenvToken?: string`
-  - `privateToken?: string`
-  - `paths?: string | string[]`
-  - `loadProcess?: boolean`
-  - `log?: boolean`
-  - `shell?: string | boolean`
-  - `scripts?: Record<string, unknown>`
-  - `vars?: Record<string, string>` (global, public)
-  - `envVars?: Record<string, Record<string, string>>` (per-env, public)
-- Disallowed in JSON/YAML (this step): `dynamic` — use JS/TS instead.
+  - dotenvToken?: string
+  - privateToken?: string
+  - paths?: string | string[]
+  - loadProcess?: boolean
+  - log?: boolean
+  - shell?: string | boolean
+  - scripts?: Record<string, unknown>
+  - vars?: Record<string, string> (global, public)
+  - envVars?: Record<string, Record<string, string>> (per-env, public)
+- Disallowed in JSON/YAML (this step): dynamic — use JS/TS instead.
 
 JS/TS (data + dynamic):
 
 - Accepts all JSON/YAML keys and also:
-  - `dynamic?: GetDotenvDynamic` — a map where values are either strings or functions of the form `(vars: ProcessEnv, env?: string) => string | undefined`.
+  - dynamic?: GetDotenvDynamic — a map where values are either strings or functions of the form (vars: ProcessEnv, env?: string) => string | undefined.
+  - schema?: unknown — a schema object (e.g., a Zod schema) whose safeParse(finalEnv) will be executed once after overlays.
 
 TS support:
 
@@ -64,49 +65,49 @@ TS support:
 
 Config privacy derives from the filename suffix:
 
-- Public: `getdotenv.config.json` / `.yaml` / `.yml` (shared in VCS).
-- Local: `getdotenv.config.local.json` / `.yaml` / `.yml` (gitignored).
+- Public: getdotenv.config.json / .yaml / .yml (shared in VCS).
+- Local: getdotenv.config.local.json / .yaml / .yml (gitignored).
 
 ## Overlays and precedence
 
 The loader overlays config-provided values onto the “base” file-derived dotenv values using these axes (higher wins):
 
-1. Kind: `dynamic` > `env` > `global`
-2. Privacy: `local` > `public`
-3. Source: `project` > `packaged` > `base`
+1. Kind: dynamic > env > global
+2. Privacy: local > public
+3. Source: project > packaged > base
 
 The overlay flow:
 
-1. Base: resolve file cascade using `getDotenv` (exclude dynamic; ignore programmatic `vars`).
+1. Base: resolve file cascade using getDotenv (exclude dynamic; ignore programmatic vars).
 2. Overlay config sources in order: packaged (public only) → project public → project local.
-3. Apply dynamic in order: programmatic dynamic (if provided) → config dynamic from JS/TS (packaged → project public → project local) → file `dynamicPath` (lowest dynamic tier).
-4. Optional effects: `outputPath` (write consolidated dotenv; quote multiline), `log` (print final map), `loadProcess` (merge into `process.env`).
+3. Apply dynamic in order: programmatic dynamic (if provided) → config dynamic from JS/TS (packaged → project public → project local) → file dynamicPath (lowest dynamic tier).
+4. Optional effects: outputPath (write consolidated dotenv; quote multiline), log (print final map), loadProcess (merge into process.env).
 
-All expansions are progressive within each slice: when applying a `vars` object, keys are expanded left-to-right so later values may reference earlier results.
+All expansions are progressive within each slice: when applying a vars object, keys are expanded left-to-right so later values may reference earlier results.
 
 ## Interpolation model (Phase C and per‑plugin)
 
 After dotenv files and config overlays are composed, a final interpolation pass resolves remaining string options using the composed env:
 
-- Phase C (host/generator paths): interpolate remaining string options (e.g., `outputPath`) against `{ ...process.env, ...ctx.dotenv }`. Precedence: ctx wins over parent process.env.
-- Per‑plugin interpolation: immediately before a plugin’s `afterResolve`, the host interpolates that plugin’s config slice against `{ ...ctx.dotenv, ...process.env }`. Precedence: parent process.env wins over ctx for per‑plugin slices so upstream runtime adjustments (e.g., AWS creds) are visible to children.
+- Phase C (host/generator paths): interpolate remaining string options (e.g., outputPath) against { ...process.env, ...ctx.dotenv }. Precedence: ctx wins over parent process.env.
+- Per‑plugin interpolation: immediately before a plugin’s afterResolve, the host interpolates that plugin’s config slice against { ...ctx.dotenv, ...process.env }. Precedence: parent process.env wins over ctx for per‑plugin slices so upstream runtime adjustments (e.g., AWS creds) are visible to children.
 
 Notes:
 
-- Bootstrap keys are excluded from Phase C (dotenvToken, privateToken, env/defaultEnv, paths/vars and their splitters, `exclude*`, `loadProcess`, `log`, `shell`, `dynamicPath`).
+- Bootstrap keys are excluded from Phase C (dotenvToken, privateToken, env/defaultEnv, paths/vars and their splitters, exclude\*, loadProcess, log, shell, dynamicPath).
 - Interpolation is progressive within a slice; later values can reference earlier results.
 
 ## Validation (requiredKeys, schema, and --strict)
 
 You can validate the final composed environment via config:
 
-- JSON/YAML: `requiredKeys?: string[]` — each key must be present (value !== undefined) in the final env.
-- JS/TS: `schema?: ZodSchema` — a Zod schema whose `safeParse(finalEnv)` is executed once after Phase C.
+- JSON/YAML: requiredKeys?: string[] — each key must be present (value !== undefined) in the final env.
+- JS/TS: schema?: { safeParse(finalEnv) } (e.g., a Zod schema).
 
 Behavior:
 
 - Validation runs once against the composed env (host/generator paths), after overlays and Phase C interpolation.
-- By default, issues are printed as warnings. Set `--strict` (or `strict: true` in options) to fail with a non‑zero exit when issues are detected.
+- By default, issues are printed as warnings. Set --strict (or strict: true in options) to fail with a non‑zero exit when issues are detected.
 
 Examples:
 
@@ -130,7 +131,7 @@ export default {
 
 ## Plugin config
 
-Plugin configuration is discovered under `plugins.<id>` in the same packaged/project public/local files. The host merges slices by precedence (packaged → project/public → project/local) and deep‑interpolates string leaves once against `{ ...ctx.dotenv, ...process.env }` (process.env wins for plugin slices).
+Plugin configuration is discovered under plugins.<id> in the same packaged/project public/local files. The host merges slices by precedence (packaged → project/public → project/local) and deep‑interpolates string leaves once against { ...ctx.dotenv, ...process.env } (process.env wins for plugin slices).
 
 Location and shape:
 
@@ -138,9 +139,6 @@ Location and shape:
 {
   "plugins": {
     "batch": {
-      "rootPath": "./work",
-      "globs": "apps/*",
-      "pkgCwd": true,
       "scripts": {
         "build": { "cmd": "npm run build", "shell": "/bin/bash" }
       },
@@ -154,32 +152,41 @@ Precedence and timing:
 
 - Source/Privacy: project/local > project/public > packaged.
 - Strings are interpolated once just before validation/afterResolve; later consumers (e.g., dynamic help callbacks) receive the already‑interpolated value.
-- Plugin config appears in dynamic help callbacks under `cfg.plugins.<id>`, allowing help text to show effective defaults (e.g., `(default)` or `(default: "...")`).
+- Plugin config appears in dynamic help callbacks under cfg.plugins.<id>, allowing help text to show effective defaults (e.g., (default) or (default: "...")).
 
-Notes:
+## Compile‑time key preservation (overlayEnv)
 
-- Keep plugin config focused on data. Any per‑plugin scripts may use the object form `{ cmd, shell }` to override shell behavior for that script only.
-- Validation: export and attach a Zod schema in your plugin (the host validates the merged slice before afterResolve).
+For compile‑time DX, overlayEnv preserves the key set:
 
-See also:
+- Without programmaticVars, the result is typed as your base B.
+- With programmaticVars, the result is typed as B & P.
 
-- Authoring → Lifecycle: “Dynamic option descriptions” for how to surface plugin defaults in help (`dynamicOption`).
-- Shell execution behavior: dynamic default labels for root and plugin flags.
+```ts
+import { overlayEnv } from '@karmaniverous/get-dotenv/env/overlay';
+
+const base = { A: 'a' };
+const out = overlayEnv({
+  base,
+  env: 'dev',
+  configs: {},
+  programmaticVars: { B: 'b' },
+});
+// out is typed as { A?: string } & { B?: string } at compile time
+```
 
 ## Diagnostics (redaction and entropy)
 
 Presentation‑only diagnostics help audit values without altering runtime behavior:
 
-- Redaction (`--redact`): masks secret‑like keys (default patterns include SECRET, TOKEN, PASSWORD, API_KEY, KEY) in `-l/--log` and `--trace` outputs. Add patterns with `--redact-pattern <regex...>`.
-- Entropy warnings (on by default): once‑per‑key messages when printable strings of length ≥ 16 exceed the Shannon bits/char threshold (default 3.8). Flags:
-  - `--entropy-warn` / `--entropy-warn-off`
-  - `--entropy-threshold <n>`
-  - `--entropy-min-length <n>`
-  - `--entropy-whitelist <regex...>` to suppress by key name
+- Redaction (--redact): masks secret‑like keys (default patterns include SECRET, TOKEN, PASSWORD, API_KEY, KEY) in -l/--log and --trace outputs; allow custom patterns via --redact-pattern.
+- Entropy warnings (on by default):
+  - Once‑per‑key messages when printable strings of length ≥ 16 exceed bits/char threshold (default 3.8).
+  - Surfaces: --trace and -l/--log.
+  - Whitelist patterns supported.
 
 ## Scripts table (optional)
 
-You can define a scripts table in config and optionally override shell behavior per script. Script strings are resolved by the `cmd` and `batch` commands:
+You can define a scripts table in config and optionally override shell behavior per script. Script strings are resolved by the cmd and batch commands:
 
 ```json
 {
@@ -190,7 +197,7 @@ You can define a scripts table in config and optionally override shell behavior 
 }
 ```
 
-When a script is invoked, `scripts[name].shell` (string or boolean) takes precedence over the global `--shell` setting for that script.
+When a script is invoked, scripts[name].shell (string or boolean) overrides the global shell for that script.
 
 ## Example
 
@@ -222,7 +229,7 @@ export default {
 };
 ```
 
-With `--use-config-loader` (or `{ useConfigLoader: true }` on the host), the final map for `env=dev` overlays global public (`FOO`) → env public (`BAR`) → global local (`SECRET`) → dynamic from config (`BOTH`):
+With --use-config-loader (or { useConfigLoader: true } on the host), the final map for env=dev overlays global public (FOO) → env public (BAR) → global local (SECRET) → dynamic from config (BOTH):
 
 ```
 { FOO: "foo", BAR: "foo-dev", SECRET: "s3cr3t", BOTH: "foo-foo-dev" }

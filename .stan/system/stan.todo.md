@@ -143,4 +143,15 @@ require a brief design discussion recorded in the dev plan.
 - Fix overload implementations: converted mixed overload + const patterns to
   proper function overloads with a single implementation for both
   `defineDynamic` and `overlayEnv`, resolving duplicate identifier and missing
-  implementation type errors during typecheck.
+  implementation type errors during typecheck.
+
+- Types (compile-only samples): added src/types/infer.defineDynamic.ts to assert
+  Vars-aware defineDynamic inference and src/types/infer.overlayEnv.ts to assert
+  overlayEnv key-preserving return (B | B & P) at compile time. No runtime code.
+
+- README: added a brief Vars-aware defineDynamic example (TypeScript) under
+  Dynamic Processing to demonstrate binding a Vars shape for stronger inference.
+
+- Docs (Config): added a “Compile‑time key preservation (overlayEnv)” note and
+  example showing that overlayEnv returns B when no programmaticVars is provided
+  and B & P when it is, with a short code snippet illustrating the behavior.

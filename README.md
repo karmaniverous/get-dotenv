@@ -247,6 +247,20 @@ export default {
 };
 ```
 
+### TypeScript-first Vars-aware dynamic typing
+
+You can bind the expected variable shape to get strong inference inside your dynamic map.
+
+```ts
+import { defineDynamic } from '@karmaniverous/get-dotenv';
+
+type Vars = { APP_SETTING?: string; ENV_TAG?: string };
+
+export const dynamic = defineDynamic<Vars>({
+  GREETING: ({ APP_SETTING = '' }) => `Hello ${APP_SETTING}`,
+});
+```
+
 If `esbuild` is not installed and a direct import fails, `get-dotenv` attempts a simple fallback for single-file `.ts` modules without imports; otherwise it will throw with clear guidance to install `esbuild`.
 
 Programmatic users can skip files entirely and pass dynamic variables directly:
