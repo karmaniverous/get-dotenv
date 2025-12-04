@@ -1,6 +1,6 @@
 # Project Requirements — get-dotenv
 
-When updated: 2025-10-16T00:00:00Z
+When updated: 2025-12-04T00:00:00Z
 
 ## Overview
 
@@ -41,7 +41,7 @@ Load environment variables from a configurable cascade of dotenv files and/or ex
 ## Tooling
 
 - Build: Rollup
-- TypeScript: strict; ESM module
+- TypeScript: strict; ESM module; exactOptionalPropertyTypes on
 - Lint: ESLint v9 (flat config), Prettier formatting
 - Test: Vitest with V8 coverage
 
@@ -131,29 +131,299 @@ Notes and guidance:
 
 - Outer shells (e.g., bash, PowerShell) may expand variables before Node receives argv. Document quoting rules and recommend single quotes for `$FOO` on POSIX and single quotes on PowerShell to suppress outer expansion. Prefer `"getdotenv -c '...'"` in npm scripts.
 
-## Dynamic option descriptions (help)
+## Strong typing and generics (durable requirements)
 
-The host MUST support dynamic help text that reflects the resolved configuration (including overlays and plugin config) without side effects.
+Improve inference and type precision without changing runtime behavior. All items below are type-level only unless explicitly noted.
 
-- APIs on GetDotenvCli:
-  - `dynamicOption(flags, (resolved) => string, parser?, defaultValue?)` — chainable, mirrors `command.option`, but the second parameter is a description function that receives a read‑only ResolvedConfig computed for help rendering.
-  - `createDynamicOption(flags, (resolved) => string, parser?, defaultValue?)` — factory that returns a Commander Option instance carrying the dynamic description; useful when building then adding via `addOption`.
-- ResolvedConfig shape for description functions:
-  - Top‑level keys are the resolved get‑dotenv options (post overlays and dynamic).
-  - `plugins` bag contains merged, interpolated per‑plugin config slices keyed by plugin id. Config string leaves are interpolated against `{ ...dotenv, ...process.env }`.
-- Help rendering behavior:
-  - Top‑level `-h/--help`: the host computes a read‑only resolved config with overlays and dynamic enabled (no logging; `loadProcess=false`; no env mutation), evaluates all dynamic descriptions, then prints help and returns without `process.exit`.
-  - `help <cmd>`: after normal pre‑subcommand resolution, the host refreshes dynamic descriptions and prints help. Both paths produce identical help text.
-- Subcommand typing and DX:
-  - The host overrides `createCommand()` so subcommands are instances of the GetDotenvCli subclass (not plain Commander), enabling `ns().dynamicOption(...)` to chain naturally alongside native `option(...)`.
-- Consistency requirement:
-  - Root flags that display defaults in help (e.g., shell, loadProcess, exclude\* families, log, entropy‑warn) MUST be authored with `dynamicOption(...)` so they use the same resolved source of truth and semantics as plugin options. Static text remains acceptable where no default needs to be displayed.
+### A) defaultsDeep: intersection-based overloads (typed heads)
 
-## Host root options builder (attachRootOptions)
+Goal: callers that layer heterogeneous shapes should not need casts; merged type should be inferred as an intersection of layer shapes.
 
-- The root options builder is host‑only and typed: `(program: GetDotenvCli, defaults?: Partial<RootOptionsShape>)`.
-- It MUST use `createDynamicOption/dynamicOption` for any flag whose help displays an effective default value.
-- The builder MUST NOT rely on duck‑typing fallbacks for non‑host Command instances.
+- Keep implementation unchanged (variadic merge with plain-object semantics).
+- Add type-only overloads for up to 4–5 layers using intersections.
+- Preserve exactOptionalPropertyTypes: ignore `undefined` (do not overwrite).
+
+Example signatures (illustrative; final set up to 5 layers):
+
+```ts
+export function defaultsDeep<A extends Record<string, unknown>>(
+  a?: Partial<A> | undefined,
+): A;
+
+export function defaultsDeep<
+  A extends R,
+  B extends Record<string, unknown>,
+  R extends Record<string, unknown> = A,
+>(a?: Partial<A>, b?: Partial<B>): A & B;
+
+export function defaultsDeep<
+  A extends R,
+  B extends Record<string, unknown>,
+  C extends Record<string, unknown>,
+  R extends Record<string, unknown> = A,
+>(a?: Partial<A>, b?: Partial<B>, c?: Partial<C>): A & B & C;
+
+// add 4th/5th layer overloads similarly
+```
+
+Acceptance:
+
+- Existing call sites (e.g., options/base < local < custom merges) infer intersections without `as unknown as …` casts.
+- No runtime behavior or semantics change.
+
+### B) dotenvExpandAll: preserve key set generically
+
+Goal: retain key specificity instead of returning `Record<string, string | undefined>`.
+
+Signature:
+
+```ts
+export function dotenvExpandAll<T extends Record<string, string | undefined>>(
+  values: T,
+  options?: { ref?: Record<string, string | undefined>; progressive?: boolean },
+): { [K in keyof T]: string | undefined };
+```
+
+Acceptance:
+
+- Callers indexing known keys do not need extra casts.
+- Progressive behavior unchanged.
+
+### C) Scripts table: generic shell type propagation
+
+Goal: unify on a single generic Scripts<TShell> across host/services/plugins to improve inference and propagate concrete shell choices.
+
+- Export in a single public place (e.g., cliCore/types):
+  ```ts
+  export type Scripts<TShell extends string | boolean = string | boolean> =
+    Record<string, string | { cmd: string; shell?: TShell }>;
+  ```
+- Functions that resolve command/shell use generic `TShell`:
+  ```ts
+  export function resolveShell<TShell extends string | boolean>(
+    scripts: Scripts<TShell> | undefined,
+    command: string,
+    shell: TShell | undefined,
+  ): TShell | false;
+  ```
+- Refactor internal services (e.g., services/batch/resolve) and helper types to use this unified definition.
+
+Acceptance:
+
+- Inference propagates a concrete shell (e.g., `'/bin/zsh'`) through helpers.
+- No widening to `URL` in internal helpers.
+- No runtime behavior change.
+
+### D) Plugin config typing: typed accessor and definePlugin overload
+
+Goal: eliminate `any` at the plugin config seam; provide a low-friction path and a stronger typed option.
+
+1. Minimal helper to read a plugin’s config slice safely:
+
+```ts
+export function readPluginConfig<T>(
+  cli: GetDotenvCliPublic,
+  id: string,
+): T | undefined {
+  const cfg = cli.getCtx()?.pluginConfigs?.[id];
+  return (cfg as T) ?? undefined;
+}
+```
+
+2. Stronger typing via definePlugin overload that carries a config type:
+
+- Provide an overload of `definePlugin<TOptions, TConfig>` that:
+  - Accepts `configSchema?: ZodType<TConfig>` for validation (optional).
+  - Ensures `readPluginConfig<TConfig>` is the natural accessor at call sites.
+  - Preserves existing definePlugin signatures for backward compatibility.
+
+Acceptance:
+
+- Call sites retrieve typed config slices without local casts.
+- When a schema is supplied, the host validation path remains unchanged (validate interpolated slice before afterResolve).
+
+### E) defineDynamic: key-aware vars bag
+
+Goal: improve inference inside dynamic functions by narrowing the `vars` bag to the intended key set.
+
+Types:
+
+```ts
+export type DynamicFn<Vars extends Record<string, string | undefined>> = (
+  vars: Vars,
+  env?: string,
+) => string | undefined;
+
+export type DynamicMap<Vars extends Record<string, string | undefined>> =
+  Record<string, DynamicFn<Vars> | string | undefined>;
+
+export const defineDynamic = <
+  Vars extends Record<string, string | undefined>,
+  T extends DynamicMap<Vars>,
+>(
+  d: T,
+) => d;
+```
+
+Acceptance:
+
+- Authors can declare a known subset of keys and get strong inference when destructuring `vars` in dynamic functions.
+- Programmatic `dynamic` remains compatible with existing call sites.
+- No runtime behavior change.
+
+### F) overlayEnv: generic passthrough of key set
+
+Goal: preserve the key set from the base plus any programmatic additions at compile time.
+
+Signature pattern:
+
+```ts
+export function overlayEnv<
+  B extends Record<string, string | undefined>,
+  P extends Record<string, string | undefined> | undefined = undefined,
+>(args: {
+  base: B;
+  env: string | undefined;
+  configs: OverlayConfigSources;
+  programmaticVars?: P;
+}): P extends Record<string, string | undefined> ? B & P : B;
+```
+
+Semantics:
+
+- Runtime remains identical (progressive expansion per slice).
+- Compile-time type is `B` when no programmaticVars; `B & P` when provided.
+
+Acceptance:
+
+- Callers that bind the generic (e.g., in config-aware services) get precise key sets.
+- No behavior change; purely type-level improvement.
+
+## Architecture: Services-first (Ports & Adapters)
+
+Adopt a services-first architecture with clear ports (interfaces) and thin adapters:
+
+- Ports (service interfaces)
+  - Define the core use-cases and inputs/outputs as pure TypeScript types.
+  - Keep business logic in services that depend only on ports; avoid hard process/fs/network dependencies.
+
+- Adapters (CLI, HTTP, worker, GUI, etc.)
+  - Map from the edge (flags/options → service inputs) and format outputs for the edge.
+  - Remain thin: no business logic; no hidden state management; no cross-cutting behavior beyond mapping/presentation.
+  - Side effects (fs/process/network/clipboard) live at adapter boundaries or in small leaf helpers wired through ports.
+
+- Composition and seams
+  - Wire adapters to services in a small composition layer; use dependency injection via ports.
+  - Make seams testable: unit tests for services (pure), integration tests for adapters over minimal end-to-end slices.
+
+- Code organization
+  - Prefer many small modules over large ones; co-locate tests with modules.
+
+## Testing architecture
+
+Principles
+
+- Pair every non-trivial module with a test file; co-locate tests (e.g., `foo.ts` with `foo.test.ts`).
+- Favor small, focused unit tests for pure services and targeted integration tests for adapters/seams.
+- Exercise happy paths and representative error paths; avoid brittle, end-to-end fixtures unless necessary.
+
+Regression and coverage
+
+- Add minimal, high-value tests that pin down discovered bugs or branchy behavior.
+- Keep coverage meaningful (prefer covering branches/decisions over chasing 100% lines).
+
+## Diagnostics and safety (presentation only)
+
+- Redaction: `--redact` masks secret-like keys (default patterns include SECRET, TOKEN, PASSWORD, API_KEY, KEY) in `-l/--log` and `--trace` outputs; allow custom patterns via `--redact-pattern`.
+- Entropy warnings (default on):
+  - Once-per-key messages when printable strings of length ≥ 16 exceed bits/char threshold (default 3.8).
+  - Surfaces: `--trace` and `-l/--log`.
+  - Whitelist patterns supported.
+
+## Host typing and help metadata (durable rules)
+
+- Dynamic help storage
+  - The CLI host stores dynamic option description callbacks in a host-owned WeakMap keyed by Commander.Option. Do not mutate Option via symbol properties.
+  - The CLI host stores option grouping metadata (for help rendering) in a host-owned WeakMap keyed by Option. Expose `setOptionGroup(opt, group)`.
+
+- Command creation semantics
+  - The host’s `createCommand(name?)` must construct child commands via `new GetDotenvCli(name)` explicitly. Do not rely on subclass constructor semantics.
+
+- Public interface and generics
+  - The host class implements the structural public interface `GetDotenvCliPublic<TOptions>`.
+  - The plugin contract is generic on TOptions: `GetDotenvCliPlugin<TOptions>` so setup/afterResolve receive correctly typed ctx/cli when plugins depend on option typing.
+  - The `definePlugin()` helper returns `GetDotenvCliPlugin<TOptions>`, preserving plugin type identity.
+  - New: provide an overload `definePlugin<TOptions, TConfig>` that, when a schema is supplied, wires a typed plugin config and enables typed access via `readPluginConfig<TConfig>` (see “Plugin config typing”).
+
+- Help evaluation typing
+  - ResolvedHelpConfig is `Partial<GetDotenvCliOptions> & { plugins: Record<string, unknown> }` so callbacks can read shell/log/loadProcess/exclude\*/warnEntropy without casts.
+  - Dynamic help must be evaluated against:
+    - The merged CLI options bag in normal flows (preSubcommand/preAction).
+    - A defaults-only merged CLI bag (resolveCliOptions + baseRootOptionDefaults) in the top-level “-h/--help” flow (no side effects), for parity.
+
+- Commander usage
+  - Use Commander’s public typed properties (options, commands, parent, flags, description). Avoid “unknown” casts.
+
+## Environment normalization for subprocesses
+
+- Always use a single helper (buildSpawnEnv) to normalize/dedupe child env.
+- Drop `undefined` values; normalize Windows HOME/TMP/TEMP; ensure `TMPDIR` on POSIX when temp exists.
+- Composition for child: `{ ...process.env, ...ctx.dotenv }`.
+
+## Configuration files and overlays (always-on in host/generator)
+
+Discovery:
+
+- Packaged root public: `getdotenv.config.json|yaml|yml|js|mjs|cjs|ts|mts|cts` (first match).
+- Project root public + local: same set (first match per privacy).
+
+Formats:
+
+- JSON/YAML: data only (vars/envVars/shell/scripts); `dynamic` and `schema` disallowed in JSON/YAML.
+- JS/TS: data + `dynamic` (map of string or `(vars, env?) => string | undefined`) and optional `schema` (e.g., Zod).
+
+Overlays and precedence (higher wins):
+
+1. Kind: `dynamic` > `env` > `global`
+2. Privacy: `local` > `public`
+3. Source: `project` > `packaged` > `base`
+
+Timing:
+
+1. Compose base dotenv from files (`excludeDynamic: true`).
+2. Overlay config sources (packaged → project/public → project/local) with progressive expansion inside each slice.
+3. Apply dynamic in order: programmatic → config `dynamic` (packaged → project/public → project/local) → file `dynamicPath` (lowest dynamic tier).
+4. Effects: optional `outputPath` write; optional logging; optional `process.env` merge.
+
+Interpolation model:
+
+- Phase C (host/generator): interpolate remaining string options against `{ ...process.env, ...ctx.dotenv }`. Precedence: ctx wins over parent process.env.
+- Per-plugin slice interpolation: interpolate plugin config slices once against `{ ...ctx.dotenv, ...process.env }`. Precedence: parent wins over ctx for plugin slices.
+- Progressive within slice; later values can reference earlier results.
+
+Validation:
+
+- JSON/YAML: `requiredKeys?: string[]`.
+- JS/TS: `schema?: { safeParse(finalEnv) }` (e.g., Zod).
+- Runs once after overlays/Phase C; `--strict` fails on issues; otherwise warn.
+
+## Scripts table (optional, config or root options)
+
+- Define scripts in config: `plugins.<id>.scripts` or root `scripts`.
+- Rare per-script shell overrides: `{ cmd, shell }` (string|boolean) take precedence over global shell for that script.
+- Generic typing is unified: `Scripts<TShell extends string | boolean>` (see “Strong typing and generics”).
+
+## API surface (exports and typing)
+
+- Keep public exports stable; add new generic types as additive improvements:
+  - `Scripts<TShell extends string | boolean = string | boolean>`
+  - `resolveShell<TShell extends string | boolean>(...) => TShell | false`
+  - `defineDynamic<Vars, T extends DynamicMap<Vars>>(d: T) => T`
+  - `dotenvExpandAll<T extends Record<string, string | undefined>>(...): { [K in keyof T]: string | undefined }`
+  - `readPluginConfig<T>(cli, id): T | undefined`
+  - `definePlugin<TOptions, TConfig>(...)` overload as specified
+  - `overlayEnv<B,P>(...) => B | (B & P)` generic return per presence of programmaticVars
+  - `defaultsDeep` typed-head overloads (no behavioral change)
 
 ## Prioritized roadmap (requirements)
 
@@ -169,7 +439,7 @@ Must-have (near-term):
    - `--redact` with default masks (SECRET, TOKEN, KEY, PASSWORD); allow custom patterns.
    - Apply to `-l/--log` and `--trace`.
    - Entropy warnings (warning-only; no masking):
-     - Purpose: Provide a low-risk signal for likely secrets without altering values or masking by default. Keeps observability high while nudging safer workflows.
+     - Purpose: Provide a low-risk signal for likely secrets without altering values or masking by default.
      - Surfaces:
        - `--trace`: emit an extra stderr line per affected key (once per key per run).
        - `-l/--log`: same warning policy (values are printed).
@@ -212,89 +482,3 @@ Nice-to-have (next):
 6. Watch mode for local dev (recompute on file changes; optional command rerun).
 7. Enhanced `--trace` diff (origin/value/overridden-by).
 8. Troubleshooting doc (common shell pitfalls and quoting recipes).
-
-## Architecture: Services‑first (Ports & Adapters)
-
-Adopt a services‑first architecture with clear ports (interfaces) and thin adapters:
-
-- Ports (service interfaces)
-  - Define the core use‑cases and inputs/outputs as pure TypeScript types.
-  - Keep business logic in services that depend only on ports; avoid hard process/fs/network dependencies.
-
-- Adapters (CLI, HTTP, worker, GUI, etc.)
-  - Map from the edge (flags, HTTP params, env) to service inputs; format service outputs for the edge.
-  - Remain thin: no business logic, no hidden state management, no cross‑cutting behavior beyond mapping/presentation.
-  - Side effects (fs/process/network/clipboard) live at adapter boundaries or in small leaf helpers wired through ports.
-
-- Composition and seams
-  - Wire adapters to services in a small composition layer; prefer dependency injection via ports.
-  - Make seams testable: unit tests for services (pure), integration tests for adapters over minimal end‑to‑end slices.
-
-- Code organization
-  - Prefer many small modules over large ones (see long‑file guidance).
-  - Co‑locate tests with modules for discoverability.
-
-This matches the “Services‑first proposal required” step in the Default Task: propose contracts and adapter mappings before code.
-
-## Testing architecture
-
-Principles
-
-- Pair every non‑trivial module with a test file; co‑locate tests (e.g., `foo.ts` with `foo.test.ts`).
-- Favor small, focused unit tests for pure services (ports) and targeted integration tests for adapters/seams.
-- Exercise happy paths and representative error paths; avoid brittle, end‑to‑end fixtures unless necessary.
-
-Regression and coverage
-
-- Add minimal, high‑value tests that pin down discovered bugs or branchy behavior.
-- Keep coverage meaningful (prefer covering branches/decisions over chasing 100% lines).
-
-## System‑level lint policy
-
-Formatting and linting are enforced by the repository configuration; this system prompt sets expectations:
-
-- Prettier is the single source of truth for formatting (including prose policy: no manual wrapping outside commit messages or code blocks).
-- ESLint defers to Prettier for formatting concerns and enforces TypeScript/ordering rules (see repo config).
-- Prefer small, automated style fixes over manual formatting in patches.
-- Keep imports sorted (per repo tooling) and avoid dead code.
-
-Assistant guidance
-
-- When emitting patches, respect house style; do not rewrap narrative Markdown outside the allowed contexts.
-- Opportunistic repair is allowed for local sections you are already modifying (e.g., unwrap manually wrapped paragraphs), but avoid repo‑wide reflows as part of unrelated changes.
-
-## Host typing and help metadata (durable rules)
-
-- Dynamic help storage
-  - The CLI host must store dynamic option description callbacks in a host‑owned WeakMap keyed by Commander.Option. Do not mutate Option via symbol properties.
-  - The CLI host must store option grouping metadata (for help rendering) in a host‑owned WeakMap keyed by Option. Do not add ad‑hoc properties (e.g., “\_\_group”) to Option.
-  - Expose a public API `setOptionGroup(opt: Option, group: string)` on the host so builders/plugins can tag groups without mutating Commander.Option.
-
-- Command creation semantics
-  - The host’s createCommand(name?) override must construct child commands via `new GetDotenvCli(name)` explicitly. We do not rely on `(this.constructor as …)` to support subclassing semantics. This keeps help/dynamic behaviors consistent on subcommands.
-
-- Public interface and generics
-  - The host class implements the structural public interface GetDotenvCliPublic<TOptions>.
-  - The plugin contract is generic on TOptions: `GetDotenvCliPlugin<TOptions>` so afterResolve/setup receive correctly typed ctx/cli when plugins depend on option typing.
-  - The `definePlugin()` helper returns a generic `GetDotenvCliPlugin<TOptions>`, preserving plugin type identity.
-
-- Help evaluation typing
-  - ResolvedHelpConfig is `Partial<GetDotenvCliOptions> & { plugins: Record<string, unknown> }` so callbacks can read shell/log/loadProcess/exclude\*/warnEntropy without casts.
-  - Dynamic help must be evaluated against:
-    - The merged CLI options bag in normal flows (preSubcommand/preAction).
-    - A defaults‑only merged CLI bag (resolveCliOptions + baseRootOptionDefaults) in the top‑level “-h/--help” flow (no side effects), for parity.
-
-- Commander usage
-  - The host must use Commander’s public typed properties (options, commands, parent, flags, description). Avoid “unknown” casts.
-
-# Context window exhaustion (termination rule)
-
-When context is tight or replies risk truncation:
-
-1. Stop before partial output. Do not emit incomplete patches or listings.
-2. Prefer a handoff:
-   - Output a fresh “Handoff — <project> for next thread” block per the handoff rules.
-   - Keep it concise and deterministic (no user‑facing instructions).
-3. Wait for the next thread:
-   - The user will start a new chat with the handoff and attach archives.
-   - Resume under the bootloader with full, reproducible context.
