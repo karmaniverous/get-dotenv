@@ -4,22 +4,21 @@ When updated: 2025-12-04T00:00:00Z
 
 ## Next up (near‑term, actionable)
 
-- Type-only generics (P1): defaultsDeep overloads
+- Type-only generics (P1): defaultsDeep overloads (DONE)
   - Add intersection-based overloads (2–5 layers) to util/defaultsDeep.ts
     without changing implementation semantics (ignore undefined, replace
     arrays/non-objects).
   - Tests: add compile-only types exercise under src/types to assert
     inference; keep existing runtime tests green (util/defaultsDeep.test.ts).
 
-- Type-only generics (P1): dotenvExpandAll key-preserving result
+- Type-only generics (P1): dotenvExpandAll key-preserving result (DONE)
   - Make dotenvExpandAll generic on input map; return {[K in keyof T]:
     string | undefined}.
   - Tests: keep dotenvExpand.more.test.ts behavior assertions; add a
     compile-only types usage to ensure key mapping inference.
 
 - Scripts typing unification (P1): generic Scripts<TShell>
-  - Replace duplicate local Scripts types with unified generic from
-    cliCore/types (ScriptsTable<TShell>).
+  - Replace duplicate local Scripts types with unified generic from    cliCore/types (ScriptsTable<TShell>).
   - Update services/batch/resolve to import and use ScriptsTable<TShell>;
     make resolveShell<TShell>() return TShell | false (remove URL union).
   - Propagate type changes across cmd/aws/demo/batch call sites and
@@ -66,3 +65,9 @@ When updated: 2025-12-04T00:00:00Z
 ## Completed (recent)
 
 **CRITICAL: Append-only list. Add new completed items at the end. Prune old completed entries from the top. Do not edit existing entries.**
+
+— P1 start (types): Implemented defaultsDeep typed overloads (2–5 layers)
+  without runtime changes; converted implementation to function declaration to
+  support overloads. Made dotenvExpandAll generic and key-preserving while
+  retaining an index signature for later dynamic additions. Added compile-only
+  type samples under src/types to assert inference for both utilities.

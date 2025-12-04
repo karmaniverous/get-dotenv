@@ -43,11 +43,53 @@ const mergeInto = (target: AnyRecord, source: AnyRecord): AnyRecord => {
  * defaultsDeep(\{ a: 1, nested: \{ b: 2 \} \}, \{ nested: \{ b: 3, c: 4 \} \})
  * =\> \{ a: 1, nested: \{ b: 3, c: 4 \} \}
  */
-export const defaultsDeep = <T extends Record<string, unknown>>(
+// Typed heads (overloads) to improve inference without changing runtime behavior.
+export function defaultsDeep<A extends Record<string, unknown>>(
+  a?: Partial<A>,
+): A;
+export function defaultsDeep<
+  A extends R,
+  B extends Record<string, unknown>,
+  R extends Record<string, unknown> = A,
+>(a?: Partial<A>, b?: Partial<B>): A & B;
+export function defaultsDeep<
+  A extends R,
+  B extends Record<string, unknown>,
+  C extends Record<string, unknown>,
+  R extends Record<string, unknown> = A,
+>(a?: Partial<A>, b?: Partial<B>, c?: Partial<C>): A & B & C;
+export function defaultsDeep<
+  A extends R,
+  B extends Record<string, unknown>,
+  C extends Record<string, unknown>,
+  D extends Record<string, unknown>,
+  R extends Record<string, unknown> = A,
+>(
+  a?: Partial<A>,
+  b?: Partial<B>,
+  c?: Partial<C>,
+  d?: Partial<D>,
+): A & B & C & D;
+export function defaultsDeep<
+  A extends R,
+  B extends Record<string, unknown>,
+  C extends Record<string, unknown>,
+  D extends Record<string, unknown>,
+  E extends Record<string, unknown>,
+  R extends Record<string, unknown> = A,
+>(
+  a?: Partial<A>,
+  b?: Partial<B>,
+  c?: Partial<C>,
+  d?: Partial<D>,
+  e?: Partial<E>,
+): A & B & C & D & E;
+// Implementation: variadic, unchanged semantics.
+export function defaultsDeep<T extends Record<string, unknown>>(
   ...layers: Array<Partial<T> | undefined>
-): T => {
+): T {
   const result = layers
     .filter(Boolean)
     .reduce<AnyRecord>((acc, layer) => mergeInto(acc, layer as AnyRecord), {});
   return result as T;
-};
+}

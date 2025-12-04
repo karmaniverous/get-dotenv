@@ -126,21 +126,32 @@ export const dotenvExpand = (
  * When `progressive` is true, each expanded key becomes available for
  * subsequent expansions in the same object (left-to-right by object key order).
  */
-export const dotenvExpandAll = (
-  values: ProcessEnv = {},
+export function dotenvExpandAll<T extends Record<string, string | undefined>>(
+  values: T,
   options: {
-    ref?: ProcessEnv;
+    ref?: Record<string, string | undefined>;
     progressive?: boolean;
   } = {},
-) =>
-  Object.keys(values).reduce<Record<string, string | undefined>>((acc, key) => {
-    const { ref = process.env, progressive = false } = options;
-    acc[key] = dotenvExpand(values[key], {
-      ...ref,
-      ...(progressive ? acc : {}),
-    });
-    return acc;
-  }, {});
+): Record<string, string | undefined> & { [K in keyof T]: string | undefined } {
+  const {
+    ref = process.env as Record<string, string | undefined>,
+    progressive = false,
+  } = options ?? {};
+  const out = Object.keys(values).reduce<Record<string, string | undefined>>(
+    (acc, key) => {
+      acc[key] = dotenvExpand(values[key], {
+        ...ref,
+        ...(progressive ? acc : {}),
+      });
+      return acc;
+    },
+    {},
+  );
+  // Key-preserving return with a permissive index signature to allow later additions.
+  return out as Record<string, string | undefined> & {
+    [K in keyof T]: string | undefined;
+  };
+}
 
 /**
  * Recursively expands environment variables in a string using `process.env` as
