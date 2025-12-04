@@ -2,15 +2,14 @@ import type { GetDotenvCliPublic } from '@karmaniverous/get-dotenv/cliHost';
 
 import { runCommand } from '../../cliCore/exec';
 import { buildSpawnEnv } from '../../cliCore/spawnEnv';
-import { readPluginConfig } from '../../cliHost';
 import { definePlugin } from '../../cliHost/definePlugin';
 import type { GetDotenvOptions, Logger } from '../../GetDotenvOptions';
 import { resolveShell } from '../../services/batch/resolve';
 import { resolveAwsContext } from './service';
 import { type AwsPluginConfigResolved, AwsPluginConfigSchema } from './types';
 
-export const awsPlugin = () =>
-  definePlugin<GetDotenvOptions, AwsPluginConfigResolved>({
+export const awsPlugin = () => {
+  const plugin = definePlugin<GetDotenvOptions, AwsPluginConfigResolved>({
     id: 'aws',
     // Host validates this slice when the loader path is active.
     configSchema: AwsPluginConfigSchema,
@@ -54,6 +53,7 @@ export const awsPlugin = () =>
             opts: Record<string, unknown>,
             thisCommand: unknown,
           ) => {
+            const self = plugin;
             const self = thisCommand as { parent?: unknown };
             const parent = (self.parent ?? null) as
               | (GetDotenvCliPublic & {
@@ -81,8 +81,7 @@ export const awsPlugin = () =>
 
             // Build overlay cfg from subcommand flags layered over discovered config.
             const ctx = cli.getCtx();
-            const cfgBase =
-              readPluginConfig<AwsPluginConfigResolved>(cli, 'aws') ?? {};
+            const cfgBase = self.readConfig<AwsPluginConfigResolved>(cli) ?? {};
             const overlay: Partial<AwsPluginConfigResolved> = {};
             // Map boolean toggles (respect explicit --no-*)
             if (Object.prototype.hasOwnProperty.call(opts, 'loginOnDemand'))
@@ -182,7 +181,7 @@ export const awsPlugin = () =>
     },
     async afterResolve(_cli, ctx) {
       const log: Logger = console;
-      const cfg = readPluginConfig<AwsPluginConfigResolved>(_cli, 'aws') ?? {};
+      const cfg = plugin.readConfig<AwsPluginConfigResolved>(_cli) ?? {};
 
       const out = await resolveAwsContext({
         dotenv: ctx.dotenv,
@@ -223,3 +222,5 @@ export const awsPlugin = () =>
       }
     },
   });
+  return plugin;
+};

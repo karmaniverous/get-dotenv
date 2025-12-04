@@ -11,6 +11,7 @@ import type { Command, Option } from 'commander';
 import type { ZodType } from 'zod';
 
 import type { GetDotenvOptions } from '../GetDotenvOptions';
+import { _getPluginConfigForInstance } from './computeContext';
 import type { GetDotenvCliCtx } from './GetDotenvCli';
 
 /**
@@ -99,7 +100,8 @@ export function definePlugin<
   TOptions extends GetDotenvOptions = GetDotenvOptions,
 >(spec: DefineSpec<TOptions>): GetDotenvCliPlugin<TOptions> {
   const { children = [], ...rest } = spec;
-  const plugin: GetDotenvCliPlugin<TOptions> = {
+  // Build base plugin first, then extend with instance-bound helpers.
+  const base: GetDotenvCliPlugin<TOptions> = {
     ...rest,
     children: [...children],
     use(child) {
@@ -107,5 +109,60 @@ export function definePlugin<
       return this;
     },
   };
-  return plugin;
+  const extended = base as GetDotenvCliPlugin<TOptions> & {
+    /**
+     * Return the validated/interpolated config slice for this plugin instance.
+     * Instance-bound; host stores per-instance slices in a WeakMap.
+     */
+    readConfig: <TConfig>(
+      _cli: GetDotenvCliPublic<TOptions>,
+    ) => TConfig | undefined;
+    /**
+     * Convenience to create a plugin-bound dynamic option where the callback
+     * receives this plugin’s config slice as the second param.
+     */
+    createPluginDynamicOption: <TConfig, TPlugins = Record<string, unknown>>(
+      flags: string,
+      desc: (
+        cfg: Partial<GetDotenvOptions> & { plugins: TPlugins },
+        pluginCfg: TConfig | undefined,
+      ) => string,
+      parser?: (value: string, previous?: unknown) => unknown,
+      defaultValue?: unknown,
+    ) => Option;
+  };
+  extended.readConfig = function <TConfig>(
+    _cli: GetDotenvCliPublic<TOptions>,
+  ): TConfig | undefined {
+    return _getPluginConfigForInstance<TConfig>(extended);
+  };
+  extended.createPluginDynamicOption = function <
+    TConfig,
+    TPlugins = Record<string, unknown>,
+  >(
+    flags: string,
+    desc: (
+      cfg: Partial<GetDotenvOptions> & { plugins: TPlugins },
+      pluginCfg: TConfig | undefined,
+    ) => string,
+    parser?: (value: string, previous?: unknown) => unknown,
+    defaultValue?: unknown,
+  ): Option {
+    // The returned Option is created by the host; we only wrap the description
+    // so it receives this instance’s config slice at help-evaluation time.
+    const self = extended;
+    // dynamicOption is available on the structural host type
+    const opt = arguments[0] as unknown;
+    void opt;
+    // The host will call createDynamicOption on itself; the plugin passes a wrapper.
+    return (
+      arguments as unknown as { 0: GetDotenvCliPublic<TOptions> }
+    )[0].createDynamicOption(
+      flags,
+      (cfg) => desc(cfg, _getPluginConfigForInstance<TConfig>(self)),
+      parser,
+      defaultValue,
+    );
+  } as any;
+  return extended;
 }

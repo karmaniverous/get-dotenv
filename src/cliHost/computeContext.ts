@@ -19,6 +19,27 @@ import type { GetDotenvCliPlugin } from './definePlugin';
 import type { GetDotenvCliCtx } from './GetDotenvCli';
 
 /**
+ * Instance-bound plugin config store.
+ * Host stores the validated/interpolated slice per plugin instance.
+ * The store is intentionally private to this module; definePlugin()
+ * provides a typed accessor that reads from this store for the calling
+ * plugin instance.
+ */
+const PLUGIN_CONFIG_STORE: WeakMap<
+  GetDotenvCliPlugin<any>,
+  unknown
+> = new WeakMap();
+export const _setPluginConfigForInstance = (
+  plugin: GetDotenvCliPlugin<any>,
+  cfg: unknown,
+) => {
+  PLUGIN_CONFIG_STORE.set(plugin, cfg);
+};
+export const _getPluginConfigForInstance = <T>(
+  plugin: GetDotenvCliPlugin<any>,
+): T | undefined => PLUGIN_CONFIG_STORE.get(plugin) as T | undefined;
+
+/**
  * Compute the dotenv context for the host (uses the config loader/overlay path).
  * - Resolves and validates options strictly (host-only).
  * - Applies file cascade, overlays, dynamics, and optional effects.
@@ -168,7 +189,10 @@ export const computeContext = async <
         }
       ).plugins) ??
     {};
-  const mergedPluginConfigs = defaultsDeep<Record<string, unknown>>(
+  // The by-id map is retained only for backwards-compat rendering paths
+  // (root help dynamic evaluation). Instance-bound access is the source
+  // of truth going forward and is populated below.
+  const mergedPluginConfigsById = defaultsDeep<Record<string, unknown>>(
     {},
     packagedPlugins,
     publicPlugins,
@@ -176,7 +200,7 @@ export const computeContext = async <
   );
   for (const p of plugins) {
     if (!p.id) continue;
-    const slice = mergedPluginConfigs[p.id];
+    const slice = mergedPluginConfigsById[p.id];
     if (slice === undefined) continue;
     // Per-plugin interpolation just before validation/afterResolve:
     // precedence: process.env wins over ctx.dotenv for slice defaults.
@@ -197,9 +221,11 @@ export const computeContext = async <
           .join('\n');
         throw new Error(`Invalid config for plugin '${p.id}':\n${msgs}`);
       }
-      mergedPluginConfigs[p.id] = parsed.data;
+      _setPluginConfigForInstance(p, parsed.data);
+      mergedPluginConfigsById[p.id] = parsed.data;
     } else {
-      mergedPluginConfigs[p.id] = interpolated;
+      _setPluginConfigForInstance(p, interpolated);
+      mergedPluginConfigsById[p.id] = interpolated;
     }
   }
 
@@ -207,6 +233,8 @@ export const computeContext = async <
     optionsResolved: validated as unknown as TOptions,
     dotenv: dotenv as ProcessEnv,
     plugins: {},
-    pluginConfigs: mergedPluginConfigs,
+    // Retained for legacy root help dynamic evaluation only. Instance-bound
+    // access is used by plugins themselves and tests/docs moving forward.
+    pluginConfigs: mergedPluginConfigsById,
   };
 };

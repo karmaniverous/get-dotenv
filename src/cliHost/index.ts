@@ -7,7 +7,6 @@ import type { CommandWithOptions, RootOptionsShape } from '../cliCore/types';
 import { resolveGetDotenvConfigSources } from '../config/loader';
 import { validateEnvAgainstSources } from '../config/validate';
 import { getDotenvCliOptions2Options } from '../GetDotenvOptions';
-export { readPluginConfig } from './readPluginConfig';
 import { attachRootOptions as attachRootOptionsBuilder } from './attachRootOptions';
 import type { ResolvedHelpConfig } from './GetDotenvCli';
 import { GetDotenvCli as BaseGetDotenvCli } from './GetDotenvCli';

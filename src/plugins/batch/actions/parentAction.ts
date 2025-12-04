@@ -1,7 +1,7 @@
 import type { GetDotenvCliPublic } from '@karmaniverous/get-dotenv/cliHost';
 import type { Command } from 'commander';
 
-import { readPluginConfig } from '../../../cliHost';
+import type { definePlugin } from '../../../cliHost/definePlugin';
 import type { Logger } from '../../../GetDotenvOptions';
 import { execShellCommandBatch } from '../../../services/batch/execShellCommandBatch';
 import type { Scripts } from '../../../services/batch/resolve';
@@ -13,7 +13,11 @@ import type { BatchConfig } from '../types';
  * Build the parent "batch" action handler (no explicit subcommand).
  */
 export const buildParentAction =
-  (cli: GetDotenvCliPublic, opts: BatchPluginOptions) =>
+  (
+    plugin: ReturnType<typeof definePlugin>,
+    cli: GetDotenvCliPublic,
+    opts: BatchPluginOptions,
+  ) =>
   async (
     commandParts: string[] | undefined,
     thisCommand: Command,
@@ -25,7 +29,7 @@ export const buildParentAction =
       string,
       string | undefined
     >;
-    const cfg = readPluginConfig<BatchConfig>(cli, 'batch') ?? {};
+    const cfg = plugin.readConfig<BatchConfig>(cli) ?? {};
 
     const raw = thisCommand.opts();
     const commandOpt =

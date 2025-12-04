@@ -21,8 +21,8 @@ import {
  * - scripts/shell: used to resolve command and shell behavior per script or global default.
  * - logger: defaults to console.
  */
-export const batchPlugin = (opts: BatchPluginOptions = {}) =>
-  definePlugin<GetDotenvOptions, BatchConfig>({
+export const batchPlugin = (opts: BatchPluginOptions = {}) => {
+  const plugin = definePlugin<GetDotenvOptions, BatchConfig>({
     id: 'batch',
     // Host validates this when config-loader is enabled; plugins may also
     // re-validate at action time as a safety belt.
@@ -42,10 +42,10 @@ export const batchPlugin = (opts: BatchPluginOptions = {}) =>
         // Dynamic help: show effective defaults from the merged/interpolated plugin config slice.
         .addOption(
           (() => {
-            const opt = host.createDynamicOption<{ batch?: BatchConfig }>(
+            const opt = plugin.createPluginDynamicOption<BatchConfig>(
               '-p, --pkg-cwd',
-              (cfg) =>
-                `use nearest package directory as current working directory${cfg.plugins.batch?.pkgCwd ? ' (default)' : ''}`,
+              (_bag, cfg) =>
+                `use nearest package directory as current working directory${cfg?.pkgCwd ? ' (default)' : ''}`,
             );
             cli.setOptionGroup(opt, GROUP);
             return opt;
@@ -53,11 +53,11 @@ export const batchPlugin = (opts: BatchPluginOptions = {}) =>
         )
         .addOption(
           (() => {
-            const opt = host.createDynamicOption<{ batch?: BatchConfig }>(
+            const opt = plugin.createPluginDynamicOption<BatchConfig>(
               '-r, --root-path <string>',
-              (cfg) =>
+              (_bag, cfg) =>
                 `path to batch root directory from current working directory (default: ${JSON.stringify(
-                  cfg.plugins.batch?.rootPath || './',
+                  cfg?.rootPath || './',
                 )})`,
             );
             cli.setOptionGroup(opt, GROUP);
@@ -66,11 +66,11 @@ export const batchPlugin = (opts: BatchPluginOptions = {}) =>
         )
         .addOption(
           (() => {
-            const opt = host.createDynamicOption<{ batch?: BatchConfig }>(
+            const opt = plugin.createPluginDynamicOption<BatchConfig>(
               '-g, --globs <string>',
-              (cfg) =>
+              (_bag, cfg) =>
                 `space-delimited globs from root path (default: ${JSON.stringify(
-                  cfg.plugins.batch?.globs || '*',
+                  cfg?.globs || '*',
                 )})`,
             );
             cli.setOptionGroup(opt, GROUP);
@@ -99,9 +99,11 @@ export const batchPlugin = (opts: BatchPluginOptions = {}) =>
             .enablePositionalOptions()
             .passThroughOptions()
             .argument('[command...]')
-            .action(buildDefaultCmdAction(cli, batchCmd, opts)),
+            .action(buildDefaultCmdAction(plugin, cli, batchCmd, opts)),
           { isDefault: true },
         )
-        .action(buildParentAction(cli, opts));
+        .action(buildParentAction(plugin, cli, opts));
     },
   });
+  return plugin;
+};

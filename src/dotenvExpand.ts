@@ -126,13 +126,19 @@ export const dotenvExpand = (
  * When `progressive` is true, each expanded key becomes available for
  * subsequent expansions in the same object (left-to-right by object key order).
  */
-export function dotenvExpandAll<T extends Record<string, string | undefined>>(
+export function dotenvExpandAll<
+  T extends
+    | Record<string, string | undefined>
+    | Readonly<Record<string, string | undefined>>,
+>(
   values: T,
   options: {
     ref?: Record<string, string | undefined>;
     progressive?: boolean;
   } = {},
-): Record<string, string | undefined> & { [K in keyof T]: string | undefined } {
+): Record<string, string | undefined> & {
+  [K in keyof T]: string | undefined;
+} {
   const {
     ref = process.env as Record<string, string | undefined>,
     progressive = false,
