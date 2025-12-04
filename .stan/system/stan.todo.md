@@ -138,4 +138,9 @@ require a brief design discussion recorded in the dev plan.
 
 - P2 (types): overlayEnv key-preserving overloads — added call signatures so
   the result is B when no programmaticVars is provided and B & P when it is;
-  implementation unchanged (progressive expansion per slice).
+  implementation unchanged (progressive expansion per slice).
+
+- Fix overload implementations: converted mixed overload + const patterns to
+  proper function overloads with a single implementation for both
+  `defineDynamic` and `overlayEnv`, resolving duplicate identifier and missing
+  implementation type errors during typecheck.

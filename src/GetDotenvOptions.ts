@@ -68,7 +68,11 @@ export function defineDynamic<
  *
  * Accepts legacy GetDotenvDynamic without Vars binding.
  */
-export const defineDynamic = <T extends GetDotenvDynamic>(d: T): T => d;
+export function defineDynamic<T extends GetDotenvDynamic>(d: T): T;
+// Implementation
+export function defineDynamic(d: unknown): unknown {
+  return d;
+}
 
 /**
  * Options passed programmatically to `getDotenv`.

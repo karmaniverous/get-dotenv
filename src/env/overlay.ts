@@ -51,7 +51,7 @@ export function overlayEnv<B extends ProcessEnv, P extends ProcessEnv>(args: {
   configs: OverlayConfigSources;
   programmaticVars: P;
 }): B & P;
-export const overlayEnv = ({
+export function overlayEnv({
   base,
   env,
   configs,
@@ -61,7 +61,7 @@ export const overlayEnv = ({
   env: string | undefined;
   configs: OverlayConfigSources;
   programmaticVars?: ProcessEnv;
-}): ProcessEnv => {
+}): ProcessEnv {
   let current = { ...base };
 
   // Source: packaged (public -> local)
@@ -84,4 +84,4 @@ export const overlayEnv = ({
   }
 
   return current;
-};
+}
