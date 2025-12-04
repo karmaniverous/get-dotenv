@@ -30,7 +30,6 @@ export const batchPlugin = (opts: BatchPluginOptions = {}) => {
     setup(cli: GetDotenvCliPublic) {
       const ns = cli.ns('batch');
       const batchCmd = ns; // capture the parent "batch" command for default-subcommand context
-      const host = cli as unknown as GetDotenvCli;
       const pluginId = 'batch';
       const GROUP = `plugin:${pluginId}`;
 

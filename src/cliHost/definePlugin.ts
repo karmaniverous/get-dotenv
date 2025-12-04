@@ -36,9 +36,11 @@ export type GetDotenvCliPublic<
    * Create a dynamic option whose description is computed at help time
    * from the resolved configuration.
    */
-  createDynamicOption<TPlugins = Record<string, unknown>>(
+  createDynamicOption(
     flags: string,
-    desc: (cfg: ResolvedHelpConfig & { plugins: TPlugins }) => string,
+    desc: (
+      cfg: ResolvedHelpConfig & { plugins: Record<string, unknown> },
+    ) => string,
     parser?: (value: string, previous?: unknown) => unknown,
     defaultValue?: unknown,
   ): Option;
@@ -80,16 +82,16 @@ export interface GetDotenvCliPlugin<
    * Instance-bound accessor: read the validated, interpolated config slice for
    * this plugin instance (when present).
    */
-  readConfig?<TConfig>(cli: GetDotenvCliPublic<TOptions>): TConfig | undefined;
+  readConfig<TConfig>(cli: GetDotenvCliPublic<TOptions>): TConfig | undefined;
   /**
    * Create a plugin-bound dynamic option. The callback receives the resolved
    * configuration bag and this plugin instance’s validated config slice.
    */
-  createPluginDynamicOption?<TConfig, TPlugins = Record<string, unknown>>(
+  createPluginDynamicOption<TConfig>(
     cli: GetDotenvCliPublic<TOptions>,
     flags: string,
     desc: (
-      cfg: ResolvedHelpConfig & { plugins: TPlugins },
+      cfg: ResolvedHelpConfig & { plugins: Record<string, unknown> },
       pluginCfg: TConfig | undefined,
     ) => string,
     parser?: (value: string, previous?: unknown) => unknown,
@@ -142,21 +144,18 @@ export function definePlugin<
   // Instance-bound config accessor
   (extended as Required<GetDotenvCliPlugin<TOptions>>).readConfig = function <
     TConfig,
-  >(cli: GetDotenvCliPublic<TOptions>): TConfig | undefined {
+  >(_cli: GetDotenvCliPublic<TOptions>): TConfig | undefined {
     // Config is stored per-plugin-instance by the host (WeakMap in computeContext).
-    return _getPluginConfigForInstance<TConfig>(extended);
+    return _getPluginConfigForInstance(extended) as TConfig | undefined;
   };
   // Plugin-bound dynamic option factory
   (
     extended as Required<GetDotenvCliPlugin<TOptions>>
-  ).createPluginDynamicOption = function <
-    TConfig,
-    TPlugins = Record<string, unknown>,
-  >(
+  ).createPluginDynamicOption = function <TConfig>(
     cli: GetDotenvCliPublic<TOptions>,
     flags: string,
     desc: (
-      cfg: ResolvedHelpConfig & { plugins: TPlugins },
+      cfg: ResolvedHelpConfig & { plugins: Record<string, unknown> },
       pluginCfg: TConfig | undefined,
     ) => string,
     parser?: (value: string, previous?: unknown) => unknown,
@@ -164,7 +163,20 @@ export function definePlugin<
   ): Option {
     return cli.createDynamicOption(
       flags,
-      (cfg) => desc(cfg, _getPluginConfigForInstance<TConfig>(extended)),
+      (cfg) => {
+        // Prefer the validated slice stored per instance; fallback to help-bag
+        // (by-id) so top-level `-h` can render effective defaults before resolve.
+        const fromStore = _getPluginConfigForInstance(extended) as
+          | TConfig
+          | undefined;
+        let fromBag: TConfig | undefined = undefined;
+        const id = (extended as { id?: string }).id;
+        if (!fromStore && id && cfg && cfg.plugins && cfg.plugins[id]) {
+          const maybe = cfg.plugins[id];
+          if (maybe && typeof maybe === 'object') fromBag = maybe as TConfig;
+        }
+        return desc(cfg, fromStore ?? fromBag);
+      },
       parser,
       defaultValue,
     );
