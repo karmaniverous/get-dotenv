@@ -9,7 +9,7 @@
     "src/env/overlay.ts"
   ],
   "project": ["src/**/*.ts"],
-  "ignore": [],
+  "ignore": ["src/types/*.ts"],
   "ignoreBinaries": ["Write-Output"],
   "ignoreDependencies": ["cross-env", "esbuild"],
   "rules": { "exports": "off", "types": "off", "duplicates": "off" }

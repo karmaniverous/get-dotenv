@@ -30,14 +30,13 @@ const mergeInto = (target: AnyRecord, source: AnyRecord): AnyRecord => {
 };
 
 /**
- * Perform a deep defaults-style merge across plain objects. *
+ * Perform a deep defaults‑style merge across plain objects.
  * - Only merges plain objects (prototype === Object.prototype).
- * - Arrays and non-objects are replaced, not merged.
+ * - Arrays and non‑objects are replaced, not merged.
  * - `undefined` values are ignored and do not overwrite prior values.
  *
- * @typeParam T - The resulting shape after merging all layers.
- * @param layers - Zero or more partial layers in ascending precedence order.
- * @returns The merged object typed as {@link T}.
+ * @typeParam T - Resulting shape after merging all layers.
+ * @returns The merged object typed as T.
  *
  * @example
  * defaultsDeep(\{ a: 1, nested: \{ b: 2 \} \}, \{ nested: \{ b: 3, c: 4 \} \})
