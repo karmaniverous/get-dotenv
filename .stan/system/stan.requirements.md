@@ -146,21 +146,17 @@ Goal: callers that layer heterogeneous shapes should not need casts; merged type
 Example signatures (illustrative; final set up to 5 layers):
 
 ```ts
-export function defaultsDeep<A extends Record<string, unknown>>(
-  a?: Partial<A> | undefined,
-): A;
+export function defaultsDeep<A extends object>(a?: Partial<A>): A;
+
+export function defaultsDeep<A extends object, B extends object>(
+  a?: Partial<A>,
+  b?: Partial<B>,
+): A & B;
 
 export function defaultsDeep<
-  A extends R,
-  B extends Record<string, unknown>,
-  R extends Record<string, unknown> = A,
->(a?: Partial<A>, b?: Partial<B>): A & B;
-
-export function defaultsDeep<
-  A extends R,
-  B extends Record<string, unknown>,
-  C extends Record<string, unknown>,
-  R extends Record<string, unknown> = A,
+  A extends object,
+  B extends object,
+  C extends object,
 >(a?: Partial<A>, b?: Partial<B>, c?: Partial<C>): A & B & C;
 
 // add 4th/5th layer overloads similarly
@@ -171,32 +167,37 @@ Acceptance:
 - Existing call sites (e.g., options/base < local < custom merges) infer intersections without `as unknown as …` casts.
 - No runtime behavior or semantics change.
 
-### B) dotenvExpandAll: preserve key set generically
+### B) dotenvExpandAll: preserve key set generically and accept Readonly inputs
 
-Goal: retain key specificity instead of returning `Record<string, string | undefined>`.
+Goal: retain key specificity and accept readonly maps at call sites.
 
 Signature:
 
 ```ts
-export function dotenvExpandAll<T extends Record<string, string | undefined>>(
+export function dotenvExpandAll<
+  T extends
+    | Record<string, string | undefined>
+    | Readonly<Record<string, string | undefined>>,
+>(
   values: T,
   options?: { ref?: Record<string, string | undefined>; progressive?: boolean },
-): { [K in keyof T]: string | undefined };
+): { [K in keyof T]: string | undefined } & Record<string, string | undefined>;
 ```
 
 Acceptance:
 
 - Callers indexing known keys do not need extra casts.
+- Passing `as const`/readonly literals compiles without friction.
 - Progressive behavior unchanged.
 
-### C) Scripts table: generic shell type propagation
+### C) Scripts table: generic shell type propagation + helper
 
-Goal: unify on a single generic Scripts<TShell> across host/services/plugins to improve inference and propagate concrete shell choices.
+Goal: unify on a single generic Scripts<TShell> across host/services/plugins and preserve TShell in authored tables.
 
-- Export in a single public place (e.g., cliCore/types):
+- Public type:
   ```ts
   export type Scripts<TShell extends string | boolean = string | boolean> =
-    Record<string, string | { cmd: string; shell?: TShell }>;
+    Record<string, string | { cmd: string; shell?: TShell | undefined }>;
   ```
 - Functions that resolve command/shell use generic `TShell`:
   ```ts
@@ -206,41 +207,44 @@ Goal: unify on a single generic Scripts<TShell> across host/services/plugins to 
     shell: TShell | undefined,
   ): TShell | false;
   ```
-- Refactor internal services (e.g., services/batch/resolve) and helper types to use this unified definition.
+- Helper for authored tables:
+  ```ts
+  export const defineScripts =
+    <TShell extends string | boolean>() =>
+    <T extends Scripts<TShell>>(t: T) =>
+      t;
+  ```
 
 Acceptance:
 
 - Inference propagates a concrete shell (e.g., `'/bin/zsh'`) through helpers.
-- No widening to `URL` in internal helpers.
-- No runtime behavior change.
+- No widening to `URL` in intermediate helpers.
 
-### D) Plugin config typing: typed accessor and definePlugin overload
+### D) Plugin config typing and access (instance‑bound; no by‑id)
 
-Goal: eliminate `any` at the plugin config seam; provide a low-friction path and a stronger typed option.
+Goal: eliminate by‑id config lookups; provide first‑class, instance‑bound access with strong typing.
 
-1. Minimal helper to read a plugin’s config slice safely:
-
-```ts
-export function readPluginConfig<T>(
-  cli: GetDotenvCliPublic,
-  id: string,
-): T | undefined {
-  const cfg = cli.getCtx()?.pluginConfigs?.[id];
-  return (cfg as T) ?? undefined;
-}
-```
-
-2. Stronger typing via definePlugin overload that carries a config type:
-
-- Provide an overload of `definePlugin<TOptions, TConfig>` that:
-  - Accepts `configSchema?: ZodType<TConfig>` for validation (optional).
-  - Ensures `readPluginConfig<TConfig>` is the natural accessor at call sites.
-  - Preserves existing definePlugin signatures for backward compatibility.
+- definePlugin<TOptions, TConfig>() returns a plugin object that includes:
+  - `readConfig(cli): TConfig | undefined` — resolves this instance’s validated, interpolated config slice. Host stores slices per plugin instance (WeakMap), not by id.
+  - `createPluginDynamicOption(flags, (bag, cfg: TConfig|undefined) => string)` — a plugin‑bound dynamic option helper that injects the plugin’s TConfig into the help callback.
+- Public API removal:
+  - Remove `readPluginConfig<T>(cli, id: string)` from the public surface.
+  - Remove public exposure of `ctx.pluginConfigs`. Plugin runtime state (if any) may remain under `ctx.plugins` at the plugin’s discretion, but config lookup is instance‑bound only.
+- Duplicate same‑level command names are disallowed:
+  - The host must guard early: adding a subcommand whose name collides with an existing sibling should throw a clear error (Commander may also guard; we prefer explicit diagnostics).
+- Cross‑plugin introspection:
+  - Not supported and not needed. Plugins (or the root) access only their own config via `plugin.readConfig(cli)`.
 
 Acceptance:
 
-- Call sites retrieve typed config slices without local casts.
-- When a schema is supplied, the host validation path remains unchanged (validate interpolated slice before afterResolve).
+- Call sites use:
+  ```ts
+  const p = myPlugin();
+  program.use(p);
+  const cfg = p.readConfig(program);
+  ```
+- Dynamic help for plugins uses `plugin.createPluginDynamicOption` or an inline `plugin.readConfig(cli)` inside the callback.
+- No by‑id examples or helpers remain in docs or code.
 
 ### E) defineDynamic: key-aware vars bag
 
@@ -257,12 +261,10 @@ export type DynamicFn<Vars extends Record<string, string | undefined>> = (
 export type DynamicMap<Vars extends Record<string, string | undefined>> =
   Record<string, DynamicFn<Vars> | string | undefined>;
 
-export const defineDynamic = <
+export function defineDynamic<
   Vars extends Record<string, string | undefined>,
   T extends DynamicMap<Vars>,
->(
-  d: T,
-) => d;
+>(d: T): T;
 ```
 
 Acceptance:
@@ -271,28 +273,39 @@ Acceptance:
 - Programmatic `dynamic` remains compatible with existing call sites.
 - No runtime behavior change.
 
-### F) overlayEnv: generic passthrough of key set
+### F) overlayEnv: generic passthrough of key set and Readonly inputs
 
-Goal: preserve the key set from the base plus any programmatic additions at compile time.
+Goal: preserve the key set from the base plus any programmatic additions at compile time and accept readonly maps.
 
 Signature pattern:
 
 ```ts
 export function overlayEnv<
-  B extends Record<string, string | undefined>,
-  P extends Record<string, string | undefined> | undefined = undefined,
+  B extends
+    | Record<string, string | undefined>
+    | Readonly<Record<string, string | undefined>>,
+>(args: { base: B; env: string | undefined; configs: OverlayConfigSources }): B;
+
+export function overlayEnv<
+  B extends
+    | Record<string, string | undefined>
+    | Readonly<Record<string, string | undefined>>,
+  P extends
+    | Record<string, string | undefined>
+    | Readonly<Record<string, string | undefined>>,
 >(args: {
   base: B;
   env: string | undefined;
   configs: OverlayConfigSources;
-  programmaticVars?: P;
-}): P extends Record<string, string | undefined> ? B & P : B;
+  programmaticVars: P;
+}): B & P;
 ```
 
 Semantics:
 
 - Runtime remains identical (progressive expansion per slice).
 - Compile-time type is `B` when no programmaticVars; `B & P` when provided.
+- Accepts readonly inputs.
 
 Acceptance:
 
@@ -317,7 +330,8 @@ Adopt a services-first architecture with clear ports (interfaces) and thin adapt
   - Make seams testable: unit tests for services (pure), integration tests for adapters over minimal end-to-end slices.
 
 - Code organization
-  - Prefer many small modules over large ones; co-locate tests with modules.
+  - Prefer many small modules over large ones (see long-file guidance).
+  - Co-locate tests with modules for discoverability.
 
 ## Testing architecture
 
@@ -346,20 +360,24 @@ Regression and coverage
   - The CLI host stores dynamic option description callbacks in a host-owned WeakMap keyed by Commander.Option. Do not mutate Option via symbol properties.
   - The CLI host stores option grouping metadata (for help rendering) in a host-owned WeakMap keyed by Option. Expose `setOptionGroup(opt, group)`.
 
-- Command creation semantics
+- Command creation semantics and uniqueness guard
   - The host’s `createCommand(name?)` must construct child commands via `new GetDotenvCli(name)` explicitly. Do not rely on subclass constructor semantics.
+  - Same-level duplicate command names are disallowed and must throw a clear error early (before parse).
 
 - Public interface and generics
   - The host class implements the structural public interface `GetDotenvCliPublic<TOptions>`.
   - The plugin contract is generic on TOptions: `GetDotenvCliPlugin<TOptions>` so setup/afterResolve receive correctly typed ctx/cli when plugins depend on option typing.
-  - The `definePlugin()` helper returns `GetDotenvCliPlugin<TOptions>`, preserving plugin type identity.
-  - New: provide an overload `definePlugin<TOptions, TConfig>` that, when a schema is supplied, wires a typed plugin config and enables typed access via `readPluginConfig<TConfig>` (see “Plugin config typing”).
+  - `definePlugin()` returns `GetDotenvCliPlugin<TOptions>`, preserving plugin type identity.
+  - `definePlugin<TOptions, TConfig>` returns a plugin that also exposes:
+    - `readConfig(cli): TConfig | undefined`
+    - `createPluginDynamicOption(flags, (bag, cfg: TConfig|undefined) => string)` for plugin-bound dynamic help.
 
 - Help evaluation typing
-  - ResolvedHelpConfig is `Partial<GetDotenvCliOptions> & { plugins: Record<string, unknown> }` so callbacks can read shell/log/loadProcess/exclude\*/warnEntropy without casts.
+  - ResolvedHelpConfig is `Partial<GetDotenvCliOptions> & { plugins: Record<string, unknown> }` so callbacks can read shell/log/loadProcess/exclude\*/warnEntropy without casts at root or parent commands.
   - Dynamic help must be evaluated against:
     - The merged CLI options bag in normal flows (preSubcommand/preAction).
     - A defaults-only merged CLI bag (resolveCliOptions + baseRootOptionDefaults) in the top-level “-h/--help” flow (no side effects), for parity.
+  - For plugin-scoped options, prefer plugin-bound dynamic helpers that inject that plugin’s TConfig; avoid relying on id-based lookups.
 
 - Commander usage
   - Use Commander’s public typed properties (options, commands, parent, flags, description). Avoid “unknown” casts.
@@ -369,6 +387,7 @@ Regression and coverage
 - Always use a single helper (buildSpawnEnv) to normalize/dedupe child env.
 - Drop `undefined` values; normalize Windows HOME/TMP/TEMP; ensure `TMPDIR` on POSIX when temp exists.
 - Composition for child: `{ ...process.env, ...ctx.dotenv }`.
+- Keep `URL` acceptance only at the outer execution seam (e.g., runCommand/runCommandResult). Internal helpers should use `string | false` to avoid widening shell types.
 
 ## Configuration files and overlays (always-on in host/generator)
 
@@ -398,8 +417,7 @@ Timing:
 Interpolation model:
 
 - Phase C (host/generator): interpolate remaining string options against `{ ...process.env, ...ctx.dotenv }`. Precedence: ctx wins over parent process.env.
-- Per-plugin slice interpolation: interpolate plugin config slices once against `{ ...ctx.dotenv, ...process.env }`. Precedence: parent wins over ctx for plugin slices.
-- Progressive within slice; later values can reference earlier results.
+- Per-plugin slice interpolation: merge plugin config slices by precedence (packaged → project/public → project/local), deep‑interpolate each plugin’s slice once against `{ ...ctx.dotenv, ...process.env }` (process.env wins for plugin slices), validate if a schema is present, then store per plugin instance (WeakMap). Plugins retrieve their validated slice via `plugin.readConfig(cli)`.
 
 Validation:
 
@@ -412,18 +430,21 @@ Validation:
 - Define scripts in config: `plugins.<id>.scripts` or root `scripts`.
 - Rare per-script shell overrides: `{ cmd, shell }` (string|boolean) take precedence over global shell for that script.
 - Generic typing is unified: `Scripts<TShell extends string | boolean>` (see “Strong typing and generics”).
+- Authors can use `defineScripts<TShell>()(table)` to keep TShell propagation when building tables in code.
 
 ## API surface (exports and typing)
 
-- Keep public exports stable; add new generic types as additive improvements:
+- Keep public exports stable; add new generic types/helpers as additive improvements:
   - `Scripts<TShell extends string | boolean = string | boolean>`
+  - `defineScripts<TShell extends string | boolean>() => <T extends Scripts<TShell>>(t: T) => T`
   - `resolveShell<TShell extends string | boolean>(...) => TShell | false`
   - `defineDynamic<Vars, T extends DynamicMap<Vars>>(d: T) => T`
-  - `dotenvExpandAll<T extends Record<string, string | undefined>>(...): { [K in keyof T]: string | undefined }`
-  - `readPluginConfig<T>(cli, id): T | undefined`
-  - `definePlugin<TOptions, TConfig>(...)` overload as specified
-  - `overlayEnv<B,P>(...) => B | (B & P)` generic return per presence of programmaticVars
-  - `defaultsDeep` typed-head overloads (no behavioral change)
+  - `dotenvExpandAll<T extends Record<string, string | undefined> | Readonly<Record<string, string | undefined>>>(...) => { [K in keyof T]: string | undefined } & Record<string, string | undefined>`
+  - `overlayEnv<B, P>(...) => B | (B & P)` generic return per presence of programmaticVars; accept Readonly inputs
+  - `definePlugin<TOptions, TConfig>(...)` returns a plugin object that includes `readConfig(cli)` and `createPluginDynamicOption(...)`
+- Removed from public API:
+  - `readPluginConfig<T>(cli, id: string)`
+  - Public `ctx.pluginConfigs` access
 
 ## Prioritized roadmap (requirements)
 
