@@ -127,4 +127,7 @@ require a brief design discussion recorded in the dev plan.
 
 - Docs: Authoring/Config — added “Typed accessor (DX)” section showing
   readPluginConfig<T>() usage together with configSchema so plugin authors can
-  retrieve validated, typed slices ergonomically.
+  retrieve validated, typed slices ergonomically.
+
+- Docs: Shipped Plugins index — fixed a typo in the plugin list (“imit” →
+  “init”) so the link text matches the actual init plugin and its page.
