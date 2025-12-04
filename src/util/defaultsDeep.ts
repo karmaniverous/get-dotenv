@@ -44,23 +44,21 @@ const mergeInto = (target: AnyRecord, source: AnyRecord): AnyRecord => {
  * =\> \{ a: 1, nested: \{ b: 3, c: 4 \} \}
  */
 // Typed heads (overloads) to improve inference without changing runtime behavior.
-export function defaultsDeep<A extends Record<string, unknown>>(
+export function defaultsDeep<A extends object>(a?: Partial<A>): A;
+export function defaultsDeep<A extends object, B extends object>(
   a?: Partial<A>,
-): A;
+  b?: Partial<B>,
+): A & B;
 export function defaultsDeep<
-  A extends Record<string, unknown>,
-  B extends Record<string, unknown>,
->(a?: Partial<A>, b?: Partial<B>): A & B;
-export function defaultsDeep<
-  A extends Record<string, unknown>,
-  B extends Record<string, unknown>,
-  C extends Record<string, unknown>,
+  A extends object,
+  B extends object,
+  C extends object,
 >(a?: Partial<A>, b?: Partial<B>, c?: Partial<C>): A & B & C;
 export function defaultsDeep<
-  A extends Record<string, unknown>,
-  B extends Record<string, unknown>,
-  C extends Record<string, unknown>,
-  D extends Record<string, unknown>,
+  A extends object,
+  B extends object,
+  C extends object,
+  D extends object,
 >(
   a?: Partial<A>,
   b?: Partial<B>,
@@ -68,11 +66,11 @@ export function defaultsDeep<
   d?: Partial<D>,
 ): A & B & C & D;
 export function defaultsDeep<
-  A extends Record<string, unknown>,
-  B extends Record<string, unknown>,
-  C extends Record<string, unknown>,
-  D extends Record<string, unknown>,
-  E extends Record<string, unknown>,
+  A extends object,
+  B extends object,
+  C extends object,
+  D extends object,
+  E extends object,
 >(
   a?: Partial<A>,
   b?: Partial<B>,

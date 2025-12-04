@@ -17,7 +17,7 @@ When updated: 2025-12-04T00:00:00Z
   - Tests: keep dotenvExpand.more.test.ts behavior assertions; add a
     compile-only types usage to ensure key mapping inference.
 
-- Scripts typing unification (P1): generic Scripts<TShell>
+- Scripts typing unification (P1): generic Scripts<TShell> (DONE)
   - Replace duplicate local Scripts types with unified generic from
     cliCore/types (ScriptsTable<TShell>).
   - Update services/batch/resolve to import and use ScriptsTable<TShell>;
@@ -27,8 +27,8 @@ When updated: 2025-12-04T00:00:00Z
   - Tests: batch/index.test.ts and related compile/runtime paths remain
     green.
 
-- Plugin config typing (P1): accessor + definePlugin overload
-  - Add cliHost/readPluginConfig<T>(cli,id): T | undefined; export it.
+- Plugin config typing (P1): accessor + definePlugin overload (accessor DONE)
+  - Add cliHost/readPluginConfig<T>(cli,id): T | undefined; export it. (DONE)
   - Add definePlugin<TOptions, TConfig> overload that carries optional
     configSchema: ZodType<TConfig> and enables typed config at call sites.
   - Apply to shipped plugins (aws, batch) minimally to demonstrate typed
@@ -78,3 +78,22 @@ When updated: 2025-12-04T00:00:00Z
   resolveCliOptions and tests. Fixed dotenvExpandAll destructuring to remove
   an unnecessary nullish-coalescing guard flagged by ESLint. Result: typecheck
   and lint return green with no runtime changes.
+
+— Follow-up (types): Relaxed defaultsDeep overload bounds from
+  Record<string, unknown> to object so Partial<T> and similar structured
+  types without string index signatures match 2–5 arg overloads. No runtime
+  behavior changes; resolves TS2554 at multi-arg call sites.
+— P1 (scripts typing): Unified Scripts typing across CLI/core/services by
+  using ScriptsTable<TShell>. Refactored services/batch/resolve to import the
+  generic table and updated resolveShell to be generic returning TShell | false.
+  Kept the exported Scripts alias for back-compat. No runtime changes.
+
+— P1 (plugin config accessor): Added cliHost/readPluginConfig<T>() and
+  exported it from cliHost/index. Introduced a definePlugin overload that
+  carries a typed configSchema parameter (compile-time aid only; runtime
+  behavior unchanged). Shipped plugins to adopt overload in a follow-up.
+
+— Project prompt (typing & DX): Added a HARD RULE section to stan.project.md
+  mandating inference-first design (generics over casts), public APIs that
+  infer without explicit type parameters, and DX as a non-negotiable. Exceptions
+  require a brief design discussion recorded in the dev plan.

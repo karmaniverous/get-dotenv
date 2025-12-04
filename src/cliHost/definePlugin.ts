@@ -84,11 +84,20 @@ export type DefineSpec<TOptions extends GetDotenvOptions = GetDotenvOptions> =
  *   .use(childA)
  *   .use(childB);
  */
-export const definePlugin = <
+// Overload carrying a typed config schema (compile-time aid only).
+export function definePlugin<
   TOptions extends GetDotenvOptions = GetDotenvOptions,
+  TConfig = unknown,
 >(
-  spec: DefineSpec<TOptions>,
-): GetDotenvCliPlugin<TOptions> => {
+  spec: DefineSpec<TOptions> & { configSchema?: ZodType<TConfig> },
+): GetDotenvCliPlugin<TOptions>;
+// Base overload (no typed config schema)
+export function definePlugin<
+  TOptions extends GetDotenvOptions = GetDotenvOptions,
+>(spec: DefineSpec<TOptions>): GetDotenvCliPlugin<TOptions>;
+export function definePlugin<
+  TOptions extends GetDotenvOptions = GetDotenvOptions,
+>(spec: DefineSpec<TOptions>): GetDotenvCliPlugin<TOptions> {
   const { children = [], ...rest } = spec;
   const plugin: GetDotenvCliPlugin<TOptions> = {
     ...rest,
@@ -99,4 +108,4 @@ export const definePlugin = <
     },
   };
   return plugin;
-};
+}

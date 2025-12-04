@@ -1,10 +1,10 @@
 import type { GetDotenvOptions } from '../GetDotenvOptions';
 import { baseRootOptionDefaults } from './defaults';
+import type { ScriptsTable } from './types';
 
-export type Scripts = Record<
-  string,
-  string | { cmd: string; shell?: string | boolean }
->;
+// Unify Scripts via the generic ScriptsTable<TShell> so shell types propagate.
+export type Scripts = ScriptsTable;
+
 /**
  * Options passed programmatically to `getDotenvCli`.
  */

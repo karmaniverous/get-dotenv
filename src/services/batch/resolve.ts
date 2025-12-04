@@ -3,12 +3,11 @@
  * Shared by the generator path and the batch plugin to avoid circular deps.
  */
 
+import type { ScriptsTable } from '../../cliCore/types';
+
 // Accept undefined as an explicit shell value to interoperate with
-// exactOptionalPropertyTypes in plugin-provided configs.
-export type Scripts = Record<
-  string,
-  string | { cmd: string; shell?: string | boolean | undefined }
->;
+// exactOptionalPropertyTypes in plugin-provided configs. Back-compat alias.
+export type Scripts = ScriptsTable;
 
 /**
  * Resolve a command string from the {@link Scripts} table.
@@ -19,7 +18,7 @@ export type Scripts = Record<
  * @returns Resolved command string (falls back to the provided command).
  */
 export const resolveCommand = (
-  scripts: Scripts | undefined,
+  scripts: ScriptsTable | undefined,
   command: string,
 ) =>
   scripts && typeof scripts[command] === 'object'
@@ -35,11 +34,11 @@ export const resolveCommand = (
  * @param command - User-provided command name or string.
  * @param shell - Global shell preference (string | boolean).
  */
-export const resolveShell = (
-  scripts: Scripts | undefined,
+export const resolveShell = <TShell extends string | boolean>(
+  scripts: ScriptsTable<TShell> | undefined,
   command: string,
-  shell: string | boolean | undefined,
-): string | boolean | URL =>
+  shell: TShell | undefined,
+): TShell | false =>
   scripts && typeof scripts[command] === 'object'
-    ? ((scripts[command] as { shell?: string | boolean }).shell ?? false)
+    ? ((scripts[command] as { shell?: TShell }).shell ?? false)
     : (shell ?? false);
