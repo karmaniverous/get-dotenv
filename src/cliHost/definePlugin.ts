@@ -82,12 +82,12 @@ export interface GetDotenvCliPlugin<
    * Instance-bound accessor: read the validated, interpolated config slice for
    * this plugin instance (when present).
    */
-  readConfig<TConfig>(cli: GetDotenvCliPublic<TOptions>): TConfig | undefined;
+  readConfig?<TConfig>(cli: GetDotenvCliPublic<TOptions>): TConfig | undefined;
   /**
    * Create a plugin-bound dynamic option. The callback receives the resolved
    * configuration bag and this plugin instance’s validated config slice.
    */
-  createPluginDynamicOption<TConfig>(
+  createPluginDynamicOption?<TConfig>(
     cli: GetDotenvCliPublic<TOptions>,
     flags: string,
     desc: (
@@ -142,11 +142,14 @@ export function definePlugin<
   };
   const extended = base;
   // Instance-bound config accessor
+
   (extended as Required<GetDotenvCliPlugin<TOptions>>).readConfig = function <
     TConfig,
   >(_cli: GetDotenvCliPublic<TOptions>): TConfig | undefined {
     // Config is stored per-plugin-instance by the host (WeakMap in computeContext).
-    return _getPluginConfigForInstance(extended) as TConfig | undefined;
+    return _getPluginConfigForInstance(
+      extended as unknown as GetDotenvCliPlugin,
+    ) as TConfig | undefined;
   };
   // Plugin-bound dynamic option factory
   (
@@ -154,6 +157,7 @@ export function definePlugin<
   ).createPluginDynamicOption = function <TConfig>(
     cli: GetDotenvCliPublic<TOptions>,
     flags: string,
+
     desc: (
       cfg: ResolvedHelpConfig & { plugins: Record<string, unknown> },
       pluginCfg: TConfig | undefined,
@@ -166,12 +170,12 @@ export function definePlugin<
       (cfg) => {
         // Prefer the validated slice stored per instance; fallback to help-bag
         // (by-id) so top-level `-h` can render effective defaults before resolve.
-        const fromStore = _getPluginConfigForInstance(extended) as
-          | TConfig
-          | undefined;
-        let fromBag: TConfig | undefined = undefined;
+        const fromStore = _getPluginConfigForInstance(
+          extended as unknown as GetDotenvCliPlugin,
+        ) as TConfig | undefined;
         const id = (extended as { id?: string }).id;
-        if (!fromStore && id && cfg && cfg.plugins && cfg.plugins[id]) {
+        let fromBag: TConfig | undefined;
+        if (!fromStore && id) {
           const maybe = cfg.plugins[id];
           if (maybe && typeof maybe === 'object') fromBag = maybe as TConfig;
         }

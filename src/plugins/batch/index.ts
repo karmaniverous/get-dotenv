@@ -1,6 +1,5 @@
 /** src/plugins/batch/index.ts */
 import type { GetDotenvCliPublic } from '@karmaniverous/get-dotenv/cliHost';
-import type { GetDotenvCli } from '@karmaniverous/get-dotenv/cliHost';
 import { Command } from 'commander';
 
 import { definePlugin } from '../../cliHost/definePlugin';

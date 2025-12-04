@@ -51,3 +51,9 @@ When updated: 2025-12-04T00:00:00Z
 - Batch/AWS migration (initial)
   - Batch uses plugin.createPluginDynamicOption(cli, …) for dynamic defaults.
   - AWS action path fixed self redeclaration; uses plugin.readConfig(cli) correctly.
+- Lint/Typecheck cleanup (plugin seam)
+  - Restored readConfig/createPluginDynamicOption as optional in the plugin interface to keep test helpers and ad‑hoc plugins compiling.
+  - Typed plugin-config WeakMap to GetDotenvOptions for constraint compliance; adjusted set/get casts.
+  - Simplified dynamic help fallback checks to satisfy “unnecessary-condition”.
+  - Added targeted eslint suppressions for single‑use generics on typed helpers.
+  - Removed unused imports in batch plugin.

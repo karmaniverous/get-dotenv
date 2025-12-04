@@ -25,18 +25,15 @@ import type { GetDotenvCliCtx } from './GetDotenvCli';
  * provides a typed accessor that reads from this store for the calling
  * plugin instance.
  */
-const PLUGIN_CONFIG_STORE: WeakMap<
-  GetDotenvCliPlugin<unknown>,
-  unknown
-> = new WeakMap();
+const PLUGIN_CONFIG_STORE: WeakMap<GetDotenvCliPlugin, unknown> = new WeakMap();
 export const _setPluginConfigForInstance = (
-  plugin: GetDotenvCliPlugin<unknown>,
+  plugin: GetDotenvCliPlugin,
   cfg: unknown,
 ) => {
   PLUGIN_CONFIG_STORE.set(plugin, cfg);
 };
 export const _getPluginConfigForInstance = (
-  plugin: GetDotenvCliPlugin<unknown>,
+  plugin: GetDotenvCliPlugin,
 ): unknown => PLUGIN_CONFIG_STORE.get(plugin);
 
 /**
@@ -222,13 +219,13 @@ export const computeContext = async <
         throw new Error(`Invalid config for plugin '${p.id}':\n${msgs}`);
       }
       _setPluginConfigForInstance(
-        p as GetDotenvCliPlugin<unknown>,
+        p as unknown as GetDotenvCliPlugin,
         parsed.data,
       );
       mergedPluginConfigsById[p.id] = parsed.data;
     } else {
       _setPluginConfigForInstance(
-        p as GetDotenvCliPlugin<unknown>,
+        p as unknown as GetDotenvCliPlugin,
         interpolated,
       );
       mergedPluginConfigsById[p.id] = interpolated;
