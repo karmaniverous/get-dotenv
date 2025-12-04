@@ -109,3 +109,6 @@ require a brief design discussion recorded in the dev plan.
   presence of DynamicFn/DynamicMap in index.d.ts (or .d.mts) and to detect
   overlayEnv/programmaticVars surface in env-overlay.d.ts (or .d.mts) so CI
   catches regressions in public type bundles.
+
+- Amendment: verify-types.js lint cleanup (no-unused-vars) by tracking selected
+  declaration files (indexFound/overlayFound); no behavior change.
