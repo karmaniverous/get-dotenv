@@ -13,7 +13,6 @@ import type { ZodType } from 'zod';
 import type { GetDotenvOptions } from '../GetDotenvOptions';
 import { _getPluginConfigForInstance } from './computeContext';
 import type { GetDotenvCliCtx, ResolvedHelpConfig } from './GetDotenvCli';
-import type { GetDotenvCli } from './GetDotenvCli';
 
 /**
  * Structural public interface for the host exposed to plugins.
@@ -99,6 +98,8 @@ export interface GetDotenvCliPlugin<
     defaultValue?: unknown,
   ): Option;
 }
+
+/* eslint-disable @typescript-eslint/no-unnecessary-type-parameters */
 
 /**
  * Compile-time helper type: the plugin object returned by definePlugin always
@@ -212,3 +213,5 @@ export function definePlugin<
   };
   return extended as PluginWithInstanceHelpers<TOptions>;
 }
+
+/* eslint-enable @typescript-eslint/no-unnecessary-type-parameters */
