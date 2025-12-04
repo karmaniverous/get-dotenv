@@ -81,6 +81,9 @@ export function defaultsDeep<
 // Implementation: variadic, unchanged semantics.
 export function defaultsDeep<T extends object>(
   ...layers: Array<Partial<T> | undefined>
+): T;
+export function defaultsDeep<T extends object>(
+  ...layers: Array<Partial<T> | undefined>
 ): T {
   const result = layers
     .filter(Boolean)

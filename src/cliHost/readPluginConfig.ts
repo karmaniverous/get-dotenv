@@ -10,8 +10,12 @@ export function readPluginConfig<T>(
   cli: GetDotenvCliPublic,
   id: string,
 ): T | undefined {
-  // Host guarantees getCtx exists when plugins execute; keep slice optional.
-  const cfg = cli.getCtx().pluginConfigs?.[id];
+  // Host will normally have a context at plugin execution time; guard for safety.
+  const ctx = cli.getCtx();
+  if (!ctx) {
+    return undefined;
+  }
+  const cfg = ctx.pluginConfigs?.[id];
   // Cast-only; return undefined when slice is absent.
   return (cfg as T) ?? undefined;
 }

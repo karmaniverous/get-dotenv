@@ -113,3 +113,14 @@ require a brief design discussion recorded in the dev plan.
 - readPluginConfig DX/lint: removed the unnecessary optional chain on
   `cli.getCtx()`; locally disabled `no-unnecessary-type-parameters` with a
   rationale (typed accessor for downstream inference). No runtime changes.
+
+- defaultsDeep overload (single generic, variadic): added a typed head
+  `defaultsDeep<T extends object>(...layers: Array<Partial<T>|undefined>): T`
+  to cover explicit single-type-arg multi-arg calls. Resolves remaining
+  TS2554 in resolveCliOptions, computeContext, and tests without changing
+  runtime behavior.
+
+- readPluginConfig: asserted non-null ctx via `getCtx()!` to satisfy TS2532.
+- readPluginConfig lint: replaced non-null assertion on `getCtx()` with a small
+  runtime guard (`const ctx = cli.getCtx(); if (!ctx) return undefined;`) to
+  satisfy @typescript-eslint/no-non-null-assertion. Behavior unchanged.
