@@ -18,7 +18,8 @@ When updated: 2025-12-04T00:00:00Z
     compile-only types usage to ensure key mapping inference.
 
 - Scripts typing unification (P1): generic Scripts<TShell>
-  - Replace duplicate local Scripts types with unified generic from    cliCore/types (ScriptsTable<TShell>).
+  - Replace duplicate local Scripts types with unified generic from
+    cliCore/types (ScriptsTable<TShell>).
   - Update services/batch/resolve to import and use ScriptsTable<TShell>;
     make resolveShell<TShell>() return TShell | false (remove URL union).
   - Propagate type changes across cmd/aws/demo/batch call sites and
@@ -59,15 +60,21 @@ When updated: 2025-12-04T00:00:00Z
     key‑preserving when programmaticVars provided.
 
 - CI/types tests (P3)
-  - Add src/types/*.ts compile-only samples for the new generics; ensure
+  - Add src/types/\*.ts compile-only samples for the new generics; ensure
     included by tsconfig and covered by "typecheck".
 
 ## Completed (recent)
 
 **CRITICAL: Append-only list. Add new completed items at the end. Prune old completed entries from the top. Do not edit existing entries.**
 
-— P1 start (types): Implemented defaultsDeep typed overloads (2–5 layers)
+- P1 start (types): Implemented defaultsDeep typed overloads (2–5 layers)
   without runtime changes; converted implementation to function declaration to
   support overloads. Made dotenvExpandAll generic and key-preserving while
   retaining an index signature for later dynamic additions. Added compile-only
-  type samples under src/types to assert inference for both utilities.
+  type samples under src/types to assert inference for both utilities.
+
+- Follow-up (types/lint): Simplified defaultsDeep overloads (removed
+  extraneous R type parameter) so multi-argument calls match correctly in
+  resolveCliOptions and tests. Fixed dotenvExpandAll destructuring to remove
+  an unnecessary nullish-coalescing guard flagged by ESLint. Result: typecheck
+  and lint return green with no runtime changes.

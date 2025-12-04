@@ -136,7 +136,7 @@ export function dotenvExpandAll<T extends Record<string, string | undefined>>(
   const {
     ref = process.env as Record<string, string | undefined>,
     progressive = false,
-  } = options ?? {};
+  } = options;
   const out = Object.keys(values).reduce<Record<string, string | undefined>>(
     (acc, key) => {
       acc[key] = dotenvExpand(values[key], {

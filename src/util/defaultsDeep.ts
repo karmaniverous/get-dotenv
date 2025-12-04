@@ -48,22 +48,19 @@ export function defaultsDeep<A extends Record<string, unknown>>(
   a?: Partial<A>,
 ): A;
 export function defaultsDeep<
-  A extends R,
+  A extends Record<string, unknown>,
   B extends Record<string, unknown>,
-  R extends Record<string, unknown> = A,
 >(a?: Partial<A>, b?: Partial<B>): A & B;
 export function defaultsDeep<
-  A extends R,
+  A extends Record<string, unknown>,
   B extends Record<string, unknown>,
   C extends Record<string, unknown>,
-  R extends Record<string, unknown> = A,
 >(a?: Partial<A>, b?: Partial<B>, c?: Partial<C>): A & B & C;
 export function defaultsDeep<
-  A extends R,
+  A extends Record<string, unknown>,
   B extends Record<string, unknown>,
   C extends Record<string, unknown>,
   D extends Record<string, unknown>,
-  R extends Record<string, unknown> = A,
 >(
   a?: Partial<A>,
   b?: Partial<B>,
@@ -71,12 +68,11 @@ export function defaultsDeep<
   d?: Partial<D>,
 ): A & B & C & D;
 export function defaultsDeep<
-  A extends R,
+  A extends Record<string, unknown>,
   B extends Record<string, unknown>,
   C extends Record<string, unknown>,
   D extends Record<string, unknown>,
   E extends Record<string, unknown>,
-  R extends Record<string, unknown> = A,
 >(
   a?: Partial<A>,
   b?: Partial<B>,
