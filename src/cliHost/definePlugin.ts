@@ -82,11 +82,13 @@ export interface GetDotenvCliPlugin<
    * Instance-bound accessor: read the validated, interpolated config slice for
    * this plugin instance (when present).
    */
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters
   readConfig?<TConfig>(cli: GetDotenvCliPublic<TOptions>): TConfig | undefined;
   /**
    * Create a plugin-bound dynamic option. The callback receives the resolved
    * configuration bag and this plugin instance’s validated config slice.
    */
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters
   createPluginDynamicOption?<TConfig>(
     cli: GetDotenvCliPublic<TOptions>,
     flags: string,
@@ -99,8 +101,6 @@ export interface GetDotenvCliPlugin<
   ): Option;
 }
 
-/* eslint-disable @typescript-eslint/no-unnecessary-type-parameters */
-
 /**
  * Compile-time helper type: the plugin object returned by definePlugin always
  * includes the instance-bound helpers as required members. Keeping the public
@@ -110,7 +110,9 @@ export interface GetDotenvCliPlugin<
 type PluginWithInstanceHelpers<
   TOptions extends GetDotenvOptions = GetDotenvOptions,
 > = GetDotenvCliPlugin<TOptions> & {
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters
   readConfig<TCfg>(cli: GetDotenvCliPublic<TOptions>): TCfg | undefined;
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters
   createPluginDynamicOption<TCfg>(
     cli: GetDotenvCliPublic<TOptions>,
     flags: string,
@@ -149,6 +151,7 @@ export function definePlugin<
   spec: DefineSpec<TOptions> & { configSchema?: ZodType<TConfig> },
 ): PluginWithInstanceHelpers<TOptions>;
 // Base overload (no typed config schema)
+
 export function definePlugin<
   TOptions extends GetDotenvOptions = GetDotenvOptions,
 >(spec: DefineSpec<TOptions>): PluginWithInstanceHelpers<TOptions>;
@@ -169,6 +172,7 @@ export function definePlugin<
   // Instance-bound config accessor
 
   (extended as Required<GetDotenvCliPlugin<TOptions>>).readConfig = function <
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters
     TConfig,
   >(_cli: GetDotenvCliPublic<TOptions>): TConfig | undefined {
     // Config is stored per-plugin-instance by the host (WeakMap in computeContext).
@@ -180,7 +184,10 @@ export function definePlugin<
 
   (
     extended as Required<GetDotenvCliPlugin<TOptions>>
-  ).createPluginDynamicOption = function <TConfig>(
+  ).createPluginDynamicOption = function <
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters
+    TConfig,
+  >(
     cli: GetDotenvCliPublic<TOptions>,
     flags: string,
 
@@ -213,5 +220,3 @@ export function definePlugin<
   };
   return extended as PluginWithInstanceHelpers<TOptions>;
 }
-
-/* eslint-enable @typescript-eslint/no-unnecessary-type-parameters */

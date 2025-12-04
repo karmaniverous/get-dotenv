@@ -64,3 +64,6 @@ When updated: 2025-12-04T00:00:00Z
 
 - Lint hygiene
   - Suppressed @typescript-eslint/no-unnecessary-type-parameters where generics are intentionally single-use (overloads and helper methods).
+
+- Lint: overload single‑use generics
+  - Added inline eslint-disable-next-line for @typescript-eslint/no-unnecessary-type-parameters on definePlugin overload signatures to silence remaining rule hits.
