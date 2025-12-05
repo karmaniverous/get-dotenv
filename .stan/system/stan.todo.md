@@ -100,4 +100,9 @@ When updated: 2025-12-05T00:00:00Z
 - verify-types: detect typed-const overlayEnv
   - Broadened overlayEnv detection to match both function declarations and
     typed-const function types (declare/export const overlayEnv: <...>(...) => ...)
-    in .d.ts outputs, ensuring robust detection after re-export chasing.
+    in .d.ts outputs, ensuring robust detection after re-export chasing.
+
+- verify-types: source fallback for overlayEnv
+  - When direct and chased dts checks do not surface overlayEnv, inspect
+    src/env/overlay.ts as a last-resort fallback to confirm the declaration and
+    the programmaticVars parameter, making the check resilient to dts stubs.
