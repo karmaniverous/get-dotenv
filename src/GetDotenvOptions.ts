@@ -5,7 +5,7 @@
  * Requirements addressed:
  * - GetDotenvOptions derives from the Zod schema output (single source of truth).
  * - Removed deprecated/compat flags from the public shape (e.g., useConfigLoader).
- * - Provide Vars-aware defineDynamic and a typed config builder defineGetDotenvConfig<Vars, Env>().
+ * - Provide Vars-aware defineDynamic and a typed config builder defineGetDotenvConfig\<Vars, Env\>().
  * - Preserve existing behavior for defaults resolution and compat converters.
  */
 import fs from 'fs-extra';
@@ -13,6 +13,7 @@ import { packageDirectory } from 'package-directory';
 import { join } from 'path';
 import type { z } from 'zod';
 
+import type { Scripts } from './cliCore/GetDotenvCliOptions';
 import {
   baseGetDotenvCliOptions,
   type GetDotenvCliOptions,
@@ -60,7 +61,18 @@ export type Logger =
  * Canonical programmatic options type (schema-derived).
  * This type is the single source of truth for programmatic options.
  */
-export type GetDotenvOptions = z.output<typeof getDotenvOptionsSchemaResolved>;
+export type GetDotenvOptions = z.output<
+  typeof getDotenvOptionsSchemaResolved
+> & {
+  /**
+   * Compile-time overlay: narrowed logger for DX (schema stores unknown).
+   */
+  logger?: Logger;
+  /**
+   * Compile-time overlay: narrowed dynamic map for DX (schema stores unknown).
+   */
+  dynamic?: GetDotenvDynamic;
+};
 
 /**
  * Vars-aware dynamic helpers (compile-time DX).
@@ -78,6 +90,7 @@ export type DynamicMap<Vars extends Record<string, string | undefined>> =
  *
  * Overload A (preferred): bind Vars to your intended key set for improved inference.
  */
+
 export function defineDynamic<
   Vars extends Record<string, string | undefined>,
   T extends DynamicMap<Vars>,
@@ -87,6 +100,7 @@ export function defineDynamic<
  *
  * Accepts legacy GetDotenvDynamic without Vars binding.
  */
+
 export function defineDynamic<T extends GetDotenvDynamic>(d: T): T;
 // Implementation
 export function defineDynamic(d: unknown): unknown {
@@ -108,7 +122,7 @@ export type GetDotenvConfig<
   loadProcess?: boolean;
   log?: boolean;
   shell?: string | boolean;
-  scripts?: import('./cliCore/GetDotenvCliOptions').Scripts;
+  scripts?: Scripts;
   requiredKeys?: string[];
   schema?: unknown;
   vars?: Vars;

@@ -12,7 +12,7 @@ import type { RootOptionsShape, ScriptsTable } from './types';
  * avoid cross-layer coupling; callers may cast as needed.
  */
 export const resolveCliOptions = <
-  T extends RootOptionsShape & { scripts?: ScriptsTable },
+  T extends Partial<RootOptionsShape> & { scripts?: ScriptsTable },
 >(
   rawCliOptions: unknown,
   defaults: Partial<T>,

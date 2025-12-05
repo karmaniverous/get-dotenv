@@ -110,7 +110,16 @@ export const attachParentAlias = (
         : (dotenvExpandFromProcessEnv(joined) ?? joined);
 
     dbg('resolved input', { input });
-    const resolved = resolveCommand(merged.scripts, input);
+    // Narrow merged.scripts locally for safer downstream typing.
+    const scripts = (
+      merged as {
+        scripts?: Record<
+          string,
+          string | { cmd: string; shell?: string | boolean }
+        >;
+      }
+    ).scripts;
+    const resolved = resolveCommand(scripts as unknown as ScriptsTable, input);
     if ((merged as { debug?: boolean }).debug) {
       logger.log('\n*** command ***\n', `'${resolved}'`);
     }
@@ -198,7 +207,11 @@ export const attachParentAlias = (
     let exitCode = Number.NaN;
     try {
       // Resolve shell and preserve argv for Node -e snippets under shell-off.
-      const shellSetting = resolveShell(merged.scripts, input, merged.shell);
+      const shellSetting = resolveShell(
+        scripts as unknown as ScriptsTable<string | boolean>,
+        input,
+        merged.shell,
+      );
 
       let commandArg: string | string[] = resolved;
       /**       * Special-case: when shell is OFF and no script alias remap occurred

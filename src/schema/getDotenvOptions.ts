@@ -3,7 +3,7 @@ import { z } from 'zod';
  * Zod schemas for programmatic GetDotenv options.
  *
  * Canonical source of truth for options shape. Public types are derived
- * from these schemas (see consumers via z.output<>).
+ * from these schemas (see consumers via z.output\<\>).
  */
 
 // Minimal process env representation: string values or undefined to indicate "unset".

@@ -1,6 +1,6 @@
 import type { z } from 'zod';
 
-import type { GetDotenvOptions } from '../GetDotenvOptions';
+import type { Logger } from '../GetDotenvOptions';
 import type { getDotenvCliOptionsSchemaResolved } from '../schema/getDotenvCliOptions';
 import { baseRootOptionDefaults } from './defaults';
 import type { ScriptsTable } from './types';
@@ -16,7 +16,16 @@ export type Scripts = ScriptsTable;
  */
 export type GetDotenvCliOptions = z.output<
   typeof getDotenvCliOptionsSchemaResolved
->;
+> & {
+  /**
+   * Compile-only overlay for DX: logger narrowed from unknown.
+   */
+  logger?: Logger;
+  /**
+   * Compile-only overlay for DX: scripts narrowed from Record<string, unknown>.
+   */
+  scripts?: Scripts;
+};
 
 export const baseGetDotenvCliOptions: Partial<GetDotenvCliOptions> =
   baseRootOptionDefaults as unknown as Partial<GetDotenvCliOptions>;
