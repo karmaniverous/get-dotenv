@@ -1,15 +1,26 @@
 // src/GetDotenvOptions.ts
+/**
+ * Canonical programmatic options and helpers for get-dotenv.
+ *
+ * Requirements addressed:
+ * - GetDotenvOptions derives from the Zod schema output (single source of truth).
+ * - Removed deprecated/compat flags from the public shape (e.g., useConfigLoader).
+ * - Provide Vars-aware defineDynamic and a typed config builder defineGetDotenvConfig<Vars, Env>().
+ * - Preserve existing behavior for defaults resolution and compat converters.
+ */
 import fs from 'fs-extra';
 import { packageDirectory } from 'package-directory';
 import { join } from 'path';
-import type {} from 'zod';
+import type { z } from 'zod';
 
 import {
   baseGetDotenvCliOptions,
   type GetDotenvCliOptions,
 } from './cliCore/GetDotenvCliOptions';
 import type { RootOptionsShape } from './cliCore/types';
+import type { getDotenvOptionsSchemaResolved } from './schema/getDotenvOptions';
 import { defaultsDeep } from './util/defaultsDeep';
+
 export const getDotenvOptionsFilename = 'getdotenv.config.json';
 
 // Compat: widen CLI-facing shapes at the converter boundary so projects that
@@ -21,10 +32,12 @@ export type RootOptionsShapeCompat = Omit<
   vars?: string | Record<string, string | undefined>;
   paths?: string | string[];
 };
+
 /**
  * A minimal representation of an environment key/value mapping.
- * Values may be `undefined` to represent "unset". */ export type ProcessEnv =
-  Record<string, string | undefined>;
+ * Values may be `undefined` to represent "unset".
+ */
+export type ProcessEnv = Record<string, string | undefined>;
 
 /**
  * Dynamic variable function signature. Receives the current expanded variables
@@ -42,6 +55,12 @@ export type GetDotenvDynamic = Record<
 export type Logger =
   | Record<string, (...args: unknown[]) => void>
   | typeof console;
+
+/**
+ * Canonical programmatic options type (schema-derived).
+ * This type is the single source of truth for programmatic options.
+ */
+export type GetDotenvOptions = z.output<typeof getDotenvOptionsSchemaResolved>;
 
 /**
  * Vars-aware dynamic helpers (compile-time DX).
@@ -75,109 +94,43 @@ export function defineDynamic(d: unknown): unknown {
 }
 
 /**
- * Options passed programmatically to `getDotenv`.
- */
-export interface GetDotenvOptions {
-  /**
-   * default target environment (used if `env` is not provided)
-   */
-  defaultEnv?: string;
-
-  /**
-   * token indicating a dotenv file
-   */
-  dotenvToken: string;
-
-  /**
-   * path to JS/TS module default-exporting an object keyed to dynamic variable functions
-   */
-  dynamicPath?: string;
-
-  /**
-   * Programmatic dynamic variables map. When provided, this takes precedence
-   * over {@link GetDotenvOptions.dynamicPath}.
-   */
-  dynamic?: GetDotenvDynamic;
-
-  /**
-   * target environment
-   */
-  env?: string;
-
-  /**
-   * exclude dynamic variables from loading
-   */
-  excludeDynamic?: boolean;
-
-  /**
-   * exclude environment-specific variables from loading
-   */
-  excludeEnv?: boolean;
-
-  /**
-   * exclude global variables from loading
-   */
-  excludeGlobal?: boolean;
-
-  /**
-   * exclude private variables from loading
-   */
-  excludePrivate?: boolean;
-
-  /**
-   * exclude public variables from loading
-   */
-  excludePublic?: boolean;
-
-  /**
-   * load dotenv variables to `process.env`
-   */
-  loadProcess?: boolean;
-
-  /**
-   * log loaded dotenv variables to `logger`
-   */
-  log?: boolean;
-
-  /**
-   * logger object (defaults to console)
-   */
-  logger?: Logger;
-
-  /**
-   * if populated, writes consolidated dotenv file to this path (follows dotenvExpand rules)
-   */
-  outputPath?: string;
-
-  /**
-   * array of input directory paths
-   */
-  paths?: string[];
-
-  /**
-   * filename token indicating private variables
-   */
-  privateToken?: string;
-
-  /**
-   * explicit variables to include
-   */
-  vars?: ProcessEnv;
-
-  /**
-   * Reserved: config loader flag (no-op).
-   * The plugin-first host and generator paths already use the config
-   * loader/overlay pipeline unconditionally (no-op when no config files
-   * are present). This flag is accepted for forward compatibility but
-   * currently has no effect.
-   */
-  useConfigLoader?: boolean;
-}
-/**
- * Converts programmatic CLI options to `getDotenv` options. *
- * @param cliOptions - CLI options. Defaults to `{}`.
+ * Typed config shape and builder for authoring JS/TS getdotenv config files.
  *
- * @returns `getDotenv` options.
+ * Compile-time only; the runtime loader remains schema-driven.
+ */
+export type GetDotenvConfig<
+  Vars extends ProcessEnv,
+  Env extends string = string,
+> = {
+  dotenvToken?: string;
+  privateToken?: string;
+  paths?: string | string[];
+  loadProcess?: boolean;
+  log?: boolean;
+  shell?: string | boolean;
+  scripts?: import('./cliCore/GetDotenvCliOptions').Scripts;
+  requiredKeys?: string[];
+  schema?: unknown;
+  vars?: Vars;
+  envVars?: Record<Env, Partial<Vars>>;
+  dynamic?: DynamicMap<Vars>;
+  plugins?: Record<string, unknown>;
+};
+
+export function defineGetDotenvConfig<
+  Vars extends ProcessEnv,
+  Env extends string = string,
+  T extends GetDotenvConfig<Vars, Env> = GetDotenvConfig<Vars, Env>,
+>(cfg: T): T {
+  return cfg;
+}
+
+/**
+ * Converts programmatic CLI options to `getDotenv` options.
+ *
+ * Accepts "stringly" CLI inputs for vars/paths and normalizes them into
+ * the programmatic shape. Preserves exactOptionalPropertyTypes semantics by
+ * omitting keys when undefined.
  */
 export const getDotenvCliOptions2Options = ({
   paths,
@@ -246,27 +199,21 @@ export const getDotenvCliOptions2Options = ({
     ...(parsedVars !== undefined ? { vars: parsedVars } : {}),
   } as GetDotenvOptions;
 };
+
+/**
+ * Resolve {@link GetDotenvOptions} by layering defaults in ascending precedence:
+ *
+ * 1. Base defaults derived from the CLI generator defaults
+ *    ({@link baseGetDotenvCliOptions}).
+ * 2. Local project overrides from a `getdotenv.config.json` in the nearest
+ *    package root (if present).
+ * 3. The provided {@link customOptions}.
+ *
+ * The result preserves explicit empty values and drops only `undefined`.
+ */
 export const resolveGetDotenvOptions = async (
   customOptions: Partial<GetDotenvOptions>,
 ) => {
-  /**
-   * Resolve {@link GetDotenvOptions} by layering defaults in ascending precedence:
-   *
-   * 1. Base defaults derived from the CLI generator defaults
-   *    ({@link baseGetDotenvCliOptions}).
-   * 2. Local project overrides from a `getdotenv.config.json` in the nearest
-   *    package root (if present).
-   * 3. The provided {@link customOptions}.
-   *
-   * The result preserves explicit empty values and drops only `undefined`.
-   *
-   * @returns Fully-resolved {@link GetDotenvOptions}.
-   *
-   * @example
-   * ```ts
-   * const options = await resolveGetDotenvOptions({ env: 'dev' });
-   * ```
-   */
   const localPkgDir = await packageDirectory();
 
   const localOptionsPath = localPkgDir

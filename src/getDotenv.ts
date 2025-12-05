@@ -52,9 +52,15 @@ import { loadModuleDefault } from './util/loadModuleDefault';
  * @throws Error when a dynamic module is present but cannot be imported.
  * @throws Error when an output path was requested but could not be resolved.
  */
-export const getDotenv = async (
+export function getDotenv<Vars extends ProcessEnv = ProcessEnv>(
+  options?: Partial<GetDotenvOptions>,
+): Promise<Vars>;
+export function getDotenv<Vars extends ProcessEnv>(
+  options: Partial<GetDotenvOptions> & { vars: Vars },
+): Promise<ProcessEnv & Vars>;
+export async function getDotenv(
   options: Partial<GetDotenvOptions> = {},
-): Promise<ProcessEnv> => {
+): Promise<ProcessEnv> {
   // Apply defaults.
   const {
     defaultEnv,
@@ -245,4 +251,4 @@ export const getDotenv = async (
   if (loadProcess) Object.assign(process.env, resultDotenv);
 
   return resultDotenv;
-};
+}

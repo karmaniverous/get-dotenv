@@ -19,9 +19,11 @@ export {
 export { getDotenv } from './getDotenv';
 export {
   defineDynamic,
+  defineGetDotenvConfig,
   type DynamicFn,
   type DynamicMap,
   getDotenvCliOptions2Options,
+  type GetDotenvConfig,
   type GetDotenvDynamic,
   type GetDotenvOptions,
   type ProcessEnv,

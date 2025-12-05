@@ -47,6 +47,13 @@ When updated: 2025-12-05T00:00:00Z
 
 **CRITICAL: Append-only list. Add new completed items at the end. Prune old completed entries from the top. Do not edit existing entries.**
 
+- Canonical options types (schema-derived)
+  - GetDotenvOptions and GetDotenvCliOptions now derive from Zod schemas; CLI schema augmented with strict/capture/trace/redaction/entropy flags; logger permitted on programmatic options. Removed deprecated useConfigLoader from schemas/types.
+- Typed config builder and export
+  - Added defineGetDotenvConfig<Vars, Env>() and GetDotenvConfig types; exported from public API. Updated TS config template to use the builder.
+- Generic getDotenv<Vars>() with vars-aware overload
+  - Introduced a generic getDotenv with default Vars and an overload that narrows return type when options.vars is provided. No runtime behavior changed.
+
 - Host plugin seam: added instance‑bound helpers and structural host support
   - GetDotenvCliPublic now exposes createDynamicOption (structural typing).
   - definePlugin returns plugins with readConfig(cli) and createPluginDynamicOption(cli, …) helpers.

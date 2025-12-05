@@ -12,6 +12,15 @@ import { getDotenvOptionsSchemaRaw } from './getDotenvOptions';
 export const getDotenvCliOptionsSchemaRaw = getDotenvOptionsSchemaRaw.extend({
   // CLI-specific fields (stringly inputs before preprocessing)
   debug: z.boolean().optional(),
+  strict: z.boolean().optional(),
+  capture: z.boolean().optional(),
+  trace: z.union([z.boolean(), z.array(z.string())]).optional(),
+  redact: z.boolean().optional(),
+  warnEntropy: z.boolean().optional(),
+  entropyThreshold: z.number().optional(),
+  entropyMinLength: z.number().optional(),
+  entropyWhitelist: z.array(z.string()).optional(),
+  redactPatterns: z.array(z.string()).optional(),
   paths: z.string().optional(),
   pathsDelimiter: z.string().optional(),
   pathsDelimiterPattern: z.string().optional(),

@@ -2,10 +2,8 @@ import { z } from 'zod';
 /**
  * Zod schemas for programmatic GetDotenv options.
  *
- * NOTE: These schemas are introduced without wiring to avoid behavior changes.
- * Legacy paths continue to use existing types/logic. The new plugin host will
- * use these schemas in strict mode; legacy paths will adopt them in warn mode
- * later per the staged plan.
+ * Canonical source of truth for options shape. Public types are derived
+ * from these schemas (see consumers via z.output<>).
  */
 
 // Minimal process env representation: string values or undefined to indicate "unset".
@@ -26,12 +24,11 @@ export const getDotenvOptionsSchemaRaw = z.object({
   excludePublic: z.boolean().optional(),
   loadProcess: z.boolean().optional(),
   log: z.boolean().optional(),
+  logger: z.unknown().optional(),
   outputPath: z.string().optional(),
   paths: z.array(z.string()).optional(),
   privateToken: z.string().optional(),
   vars: processEnvSchema.optional(),
-  // Host-only feature flag: guarded integration of config loader/overlay
-  useConfigLoader: z.boolean().optional(),
 });
 
 // RESOLVED: service-boundary contract (post-inheritance).
