@@ -2,7 +2,8 @@
  * Compile-only check for readonly inputs.
  */
 import { defineGetDotenvConfig } from '../config/defineConfig';
-import { defineDynamic, getDotenv } from '../GetDotenvOptions';
+import { getDotenv } from '../getDotenv';
+import { defineDynamic } from '../GetDotenvOptions';
 
 // defineDynamic with as const
 const dyn = defineDynamic({

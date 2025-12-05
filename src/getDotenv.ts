@@ -151,7 +151,9 @@ export async function getDotenv(
   if (!excludeDynamic) {
     let dynamic: GetDotenvDynamic | undefined = undefined;
     if (options.dynamic && Object.keys(options.dynamic).length > 0) {
-      dynamic = options.dynamic;
+      // Schema allows 'unknown' values (for flexibility/validation later),
+      // but internal logic expects the functional interface. Cast is safe here.
+      dynamic = options.dynamic as GetDotenvDynamic;
     } else if (dynamicPath) {
       const absDynamicPath = path.resolve(dynamicPath);
       if (await fs.exists(absDynamicPath)) {

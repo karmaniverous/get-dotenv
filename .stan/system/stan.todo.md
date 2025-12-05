@@ -127,3 +127,5 @@ When updated: 2025-12-05T00:00:00Z
 - Resolved strict type mismatches in options compatibility layers.
 
 - Fixed getter overload signatures and refined compat types.
+
+- Resolved final typecheck errors (imports/casts).
