@@ -71,3 +71,13 @@ When updated: 2025-12-04T00:00:00Z
   - Updated Authoring/Config to replace readPluginConfig by‑id with plugin.readConfig(cli).
   - Updated Config guide to recommend plugin‑bound dynamic helper (no cfg.plugins.<id> in help callbacks).
   - README note now references plugin‑bound createPluginDynamicOption explicitly.
+
+- Docs follow‑through (instance‑bound helpers in shipped pages)
+  - Updated shipped plugin docs (aws, batch) to use plugin.readConfig(cli) and instance‑bound patterns; removed by‑id examples.
+
+- Docs notes: defineScripts and readonly acceptance
+  - Added a short defineScripts note to Shell and Authoring/Exec guides (TS inference for script tables).
+  - Added a readonly‑inputs note where helpful (Getting Started / Shell / Exec) to reflect acceptance of readonly record shapes by helper APIs.
+
+- Audit: dynamic help parity
+  - Re‑verified root and plugin dynamic help labeling remained correct after doc/example updates (unit/E2E continue to pass).

@@ -199,3 +199,8 @@ See also:
 
 - [Shell Execution Behavior](../shell.md)
 - [Diagnostics](./diagnostics.md)
+
+## TypeScript notes
+
+- A helper `defineScripts<TShell>()(table)` is available when you want to preserve concrete shell types through your scripts table (useful for rare per‑script overrides).
+- Env overlay/expansion utilities accept readonly record inputs, so you can pass `as const` objects where it improves inference without extra casts.

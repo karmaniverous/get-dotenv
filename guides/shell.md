@@ -62,6 +62,8 @@ getdotenv cmd bash-only
 getdotenv cmd plain
 ```
 
+TypeScript note: When you author scripts in code, a helper `defineScripts<TShell>()(table)` is available to preserve concrete shell types through helpers and overrides. This keeps script‑level shell choices strongly typed where you need them.
+
 ## Quoting tips
 
 - POSIX shells: prefer single quotes when possible; escape `$` for literal dollar signs.
@@ -114,4 +116,6 @@ Examples (concise excerpts):
 Notes:
 
 - For plugin defaults, set values under `plugins.<id>` in your config; dynamic help callbacks read them from `cfg.plugins.<id>`.
-- Use ON/OFF labels (“(default)”) for boolean toggles and `"(default: \"...\")"` for string defaults to keep output concise and consistent.
+- Use ON/OFF labels (“(default)”) for boolean toggles and “(default: "...")” for string defaults to keep output concise and consistent.
+
+TypeScript note: Many helper APIs (e.g., env overlay/expansion utilities) accept readonly record inputs, so `as const` maps are fine to pass where appropriate.

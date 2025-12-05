@@ -90,20 +90,19 @@ You can set default `scripts`, `shell`, `rootPath`, `globs`, and `pkgCwd` under
 Use the typed accessor to read the validated `plugins.batch` slice:
 
 ```ts
-import {
-  definePlugin,
-  readPluginConfig,
-} from '@karmaniverous/get-dotenv/cliHost';
+import { definePlugin } from '@karmaniverous/get-dotenv/cliHost';
 import type { BatchConfig } from '@karmaniverous/get-dotenv/plugins/batch';
 
-export const myBatchAwarePlugin = () =>
-  definePlugin({
+export const myBatchAwarePlugin = () => {
+  const plugin = definePlugin({
     id: 'my-batch',
     setup(cli) {
-      const cfg = readPluginConfig<BatchConfig>(cli, 'batch') ?? {};
+      const cfg = plugin.readConfig<BatchConfig>(cli) ?? {};
       // cfg.scripts / cfg.shell / cfg.rootPath / cfg.globs / cfg.pkgCwd are strongly typed here
     },
   });
+  return plugin;
+};
 ```
 
 ## Behavior and diagnostics

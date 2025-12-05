@@ -128,20 +128,19 @@ import { awsPlugin } from '@karmaniverous/get-dotenv/plugins/aws';
 You can retrieve the validated, merged plugin config slice with strong typing using the helper:
 
 ```ts
-import {
-  definePlugin,
-  readPluginConfig,
-} from '@karmaniverous/get-dotenv/cliHost';
+import { definePlugin } from '@karmaniverous/get-dotenv/cliHost';
 import type { AwsPluginConfigResolved } from '@karmaniverous/get-dotenv/plugins/aws';
 
-export const myAwsAwarePlugin = () =>
-  definePlugin({
+export const myAwsAwarePlugin = () => {
+  const plugin = definePlugin({
     id: 'my-aws',
     setup(cli) {
-      const cfg = readPluginConfig<AwsPluginConfigResolved>(cli, 'aws') ?? {};
+      const cfg = plugin.readConfig<AwsPluginConfigResolved>(cli) ?? {};
       // cfg.profile / cfg.region / cfg.strategy ... are strongly typed here
     },
   });
+  return plugin;
+};
 ```
 
 ## Notes and caveats
