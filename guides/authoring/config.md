@@ -68,7 +68,7 @@ export const myPlugin = () => {
 
 ## Typed accessor (DX)
 
-When your plugin declares a config schema, prefer the instance‑bound helper to read the validated slice ergonomically at call sites. The helper is compile‑time only and preserves runtime behavior; the host still validates the interpolated slice against your schema before `afterResolve`.
+When your plugin declares a config schema, `definePlugin` returns a typed object (`PluginWithInstanceHelpers`) that includes instance‑bound helpers. Use `plugin.readConfig(cli)` to read the validated slice ergonomically.
 
 ```ts
 import { z } from 'zod';

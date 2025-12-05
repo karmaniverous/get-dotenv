@@ -56,10 +56,24 @@ JS/TS (data + dynamic):
   - dynamic?: GetDotenvDynamic — a map where values are either strings or functions of the form (vars: ProcessEnv, env?: string) => string | undefined.
   - schema?: unknown — a schema object (e.g., a Zod schema) whose safeParse(finalEnv) will be executed once after overlays.
 
-TS support:
+TS support and `defineGetDotenvConfig`:
 
+Use the helper to get type inference for `vars`, `envVars`, and `dynamic` keys:
+
+```ts
+import { defineGetDotenvConfig } from '@karmaniverous/get-dotenv';
+
+export default defineGetDotenvConfig({
+  vars: { APP_PORT: '3000' },
+  dynamic: {
+    URL: ({ APP_PORT }) => `http://localhost:${APP_PORT}`, // inferred keys!
+  },
+});
+```
+
+Loader behavior:
 - Direct import works if a TS loader is present.
-- Otherwise, the loader auto-bundles via esbuild when available; if esbuild is not present, it falls back to a simple TypeScript transpile for single-file modules without imports.
+- Otherwise, auto-bundles via esbuild (if available) or falls back to simple transpile.
 
 ## Privacy
 

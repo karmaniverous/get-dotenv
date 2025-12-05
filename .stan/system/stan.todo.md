@@ -126,3 +126,7 @@ When updated: 2025-12-05T00:00:00Z
 - Fixed getter overload signatures and refined compat types.
 
 - Resolved final typecheck errors (imports/casts).
+
+- Documentation refresh
+  - Updated guides and README to feature typed config/env helpers.
+  - Clarified plugin config access patterns.

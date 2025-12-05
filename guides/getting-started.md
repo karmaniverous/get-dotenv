@@ -27,7 +27,8 @@ Compose env from dotenv files and overlays in code.
 ```ts
 import { getDotenv } from '@karmaniverous/get-dotenv';
 
-const vars = await getDotenv({
+// Pass a type argument to get a strongly-typed return value (optional)
+const vars = await getDotenv<{ APP_SETTING: string }>({
   env: 'dev',
   paths: ['./'],
   // dynamicPath: './.env.js' or pass dynamic: defineDynamic({...})
@@ -38,7 +39,7 @@ console.log(vars.APP_SETTING);
 
 Next:
 
-- Put defaults and validation in `getdotenv.config.json|yaml|js|ts` using [Config files and overlays](./config.md).
+- Put defaults and validation in `getdotenv.config.json|yaml|js|ts` using [Config files and overlays](./config.md). Use `defineGetDotenvConfig` for strong typing in TS.
 - Use `dynamic` or `dynamicPath` for computed values; see [Dynamic Processing](../README.md#dynamic-processing).
 - TypeScript: helper APIs such as env overlays/expansion accept readonly record inputs (e.g., `as const`) to keep inference strong without casts.
 
