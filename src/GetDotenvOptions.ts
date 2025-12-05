@@ -15,12 +15,12 @@ export const getDotenvOptionsFilename = 'getdotenv.config.json';
 
 // Compat: widen CLI-facing shapes at the converter boundary so projects that
 // provide data-style config can pass vars as a map and paths as string[].
-export type RootOptionsShapeCompat = Omit<
-  RootOptionsShape,
-  'vars' | 'paths'
-> & {
-  vars?: string | Record<string, string | undefined> | undefined;
-  paths?: string | string[] | undefined;
+export type RootOptionsShapeCompat = {
+  [K in keyof RootOptionsShape]: K extends 'vars'
+    ? string | Record<string, string | undefined> | undefined
+    : K extends 'paths'
+      ? string | string[] | undefined
+      : RootOptionsShape[K];
 };
 /**
  * A minimal representation of an environment key/value mapping.

@@ -11,9 +11,7 @@ import type { RootOptionsShape, ScriptsTable } from './types';
  * into a GetDotenvCliOptions-like object. Types are intentionally wide to
  * avoid cross-layer coupling; callers may cast as needed.
  */
-export const resolveCliOptions = <
-  T extends RootOptionsShape & { scripts?: ScriptsTable | undefined },
->(
+export const resolveCliOptions = <T extends RootOptionsShape>(
   rawCliOptions: unknown,
   defaults: Partial<T>,
   parentJson?: string,

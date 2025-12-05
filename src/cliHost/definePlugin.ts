@@ -187,6 +187,7 @@ export function definePlugin<
     extended as Required<GetDotenvCliPlugin<TOptions>>
   ).createPluginDynamicOption = function <
     // Implementation remains generic to satisfy the interface, but return type narrows
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters
     TCfg,
   >(
     cli: GetDotenvCliPublic<TOptions>,

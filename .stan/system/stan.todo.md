@@ -126,3 +126,5 @@ When updated: 2025-12-05T00:00:00Z
   - Verified Scripts<TShell> prevents unintended URL widening.
 
 - Resolved strict type mismatches in options compatibility layers.
+
+- Fixed getter overload signatures and refined compat types.

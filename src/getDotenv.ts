@@ -57,7 +57,7 @@ export async function getDotenv<Vars extends AnyProcessEnv>(
   options: Partial<GetDotenvOptions> & { vars: Vars },
 ): Promise<ProcessEnv & Vars>;
 export async function getDotenv<Vars extends AnyProcessEnv = ProcessEnv>(
-  options: Partial<GetDotenvOptions> = {},
+  options?: Partial<GetDotenvOptions>,
 ): Promise<Vars>;
 export async function getDotenv(
   options: Partial<GetDotenvOptions> = {},
