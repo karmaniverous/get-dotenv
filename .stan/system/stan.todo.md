@@ -4,13 +4,44 @@ When updated: 2025-12-05T00:00:00Z
 
 ## Next up (near‑term, actionable)
 
-- Verify and release (major)
-  - Update CHANGELOG with a short migration guide:
-    - Replace readPluginConfig<T>(cli, 'id') with plugin.readConfig(cli).
-    - Replace cfg.plugins.<id> help callbacks with plugin‑bound dynamic helper or inline plugin.readConfig(cli).
-    - Duplicate command names are now guarded at definition time.
-  - Bump major version.
-  - Run full suite: typecheck, lint, unit/E2E tests, build, verify:types|bundle|tarball, smoke.
+- Wire canonical options types to Zod schemas
+  - Replace hand-written GetDotenvOptions/GetDotenvCliOptions interfaces with
+    z.output<typeof getDotenvOptionsSchemaResolved> /
+    z.output<typeof getDotenvCliOptionsSchemaResolved> as the canonical types.
+  - Update imports/exports so all internal and public consumers use the
+    schema-derived types; fix any compile fallout.
+
+- Implement typed config builder for JS/TS configs
+  - Add GetDotenvConfig<Vars, Env> and defineGetDotenvConfig<Vars, Env>(cfg)
+    helper; export it from the public API.
+  - Update existing TS config templates and docs to use defineGetDotenvConfig
+    for better inference of vars/envVars/dynamic.
+
+- Implement optional typed getDotenv<Vars>() env shape
+  - Make getDotenv generic on Vars extends ProcessEnv with a default of
+    ProcessEnv; add an overload that narrows when options.vars is provided.
+  - Export the generic signature and add compile-only tests/examples showing
+    typed env usage.
+
+- Tighten PluginWithInstanceHelpers<TOptions, TConfig> and definePlugin
+  - Update definePlugin<TOptions, TConfig> to return
+    PluginWithInstanceHelpers<TOptions, TConfig> where readConfig(cli) and
+    createPluginDynamicOption(cli, …) are bound to TConfig (no generic at
+    call-site).
+  - Propagate the refined plugin type through built-in plugins and any
+    internal helpers; fix compile/lint issues.
+
+- Remove useConfigLoader and enforce always-on loader semantics
+  - Remove useConfigLoader from public option types, schemas, and any call
+    sites; ensure resolveGetDotenvOptions/computeContext and host paths always
+    go through the loader/overlay pipeline (no-op when no configs exist).
+
+- Polish and verify typing/runtimes
+  - Reconfirm Scripts<TShell> and defineScripts<TShell>() usage across helpers
+    (no unintended widening to URL except at the outer exec seam).
+  - Ensure helper types (dotenvExpandAll, overlayEnv, defineDynamic,
+    defineGetDotenvConfig) accept readonly inputs and preserve key sets as
+    described in the requirements.
 
 ## Completed (recent)
 
@@ -112,4 +143,4 @@ When updated: 2025-12-05T00:00:00Z
     - ESM-only distribution and exports.
     - Canonical options types derived from Zod schemas.
     - Typed config builder for JS/TS configs (defineGetDotenvConfig).
-    - Optional typed getDotenv<Vars>() env shape and explicit removal of useConfigLoader.
+    - Optional typed getDotenv<Vars>() env shape and explicit removal of useConfigLoader.
