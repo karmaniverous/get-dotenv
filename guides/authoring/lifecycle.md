@@ -97,53 +97,62 @@ See also:
 
 ## Dynamic option descriptions
 
-Use dynamicOption (or createDynamicOption + addOption) to render help text that reflects the resolved configuration at help time. The host evaluates dynamic descriptions with overlays and dynamic enabled, without logging or mutating the environment.
+Prefer the plugin‑bound helper createPluginDynamicOption to render help text that reflects the resolved configuration for that specific plugin instance. The host evaluates dynamic descriptions with overlays and dynamic enabled, without logging or mutating the environment.
 
 Key points:
 
-- dynamicOption(flags, (cfg) => string, parser?, defaultValue?) is chainable like option().
-- The callback receives a read‑only resolved help config: top‑level get‑dotenv options and cfg.plugins slices (merged, interpolated).
-- Top‑level “-h/--help” computes a read‑only config and evaluates dynamic text; “help <cmd>” refreshes dynamic text after preSubcommand resolution. Both paths render the same defaults.
+- createPluginDynamicOption(cli, flags, (cfg, pluginCfg) => string, parser?, defaultValue?) attaches to the current plugin, injecting that plugin’s validated config slice (pluginCfg).
+- The callback receives a read‑only resolved help config (top‑level flags) and the instance‑bound plugin config slice. Avoid by‑id lookups (e.g., cfg.plugins.<id>); rely on pluginCfg instead.
+- Top‑level “-h/--help” computes a read‑only config and evaluates dynamic text; “help <cmd>” refreshes dynamic text after preSubcommand resolution.
 
-Example (plugin flag with ON/OFF default label):
+Example (plugin flag with ON/OFF default label using instance‑bound config):
 
 ```ts
 import { definePlugin } from '@karmaniverous/get-dotenv/cliHost';
 
-export const helloPlugin = () =>
-  definePlugin({
+type HelloConfig = { loud?: boolean };
+
+export const helloPlugin = () => {
+  const plugin = definePlugin({
     id: 'hello',
     setup(cli) {
       cli
         .ns('hello')
         .description('Say hello with current dotenv context')
-        .dynamicOption('--loud', (cfg) => {
-          const on = !!(cfg.plugins as { hello?: { loud?: boolean } })?.hello
-            ?.loud;
-          return `print greeting in ALL CAPS${on ? ' (default)' : ''}`;
-        })
-        .action((_args, _opts) => {
-          // …
+        .addOption(
+          plugin.createPluginDynamicOption<HelloConfig>(
+            cli,
+            '--loud',
+            (_bag, cfg) =>
+              `print greeting in ALL CAPS${cfg?.loud ? ' (default)' : ''}`,
+          ),
+        )
+        .action(() => {
+          const cfg = plugin.readConfig<HelloConfig>(cli) ?? {};
+          // use cfg.loud at runtime
         });
     },
   });
+  return plugin;
+};
 ```
 
 Or build the Option first:
 
 ```ts
-const opt = (cli as any).createDynamicOption('--color <string>', (cfg) => {
-  const col =
-    (cfg.plugins as { hello?: { color?: string } })?.hello?.color || 'blue';
-  return `text color (default: ${JSON.stringify(col)})`;
-});
+const opt = plugin.createPluginDynamicOption<{ color?: string }>(
+  cli,
+  '--color <string>',
+  (_bag, cfg) =>
+    `text color (default: ${JSON.stringify(cfg?.color ?? 'blue')})`,
+);
 cli.addOption(opt);
 ```
 
 Notes:
 
-- Plugin config lives under plugins.<id> (see “Plugin config” in Config files & overlays); strings are deep‑interpolated once against { ...ctx.dotenv, ...process.env } (process.env wins for plugin slices).
 - Use concise labels for ON/OFF toggles (e.g., “(default)”) and “(default: "...")” for string defaults.
+- Plugin config is validated and deep‑interpolated once by the host; read it via plugin.readConfig(cli).
 
 See also:
 

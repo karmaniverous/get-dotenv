@@ -19,11 +19,6 @@ When updated: 2025-12-04T00:00:00Z
   - Add defineScripts<TShell>() helper (identity) to preserve TShell inference when building script tables in code.
   - Keep URL accepted only at the outer exec seam; continue to type internal helpers as string | false (no widening).
 
-- Docs
-  - Authoring/Config & Lifecycle: document plugin.readConfig(cli) and plugin‑bound dynamic option helper; remove all by‑id examples.
-  - Shipped plugins (aws, batch): update snippets to the instance‑bound model.
-  - Getting Started / Shell / Exec: add a short note for defineScripts; mention Readonly acceptance in expansion/overlay helpers.
-
 - Verify and release (major)
   - Update CHANGELOG with a short migration guide:
     - Replace readPluginConfig<T>(cli, 'id') with plugin.readConfig(cli).
@@ -70,4 +65,9 @@ When updated: 2025-12-04T00:00:00Z
 
 - Docs policy (fence hygiene)
   - Added project-level reminder in stan.project.md to apply Fence Hygiene when editing Markdown docs with embedded code blocks (compute N = max inner backticks + 1; re-scan after composing; avoid hardcoded triple backticks).
-
+
+- Docs sweep (instance-bound helpers)
+  - Updated Authoring/Lifecycle to use plugin.createPluginDynamicOption(cli, …) and plugin.readConfig(cli) (removed by‑id examples).
+  - Updated Authoring/Config to replace readPluginConfig by‑id with plugin.readConfig(cli).
+  - Updated Config guide to recommend plugin‑bound dynamic helper (no cfg.plugins.<id> in help callbacks).
+  - README note now references plugin‑bound createPluginDynamicOption explicitly.

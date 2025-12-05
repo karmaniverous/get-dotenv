@@ -83,8 +83,6 @@ The overlay flow:
 3. Apply dynamic in order: programmatic dynamic (if provided) → config dynamic from JS/TS (packaged → project public → project local) → file dynamicPath (lowest dynamic tier).
 4. Optional effects: outputPath (write consolidated dotenv; quote multiline), log (print final map), loadProcess (merge into process.env).
 
-All expansions are progressive within each slice: when applying a vars object, keys are expanded left-to-right so later values may reference earlier results.
-
 ## Interpolation model (Phase C and per‑plugin)
 
 After dotenv files and config overlays are composed, a final interpolation pass resolves remaining string options using the composed env:
@@ -131,7 +129,7 @@ export default {
 
 ## Plugin config
 
-Plugin configuration is discovered under plugins.<id> in the same packaged/project public/local files. The host merges slices by precedence (packaged → project/public → project/local) and deep‑interpolates string leaves once against { ...ctx.dotenv, ...process.env } (process.env wins for plugin slices).
+Plugin configuration is discovered under plugins.<id> in the same packaged/project public/local files. The host merges slices by precedence (packaged → project/public → project/local) and deep‑interpolates string leaves once against { ...ctx.dotenv, ...process.env } (process.env wins for plugin slices). Plugins read their own validated slice via the instance‑bound helper plugin.readConfig(cli).
 
 Location and shape:
 
@@ -151,8 +149,7 @@ Location and shape:
 Precedence and timing:
 
 - Source/Privacy: project/local > project/public > packaged.
-- Strings are interpolated once just before validation/afterResolve; later consumers (e.g., dynamic help callbacks) receive the already‑interpolated value.
-- Plugin config appears in dynamic help callbacks under cfg.plugins.<id>, allowing help text to show effective defaults (e.g., (default) or (default: "...")).
+- Strings are interpolated once just before validation/afterResolve; later consumers (e.g., dynamic help callbacks) receive the already‑interpolated value. Prefer the plugin‑bound helper createPluginDynamicOption(cli, ...) to surface effective defaults in help text without by‑id lookups.
 
 ## Compile‑time key preservation (overlayEnv)
 
@@ -209,7 +206,7 @@ vars:
   FOO: 'foo'
 envVars:
   dev:
-    BAR: '${FOO}-dev'
+    ENV_SETTING: 'dev_value'
 ```
 
 ```yaml
@@ -224,13 +221,13 @@ JS/TS dynamic (optional):
 // getdotenv.config.ts
 export default {
   dynamic: {
-    BOTH: ({ FOO = '', BAR = '' }) => `${FOO}-${BAR}`,
+    BOTH: ({ FOO = '', ENV_SETTING = '' }) => `${FOO}-${ENV_SETTING}`,
   },
 };
 ```
 
-With --use-config-loader (or { useConfigLoader: true } on the host), the final map for env=dev overlays global public (FOO) → env public (BAR) → global local (SECRET) → dynamic from config (BOTH):
+With --use-config-loader (or { useConfigLoader: true } on the host), the final map for env=dev overlays global public (FOO) → env public (ENV_SETTING) → global local (SECRET) → dynamic from config (BOTH):
 
 ```
-{ FOO: "foo", BAR: "foo-dev", SECRET: "s3cr3t", BOTH: "foo-foo-dev" }
+{ FOO: "foo", ENV_SETTING: "dev_value", SECRET: "s3cr3t", BOTH: "foo-dev_value" }
 ```

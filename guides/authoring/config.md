@@ -12,7 +12,7 @@ Order of operations (high level):
 
 1. Compose dotenv from files (exclude dynamic for the base), then apply dynamic (programmatic + JS/TS config + file dynamicPath).
 2. Interpolate remaining string options (Phase C), e.g., outputPath.
-3. Merge plugin config slices (packaged → project/public → project/local) and deep‑interpolate each plugin’s slice against `{ ...ctx.dotenv, ...process.env }` (process.env wins). Your plugin receives this interpolated slice.
+3. Merge plugin config slices (packaged → project/public → project/local) and deep‑interpolate each plugin’s slice against `{ ...ctx.dotenv, ...process.env }` (process.env wins). Your plugin receives this interpolated slice via instance‑bound helpers.
 4. Validate plugin config (when a schema is provided).
 
 Implications:
@@ -51,30 +51,28 @@ export const MyPluginConfig = z.object({
 });
 export type MyPluginConfig = z.infer<typeof MyPluginConfig>;
 
-export const myPlugin = () =>
-  definePlugin({
+export const myPlugin = () => {
+  const plugin = definePlugin({
     id: 'my',
     configSchema: MyPluginConfig,
     setup(cli) {
       cli.ns('my').action(() => {
-        const ctx = cli.getCtx();
-        const cfg = (ctx?.pluginConfigs?.['my'] ?? {}) as MyPluginConfig;
+        const cfg = plugin.readConfig<MyPluginConfig>(cli) ?? {};
         // cfg is validated and strings are already interpolated
       });
     },
   });
+  return plugin;
+};
 ```
 
 ## Typed accessor (DX)
 
-When your plugin declares a config schema, prefer the typed helper to read the
-validated slice ergonomically at call sites. The helper is compile‑time only
-and preserves runtime behavior; the host still validates the interpolated slice
-against your schema before `afterResolve`.
+When your plugin declares a config schema, prefer the instance‑bound helper to read the validated slice ergonomically at call sites. The helper is compile‑time only and preserves runtime behavior; the host still validates the interpolated slice against your schema before `afterResolve`.
 
 ```ts
 import { z } from 'zod';
-import { definePlugin, readPluginConfig } from '@karmaniverous/get-dotenv/cliHost';
+import { definePlugin } from '@karmaniverous/get-dotenv/cliHost';
 
 export const MyPluginConfig = z.object({
   toolPath: z.string().optional(),
@@ -82,17 +80,19 @@ export const MyPluginConfig = z.object({
 });
 export type MyPluginConfig = z.infer<typeof MyPluginConfig>;
 
-export const myPlugin = () =>
-  definePlugin({
+export const myPlugin = () => {
+  const plugin = definePlugin({
     id: 'my',
     configSchema: MyPluginConfig,
     setup(cli) {
       cli.ns('my').action(() => {
-        const cfg = readPluginConfig<MyPluginConfig>(cli, 'my') ?? {};
+        const cfg = plugin.readConfig<MyPluginConfig>(cli) ?? {};
         // cfg is validated and strings are already interpolated once
       });
     },
   });
+  return plugin;
+};
 ```
 
 ## Plugin-scoped scripts (rare)
