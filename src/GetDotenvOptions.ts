@@ -26,6 +26,8 @@ export type RootOptionsShapeCompat = Omit<
  * A minimal representation of an environment key/value mapping.
  * Values may be `undefined` to represent "unset". */ export type ProcessEnv =
   Record<string, string | undefined>;
+// Relaxed constraint for generics to accept Readonly variants (as const)
+export type AnyProcessEnv = ProcessEnv | Readonly<ProcessEnv>;
 
 /**
  * Dynamic variable function signature. Receives the current expanded variables
@@ -33,7 +35,7 @@ export type RootOptionsShapeCompat = Omit<
  * or `undefined` to unset/skip the variable.
  */
 export type GetDotenvDynamicFunction = (
-  vars: ProcessEnv,
+  vars: AnyProcessEnv,
   env: string | undefined,
 ) => string | undefined;
 export type GetDotenvDynamic = Record<
@@ -48,12 +50,13 @@ export type Logger =
  * Vars-aware dynamic helpers (compile-time DX).
  * DynamicFn: receive the current expanded variables and optional env.
  */
-export type DynamicFn<Vars extends Record<string, string | undefined>> = (
+export type DynamicFn<Vars extends AnyProcessEnv> = (
   vars: Vars,
   env?: string,
 ) => string | undefined;
-export type DynamicMap<Vars extends Record<string, string | undefined>> =
-  Record<string, DynamicFn<Vars> | ReturnType<DynamicFn<Vars>>>;
+export type DynamicMap<Vars extends AnyProcessEnv> =
+  | Record<string, DynamicFn<Vars> | ReturnType<DynamicFn<Vars>>>
+  | Readonly<Record<string, DynamicFn<Vars> | ReturnType<DynamicFn<Vars>>>>;
 
 /**
  * Helper to define a dynamic map with strong inference (Vars-aware).
@@ -61,7 +64,7 @@ export type DynamicMap<Vars extends Record<string, string | undefined>> =
  * Overload A (preferred): bind Vars to your intended key set for improved inference.
  */
 export function defineDynamic<
-  Vars extends Record<string, string | undefined>,
+  Vars extends AnyProcessEnv,
   T extends DynamicMap<Vars>,
 >(d: T): T;
 /**

@@ -4,12 +4,9 @@ When updated: 2025-12-05T00:00:00Z
 
 ## Next up (near‑term, actionable)
 
-- Polish and verify typing/runtimes
-  - Reconfirm Scripts<TShell> and defineScripts<TShell>() usage across helpers
-    (no unintended widening to URL except at the outer exec seam).
-  - Ensure helper types (dotenvExpandAll, overlayEnv, defineDynamic,
-    defineGetDotenvConfig) accept readonly inputs and preserve key sets as
-    described in the requirements.
+- Final verification and release
+  - Run full suite (typecheck, lint, test, build, verify-types, verify-package).
+  - Ensure no regressions from schema-first refactor.
 
 ## Completed (recent)
 
@@ -119,5 +116,11 @@ When updated: 2025-12-05T00:00:00Z
   - Implemented defineGetDotenvConfig<Vars, Env> and generic getDotenv<Vars>().
   - Refined definePlugin to return TConfig-bound instance helpers.
   - Updated TS config template to use defineGetDotenvConfig.
-   - Fixed Zod imports and deduplicated schema keys.
-   - Aligned RootOptionsShape with Zod strict optional types.   - Derived RootOptionsShape from Zod schema (schema-first).
+  - Fixed Zod imports and deduplicated schema keys.
+  - Aligned RootOptionsShape with Zod strict optional types.
+  - Derived RootOptionsShape from Zod schema (schema-first).
+
+- Polished typing for readonly inputs
+  - Updated helpers (getDotenv, defineDynamic, defineGetDotenvConfig) to accept Readonly types (as const).
+  - Added AnyProcessEnv alias.
+  - Verified Scripts<TShell> prevents unintended URL widening.

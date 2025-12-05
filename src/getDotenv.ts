@@ -8,6 +8,7 @@ import type { RedactOptions } from './diagnostics/redact';
 import { redactObject } from './diagnostics/redact';
 import { dotenvExpandAll } from './dotenvExpand';
 import {
+  type AnyProcessEnv,
   type GetDotenvDynamic,
   type GetDotenvOptions,
   type ProcessEnv,
@@ -52,10 +53,10 @@ import { loadModuleDefault } from './util/loadModuleDefault';
  * @throws Error when a dynamic module is present but cannot be imported.
  * @throws Error when an output path was requested but could not be resolved.
  */
-export async function getDotenv<Vars extends ProcessEnv>(
+export async function getDotenv<Vars extends AnyProcessEnv>(
   options: Partial<GetDotenvOptions> & { vars: Vars },
 ): Promise<ProcessEnv & Vars>;
-export async function getDotenv<Vars extends ProcessEnv = ProcessEnv>(
+export async function getDotenv<Vars extends AnyProcessEnv = ProcessEnv>(
   options: Partial<GetDotenvOptions> = {},
 ): Promise<Vars>;
 export async function getDotenv(

@@ -1,12 +1,12 @@
 import type { Scripts } from '../cliCore/GetDotenvCliOptions';
-import type { DynamicMap, ProcessEnv } from '../GetDotenvOptions';
+import type { AnyProcessEnv, DynamicMap } from '../GetDotenvOptions';
 
 /**
  * Typed configuration shape for JS/TS configs.
  * Binds `vars`, `envVars`, and `dynamic` to a shared `Vars` type for strong inference.
  */
 export type GetDotenvConfig<
-  Vars extends ProcessEnv,
+  Vars extends AnyProcessEnv,
   Env extends string = string,
 > = {
   dotenvToken?: string;
@@ -19,7 +19,7 @@ export type GetDotenvConfig<
   requiredKeys?: string[];
   schema?: unknown;
   vars?: Vars;
-  envVars?: Record<Env, Partial<Vars>>;
+  envVars?: Record<Env, Partial<Vars>> | Readonly<Record<Env, Partial<Vars>>>;
   dynamic?: DynamicMap<Vars>;
   plugins?: Record<string, unknown>;
 };
@@ -34,7 +34,7 @@ export type GetDotenvConfig<
  * });
  */
 export function defineGetDotenvConfig<
-  Vars extends ProcessEnv,
+  Vars extends AnyProcessEnv,
   Env extends string = string,
   T extends GetDotenvConfig<Vars, Env> = GetDotenvConfig<Vars, Env>,
 >(cfg: T): T {
