@@ -1,54 +1,13 @@
 import type { Command } from 'commander';
+import type { z } from 'zod';
+
+import type { getDotenvCliOptionsSchemaRaw } from '../schema/getDotenvCliOptions';
 
 /**
  * Minimal root options shape shared by CLI and generator layers.
- * Keep keys optional to respect exactOptionalPropertyTypes semantics.
+ * Derived from Zod schema to ensure alignment with valid flags.
  */
-export type RootOptionsShape = {
-  env?: string | undefined;
-  vars?: string | undefined;
-  command?: string | undefined;
-  outputPath?: string | undefined;
-
-  shell?: string | boolean | undefined;
-  loadProcess?: boolean | undefined;
-  excludeAll?: boolean | undefined;
-  excludeDynamic?: boolean | undefined;
-  excludeEnv?: boolean | undefined;
-  excludeGlobal?: boolean | undefined;
-  excludePrivate?: boolean | undefined;
-  excludePublic?: boolean | undefined;
-  log?: boolean | undefined;
-  debug?: boolean | undefined;
-  capture?: boolean | undefined;
-  strict?: boolean | undefined;
-  // Diagnostics
-  redact?: boolean | undefined;
-  warnEntropy?: boolean | undefined;
-  entropyThreshold?: number | undefined;
-  entropyMinLength?: number | undefined;
-  entropyWhitelist?: string[] | undefined;
-  redactPatterns?: string[] | undefined;
-
-  defaultEnv?: string | undefined;
-  dotenvToken?: string | undefined;
-  dynamicPath?: string | undefined;
-
-  // Diagnostics: --trace [keys...]; true = all keys, string[] = selected keys
-  trace?: boolean | string[] | undefined;
-
-  paths?: string | undefined;
-  pathsDelimiter?: string | undefined;
-  pathsDelimiterPattern?: string | undefined;
-  privateToken?: string | undefined;
-  varsDelimiter?: string | undefined;
-  varsDelimiterPattern?: string | undefined;
-  varsAssignor?: string | undefined;
-  varsAssignorPattern?: string | undefined;
-  // Scripts table (string or { cmd, shell })
-  scripts?: ScriptsTable;
-  // Logger is intentionally omitted here; it is not round-tripped into env.
-};
+export type RootOptionsShape = z.infer<typeof getDotenvCliOptionsSchemaRaw>;
 
 /**
  * Scripts table shape (configurable shell type).
