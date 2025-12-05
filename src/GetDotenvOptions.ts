@@ -19,8 +19,8 @@ export type RootOptionsShapeCompat = Omit<
   RootOptionsShape,
   'vars' | 'paths'
 > & {
-  vars?: string | Record<string, string | undefined>;
-  paths?: string | string[];
+  vars?: string | Record<string, string | undefined> | undefined;
+  paths?: string | string[] | undefined;
 };
 /**
  * A minimal representation of an environment key/value mapping.

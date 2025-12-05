@@ -124,3 +124,5 @@ When updated: 2025-12-05T00:00:00Z
   - Updated helpers (getDotenv, defineDynamic, defineGetDotenvConfig) to accept Readonly types (as const).
   - Added AnyProcessEnv alias.
   - Verified Scripts<TShell> prevents unintended URL widening.
+
+- Resolved strict type mismatches in options compatibility layers.

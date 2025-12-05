@@ -28,10 +28,10 @@ export type GetDotenvConfig<
  * Helper to define a get-dotenv config with strong type inference.
  *
  * @example
- * export default defineGetDotenvConfig<Vars>({
- *   vars: { APP_SETTING: 'val' },
- *   dynamic: { KEY: ({ APP_SETTING }) => APP_SETTING }
- * });
+ * export default defineGetDotenvConfig<Vars>(\{
+ *   vars: \{ APP_SETTING: 'val' \},
+ *   dynamic: \{ KEY: (\{ APP_SETTING \}) =\> APP_SETTING \}
+ * \});
  */
 export function defineGetDotenvConfig<
   Vars extends AnyProcessEnv,
