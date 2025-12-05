@@ -54,7 +54,9 @@ export const computeContext = async <
   hostMetaUrl: string,
 ): Promise<GetDotenvCliCtx<TOptions>> => {
   const optionsResolved = await resolveGetDotenvOptions(customOptions);
-  const validated = getDotenvOptionsSchemaResolved.parse(optionsResolved);
+  const validated = getDotenvOptionsSchemaResolved.parse(
+    optionsResolved,
+  ) as GetDotenvOptions;
   // Always-on loader path
   // 1) Base from files only (no dynamic, no programmatic vars)
   // Sanitize to avoid passing properties explicitly set to undefined

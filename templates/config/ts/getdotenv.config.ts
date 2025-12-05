@@ -1,4 +1,8 @@
-export default {
+import { defineGetDotenvConfig } from '@karmaniverous/get-dotenv';
+
+type Vars = { APP_SETTING?: string; ENV_SETTING?: string; ENV_TAG?: string };
+
+export default defineGetDotenvConfig<Vars>({
   dotenvToken: '.env',
   privateToken: 'local',
   paths: './',
@@ -10,7 +14,7 @@ export default {
     // selected environment (if any); tailor behavior per environment.
     // For example, with env='dev' this yields "for-dev"; when env is not
     // provided, this returns an empty string.
-    ENV_TAG: (_vars: Record<string, string | undefined>, env?: string) =>
+    ENV_TAG: (_vars, env) =>
       env ? `for-${env}` : '',
   },
-};
+});

@@ -45,7 +45,6 @@ export type RootOptionsShape = {
   varsDelimiterPattern?: string;
   varsAssignor?: string;
   varsAssignorPattern?: string;
-
   // Scripts table (string or { cmd, shell })
   scripts?: ScriptsTable;
   // Logger is intentionally omitted here; it is not round-tripped into env.

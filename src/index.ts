@@ -12,6 +12,10 @@ import { initPlugin } from './plugins/init';
 
 export { buildSpawnEnv } from './cliCore/spawnEnv';
 export {
+  defineGetDotenvConfig,
+  type GetDotenvConfig,
+} from './config/defineConfig';
+export {
   dotenvExpand,
   dotenvExpandAll,
   dotenvExpandFromProcessEnv,

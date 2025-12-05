@@ -9,6 +9,10 @@ import {
   type GetDotenvCliOptions,
 } from './cliCore/GetDotenvCliOptions';
 import type { RootOptionsShape } from './cliCore/types';
+import {
+  type getDotenvOptionsSchemaResolved,
+  getDotenvOptionsSchemaResolved,
+} from './schema/getDotenvOptions';
 import { defaultsDeep } from './util/defaultsDeep';
 export const getDotenvOptionsFilename = 'getdotenv.config.json';
 
@@ -76,103 +80,17 @@ export function defineDynamic(d: unknown): unknown {
 
 /**
  * Options passed programmatically to `getDotenv`.
+ * Derived directly from the Zod schema to ensure strict runtime validation alignment.
  */
-export interface GetDotenvOptions {
+export type GetDotenvOptions = z.output<
+  typeof getDotenvOptionsSchemaResolved
+> & {
   /**
-   * default target environment (used if `env` is not provided)
-   */
-  defaultEnv?: string;
-
-  /**
-   * token indicating a dotenv file
-   */
-  dotenvToken: string;
-
-  /**
-   * path to JS/TS module default-exporting an object keyed to dynamic variable functions
-   */
-  dynamicPath?: string;
-
-  /**
-   * Programmatic dynamic variables map. When provided, this takes precedence
-   * over {@link GetDotenvOptions.dynamicPath}.
-   */
-  dynamic?: GetDotenvDynamic;
-
-  /**
-   * target environment
-   */
-  env?: string;
-
-  /**
-   * exclude dynamic variables from loading
-   */
-  excludeDynamic?: boolean;
-
-  /**
-   * exclude environment-specific variables from loading
-   */
-  excludeEnv?: boolean;
-
-  /**
-   * exclude global variables from loading
-   */
-  excludeGlobal?: boolean;
-
-  /**
-   * exclude private variables from loading
-   */
-  excludePrivate?: boolean;
-
-  /**
-   * exclude public variables from loading
-   */
-  excludePublic?: boolean;
-
-  /**
-   * load dotenv variables to `process.env`
-   */
-  loadProcess?: boolean;
-
-  /**
-   * log loaded dotenv variables to `logger`
-   */
-  log?: boolean;
-
-  /**
-   * logger object (defaults to console)
+   * Logger object (defaults to console).
+   * Not part of Zod schema (runtime injection).
    */
   logger?: Logger;
-
-  /**
-   * if populated, writes consolidated dotenv file to this path (follows dotenvExpand rules)
-   */
-  outputPath?: string;
-
-  /**
-   * array of input directory paths
-   */
-  paths?: string[];
-
-  /**
-   * filename token indicating private variables
-   */
-  privateToken?: string;
-
-  /**
-   * explicit variables to include
-   */
-  vars?: ProcessEnv;
-
-  /**
-   * Reserved: config loader flag (no-op).
-   * The plugin-first host and generator paths already use the config
-   * loader/overlay pipeline unconditionally (no-op when no config files
-   * are present). This flag is accepted for forward compatibility but
-   * currently has no effect.
-   */
-  useConfigLoader?: boolean;
-}
+};
 /**
  * Converts programmatic CLI options to `getDotenv` options. *
  * @param cliOptions - CLI options. Defaults to `{}`.
@@ -297,14 +215,20 @@ export const resolveGetDotenvOptions = async (
   const defaultsFromCli = getDotenvCliOptions2Options(mergedCli);
 
   const result = defaultsDeep(
-    defaultsFromCli as Partial<GetDotenvOptions>,
+    defaultsFromCli,
     customOptions,
-  ) as unknown as GetDotenvOptions;
+  ) as unknown as z.input<typeof getDotenvOptionsSchemaResolved> & {
+    logger?: Logger;
+  };
+
+  // Ensure validation runs on the final merged shape (sans logger)
+  const validated = getDotenvOptionsSchemaResolved.parse(result);
 
   return {
-    ...result, // Keep explicit empty strings/zeros; drop only undefined
+    ...validated, // Keep explicit empty strings/zeros; drop only undefined
+    logger: result.logger,
     vars: Object.fromEntries(
-      Object.entries(result.vars ?? {}).filter(([, v]) => v !== undefined),
+      Object.entries(validated.vars ?? {}).filter(([, v]) => v !== undefined),
     ),
-  };
+  } as GetDotenvOptions;
 };

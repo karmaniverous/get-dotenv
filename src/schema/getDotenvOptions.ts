@@ -30,8 +30,6 @@ export const getDotenvOptionsSchemaRaw = z.object({
   paths: z.array(z.string()).optional(),
   privateToken: z.string().optional(),
   vars: processEnvSchema.optional(),
-  // Host-only feature flag: guarded integration of config loader/overlay
-  useConfigLoader: z.boolean().optional(),
 });
 
 // RESOLVED: service-boundary contract (post-inheritance).

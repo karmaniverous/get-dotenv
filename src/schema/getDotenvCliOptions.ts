@@ -15,13 +15,34 @@ export const getDotenvCliOptionsSchemaRaw = getDotenvOptionsSchemaRaw.extend({
   paths: z.string().optional(),
   pathsDelimiter: z.string().optional(),
   pathsDelimiterPattern: z.string().optional(),
-  scripts: z.record(z.string(), z.unknown()).optional(),
+  scripts: z
+    .record(
+      z.string(),
+      z.union([
+        z.string(),
+        z.object({
+          cmd: z.string(),
+          shell: z.union([z.string(), z.boolean()]).optional(),
+        }),
+      ]),
+    )
+    .optional(),
   shell: z.union([z.boolean(), z.string()]).optional(),
   vars: z.string().optional(),
   varsAssignor: z.string().optional(),
   varsAssignorPattern: z.string().optional(),
   varsDelimiter: z.string().optional(),
   varsDelimiterPattern: z.string().optional(),
+  // Diagnostics
+  debug: z.boolean().optional(),
+  strict: z.boolean().optional(),
+  redact: z.boolean().optional(),
+  warnEntropy: z.boolean().optional(),
+  entropyThreshold: z.number().optional(),
+  entropyMinLength: z.number().optional(),
+  entropyWhitelist: z.array(z.string()).optional(),
+  redactPatterns: z.array(z.string()).optional(),
+  capture: z.boolean().optional(),
 });
 export const getDotenvCliOptionsSchemaResolved = getDotenvCliOptionsSchemaRaw;
 
