@@ -67,3 +67,7 @@ When updated: 2025-12-04T00:00:00Z
 
 - Lint: overload single‑use generics
   - Added inline eslint-disable-next-line for @typescript-eslint/no-unnecessary-type-parameters on definePlugin overload signatures to silence remaining rule hits.
+
+- Docs policy (fence hygiene)
+  - Added project-level reminder in stan.project.md to apply Fence Hygiene when editing Markdown docs with embedded code blocks (compute N = max inner backticks + 1; re-scan after composing; avoid hardcoded triple backticks).
+

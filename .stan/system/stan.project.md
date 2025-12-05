@@ -17,6 +17,13 @@ Keep requirement statements out of this file; use it solely to guide assistant b
 - Only preformatted/code blocks (fenced code, CLI excerpts, YAML/JSON examples) may wrap as needed; lists may use one item per line.
 - This policy is enforced during review. If prose is manually wrapped, fix it by unwrapping to single-line paragraphs.
 
+## Fence hygiene for embedded code blocks (project-level reminder)
+
+- When editing Markdown docs that contain embedded fenced code blocks, compute the outer fence length per the system “Fence Hygiene” algorithm: choose N = (maximum contiguous backticks found inside the block) + 1, with a minimum of 3.
+- Re-scan after composing each block to ensure the outer fence length exceeds any inner run of backticks; adjust N if needed.
+- Do not hardcode triple backticks when inner fenced blocks may be present; always compute dynamically.
+- These rules apply to all examples and templates included in docs, including multi-fenced samples (e.g., diffs inside code blocks).
+
 ## Typing & API DX policy (HARD RULE — project-level)
 
 - Type casts are a code smell. ALWAYS prefer type inference over type casts.
