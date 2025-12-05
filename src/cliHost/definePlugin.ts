@@ -107,7 +107,7 @@ export interface GetDotenvCliPlugin<
  * interface optional preserves compatibility for ad-hoc/test plugins, while
  * return types from definePlugin provide stronger DX for shipped/typed plugins.
  */
-type PluginWithInstanceHelpers<
+export type PluginWithInstanceHelpers<
   TOptions extends GetDotenvOptions = GetDotenvOptions,
 > = GetDotenvCliPlugin<TOptions> & {
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters

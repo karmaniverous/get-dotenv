@@ -135,13 +135,30 @@ const main = async () => {
     const dir = path.dirname(path.join(DIST, baseFile));
     const candidates = [];
     const push = (p) => candidates.push(path.resolve(dir, p));
-    // As provided
+    // Always try as provided first
     push(spec);
-    // Add extensions if missing
-    if (!/\.(d\.)?ts$/.test(spec)) {
-      push(`${spec}.d.ts`);
-      push(`${spec}.ts`);
+    // Derive additional candidates by replacing or adding extensions
+    try {
+      const ext = path.extname(spec).toLowerCase();
+      const withoutExt =
+        ext.length > 0 ? spec.slice(0, spec.length - ext.length) : spec;
+      if (ext === '') {
+        // No extension: try ".d.ts" and ".ts"
+        push(`${spec}.d.ts`);
+        push(`${spec}.ts`);
+      } else if (ext === '.js' || ext === '.mjs' || ext === '.cjs') {
+        // JS re-export stubs: chase TS sources and declaration bundles
+        push(`${withoutExt}.d.ts`);
+        push(`${withoutExt}.ts`);
+      } else if (!/\.d\.ts$/.test(spec) && ext !== '.ts') {
+        // Unknown extensions: add best-effort TS candidates
+        push(`${withoutExt}.d.ts`);
+        push(`${withoutExt}.ts`);
+      }
+    } catch {
+      // Best-effort only; fall through with whatever we gathered
     }
+
     const texts = [];
     for (const p of candidates) {
       const t = await readFileUtf8(p);

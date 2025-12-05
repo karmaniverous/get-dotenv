@@ -87,3 +87,12 @@ When updated: 2025-12-05T00:00:00Z
   - Updated package.json exports to ESM-only (removed all "require" maps; import.types -> .d.ts); set main to dist/index.mjs.
   - Adjusted verify-bundle to check only ESM bundles and verify-tarball to drop index.cjs expectation.
   - Removed CJS interop test (src/interop/createCli.cjs.test.ts).
+
+- verify-types: robust chase for JS re-exports
+  - Updated tools/verify-types.js to replace .js/.mjs/.cjs extensions with .d.ts/.ts
+    (and add .d.ts/.ts when no extension) while resolving re-export targets.
+  - Ensures overlayEnv and programmaticVars detection succeeds against dts stubs.
+
+- TypeDoc: include PluginWithInstanceHelpers
+  - Exported PluginWithInstanceHelpers in src/cliHost/definePlugin.ts to remove
+    the “referenced but not included” warning during docs generation.
