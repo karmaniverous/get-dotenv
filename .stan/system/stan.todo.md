@@ -105,4 +105,11 @@ When updated: 2025-12-05T00:00:00Z
 - verify-types: source fallback for overlayEnv
   - When direct and chased dts checks do not surface overlayEnv, inspect
     src/env/overlay.ts as a last-resort fallback to confirm the declaration and
-    the programmaticVars parameter, making the check resilient to dts stubs.
+    the programmaticVars parameter, making the check resilient to dts stubs.
+
+- Requirements/doc: typed env, config builder, Zod canonical options, loader flag removal
+  - Updated stan.requirements.md to document:
+    - ESM-only distribution and exports.
+    - Canonical options types derived from Zod schemas.
+    - Typed config builder for JS/TS configs (defineGetDotenvConfig).
+    - Optional typed getDotenv<Vars>() env shape and explicit removal of useConfigLoader.

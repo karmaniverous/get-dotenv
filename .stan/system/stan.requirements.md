@@ -1,6 +1,6 @@
 # Project Requirements — get-dotenv
 
-When updated: 2025-12-04T00:00:00Z
+When updated: 2025-12-05T00:00:00Z
 
 ## Overview
 
@@ -34,9 +34,8 @@ Load environment variables from a configurable cascade of dotenv files and/or ex
 ## Supported Node/Runtime
 
 - Node: >= 20
-- ESM-first package with dual exports:
-  - import: dist/index.mjs (types: dist/index.d.mts)
-  - require: dist/index.cjs (types: dist/index.d.cts)
+- ESM-only package:
+  - import: dist/index.mjs (types: dist/index.d.ts)
 
 ## Tooling
 
@@ -224,9 +223,10 @@ Acceptance:
 
 Goal: eliminate by‑id config lookups; provide first‑class, instance‑bound access with strong typing.
 
-- definePlugin<TOptions, TConfig>() returns a plugin object that includes:
+- definePlugin<TOptions, TConfig>() returns a plugin object that includes instance-bound helpers and is represented by the alias `PluginWithInstanceHelpers<TOptions, TConfig>`.
+- `PluginWithInstanceHelpers<TOptions, TConfig>` is the canonical helper type and includes:
   - `readConfig(cli): TConfig | undefined` — resolves this instance’s validated, interpolated config slice. Host stores slices per plugin instance (WeakMap), not by id.
-  - `createPluginDynamicOption(flags, (bag, cfg: TConfig|undefined) => string)` — a plugin‑bound dynamic option helper that injects the plugin’s TConfig into the help callback.
+  - `createPluginDynamicOption(flags, (bag, cfg: TConfig|undefined) => string)` — a plugin‑bound dynamic option helper that injects the plugin’s TConfig into help callbacks.
 - Public API removal:
   - Remove `readPluginConfig<T>(cli, id: string)` from the public surface.
   - Remove public exposure of `ctx.pluginConfigs`. Plugin runtime state (if any) may remain under `ctx.plugins` at the plugin’s discretion, but config lookup is instance‑bound only.
@@ -307,10 +307,110 @@ Semantics:
 - Compile-time type is `B` when no programmaticVars; `B & P` when provided.
 - Accepts readonly inputs.
 
-Acceptance:
+### G) Canonical options types from Zod schemas
 
-- Callers that bind the generic (e.g., in config-aware services) get precise key sets.
-- No behavior change; purely type-level improvement.
+Goal: ensure the public options types always match the validated runtime shape defined by the Zod schemas and avoid divergence between interfaces and schemas.
+
+- Canonical types:
+  - `GetDotenvOptions` is defined as `z.output<typeof getDotenvOptionsSchemaResolved>`.
+  - `GetDotenvCliOptions` is defined as `z.output<typeof getDotenvCliOptionsSchemaResolved>`.
+- There is a single source of truth for option shapes:
+  - All changes to options must go through the Zod schemas.
+  - The exported TypeScript types are derived from the schemas, not hand-written interfaces.
+- Acceptance:
+  - Any addition/removal/shape change to options is reflected automatically in the exported types.
+  - Validation behavior and TypeScript types cannot drift.
+
+### H) Typed config builder for JS/TS configs (defineGetDotenvConfig)
+
+Goal: give authors of JS/TS config files a strongly-typed helper that ties together `vars`, `envVars`, and `dynamic` keys and improves inference for dynamic functions.
+
+- Helper:
+
+  ```ts
+  export type GetDotenvConfig<
+    Vars extends ProcessEnv,
+    Env extends string = string,
+  > = {
+    dotenvToken?: string;
+    privateToken?: string;
+    paths?: string | string[];
+    loadProcess?: boolean;
+    log?: boolean;
+    shell?: string | boolean;
+    scripts?: Scripts;
+    requiredKeys?: string[];
+    schema?: unknown;
+    vars?: Vars;
+    envVars?: Record<Env, Partial<Vars>>;
+    dynamic?: DynamicMap<Vars>;
+    plugins?: Record<string, unknown>;
+  };
+
+  export function defineGetDotenvConfig<
+    Vars extends ProcessEnv,
+    Env extends string = string,
+    T extends GetDotenvConfig<Vars, Env> = GetDotenvConfig<Vars, Env>,
+  >(cfg: T): T;
+  ```
+
+- Usage in TS config:
+
+  ```ts
+  import { defineGetDotenvConfig } from '@karmaniverous/get-dotenv';
+
+  type Vars = { APP_SETTING?: string; ENV_SETTING?: string };
+
+  export default defineGetDotenvConfig<Vars>({
+    vars: { APP_SETTING: 'app_value' },
+    envVars: { dev: { ENV_SETTING: 'dev_value' } },
+    dynamic: {
+      GREETING: ({ APP_SETTING = '' }) => `Hello ${APP_SETTING}`,
+    },
+  });
+  ```
+
+- Acceptance:
+  - `dynamic` functions see a strongly-typed `vars` bag aligned with `vars`/`envVars`.
+  - Mis-typed keys in `envVars` are rejected at compile time.
+  - Runtime loader remains schema-driven; helper is compile-time only.
+
+### I) Optional typed getDotenv env shape
+
+Goal: allow programmatic callers to opt into a more precise env type while keeping the default behavior unchanged.
+
+- Generic signature:
+  ```ts
+  export function getDotenv<Vars extends ProcessEnv = ProcessEnv>(
+    options?: Partial<GetDotenvOptions>,
+  ): Promise<Vars>;
+  ```
+- Overload for narrowing based on `vars`:
+  ```ts
+  export function getDotenv<Vars extends ProcessEnv>(
+    options: Partial<GetDotenvOptions> & { vars: Vars },
+  ): Promise<ProcessEnv & Vars>;
+  ```
+- Usage:
+
+  ```ts
+  type MyEnv = {
+    APP_SETTING?: string;
+    ENV_SETTING?: string;
+    APP_SECRET?: string;
+  };
+
+  const env = await getDotenv<MyEnv>({
+    dotenvToken: '.testenv',
+    env: 'test',
+    paths: ['./test/full'],
+  });
+  ```
+
+- Acceptance:
+  - Default call sites continue to see `Promise<ProcessEnv>`.
+  - Callers that pass a type argument get a precise env shape for their code (e.g., shared with HTTP handlers).
+  - No runtime behavior change; typing is opt-in only.
 
 ## Architecture: Services-first (Ports & Adapters)
 
@@ -348,7 +448,7 @@ Regression and coverage
 
 ## Diagnostics and safety (presentation only)
 
-- Redaction: `--redact` masks secret-like keys (default patterns include SECRET, TOKEN, PASSWORD, API_KEY, KEY) in `-l/--log` and `--trace` outputs; allow custom patterns via `--redact-pattern`.
+- Redaction: `--redact` masks secret-like keys (default patterns include SECRET, TOKEN, KEY, PASSWORD) in `-l/--log` and `--trace` outputs; allow custom patterns via `--redact-pattern`.
 - Entropy warnings (default on):
   - Once-per-key messages when printable strings of length ≥ 16 exceed bits/char threshold (default 3.8).
   - Surfaces: `--trace` and `-l/--log`.
@@ -359,19 +459,19 @@ Regression and coverage
 - Dynamic help storage
   - The CLI host stores dynamic option description callbacks in a host-owned WeakMap keyed by Commander.Option. Do not mutate Option via symbol properties.
   - The CLI host stores option grouping metadata (for help rendering) in a host-owned WeakMap keyed by Option. Expose `setOptionGroup(opt, group)`.
-
 - Command creation semantics and uniqueness guard
   - The host’s `createCommand(name?)` must construct child commands via `new GetDotenvCli(name)` explicitly. Do not rely on subclass constructor semantics.
   - Same-level duplicate command names are disallowed and must throw a clear error early (before parse).
-
 - Public interface and generics
   - The host class implements the structural public interface `GetDotenvCliPublic<TOptions>`.
   - The plugin contract is generic on TOptions: `GetDotenvCliPlugin<TOptions>` so setup/afterResolve receive correctly typed ctx/cli when plugins depend on option typing.
-  - `definePlugin()` returns `GetDotenvCliPlugin<TOptions>`, preserving plugin type identity.
-  - `definePlugin<TOptions, TConfig>` returns a plugin that also exposes:
-    - `readConfig(cli): TConfig | undefined`
-    - `createPluginDynamicOption(flags, (bag, cfg: TConfig|undefined) => string)` for plugin-bound dynamic help.
-
+  - `definePlugin()` returns a plugin that preserves type identity and is represented by the alias `PluginWithInstanceHelpers<TOptions, TConfig>`.
+  - `PluginWithInstanceHelpers<TOptions, TConfig>` is the canonical plugin helper type and includes:
+    - `readConfig(cli): TConfig | undefined` — instance-bound accessor for this plugin’s validated, interpolated config slice.
+    - `createPluginDynamicOption(flags, (bag, cfg: TConfig|undefined) => string)` — plugin-bound dynamic option helper that injects the plugin’s TConfig into help callbacks.
+  - `definePlugin<TOptions, TConfig>` returns a `PluginWithInstanceHelpers<TOptions, TConfig>` and enforces that:
+    - Instance helpers are required on the returned plugin type (no generics at call-site for config access).
+    - The public plugin contract remains structurally compatible for ad-hoc/test plugins that do not use config.
 - Help evaluation typing
   - ResolvedHelpConfig is `Partial<GetDotenvCliOptions> & { plugins: Record<string, unknown> }` so callbacks can read shell/log/loadProcess/exclude\*/warnEntropy without casts at root or parent commands.
   - Dynamic help must be evaluated against:
@@ -398,8 +498,29 @@ Discovery:
 
 Formats:
 
-- JSON/YAML: data only (vars/envVars/shell/scripts); `dynamic` and `schema` disallowed in JSON/YAML.
-- JS/TS: data + `dynamic` (map of string or `(vars, env?) => string | undefined`) and optional `schema` (e.g., Zod).
+- JSON/YAML (data only, always-on; no-op when no files are present):
+  - Allowed keys:
+    - dotenvToken?: string
+    - privateToken?: string
+    - paths?: string | string[]
+    - loadProcess?: boolean
+    - log?: boolean
+    - shell?: string | boolean
+    - scripts?: Record<string, unknown>
+    - vars?: Record<string, string> (global, public)
+    - envVars?: Record<string, Record<string, string>> (per-env, public)
+  - Disallowed in JSON/YAML (this step): dynamic — use JS/TS instead.
+
+JS/TS (data + dynamic):
+
+- Accepts all JSON/YAML keys and also:
+  - dynamic?: GetDotenvDynamic — a map where values are either strings or functions of the form (vars: ProcessEnv, env?: string) => string | undefined.
+  - schema?: unknown — a schema object (e.g., a Zod schema) whose safeParse(finalEnv) will be executed once after overlays.
+- Typed TS config helper:
+  - For TS configs, `defineGetDotenvConfig<Vars, Env>()` is the recommended helper to:
+    - Tie `vars`, `envVars`, and `dynamic` to a single Vars shape at compile time.
+    - Improve inference for dynamic functions without changing runtime behavior.
+  - JS configs may also use `defineGetDotenvConfig` when authored in ESM for better inference, but JSON/YAML remain data-only.
 
 Overlays and precedence (higher wins):
 
@@ -425,11 +546,17 @@ Validation:
 - JS/TS: `schema?: { safeParse(finalEnv) }` (e.g., Zod).
 - Runs once after overlays/Phase C; `--strict` fails on issues; otherwise warn.
 
+- Loader activation:
+  - The config loader/overlay pipeline is always active for the plugin-first host and generator paths and is a no-op when no config files are present.
+  - There is no `useConfigLoader` or similar flag in the public options surface; any previous no-op compatibility flag is removed.
+  - Programmatic callers use the same semantics as the host: options are resolved via `resolveGetDotenvOptions`, validated against the Zod schema, then overlaid by config and dynamic values.
+
 ## Scripts table (optional, config or root options)
 
 - Define scripts in config: `plugins.<id>.scripts` or root `scripts`.
 - Rare per-script shell overrides: `{ cmd, shell }` (string|boolean) take precedence over global shell for that script.
 - Generic typing is unified: `Scripts<TShell extends string | boolean>` (see “Strong typing and generics”).
+
 - Authors can use `defineScripts<TShell>()(table)` to keep TShell propagation when building tables in code.
 
 ## API surface (exports and typing)
@@ -441,7 +568,10 @@ Validation:
   - `defineDynamic<Vars, T extends DynamicMap<Vars>>(d: T) => T`
   - `dotenvExpandAll<T extends Record<string, string | undefined> | Readonly<Record<string, string | undefined>>>(...) => { [K in keyof T]: string | undefined } & Record<string, string | undefined>`
   - `overlayEnv<B, P>(...) => B | (B & P)` generic return per presence of programmaticVars; accept Readonly inputs
-  - `definePlugin<TOptions, TConfig>(...)` returns a plugin object that includes `readConfig(cli)` and `createPluginDynamicOption(...)`
+  - `definePlugin<TOptions, TConfig>(...)` returns a `PluginWithInstanceHelpers<TOptions, TConfig>` that includes instance-bound `readConfig(cli)` and `createPluginDynamicOption(...)`
+  - `PluginWithInstanceHelpers<TOptions, TConfig>` is exported so downstream code can declare plugin variables with the precise config type.
+  - `defineGetDotenvConfig<Vars extends ProcessEnv, Env extends string = string>()(cfg)` provides a typed builder for JS/TS configs that couples `vars`, `envVars`, and `dynamic`.
+  - `getDotenv<Vars extends ProcessEnv = ProcessEnv>(...) => Promise<Vars>` provides an opt-in typed env shape; an overload that includes `vars: Vars` returns `Promise<ProcessEnv & Vars>`.
 - Removed from public API:
   - `readPluginConfig<T>(cli, id: string)`
   - Public `ctx.pluginConfigs` access
