@@ -119,3 +119,5 @@ When updated: 2025-12-05T00:00:00Z
   - Implemented defineGetDotenvConfig<Vars, Env> and generic getDotenv<Vars>().
   - Refined definePlugin to return TConfig-bound instance helpers.
   - Updated TS config template to use defineGetDotenvConfig.
+   - Fixed Zod imports and deduplicated schema keys.
+   - Aligned RootOptionsShape with Zod strict optional types.

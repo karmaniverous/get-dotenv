@@ -2,17 +2,14 @@
 import fs from 'fs-extra';
 import { packageDirectory } from 'package-directory';
 import { join } from 'path';
-import type {} from 'zod';
+import type { z } from 'zod';
 
 import {
   baseGetDotenvCliOptions,
   type GetDotenvCliOptions,
 } from './cliCore/GetDotenvCliOptions';
 import type { RootOptionsShape } from './cliCore/types';
-import {
-  type getDotenvOptionsSchemaResolved,
-  getDotenvOptionsSchemaResolved,
-} from './schema/getDotenvOptions';
+import { getDotenvOptionsSchemaResolved } from './schema/getDotenvOptions';
 import { defaultsDeep } from './util/defaultsDeep';
 export const getDotenvOptionsFilename = 'getdotenv.config.json';
 

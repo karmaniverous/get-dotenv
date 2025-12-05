@@ -5,46 +5,46 @@ import type { Command } from 'commander';
  * Keep keys optional to respect exactOptionalPropertyTypes semantics.
  */
 export type RootOptionsShape = {
-  env?: string;
-  vars?: string;
-  command?: string;
-  outputPath?: string;
+  env?: string | undefined;
+  vars?: string | undefined;
+  command?: string | undefined;
+  outputPath?: string | undefined;
 
-  shell?: string | boolean;
-  loadProcess?: boolean;
-  excludeAll?: boolean;
-  excludeDynamic?: boolean;
-  excludeEnv?: boolean;
-  excludeGlobal?: boolean;
-  excludePrivate?: boolean;
-  excludePublic?: boolean;
-  log?: boolean;
-  debug?: boolean;
-  capture?: boolean;
-  strict?: boolean;
+  shell?: string | boolean | undefined;
+  loadProcess?: boolean | undefined;
+  excludeAll?: boolean | undefined;
+  excludeDynamic?: boolean | undefined;
+  excludeEnv?: boolean | undefined;
+  excludeGlobal?: boolean | undefined;
+  excludePrivate?: boolean | undefined;
+  excludePublic?: boolean | undefined;
+  log?: boolean | undefined;
+  debug?: boolean | undefined;
+  capture?: boolean | undefined;
+  strict?: boolean | undefined;
   // Diagnostics
-  redact?: boolean;
-  warnEntropy?: boolean;
-  entropyThreshold?: number;
-  entropyMinLength?: number;
-  entropyWhitelist?: string[];
-  redactPatterns?: string[];
+  redact?: boolean | undefined;
+  warnEntropy?: boolean | undefined;
+  entropyThreshold?: number | undefined;
+  entropyMinLength?: number | undefined;
+  entropyWhitelist?: string[] | undefined;
+  redactPatterns?: string[] | undefined;
 
-  defaultEnv?: string;
-  dotenvToken?: string;
-  dynamicPath?: string;
+  defaultEnv?: string | undefined;
+  dotenvToken?: string | undefined;
+  dynamicPath?: string | undefined;
 
   // Diagnostics: --trace [keys...]; true = all keys, string[] = selected keys
-  trace?: boolean | string[];
+  trace?: boolean | string[] | undefined;
 
-  paths?: string;
-  pathsDelimiter?: string;
-  pathsDelimiterPattern?: string;
-  privateToken?: string;
-  varsDelimiter?: string;
-  varsDelimiterPattern?: string;
-  varsAssignor?: string;
-  varsAssignorPattern?: string;
+  paths?: string | undefined;
+  pathsDelimiter?: string | undefined;
+  pathsDelimiterPattern?: string | undefined;
+  privateToken?: string | undefined;
+  varsDelimiter?: string | undefined;
+  varsDelimiterPattern?: string | undefined;
+  varsAssignor?: string | undefined;
+  varsAssignorPattern?: string | undefined;
   // Scripts table (string or { cmd, shell })
   scripts?: ScriptsTable;
   // Logger is intentionally omitted here; it is not round-tripped into env.

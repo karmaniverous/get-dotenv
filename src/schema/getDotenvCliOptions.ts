@@ -11,7 +11,6 @@ import { getDotenvOptionsSchemaRaw } from './getDotenvOptions';
 
 export const getDotenvCliOptionsSchemaRaw = getDotenvOptionsSchemaRaw.extend({
   // CLI-specific fields (stringly inputs before preprocessing)
-  debug: z.boolean().optional(),
   paths: z.string().optional(),
   pathsDelimiter: z.string().optional(),
   pathsDelimiterPattern: z.string().optional(),
