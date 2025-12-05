@@ -74,4 +74,7 @@ When updated: 2025-12-05T00:00:00Z
   - aws/batch use plugin.readConfig(cli) and plugin‑bound dynamic help; cmd verified (no plugin config); unit/E2E updated accordingly.
 
 - Type/input DX polish (compile‑only)
-  - Broadened readonly inputs for dotenvExpandAll/overlayEnv and added defineScripts<TShell>() helper; URL remains accepted only at the outer exec seam.
+  - Broadened readonly inputs for dotenvExpandAll/overlayEnv and added defineScripts<TShell>() helper; URL remains accepted only at the outer exec seam.
+
+- Scripts: verify-types overlay chase
+  - Updated tools/verify-types.js to follow a single-level re-export in env-overlay.d.ts and validate the target declaration (overlayEnv/programmaticVars).

@@ -103,6 +103,8 @@ const main = async () => {
   }
 
   // 2) env-overlay.d.ts (or .d.mts) should declare overlayEnv with programmaticVars in the args type (overload surface).
+  //    Some bundlers may emit a re-export stub; in that case, chase the re-export
+  //    one level and validate the target payload.
   const overlayCandidates = ['env-overlay.d.ts', 'env-overlay.d.mts'];
   let overlayTxt = '';
   let overlayFound = '';
@@ -115,25 +117,73 @@ const main = async () => {
       /* try next */
     }
   }
+  // Helper: determine whether text contains the overlay declaration and the
+  // programmaticVars parameter shape.
+  const hasOverlayDecl = (txt) => /overlayEnv\s*(?:<[^>]*>)?\s*\(/.test(txt);
+  const hasProgrammaticParam = (txt) => /programmaticVars\??:/.test(txt);
+  // Helper: chase a single-level re-export, e.g.:
+  //   export { overlayEnv } from "./overlay-XXXX.d.ts";
+  // Returns the loaded target text (or empty string on failure).
+  const chaseReexport = async (baseFile, txt) => {
+    try {
+      const m =
+        /export\s*{\s*overlayEnv(?:\s+as\s+\w+)?\s*}\s*from\s*['"]([^'"]+)['"]/.exec(
+          txt,
+        );
+      if (!m || !m[1]) return '';
+      const dir = path.dirname(path.join(DIST, baseFile));
+      const targetRaw = m[1];
+      const tryPaths = [];
+      // Try as-is (may already include .d.ts/.ts)
+      tryPaths.push(path.resolve(dir, targetRaw));
+      // Add common extensions if missing
+      if (!/\.(d\.)?ts$/.test(targetRaw)) {
+        tryPaths.push(path.resolve(dir, `${targetRaw}.d.ts`));
+        tryPaths.push(path.resolve(dir, `${targetRaw}.ts`));
+      }
+      for (const p of tryPaths) {
+        try {
+          const t = await fs.readFile(p, 'utf-8');
+          if (t && t.length > 0) return t;
+        } catch {
+          /* try next candidate */
+        }
+      }
+      return '';
+    } catch {
+      return '';
+    }
+  };
   if (!overlayTxt) {
     issues.push({
       file: overlayCandidates.join(' | '),
       msg: 'missing (build before verify-types)',
     });
   } else {
-    // Match either direct function form or generic form, e.g.:
-    //   export declare function overlayEnv(args: ...)
-    //   export declare function overlayEnv<T>(args: ...)
-    if (!/overlayEnv\s*(?:<[^>]*>)?\s*\(/.test(overlayTxt)) {
+    // Check direct content first; if not present, attempt to follow a single
+    // re-export to the actual declaration and validate there.
+    let overlayOk = hasOverlayDecl(overlayTxt);
+    let overlayProg = hasProgrammaticParam(overlayTxt);
+    if (!overlayOk || !overlayProg) {
+      const chased = await chaseReexport(
+        overlayFound || overlayCandidates[0],
+        overlayTxt,
+      );
+      if (chased) {
+        overlayOk = overlayOk || hasOverlayDecl(chased);
+        overlayProg = overlayProg || hasProgrammaticParam(chased);
+      }
+    }
+    if (!overlayOk) {
       issues.push({
         file: overlayFound || 'env-overlay.d.ts',
-        msg: 'overlayEnv declaration not found in env overlay types',
+        msg: 'overlayEnv declaration not found in env overlay types (including chased re-export)',
       });
     }
-    if (!/programmaticVars\??:/.test(overlayTxt)) {
+    if (!overlayProg) {
       issues.push({
         file: overlayFound || 'env-overlay.d.ts',
-        msg: 'programmaticVars parameter not detected in overlayEnv types (overload surface)',
+        msg: 'programmaticVars parameter not detected in overlayEnv types (including chased re-export)',
       });
     }
   }
