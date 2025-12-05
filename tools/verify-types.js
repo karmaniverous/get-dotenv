@@ -103,8 +103,7 @@ const main = async () => {
   }
 
   // 2) env-overlay.d.ts (or .d.mts) should declare overlayEnv with programmaticVars in the args type (overload surface).
-  //    Some bundlers may emit a re-export stub; in that case, chase the re-export
-  //    one level and validate the target payload.
+  //    Bundlers may emit re-export stubs (named or star). Follow up to two levels.
   const overlayCandidates = ['env-overlay.d.ts', 'env-overlay.d.mts'];
   let overlayTxt = '';
   let overlayFound = '';
@@ -117,73 +116,129 @@ const main = async () => {
       /* try next */
     }
   }
-  // Helper: determine whether text contains the overlay declaration and the
-  // programmaticVars parameter shape.
+
+  // Helper: detect overlay declaration and programmaticVars parameter
   const hasOverlayDecl = (txt) => /overlayEnv\s*(?:<[^>]*>)?\s*\(/.test(txt);
   const hasProgrammaticParam = (txt) => /programmaticVars\??:/.test(txt);
-  // Helper: chase a single-level re-export, e.g.:
-  //   export { overlayEnv } from "./overlay-XXXX.d.ts";
-  // Returns the loaded target text (or empty string on failure).
-  const chaseReexport = async (baseFile, txt) => {
+
+  // Read helper
+  const readFileUtf8 = async (abs) => {
     try {
-      const m =
-        /export\s*{\s*overlayEnv(?:\s+as\s+\w+)?\s*}\s*from\s*['"]([^'"]+)['"]/.exec(
-          txt,
-        );
-      if (!m || !m[1]) return '';
-      const dir = path.dirname(path.join(DIST, baseFile));
-      const targetRaw = m[1];
-      const tryPaths = [];
-      // Try as-is (may already include .d.ts/.ts)
-      tryPaths.push(path.resolve(dir, targetRaw));
-      // Add common extensions if missing
-      if (!/\.(d\.)?ts$/.test(targetRaw)) {
-        tryPaths.push(path.resolve(dir, `${targetRaw}.d.ts`));
-        tryPaths.push(path.resolve(dir, `${targetRaw}.ts`));
-      }
-      for (const p of tryPaths) {
-        try {
-          const t = await fs.readFile(p, 'utf-8');
-          if (t && t.length > 0) return t;
-        } catch {
-          /* try next candidate */
-        }
-      }
-      return '';
+      return await fs.readFile(abs, 'utf-8');
     } catch {
       return '';
     }
   };
+
+  // Resolve a module specifier relative to base file directory and try common extensions.
+  const resolveTargets = async (baseFile, spec) => {
+    const dir = path.dirname(path.join(DIST, baseFile));
+    const candidates = [];
+    const push = (p) => candidates.push(path.resolve(dir, p));
+    // As provided
+    push(spec);
+    // Add extensions if missing
+    if (!/\.(d\.)?ts$/.test(spec)) {
+      push(`${spec}.d.ts`);
+      push(`${spec}.ts`);
+    }
+    const texts = [];
+    for (const p of candidates) {
+      const t = await readFileUtf8(p);
+      if (t) texts.push({ path: p, txt: t });
+    }
+    return texts;
+  };
+
+  // Extract re-export targets (both named and star forms)
+  const extractReexportSpecs = (txt) => {
+    const specs = new Set();
+    // export { overlayEnv } from '...'
+    const reNamed =
+      /export\s*{\s*[^}]*\boverlayEnv\b[^}]*}\s*from\s*['"]([^'"]+)['"]/g;
+    // export * from '...'
+    const reStar = /export\s*\*\s*from\s*['"]([^'"]+)['"]/g;
+    let m;
+    while ((m = reNamed.exec(txt))) {
+      if (m[1]) specs.add(m[1]);
+    }
+    while ((m = reStar.exec(txt))) {
+      if (m[1]) specs.add(m[1]);
+    }
+    return Array.from(specs);
+  };
+
+  // Chase up to two levels to find overlay declaration and programmatic param
+  const chaseOverlay = async (baseFile, startTxt, maxDepth = 2) => {
+    let overlayOk = hasOverlayDecl(startTxt);
+    let overlayProg = hasProgrammaticParam(startTxt);
+    if (overlayOk && overlayProg) return { overlayOk, overlayProg };
+
+    const queue = [];
+    const seen = new Set();
+
+    const specs = extractReexportSpecs(startTxt);
+    specs.forEach((s) => queue.push({ base: baseFile, spec: s, depth: 1 }));
+
+    while (queue.length > 0) {
+      const { base, spec, depth } = queue.shift();
+      if (depth > maxDepth) continue;
+      const key = `${base}::${spec}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+
+      const targets = await resolveTargets(base, spec);
+      for (const t of targets) {
+        const txt = t.txt;
+        overlayOk = overlayOk || hasOverlayDecl(txt);
+        overlayProg = overlayProg || hasProgrammaticParam(txt);
+        if (overlayOk && overlayProg) {
+          return { overlayOk, overlayProg };
+        }
+        // enqueue nested re-exports
+        const nestedSpecs = extractReexportSpecs(txt);
+        nestedSpecs.forEach((ns) =>
+          queue.push({
+            base: path.relative(DIST, t.path),
+            spec: ns,
+            depth: depth + 1,
+          }),
+        );
+      }
+    }
+    return { overlayOk, overlayProg };
+  };
+
   if (!overlayTxt) {
     issues.push({
       file: overlayCandidates.join(' | '),
       msg: 'missing (build before verify-types)',
     });
   } else {
-    // Check direct content first; if not present, attempt to follow a single
-    // re-export to the actual declaration and validate there.
-    let overlayOk = hasOverlayDecl(overlayTxt);
-    let overlayProg = hasProgrammaticParam(overlayTxt);
-    if (!overlayOk || !overlayProg) {
-      const chased = await chaseReexport(
-        overlayFound || overlayCandidates[0],
-        overlayTxt,
-      );
-      if (chased) {
-        overlayOk = overlayOk || hasOverlayDecl(chased);
-        overlayProg = overlayProg || hasProgrammaticParam(chased);
-      }
-    }
+    // Direct check, then chase re-exports (named or star) up to two levels.
+    const directOk = hasOverlayDecl(overlayTxt);
+    const directProg = hasProgrammaticParam(overlayTxt);
+    const chased =
+      !directOk || !directProg
+        ? await chaseOverlay(
+            overlayFound || overlayCandidates[0],
+            overlayTxt,
+            2,
+          )
+        : { overlayOk: directOk, overlayProg: directProg };
+    const overlayOk = directOk || chased.overlayOk;
+    const overlayProg = directProg || chased.overlayProg;
+
     if (!overlayOk) {
       issues.push({
         file: overlayFound || 'env-overlay.d.ts',
-        msg: 'overlayEnv declaration not found in env overlay types (including chased re-export)',
+        msg: 'overlayEnv declaration not found in env overlay types (including chased re-exports)',
       });
     }
     if (!overlayProg) {
       issues.push({
         file: overlayFound || 'env-overlay.d.ts',
-        msg: 'programmaticVars parameter not detected in overlayEnv types (including chased re-export)',
+        msg: 'programmaticVars parameter not detected in overlayEnv types (including chased re-exports)',
       });
     }
   }

@@ -44,7 +44,7 @@ const commonInputOptions: InputOptions = {
 };
 const cliCommands = await fs.readdir('src/cli');
 const config: RollupOptions[] = [
-  // ESM output.
+  // ESM outputs.
   {
     ...commonInputOptions,
     output: [
@@ -52,18 +52,6 @@ const config: RollupOptions[] = [
         extend: true,
         file: `${outputPath}/index.mjs`,
         format: 'esm',
-      },
-    ],
-  },
-
-  // CommonJS output.
-  {
-    ...commonInputOptions,
-    output: [
-      {
-        extend: true,
-        file: `${outputPath}/index.cjs`,
-        format: 'cjs',
       },
     ],
   },
@@ -76,13 +64,6 @@ const config: RollupOptions[] = [
       { extend: true, file: `${outputPath}/cliHost.mjs`, format: 'esm' },
     ],
   },
-  {
-    ...commonInputOptions,
-    input: 'src/cliHost/index.ts',
-    output: [
-      { extend: true, file: `${outputPath}/cliHost.cjs`, format: 'cjs' },
-    ],
-  },
   // plugins/batch subpath
   {
     ...commonInputOptions,
@@ -91,26 +72,12 @@ const config: RollupOptions[] = [
       { extend: true, file: `${outputPath}/plugins-batch.mjs`, format: 'esm' },
     ],
   },
-  {
-    ...commonInputOptions,
-    input: 'src/plugins/batch/index.ts',
-    output: [
-      { extend: true, file: `${outputPath}/plugins-batch.cjs`, format: 'cjs' },
-    ],
-  },
   // plugins/aws subpath
   {
     ...commonInputOptions,
     input: 'src/plugins/aws/index.ts',
     output: [
       { extend: true, file: `${outputPath}/plugins-aws.mjs`, format: 'esm' },
-    ],
-  },
-  {
-    ...commonInputOptions,
-    input: 'src/plugins/aws/index.ts',
-    output: [
-      { extend: true, file: `${outputPath}/plugins-aws.cjs`, format: 'cjs' },
     ],
   },
 
@@ -122,13 +89,6 @@ const config: RollupOptions[] = [
       { extend: true, file: `${outputPath}/plugins-cmd.mjs`, format: 'esm' },
     ],
   },
-  {
-    ...commonInputOptions,
-    input: 'src/plugins/cmd/index.ts',
-    output: [
-      { extend: true, file: `${outputPath}/plugins-cmd.cjs`, format: 'cjs' },
-    ],
-  },
   // plugins/demo subpath
   {
     ...commonInputOptions,
@@ -137,26 +97,12 @@ const config: RollupOptions[] = [
       { extend: true, file: `${outputPath}/plugins-demo.mjs`, format: 'esm' },
     ],
   },
-  {
-    ...commonInputOptions,
-    input: 'src/plugins/demo/index.ts',
-    output: [
-      { extend: true, file: `${outputPath}/plugins-demo.cjs`, format: 'cjs' },
-    ],
-  },
   // plugins/init subpath
   {
     ...commonInputOptions,
     input: 'src/plugins/init/index.ts',
     output: [
       { extend: true, file: `${outputPath}/plugins-init.mjs`, format: 'esm' },
-    ],
-  },
-  {
-    ...commonInputOptions,
-    input: 'src/plugins/init/index.ts',
-    output: [
-      { extend: true, file: `${outputPath}/plugins-init.cjs`, format: 'cjs' },
     ],
   },
 
@@ -168,13 +114,6 @@ const config: RollupOptions[] = [
       { extend: true, file: `${outputPath}/plugins.mjs`, format: 'esm' },
     ],
   },
-  {
-    ...commonInputOptions,
-    input: 'src/plugins/index.ts',
-    output: [
-      { extend: true, file: `${outputPath}/plugins.cjs`, format: 'cjs' },
-    ],
-  },
 
   // config loader subpath
   {
@@ -182,24 +121,12 @@ const config: RollupOptions[] = [
     input: 'src/config/index.ts',
     output: [{ extend: true, file: `${outputPath}/config.mjs`, format: 'esm' }],
   },
-  {
-    ...commonInputOptions,
-    input: 'src/config/index.ts',
-    output: [{ extend: true, file: `${outputPath}/config.cjs`, format: 'cjs' }],
-  },
   // env overlay subpath
   {
     ...commonInputOptions,
     input: 'src/env/overlay.ts',
     output: [
       { extend: true, file: `${outputPath}/env-overlay.mjs`, format: 'esm' },
-    ],
-  },
-  {
-    ...commonInputOptions,
-    input: 'src/env/overlay.ts',
-    output: [
-      { extend: true, file: `${outputPath}/env-overlay.cjs`, format: 'cjs' },
     ],
   },
 
@@ -217,16 +144,6 @@ const config: RollupOptions[] = [
         file: `${outputPath}/index.d.ts`,
         format: 'esm',
       },
-      {
-        extend: true,
-        file: `${outputPath}/index.d.mts`,
-        format: 'esm',
-      },
-      {
-        extend: true,
-        file: `${outputPath}/index.d.cts`,
-        format: 'cjs',
-      },
     ],
   },
   // Types: cliHost
@@ -240,8 +157,6 @@ const config: RollupOptions[] = [
     ],
     output: [
       { extend: true, file: `${outputPath}/cliHost.d.ts`, format: 'esm' },
-      { extend: true, file: `${outputPath}/cliHost.d.mts`, format: 'esm' },
-      { extend: true, file: `${outputPath}/cliHost.d.cts`, format: 'cjs' },
     ],
   },
   // Types: plugins-batch
@@ -255,16 +170,6 @@ const config: RollupOptions[] = [
     ],
     output: [
       { extend: true, file: `${outputPath}/plugins-batch.d.ts`, format: 'esm' },
-      {
-        extend: true,
-        file: `${outputPath}/plugins-batch.d.mts`,
-        format: 'esm',
-      },
-      {
-        extend: true,
-        file: `${outputPath}/plugins-batch.d.cts`,
-        format: 'cjs',
-      },
     ],
   },
   // Types: plugins-aws
@@ -278,8 +183,6 @@ const config: RollupOptions[] = [
     ],
     output: [
       { extend: true, file: `${outputPath}/plugins-aws.d.ts`, format: 'esm' },
-      { extend: true, file: `${outputPath}/plugins-aws.d.mts`, format: 'esm' },
-      { extend: true, file: `${outputPath}/plugins-aws.d.cts`, format: 'cjs' },
     ],
   },
 
@@ -294,8 +197,6 @@ const config: RollupOptions[] = [
     ],
     output: [
       { extend: true, file: `${outputPath}/plugins-init.d.ts`, format: 'esm' },
-      { extend: true, file: `${outputPath}/plugins-init.d.mts`, format: 'esm' },
-      { extend: true, file: `${outputPath}/plugins-init.d.cts`, format: 'cjs' },
     ],
   },
   // Types: plugins-cmd
@@ -309,8 +210,6 @@ const config: RollupOptions[] = [
     ],
     output: [
       { extend: true, file: `${outputPath}/plugins-cmd.d.ts`, format: 'esm' },
-      { extend: true, file: `${outputPath}/plugins-cmd.d.mts`, format: 'esm' },
-      { extend: true, file: `${outputPath}/plugins-cmd.d.cts`, format: 'cjs' },
     ],
   },
   // Types: plugins-demo
@@ -324,12 +223,6 @@ const config: RollupOptions[] = [
     ],
     output: [
       { extend: true, file: `${outputPath}/plugins-demo.d.ts`, format: 'esm' },
-      {
-        extend: true,
-        file: `${outputPath}/plugins-demo.d.mts`,
-        format: 'esm',
-      },
-      { extend: true, file: `${outputPath}/plugins-demo.d.cts`, format: 'cjs' },
     ],
   },
   // Types: config
@@ -343,8 +236,6 @@ const config: RollupOptions[] = [
     ],
     output: [
       { extend: true, file: `${outputPath}/config.d.ts`, format: 'esm' },
-      { extend: true, file: `${outputPath}/config.d.mts`, format: 'esm' },
-      { extend: true, file: `${outputPath}/config.d.cts`, format: 'cjs' },
     ],
   },
   // Types: env-overlay
@@ -358,8 +249,6 @@ const config: RollupOptions[] = [
     ],
     output: [
       { extend: true, file: `${outputPath}/env-overlay.d.ts`, format: 'esm' },
-      { extend: true, file: `${outputPath}/env-overlay.d.mts`, format: 'esm' },
-      { extend: true, file: `${outputPath}/env-overlay.d.cts`, format: 'cjs' },
     ],
   },
 
@@ -374,8 +263,6 @@ const config: RollupOptions[] = [
     ],
     output: [
       { extend: true, file: `${outputPath}/plugins.d.ts`, format: 'esm' },
-      { extend: true, file: `${outputPath}/plugins.d.mts`, format: 'esm' },
-      { extend: true, file: `${outputPath}/plugins.d.cts`, format: 'cjs' },
     ],
   },
 

@@ -22,9 +22,7 @@ import process from 'node:process';
 const DIST = 'dist';
 const targets = [
   { file: 'index.mjs', type: 'esm' },
-  { file: 'index.cjs', type: 'cjs' },
   { file: 'cliHost.mjs', type: 'esm' },
-  { file: 'cliHost.cjs', type: 'cjs' },
 ];
 
 const hasCommanderImport = (txt) =>

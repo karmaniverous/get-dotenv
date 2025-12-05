@@ -72,102 +72,62 @@
   "exports": {
     ".": {
       "import": {
-        "types": "./dist/index.d.mts",
+        "types": "./dist/index.d.ts",
         "default": "./dist/index.mjs"
-      },
-      "require": {
-        "types": "./dist/index.d.cts",
-        "default": "./dist/index.cjs"
       }
     },
     "./cliHost": {
       "import": {
-        "types": "./dist/cliHost.d.mts",
+        "types": "./dist/cliHost.d.ts",
         "default": "./dist/cliHost.mjs"
-      },
-      "require": {
-        "types": "./dist/cliHost.d.cts",
-        "default": "./dist/cliHost.cjs"
       }
     },
     "./plugins": {
       "import": {
-        "types": "./dist/plugins.d.mts",
+        "types": "./dist/plugins.d.ts",
         "default": "./dist/plugins.mjs"
-      },
-      "require": {
-        "types": "./dist/plugins.d.cts",
-        "default": "./dist/plugins.cjs"
       }
     },
     "./plugins/aws": {
       "import": {
-        "types": "./dist/plugins-aws.d.mts",
+        "types": "./dist/plugins-aws.d.ts",
         "default": "./dist/plugins-aws.mjs"
-      },
-      "require": {
-        "types": "./dist/plugins-aws.d.cts",
-        "default": "./dist/plugins-aws.cjs"
       }
     },
     "./plugins/batch": {
       "import": {
-        "types": "./dist/plugins-batch.d.mts",
+        "types": "./dist/plugins-batch.d.ts",
         "default": "./dist/plugins-batch.mjs"
-      },
-      "require": {
-        "types": "./dist/plugins-batch.d.cts",
-        "default": "./dist/plugins-batch.cjs"
       }
     },
     "./plugins/init": {
       "import": {
-        "types": "./dist/plugins-init.d.mts",
+        "types": "./dist/plugins-init.d.ts",
         "default": "./dist/plugins-init.mjs"
-      },
-      "require": {
-        "types": "./dist/plugins-init.d.cts",
-        "default": "./dist/plugins-init.cjs"
       }
     },
     "./plugins/cmd": {
       "import": {
-        "types": "./dist/plugins-cmd.d.mts",
+        "types": "./dist/plugins-cmd.d.ts",
         "default": "./dist/plugins-cmd.mjs"
-      },
-      "require": {
-        "types": "./dist/plugins-cmd.d.cts",
-        "default": "./dist/plugins-cmd.cjs"
       }
     },
     "./plugins/demo": {
       "import": {
-        "types": "./dist/plugins-demo.d.mts",
+        "types": "./dist/plugins-demo.d.ts",
         "default": "./dist/plugins-demo.mjs"
-      },
-      "require": {
-        "types": "./dist/plugins-demo.d.cts",
-        "default": "./dist/plugins-demo.cjs"
       }
     },
     "./config": {
       "import": {
-        "types": "./dist/config.d.mts",
+        "types": "./dist/config.d.ts",
         "default": "./dist/config.mjs"
-      },
-      "require": {
-        "types": "./dist/config.d.cts",
-        "default": "./dist/config.cjs"
       }
     },
     "./env/overlay": {
       "import": {
-        "types": "./dist/env-overlay.d.mts",
+        "types": "./dist/env-overlay.d.ts",
         "default": "./dist/env-overlay.mjs"
-      },
-      "require": {
-        "types": "./dist/env-overlay.d.cts",
-        "default": "./dist/env-overlay.cjs"
       }
     }
   },
@@ -190,7 +150,7 @@
     "typescript"
   ],
   "license": "BSD-3-Clause",
-  "main": "dist/index.cjs",
+  "main": "dist/index.mjs",
   "name": "@karmaniverous/get-dotenv",
   "peerDependencies": {
     "esbuild": "*"

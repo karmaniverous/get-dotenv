@@ -78,3 +78,12 @@ When updated: 2025-12-05T00:00:00Z
 
 - Scripts: verify-types overlay chase
   - Updated tools/verify-types.js to follow a single-level re-export in env-overlay.d.ts and validate the target declaration (overlayEnv/programmaticVars).
+
+- Scripts: verify-types star & multi-hop chase
+  - Enhanced re-export handling to detect `export * from` and chase up to two levels to locate overlayEnv and programmaticVars reliably across type bundles.
+
+- Build: ESM-only distribution
+  - Removed CJS JS outputs and .d.mts/.d.cts types from Rollup config; emit ESM and .d.ts only.
+  - Updated package.json exports to ESM-only (removed all "require" maps; import.types -> .d.ts); set main to dist/index.mjs.
+  - Adjusted verify-bundle to check only ESM bundles and verify-tarball to drop index.cjs expectation.
+  - Removed CJS interop test (src/interop/createCli.cjs.test.ts).

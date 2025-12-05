@@ -16,7 +16,6 @@ const normalize = (p) => p.split(path.sep).join('/');
 const expected = [
   // Core dist runtime entries (ESM/CJS + CLI)
   'dist/index.mjs',
-  'dist/index.cjs',
   'dist/cliHost.mjs',
   'dist/plugins.mjs',
   'dist/plugins-aws.mjs',
