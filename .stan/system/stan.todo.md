@@ -95,4 +95,9 @@ When updated: 2025-12-05T00:00:00Z
 
 - TypeDoc: include PluginWithInstanceHelpers
   - Exported PluginWithInstanceHelpers in src/cliHost/definePlugin.ts to remove
-    the “referenced but not included” warning during docs generation.
+    the “referenced but not included” warning during docs generation.
+
+- verify-types: detect typed-const overlayEnv
+  - Broadened overlayEnv detection to match both function declarations and
+    typed-const function types (declare/export const overlayEnv: <...>(...) => ...)
+    in .d.ts outputs, ensuring robust detection after re-export chasing.

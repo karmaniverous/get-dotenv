@@ -118,7 +118,16 @@ const main = async () => {
   }
 
   // Helper: detect overlay declaration and programmaticVars parameter
-  const hasOverlayDecl = (txt) => /overlayEnv\s*(?:<[^>]*>)?\s*\(/.test(txt);
+  const hasOverlayDecl = (txt) => {
+    // Match either:
+    // 1) function declaration: export/declare function overlayEnv<...>(...
+    const reFn =
+      /\b(?:export\s+)?(?:declare\s+)?function\s+overlayEnv\s*(?:<[^>]*>)?\s*\(/;
+    // 2) typed-const function type: export/declare const overlayEnv: <...>(...
+    const reConst =
+      /\b(?:export\s+)?(?:declare\s+)?(?:const|let|var)\s+overlayEnv\s*:\s*(?:<[^>]*>)?\s*\(/;
+    return reFn.test(txt) || reConst.test(txt);
+  };
   const hasProgrammaticParam = (txt) => /programmaticVars\??:/.test(txt);
 
   // Read helper
