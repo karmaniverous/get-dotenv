@@ -20,3 +20,10 @@ void cfg;
 
 // getDotenv with as const vars
 // (getDotenv runtime usage is async, here we just check types)
+async function check() {
+  const vars = { EXTRA: 'val' } as const;
+  const out = await getDotenv({ vars });
+  // out should include EXTRA
+  const _val: 'val' = out.EXTRA;
+}
+void check;

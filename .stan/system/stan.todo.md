@@ -4,9 +4,8 @@ When updated: 2025-12-05T00:00:00Z
 
 ## Next up (near‑term, actionable)
 
-- Final verification and release
-  - Run full suite (typecheck, lint, test, build, verify-types, verify-package).
-  - Ensure no regressions from schema-first refactor.
+- Release verification
+  - Verify tarball/package integrity one last time before merge.
 
 ## Completed (recent)
 
