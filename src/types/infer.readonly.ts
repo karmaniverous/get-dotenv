@@ -24,7 +24,10 @@ void cfg;
 async function check() {
   const vars = { EXTRA: 'val' } as const;
   const out = await getDotenv({ vars });
-  // out should include EXTRA
+  // Verify inference (compiler checks this).
+  // ESLint might flag unsafe access on inferred types in test context; suppress.
+
   const _val: 'val' = out.EXTRA;
+  void _val;
 }
 void check;

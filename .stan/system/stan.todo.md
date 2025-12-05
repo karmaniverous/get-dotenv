@@ -4,9 +4,6 @@ When updated: 2025-12-05T00:00:00Z
 
 ## Next up (near‑term, actionable)
 
-- Release verification
-  - Verify tarball/package integrity one last time before merge.
-
 ## Completed (recent)
 
 **CRITICAL: Append-only list. Add new completed items at the end. Prune old completed entries from the top. Do not edit existing entries.**
