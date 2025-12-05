@@ -1,23 +1,8 @@
 # Development Plan
 
-When updated: 2025-12-04T00:00:00Z
+When updated: 2025-12-05T00:00:00Z
 
 ## Next up (near‑term, actionable)
-
-- Public API cleanup (remove by‑id)
-  - Remove readPluginConfig<T>(cli, id) from cliHost public exports and delete internal usages.
-  - Eliminate any remaining by‑id references in source/tests/docs (including cfg.plugins.<id> in help callbacks).
-
-- Migrate shipped plugins to instance model
-  - aws: replace readPluginConfig and cfg.plugins usage with plugin.readConfig(cli); use plugin.createPluginDynamicOption for dynamic defaults.
-  - batch: same migration as aws (instance‑bound reads; plugin‑bound dynamic help).
-  - cmd: confirm no plugin config; ensure help/alias behavior unaffected.
-  - Tests: update unit/E2E to assert plugin.readConfig(cli) path and plugin‑bound help; remove by‑id assumptions.
-
-- Type/input DX polish (compile‑only)
-  - Broaden inputs: accept Readonly<Record<string, string | undefined>> in dotenvExpandAll and overlayEnv.
-  - Add defineScripts<TShell>() helper (identity) to preserve TShell inference when building script tables in code.
-  - Keep URL accepted only at the outer exec seam; continue to type internal helpers as string | false (no widening).
 
 - Verify and release (major)
   - Update CHANGELOG with a short migration guide:
@@ -81,3 +66,12 @@ When updated: 2025-12-04T00:00:00Z
 
 - Audit: dynamic help parity
   - Re‑verified root and plugin dynamic help labeling remained correct after doc/example updates (unit/E2E continue to pass).
+
+- Public API cleanup (remove by‑id)
+  - Removed readPluginConfig from public exports and eradicated internal/doc usages; plugin.readConfig(cli) is the sole path going forward.
+
+- Shipped plugins migrated to instance model
+  - aws/batch use plugin.readConfig(cli) and plugin‑bound dynamic help; cmd verified (no plugin config); unit/E2E updated accordingly.
+
+- Type/input DX polish (compile‑only)
+  - Broadened readonly inputs for dotenvExpandAll/overlayEnv and added defineScripts<TShell>() helper; URL remains accepted only at the outer exec seam.
