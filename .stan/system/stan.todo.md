@@ -21,6 +21,11 @@ When updated: 2025-12-06T00:00:00Z
 
 **CRITICAL: Append-only list. Add new completed items at the end. Prune old completed entries from the top. Do not edit existing entries.**
 
+- Lint cleanup: unnecessary generics and unused imports
+  - GetDotenvCli: removed TPlugins generics from createDynamicOption overloads
+    and dynamicOption signature; retained TValue parser inference; simplified
+    implementation to avoid generic cast. 
+  - computeContext: removed unused ZodError/ZodType imports to satisfy lints.
 - Typecheck/lint: dynamic option overloads and Zod v4 generics
   - GetDotenvCli: reordered createDynamicOption overloads (base first) and
     added TPlugins generic to typed-parser overload to restore 2‑arg calls and

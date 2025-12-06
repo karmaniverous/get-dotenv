@@ -1,6 +1,6 @@
 import fs from 'fs-extra';
 import path from 'path';
-import { type ZodError, type ZodObject, type ZodType } from 'zod';
+import { type ZodObject } from 'zod';
 
 import { resolveGetDotenvConfigSources } from '../config/loader';
 import { overlayEnv } from '../env/overlay';

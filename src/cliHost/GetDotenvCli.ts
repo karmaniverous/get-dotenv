@@ -161,30 +161,34 @@ export class GetDotenvCli<TOptions extends GetDotenvOptions = GetDotenvOptions>
    * added via addOption().
    */
   // Base overload (parser/default optional; preferred match for 2-arg calls)
-  createDynamicOption<TPlugins = Record<string, unknown>>(
+  createDynamicOption(
     flags: string,
-    desc: (cfg: ResolvedHelpConfig & { plugins: TPlugins }) => string,
+    desc: (
+      cfg: ResolvedHelpConfig & { plugins: Record<string, unknown> },
+    ) => string,
     parser?: (value: string, previous?: unknown) => unknown,
     defaultValue?: unknown,
   ): Option;
-  // Overload: typed parser & default for value inference (preserves plugin typing too)
-  createDynamicOption<TPlugins = Record<string, unknown>, TValue = unknown>(
+  // Overload: typed parser & default for value inference
+  createDynamicOption<TValue = unknown>(
     flags: string,
-    desc: (cfg: ResolvedHelpConfig & { plugins: TPlugins }) => string,
+    desc: (
+      cfg: ResolvedHelpConfig & { plugins: Record<string, unknown> },
+    ) => string,
     parser: (value: string, previous?: TValue) => TValue,
     defaultValue?: TValue,
   ): Option;
   // Implementation
-  createDynamicOption<TPlugins = Record<string, unknown>>(
+  createDynamicOption(
     flags: string,
-    desc: (cfg: ResolvedHelpConfig & { plugins: TPlugins }) => string,
+    desc: (
+      cfg: ResolvedHelpConfig & { plugins: Record<string, unknown> },
+    ) => string,
     parser?: (value: string, previous?: unknown) => unknown,
     defaultValue?: unknown,
   ): Option {
     const opt = new Option(flags, '');
-    // Store dynamic description in a WeakMap, wrapping the generic plugins slice.
-    const wrapped = (c: ResolvedHelpConfig) =>
-      desc(c as ResolvedHelpConfig & { plugins: TPlugins });
+    const wrapped = (c: ResolvedHelpConfig) => desc(c);
     DYN_DESC.set(opt, wrapped);
     if (parser) {
       opt.argParser((value, previous) => parser(value, previous));
@@ -197,19 +201,15 @@ export class GetDotenvCli<TOptions extends GetDotenvOptions = GetDotenvOptions>
    * Chainable helper mirroring .option(), but with a dynamic description.
    * Equivalent to addOption(createDynamicOption(...)).
    */
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters
-  dynamicOption<TPlugins = Record<string, unknown>>(
+  dynamicOption(
     flags: string,
-    desc: (cfg: ResolvedHelpConfig & { plugins: TPlugins }) => string,
+    desc: (
+      cfg: ResolvedHelpConfig & { plugins: Record<string, unknown> },
+    ) => string,
     parser?: (value: string, previous?: unknown) => unknown,
     defaultValue?: unknown,
   ): this {
-    const opt = this.createDynamicOption<TPlugins>(
-      flags,
-      desc,
-      parser,
-      defaultValue,
-    );
+    const opt = this.createDynamicOption(flags, desc, parser, defaultValue);
     this.addOption(opt);
     return this;
   }
