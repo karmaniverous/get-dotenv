@@ -175,4 +175,7 @@ When updated: 2025-12-06T00:00:00Z
   - maybeRunAlias: omit logger before JSON.stringify; wrap in try/catch and only inject getDotenvCliOptions when serialization succeeds to prevent exit 1 on Windows alias path.
 
 - Alias executor: use process.execPath for Node -e path (shell-off)
-  - maybeRunAlias: when command starts with "node -e/--eval", replace the program token with process.execPath to avoid PATH resolution issues on Windows.
+  - maybeRunAlias: when command starts with "node -e/--eval", replace the program token with process.execPath to avoid PATH resolution issues on Windows.
+
+- Lint: remove unnecessary nullish coalescing in alias executor
+  - maybeRunAlias: parts[0] is guaranteed by length guard; drop the "?? ''" fallback to satisfy @typescript-eslint/no-unnecessary-condition.

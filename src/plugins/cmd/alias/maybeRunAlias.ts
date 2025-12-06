@@ -237,7 +237,7 @@ export async function maybeRunAlias(
       parts[2] = stripOne(parts[2] ?? '');
       // Use the current Node binary explicitly to avoid PATH resolution
       // issues on Windows when running shell-off.
-      const prog = parts[0] ?? '';
+      const prog = parts[0];
       const file =
         typeof prog === 'string' && prog.toLowerCase() === 'node'
           ? process.execPath
