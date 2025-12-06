@@ -205,3 +205,9 @@ When updated: 2025-12-06T00:00:00Z
 - Lint: remove unnecessary nullish coalescing in alias E2E
   - src/e2e/alias.termination.test.ts: drop "?? ''" on result.stdout (execa
     types it as string). Keeps all added diagnostics and restores lint green.
+
+- E2E diagnostics: simulate alias transform and log eval details
+  - src/e2e/alias.termination.test.ts: add stripOne (mirrors CLI) and compute
+    simulated eval string from tokenize(aliasPayload). Log the simulated eval,
+    length, quote count, and a regex check for '?? ""' to confirm whether
+    empty-string literals survive alias processing.

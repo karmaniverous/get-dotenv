@@ -3,6 +3,17 @@ import { describe, expect, it } from 'vitest';
 
 import { tokenize } from '../plugins/cmd/tokenize';
 
+// Mirror of the CLI alias executor's peel logic:
+// Strip exactly one symmetric outer quote layer from a string token.
+const stripOne = (s: string) => {
+  if (s.length < 2) return s;
+  const a = s.charAt(0);
+  const b = s.charAt(s.length - 1);
+  const symmetric =
+    (a === '"' && b === '"') || (a === "'" && b === "'");
+  return symmetric ? s.slice(1, -1) : s;
+};
+
 // Windows-only alias termination check with capture enabled.
 // Ensures the alias path (--cmd) terminates and produces the expected output.
 // Timeout is governed by Vitest (see vitest.config.ts testTimeout).
@@ -72,6 +83,25 @@ describe('E2E alias termination (Windows)', () => {
       console.error(
         '[alias-e2e] tokenize(aliasPayload):',
         JSON.stringify(tokens),
+      );
+      // Simulate the CLI alias transform for the code arg:
+      // - tokenize (done above)
+      // - peel one symmetric layer of outer quotes on the code token
+      const codeToken = Array.isArray(tokens) ? (tokens[2] ?? '') : '';
+      const simulatedEval = stripOne(codeToken);
+      const quoteCount = (simulatedEval.match(/"/g) ?? []).length;
+      const hasEmptyLiterals = /\?\?\s*""/.test(simulatedEval);
+      // eslint-disable-next-line no-console
+      console.error(
+        '[alias-e2e] simulatedEval:',
+        JSON.stringify(simulatedEval),
+      );
+      // eslint-disable-next-line no-console
+      console.error(
+        '[alias-e2e] simulatedEval length / quoteCount / has ?? "":',
+        simulatedEval.length,
+        quoteCount,
+        hasEmptyLiterals,
       );
 
       let stdout = '';
