@@ -178,4 +178,7 @@ When updated: 2025-12-06T00:00:00Z
   - maybeRunAlias: when command starts with "node -e/--eval", replace the program token with process.execPath to avoid PATH resolution issues on Windows.
 
 - Lint: remove unnecessary nullish coalescing in alias executor
-  - maybeRunAlias: parts[0] is guaranteed by length guard; drop the "?? ''" fallback to satisfy @typescript-eslint/no-unnecessary-condition.
+  - maybeRunAlias: parts[0] is guaranteed by length guard; drop the "?? ''" fallback to satisfy @typescript-eslint/no-unnecessary-condition.
+
+- Alias executor: revert Node execPath substitution (preserve argv passthrough)
+  - maybeRunAlias: for shell-off "node -e/--eval", pass the tokenized argv unchanged to align with historical behavior.
