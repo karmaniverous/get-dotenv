@@ -83,6 +83,5 @@ describe('E2E alias termination (Windows)', () => {
       // With -r/--exclude-private set, SECRET should be blank.
       expect(obj.SECRET ?? '').toBe('');
     },
-    20000,
   );
 });

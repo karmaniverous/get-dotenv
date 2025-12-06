@@ -168,3 +168,6 @@ When updated: 2025-12-05T00:00:00Z
   - Widen readonly defaults via unknown when passing baseRootOptionDefaults into
     resolveCliOptions generics (help-time path).
   - Escape "\<alias\> v\<version\>" in TSDoc; locally disable tsdoc/syntax in cliCore/GetDotenvCliOptions.ts.
+- Alias converter boundary: compat cast
+  - plugins/cmd/alias.ts: import RootOptionsShapeCompat and cast mergedBag to
+    RootOptionsShapeCompat when calling getDotenvCliOptions2Options.

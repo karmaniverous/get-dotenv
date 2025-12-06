@@ -13,16 +13,20 @@ import type { GetDotenvCliOptions } from '../../cliCore/GetDotenvCliOptions';
 import { baseGetDotenvCliOptions } from '../../cliCore/GetDotenvCliOptions';
 import { resolveCliOptions } from '../../cliCore/resolveCliOptions';
 import { buildSpawnEnv } from '../../cliCore/spawnEnv';
-import type { CommandWithOptions, RootOptionsShape } from '../../cliCore/types';
-import type { ScriptsTable } from '../../cliCore/types';
+import type {
+  CommandWithOptions,
+  RootOptionsShape,
+  ScriptsTable,
+} from '../../cliCore/types';
 import { maybeWarnEntropy } from '../../diagnostics/entropy';
 import { redactTriple } from '../../diagnostics/redact';
 import { dotenvExpandFromProcessEnv } from '../../dotenvExpand';
-import type { Logger } from '../../GetDotenvOptions';
+import type { Logger, RootOptionsShapeCompat } from '../../GetDotenvOptions';
 import { getDotenvCliOptions2Options } from '../../GetDotenvOptions';
 import { resolveCommand, resolveShell } from '../../services/batch/resolve';
 import type { CmdPluginOptions } from './index';
 import { tokenize } from './tokenize';
+
 export const attachParentAlias = (
   cli: GetDotenvCliPublic,
   options: CmdPluginOptions,
@@ -98,7 +102,9 @@ export const attachParentAlias = (
     );
     const mergedBag = merged as unknown as GetDotenvCliOptions;
     const logger: Logger = mergedBag.logger ?? console;
-    const serviceOptions = getDotenvCliOptions2Options(mergedBag);
+    const serviceOptions = getDotenvCliOptions2Options(
+      mergedBag as unknown as RootOptionsShapeCompat,
+    );
     await cli.resolveAndLoad(serviceOptions);
 
     // Normalize alias value.
@@ -227,7 +233,8 @@ export const attachParentAlias = (
       const shellSetting = resolveShell(scripts, input, mergedBag.shell);
 
       let commandArg: string | string[] = resolved;
-      /**       * Special-case: when shell is OFF and no script alias remap occurred
+      /**
+       * Special-case: when shell is OFF and no script alias remap occurred
        * (resolved === input), treat a Node eval payload as an argv array to
        * avoid lossy re-tokenization of the code string.
        *
@@ -339,7 +346,8 @@ export const attachParentAlias = (
     }
   };
 
-  // Execute alias-only invocations whether the root handles the action  // itself (preAction) or Commander routes to a default subcommand (preSubcommand).
+  // Execute alias-only invocations whether the root handles the action
+  // itself (preAction) or Commander routes to a default subcommand (preSubcommand).
   cli.hook(
     'preAction',
     async (thisCommand: Command, _actionCommand: Command) => {

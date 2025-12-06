@@ -38,6 +38,5 @@ describe('E2E quoting (PowerShell)', () => {
       });
       expect(literal.stdout.trim()).toBe('$env:APP_SETTING');
     },
-    20000,
   );
 });
