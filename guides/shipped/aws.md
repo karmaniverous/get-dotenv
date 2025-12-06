@@ -4,7 +4,7 @@ title: aws
 
 # Shipped Plugins: aws
 
-The AWS plugin resolves profile/region and acquires credentials using a safe cascade, writes them to `process.env` (when enabled), and mirrors the results under `ctx.plugins.aws`. It also provides an `aws` subcommand to establish a session and optionally forward to the AWS CLI.
+The AWS plugin resolves profile/region and acquires credentials using a safe cascade, writes them to `process.env`, and mirrors non‑sensitive metadata under `ctx.plugins.aws`. It also provides an `aws` subcommand to establish a session and optionally forward to the AWS CLI.
 
 ## What it does
 
@@ -27,8 +27,8 @@ Resolution precedence:
 
 Effects:
 
-- `setEnv` (default true): write `AWS_REGION` and (if unset) `AWS_DEFAULT_REGION`, plus credentials variables to `process.env`.
-- `addCtx` (default true): mirror `{ profile?, region?, credentials? }` to `ctx.plugins.aws`.
+- Always write `AWS_REGION` and (if unset) `AWS_DEFAULT_REGION`, plus credentials variables to `process.env`.
+- Mirror non‑sensitive metadata only: `{ profile?, region? }` is always published under `ctx.plugins.aws`. Credentials are intentionally not mirrored there; they still flow to child processes via env injection when forwarding.
 
 ## Config (plugins.aws)
 
@@ -45,15 +45,13 @@ Config keys (JSON/YAML/JS/TS under `plugins.aws`):
       "profileFallbackKey": "AWS_PROFILE",
       "regionKey": "AWS_REGION",
       "strategy": "cli-export",
-      "loginOnDemand": true,
-      "setEnv": true,
-      "addCtx": true
+      "loginOnDemand": true
     }
   }
 }
 ```
 
-All fields are optional; defaults favor `cli-export` with `setEnv` and `addCtx` enabled.
+All fields are optional; defaults favor `cli-export`.
 
 ## Subcommand: `aws`
 
@@ -65,7 +63,7 @@ Establish a session and optionally forward to the AWS CLI.
 getdotenv aws --profile dev --region us-east-1
 ```
 
-Writes region/credentials into `process.env` (when `setEnv` is not disabled), mirrors into `ctx.plugins.aws`, and exits 0.
+Writes region/credentials into `process.env`, mirrors `{ profile?, region? }` into `ctx.plugins.aws`, and exits 0.
 
 - Forward to AWS CLI:
 
@@ -145,6 +143,6 @@ export const myAwsAwarePlugin = () => {
 
 ## Notes and caveats
 
-- When `setEnv` is enabled, the plugin ensures `AWS_REGION` is set and copies it to `AWS_DEFAULT_REGION` if that var is unset for broader compatibility.
+- The plugin ensures `AWS_REGION` is set and copies it to `AWS_DEFAULT_REGION` if that var is unset for broader compatibility.
 - SSO login is best‑effort and only triggered when export fails and the profile looks like SSO; static profiles fall back to credential getters.
 - Forwarding respects `--trace` diagnostics and `--capture`; see the Shell and Plugin‑first host guides for details.

@@ -109,11 +109,13 @@ export interface GetDotenvCliPlugin<
  */
 export type PluginWithInstanceHelpers<
   TOptions extends GetDotenvOptions = GetDotenvOptions,
+  TConfig = unknown,
 > = GetDotenvCliPlugin<TOptions> & {
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters
-  readConfig<TCfg>(cli: GetDotenvCliPublic<TOptions>): TCfg | undefined;
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters
-  createPluginDynamicOption<TCfg>(
+  // Default TCfg to the plugin’s TConfig to improve inference at call sites.
+  readConfig<TCfg = TConfig>(
+    cli: GetDotenvCliPublic<TOptions>,
+  ): TCfg | undefined;
+  createPluginDynamicOption<TCfg = TConfig>(
     cli: GetDotenvCliPublic<TOptions>,
     flags: string,
     desc: (
@@ -143,21 +145,22 @@ export type DefineSpec<TOptions extends GetDotenvOptions = GetDotenvOptions> =
  *   .use(childB);
  */
 // Overload carrying a typed config schema (compile-time aid only).
-
 export function definePlugin<
   TOptions extends GetDotenvOptions = GetDotenvOptions,
   TConfig = unknown,
 >(
   spec: DefineSpec<TOptions> & { configSchema?: ZodType<TConfig> },
-): PluginWithInstanceHelpers<TOptions>;
+): PluginWithInstanceHelpers<TOptions, TConfig>;
 // Base overload (no typed config schema)
-
 export function definePlugin<
   TOptions extends GetDotenvOptions = GetDotenvOptions,
 >(spec: DefineSpec<TOptions>): PluginWithInstanceHelpers<TOptions>;
 export function definePlugin<
   TOptions extends GetDotenvOptions = GetDotenvOptions,
->(spec: DefineSpec<TOptions>): PluginWithInstanceHelpers<TOptions> {
+  TConfig = unknown,
+>(
+  spec: DefineSpec<TOptions> & { configSchema?: ZodType<TConfig> },
+): PluginWithInstanceHelpers<TOptions, TConfig> {
   const { children = [], ...rest } = spec;
   // Build base plugin first, then extend with instance-bound helpers.
   const base: GetDotenvCliPlugin<TOptions> = {
@@ -170,30 +173,24 @@ export function definePlugin<
   };
   const extended = base;
   // Instance-bound config accessor
-
   (extended as Required<GetDotenvCliPlugin<TOptions>>).readConfig = function <
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters
-    TConfig,
-  >(_cli: GetDotenvCliPublic<TOptions>): TConfig | undefined {
+    TCfg = TConfig,
+  >(_cli: GetDotenvCliPublic<TOptions>): TCfg | undefined {
     // Config is stored per-plugin-instance by the host (WeakMap in computeContext).
     return _getPluginConfigForInstance(
       extended as unknown as GetDotenvCliPlugin,
-    ) as TConfig | undefined;
+    ) as TCfg | undefined;
   };
   // Plugin-bound dynamic option factory
-
   (
     extended as Required<GetDotenvCliPlugin<TOptions>>
-  ).createPluginDynamicOption = function <
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters
-    TConfig,
-  >(
+  ).createPluginDynamicOption = function <TCfg = TConfig>(
     cli: GetDotenvCliPublic<TOptions>,
     flags: string,
 
     desc: (
       cfg: ResolvedHelpConfig & { plugins: Record<string, unknown> },
-      pluginCfg: TConfig | undefined,
+      pluginCfg: TCfg | undefined,
     ) => string,
     parser?: (value: string, previous?: unknown) => unknown,
     defaultValue?: unknown,
@@ -205,12 +202,12 @@ export function definePlugin<
         // (by-id) so top-level `-h` can render effective defaults before resolve.
         const fromStore = _getPluginConfigForInstance(
           extended as unknown as GetDotenvCliPlugin,
-        ) as TConfig | undefined;
+        ) as TCfg | undefined;
         const id = (extended as { id?: string }).id;
-        let fromBag: TConfig | undefined;
+        let fromBag: TCfg | undefined;
         if (!fromStore && id) {
           const maybe = cfg.plugins[id];
-          if (maybe && typeof maybe === 'object') fromBag = maybe as TConfig;
+          if (maybe && typeof maybe === 'object') fromBag = maybe as TCfg;
         }
         return desc(cfg, fromStore ?? fromBag);
       },
@@ -218,5 +215,5 @@ export function definePlugin<
       defaultValue,
     );
   };
-  return extended as PluginWithInstanceHelpers<TOptions>;
+  return extended as PluginWithInstanceHelpers<TOptions, TConfig>;
 }

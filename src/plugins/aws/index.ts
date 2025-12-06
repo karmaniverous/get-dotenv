@@ -25,7 +25,7 @@ export const awsPlugin = () => {
         .allowUnknownOption(true)
         // Boolean toggles with dynamic help labels (effective defaults)
         .addOption(
-          plugin.createPluginDynamicOption<AwsPluginConfigResolved>(
+          plugin.createPluginDynamicOption(
             cli,
             '--login-on-demand',
             (_bag, cfg) =>
@@ -33,48 +33,16 @@ export const awsPlugin = () => {
           ),
         )
         .addOption(
-          plugin.createPluginDynamicOption<AwsPluginConfigResolved>(
+          plugin.createPluginDynamicOption(
             cli,
             '--no-login-on-demand',
             (_bag, cfg) =>
               `disable sso login on-demand${cfg?.loginOnDemand === false ? ' (default)' : ''}`,
           ),
         )
-        .addOption(
-          plugin.createPluginDynamicOption<AwsPluginConfigResolved>(
-            cli,
-            '--set-env',
-            (_bag, cfg) =>
-              `write resolved values into process.env${cfg?.setEnv !== false ? ' (default)' : ''}`,
-          ),
-        )
-        .addOption(
-          plugin.createPluginDynamicOption<AwsPluginConfigResolved>(
-            cli,
-            '--no-set-env',
-            (_bag, cfg) =>
-              `do not write resolved values into process.env${cfg?.setEnv === false ? ' (default)' : ''}`,
-          ),
-        )
-        .addOption(
-          plugin.createPluginDynamicOption<AwsPluginConfigResolved>(
-            cli,
-            '--add-ctx',
-            (_bag, cfg) =>
-              `mirror results under ctx.plugins.aws${cfg?.addCtx !== false ? ' (default)' : ''}`,
-          ),
-        )
-        .addOption(
-          plugin.createPluginDynamicOption<AwsPluginConfigResolved>(
-            cli,
-            '--no-add-ctx',
-            (_bag, cfg) =>
-              `do not mirror results under ctx.plugins.aws${cfg?.addCtx === false ? ' (default)' : ''}`,
-          ),
-        )
         // Strings / enums
         .addOption(
-          plugin.createPluginDynamicOption<AwsPluginConfigResolved>(
+          plugin.createPluginDynamicOption(
             cli,
             '--profile <string>',
             (_bag, cfg) =>
@@ -82,7 +50,7 @@ export const awsPlugin = () => {
           ),
         )
         .addOption(
-          plugin.createPluginDynamicOption<AwsPluginConfigResolved>(
+          plugin.createPluginDynamicOption(
             cli,
             '--region <string>',
             (_bag, cfg) =>
@@ -90,7 +58,7 @@ export const awsPlugin = () => {
           ),
         )
         .addOption(
-          plugin.createPluginDynamicOption<AwsPluginConfigResolved>(
+          plugin.createPluginDynamicOption(
             cli,
             '--default-region <string>',
             (_bag, cfg) =>
@@ -98,7 +66,7 @@ export const awsPlugin = () => {
           ),
         )
         .addOption(
-          plugin.createPluginDynamicOption<AwsPluginConfigResolved>(
+          plugin.createPluginDynamicOption(
             cli,
             '--strategy <string>',
             (_bag, cfg) =>
@@ -107,7 +75,7 @@ export const awsPlugin = () => {
         )
         // Advanced key overrides
         .addOption(
-          plugin.createPluginDynamicOption<AwsPluginConfigResolved>(
+          plugin.createPluginDynamicOption(
             cli,
             '--profile-key <string>',
             (_bag, cfg) =>
@@ -115,7 +83,7 @@ export const awsPlugin = () => {
           ),
         )
         .addOption(
-          plugin.createPluginDynamicOption<AwsPluginConfigResolved>(
+          plugin.createPluginDynamicOption(
             cli,
             '--profile-fallback-key <string>',
             (_bag, cfg) =>
@@ -123,7 +91,7 @@ export const awsPlugin = () => {
           ),
         )
         .addOption(
-          plugin.createPluginDynamicOption<AwsPluginConfigResolved>(
+          plugin.createPluginDynamicOption(
             cli,
             '--region-key <string>',
             (_bag, cfg) =>
@@ -172,10 +140,6 @@ export const awsPlugin = () => {
             // Map boolean toggles (respect explicit --no-*)
             if (Object.prototype.hasOwnProperty.call(opts, 'loginOnDemand'))
               overlay.loginOnDemand = Boolean(opts.loginOnDemand);
-            if (Object.prototype.hasOwnProperty.call(opts, 'setEnv'))
-              overlay.setEnv = Boolean(opts.setEnv);
-            if (Object.prototype.hasOwnProperty.call(opts, 'addCtx'))
-              overlay.addCtx = Boolean(opts.addCtx);
             // Strings/enums
             if (typeof opts.profile === 'string')
               overlay.profile = opts.profile;
@@ -204,31 +168,27 @@ export const awsPlugin = () => {
               cfg,
             });
 
-            // Apply env/ctx mirrors per toggles
-            if (cfg.setEnv !== false) {
-              if (out.region) {
-                process.env.AWS_REGION = out.region;
-                if (!process.env.AWS_DEFAULT_REGION)
-                  process.env.AWS_DEFAULT_REGION = out.region;
-              }
-              if (out.credentials) {
-                process.env.AWS_ACCESS_KEY_ID = out.credentials.accessKeyId;
-                process.env.AWS_SECRET_ACCESS_KEY =
-                  out.credentials.secretAccessKey;
-                if (out.credentials.sessionToken !== undefined) {
-                  process.env.AWS_SESSION_TOKEN = out.credentials.sessionToken;
-                }
+            // Unconditional env writes (no per-plugin toggle)
+            if (out.region) {
+              process.env.AWS_REGION = out.region;
+              if (!process.env.AWS_DEFAULT_REGION)
+                process.env.AWS_DEFAULT_REGION = out.region;
+            }
+            if (out.credentials) {
+              process.env.AWS_ACCESS_KEY_ID = out.credentials.accessKeyId;
+              process.env.AWS_SECRET_ACCESS_KEY =
+                out.credentials.secretAccessKey;
+              if (out.credentials.sessionToken !== undefined) {
+                process.env.AWS_SESSION_TOKEN = out.credentials.sessionToken;
               }
             }
-            if (cfg.addCtx !== false) {
-              if (ctx) {
-                ctx.plugins ??= {};
-                ctx.plugins['aws'] = {
-                  ...(out.profile ? { profile: out.profile } : {}),
-                  ...(out.region ? { region: out.region } : {}),
-                  ...(out.credentials ? { credentials: out.credentials } : {}),
-                };
-              }
+            // Always publish minimal non-sensitive metadata
+            if (ctx) {
+              ctx.plugins ??= {};
+              ctx.plugins['aws'] = {
+                ...(out.profile ? { profile: out.profile } : {}),
+                ...(out.region ? { region: out.region } : {}),
+              };
             }
 
             // Forward when positional args are present; otherwise session-only.
@@ -275,29 +235,26 @@ export const awsPlugin = () => {
       });
       const { profile, region, credentials } = out;
 
-      if (cfg.setEnv !== false) {
-        if (region) {
-          process.env.AWS_REGION = region;
-          if (!process.env.AWS_DEFAULT_REGION)
-            process.env.AWS_DEFAULT_REGION = region;
-        }
-        if (credentials) {
-          process.env.AWS_ACCESS_KEY_ID = credentials.accessKeyId;
-          process.env.AWS_SECRET_ACCESS_KEY = credentials.secretAccessKey;
-          if (credentials.sessionToken !== undefined) {
-            process.env.AWS_SESSION_TOKEN = credentials.sessionToken;
-          }
+      // Unconditional env writes in host path
+      if (region) {
+        process.env.AWS_REGION = region;
+        if (!process.env.AWS_DEFAULT_REGION)
+          process.env.AWS_DEFAULT_REGION = region;
+      }
+      if (credentials) {
+        process.env.AWS_ACCESS_KEY_ID = credentials.accessKeyId;
+        process.env.AWS_SECRET_ACCESS_KEY = credentials.secretAccessKey;
+        if (credentials.sessionToken !== undefined) {
+          process.env.AWS_SESSION_TOKEN = credentials.sessionToken;
         }
       }
 
-      if (cfg.addCtx !== false) {
-        ctx.plugins ??= {};
-        ctx.plugins['aws'] = {
-          ...(profile ? { profile } : {}),
-          ...(region ? { region } : {}),
-          ...(credentials ? { credentials } : {}),
-        };
-      }
+      // Always publish minimal non-sensitive metadata
+      ctx.plugins ??= {};
+      ctx.plugins['aws'] = {
+        ...(profile ? { profile } : {}),
+        ...(region ? { region } : {}),
+      };
       // Optional: low-noise breadcrumb for diagnostics
       if (process.env.GETDOTENV_DEBUG) {
         log.log('[aws] afterResolve', {

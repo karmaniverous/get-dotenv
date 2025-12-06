@@ -63,4 +63,20 @@ When updated: 2025-12-06T00:00:00Z
 - Converter & aws help DX polish
   - Use omitUndefinedRecord in getDotenvCliOptions2Options to drop undefined
     vars consistently at the boundary.
-  - Switch aws plugin flags to plugin.createPluginDynamicOption so help shows effective defaults.
+  - Switch aws plugin flags to plugin.createPluginDynamicOption so help shows effective defaults.
+
+- AWS plugin: remove set-env option; unconditional env writes + typing DX
+  - Removed --set-env/--no-set-env and the setEnv config key. The plugin now
+    always writes AWS_REGION (+ AWS_DEFAULT_REGION if unset) and credentials to
+    process.env in both afterResolve and the aws subcommand action.
+  - Docs updated to remove setEnv references and reflect unconditional behavior.
+  - Improved plugin DX: createPluginDynamicOption now defaults its type
+    parameter to the plugin’s TConfig, so call sites no longer need to
+    specify the generic (in aws and other plugins).
+
+- AWS plugin defaults and ctx mirror hardening
+  - Removed add-ctx flag and behavior; the plugin now always publishes only
+    non‑sensitive metadata (profile, region) under ctx.plugins.aws.
+  - Tied set-env effective default to the root --load-process (when unset);
+    help text clarifies “(default: follows --load-process)”.
+  - Updated guides/shipped/aws.md to reflect the new behavior and safer mirroring.

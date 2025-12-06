@@ -30,8 +30,6 @@ vi.mock('../../cliCore/exec', () => ({
 const baseCfg: AwsPluginConfigResolved = {
   strategy: 'cli-export',
   loginOnDemand: false,
-  setEnv: true,
-  addCtx: true,
   profileKey: 'AWS_LOCAL_PROFILE',
   profileFallbackKey: 'AWS_PROFILE',
   regionKey: 'AWS_REGION',

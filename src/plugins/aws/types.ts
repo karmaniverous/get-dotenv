@@ -9,8 +9,6 @@ export const AwsPluginConfigSchema = z.object({
   regionKey: z.string().default('AWS_REGION').optional(),
   strategy: z.enum(['cli-export', 'none']).default('cli-export').optional(),
   loginOnDemand: z.boolean().default(false).optional(),
-  setEnv: z.boolean().default(true).optional(),
-  addCtx: z.boolean().default(true).optional(),
 });
 
 export type AwsPluginConfig = z.infer<typeof AwsPluginConfigSchema>;
