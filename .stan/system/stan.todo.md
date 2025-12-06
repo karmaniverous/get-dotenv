@@ -302,3 +302,7 @@ When updated: 2025-12-06T00:00:00Z
   - Replaced manual parent casts to read merged root options with the
     helper readMergedOptions(batchCmd) for shell/scripts lookups across
     all branches; improves clarity and consistency.
+
+- Lint: remove non-null assertion in batch defaultCmdAction
+  - Replaced args[0]! with (args[0] ?? '') when computing the first token
+    under shell-off eval preservation to satisfy no-non-null-assertion.

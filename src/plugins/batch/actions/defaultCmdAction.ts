@@ -162,7 +162,7 @@ export const buildDefaultCmdAction =
     // commands (e.g., "echo OK") keep string form to satisfy unit tests.
     let commandArg: string | string[] = resolved;
     if (shellSetting === false && resolved === input) {
-      const first = args.length > 0 ? args[0]!.toLowerCase() : '';
+      const first = (args[0] ?? '').toLowerCase();
       const hasEval = args.includes('-e') || args.includes('--eval');
       if (first === 'node' && hasEval) {
         commandArg = args.map(String);
