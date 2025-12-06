@@ -9,13 +9,12 @@ Plugins are small modules that register commands and behavior against the plugin
 ## Minimal plugin
 
 ```ts
-import type { GetDotenvCliPublic } from '@karmaniverous/get-dotenv/cliHost';
 import { definePlugin } from '@karmaniverous/get-dotenv/cliHost';
 
 export const helloPlugin = () =>
   definePlugin({
     id: 'hello',
-    setup(cli: GetDotenvCliPublic) {
+    setup(cli) {
       cli
         .ns('hello')
         .description('Say hello')
@@ -31,7 +30,6 @@ export const helloPlugin = () =>
 
 ```ts
 #!/usr/bin/env node
-import type { Command } from 'commander';
 import { GetDotenvCli } from '@karmaniverous/get-dotenv/cliHost';
 import {
   cmdPlugin,
@@ -41,8 +39,8 @@ import {
 } from '@karmaniverous/get-dotenv/plugins';
 import { helloPlugin } from './plugins/hello';
 
-const program: Command = new GetDotenvCli('toolbox');
-await (program as unknown as GetDotenvCli).brand({
+const program = new GetDotenvCli('toolbox');
+await program.brand({
   importMetaUrl: import.meta.url,
   description: 'Toolbox CLI',
 });

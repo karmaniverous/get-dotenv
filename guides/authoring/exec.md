@@ -81,7 +81,7 @@ import { execa } from 'execa';
 export const dockerPlugin = () =>
   definePlugin({
     id: 'docker',
-    setup(cli: GetDotenvCliPublic) {
+    setup(cli) {
       cli
         .ns('docker')
         .argument('[args...]')
@@ -148,7 +148,7 @@ function resolveScript(
 export const runPlugin = () =>
   definePlugin({
     id: 'run',
-    setup(cli: GetDotenvCliPublic) {
+    setup(cli) {
       cli
         .ns('run')
         .argument('[command...]')

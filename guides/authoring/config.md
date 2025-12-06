@@ -62,14 +62,16 @@ export const myPlugin = () => {
       });
     },
   });
-  return plugin;};
+  return plugin;
+};
 ```
 
 ## Typed accessor (DX)
 
 When your plugin declares a config schema, prefer the instance‑bound helper to read the validated slice ergonomically at call sites. The helper is compile‑time only and preserves runtime behavior; the host still validates the interpolated slice against your schema before `afterResolve`.
 
-```tsimport { z } from 'zod';
+```ts
+import { z } from 'zod';
 import { definePlugin } from '@karmaniverous/get-dotenv/cliHost';
 
 export const MyPluginConfig = z.object({
@@ -84,12 +86,13 @@ export const myPlugin = () => {
     configSchema: MyPluginConfig,
     setup(cli) {
       cli.ns('my').action(() => {
-        const cfg = plugin.readConfig<MyPluginConfig>(cli);
+        const cfg = plugin.readConfig(cli);
         // cfg is validated and strings are already interpolated once
       });
     },
   });
-  return plugin;};
+  return plugin;
+};
 ```
 
 ## Plugin-scoped scripts (rare)

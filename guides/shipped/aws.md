@@ -105,13 +105,12 @@ import { awsPlugin } from '@karmaniverous/get-dotenv/plugins';
 Use it with the plugin‑first host:
 
 ```ts
-import type { Command } from 'commander';
 import { GetDotenvCli } from '@karmaniverous/get-dotenv/cliHost';
 import { awsPlugin } from '@karmaniverous/get-dotenv/plugins';
 
-const program: Command = new GetDotenvCli('mycli').use(awsPlugin());
+const program = new GetDotenvCli('mycli').use(awsPlugin());
 
-await (program as unknown as GetDotenvCli).resolveAndLoad();
+await program.resolveAndLoad();
 await program.parseAsync();
 ```
 

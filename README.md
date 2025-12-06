@@ -206,7 +206,6 @@ When you want full control over the command surface, construct a host directly a
 
 ```ts
 #!/usr/bin/env node
-import type { Command } from 'commander';
 import { GetDotenvCli } from '@karmaniverous/get-dotenv/cliHost';
 import {
   cmdPlugin,
@@ -217,8 +216,8 @@ import {
 // import { demoPlugin } from '@karmaniverous/get-dotenv/plugins/demo'; // optional
 // import { helloPlugin } from './plugins/hello'; // your plugin
 
-const program: Command = new GetDotenvCli('mycli');
-await (program as unknown as GetDotenvCli).brand({
+const program = new GetDotenvCli('mycli');
+await program.brand({
   importMetaUrl: import.meta.url,
   description: 'mycli',
 });

@@ -49,6 +49,7 @@ Prefer the named factory to get a small runner with the shipped plugins installe
 ```ts
 #!/usr/bin/env node
 import { createCli } from '@karmaniverous/get-dotenv';
+
 await createCli({ alias: 'toolbox' }).run(process.argv.slice(2));
 ```
 
@@ -81,11 +82,17 @@ npx @karmaniverous/get-dotenv init ./apps/toolbox \
 Notes:
 
 - Collision flow: interactive overwrite/example/skip with “all” variants; CI defaults to skip unless `--force`. See [init](./shipped/init.md).
-- The CLI skeleton wires the plugin‑first host; replace `__CLI_NAME__` tokens with your chosen name.
+- The CLI skeleton wires the plugin‑first host; `__CLI_NAME__` tokens are replaced with your chosen name.
 
----
+Minimal skeleton (DX‑friendly; no explicit types or casts):
 
-Where next:
+```ts
+#!/usr/bin/env node
+import { GetDotenvCli } from '@karmaniverous/get-dotenv/cliHost';
+import { helloPlugin } from './plugins/hello';
 
-- CLI subcommands: [cmd](./shipped/cmd.md), [batch](./shipped/batch.md), [aws](./shipped/aws.md), [init](./shipped/init.md).
-- Deep dives: [Config files and overlays](./config.md), [Shell execution behavior](./shell.md), [Authoring Plugins](./authoring/index.md).
+const program = new GetDotenvCli('__CLI_NAME__').use(helloPlugin());
+
+await program.resolveAndLoad();
+await program.parseAsync();
+```

@@ -73,15 +73,14 @@ getdotenv init ./apps/toolbox \
 - You can edit the scaffolded CLI to install plugins:
 
 ```ts
-import type { Command } from 'commander';
 import { GetDotenvCli } from '@karmaniverous/get-dotenv/cliHost';
 import { batchPlugin } from '@karmaniverous/get-dotenv/plugins/batch';
 import { awsPlugin } from '@karmaniverous/get-dotenv/plugins/aws';
 
-const program: Command = new GetDotenvCli('acme')
+const program = new GetDotenvCli('acme')
   .use(batchPlugin())
   .use(awsPlugin());
 
-await (program as unknown as GetDotenvCli).resolveAndLoad();
+await program.resolveAndLoad();
 await program.parseAsync();
 ```
