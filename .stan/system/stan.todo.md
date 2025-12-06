@@ -195,3 +195,13 @@ When updated: 2025-12-06T00:00:00Z
     and execa timeout/killSignal; rely on Vitest testTimeout from
     vitest.config.ts. Keeps capture ON and preserves existing validation
     of stdout/exitCode.
+
+  - Follow-up fix: actually implement diagnostics and use tokenize to satisfy lint.
+    The test now:
+    - Emits pre-run breadcrumbs used only on failure.
+    - Captures and prints child merged output and execa error summary on failure.
+    - Enables CLI debug with GETDOTENV_DEBUG to trace alias path resolution.
+
+- Lint: remove unnecessary nullish coalescing in alias E2E
+  - src/e2e/alias.termination.test.ts: drop "?? ''" on result.stdout (execa
+    types it as string). Keeps all added diagnostics and restores lint green.

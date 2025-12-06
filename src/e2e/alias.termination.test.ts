@@ -46,13 +46,87 @@ describe('E2E alias termination (Windows)', () => {
       const childEnv = {
         ...process.env,
         GETDOTENV_STDIO: 'pipe',
+        // Enable CLI-internal breadcrumbs on stderr ([getdotenv:alias], [getdotenv:run], etc.).
+        GETDOTENV_DEBUG: '1',
         VITEST_WORKER_ID: undefined,
         GETDOTENV_TEST: undefined,
       } as NodeJS.ProcessEnv;
 
-      const { stdout, exitCode } = await execa(nodeBin, argv, {
-        env: childEnv,
-      });
+      // Pre-run diagnostics (printed only when the test fails due to Vitest
+      // onConsoleLog config): platform, argv, and alias tokenization.
+
+      console.error(
+        '[alias-e2e] node:',
+        process.version,
+        `${process.platform}/${process.arch}`,
+      );
+
+      console.error(
+        '[alias-e2e] argv JSON:',
+        JSON.stringify([nodeBin, ...argv]),
+      );
+
+      console.error('[alias-e2e] aliasPayload:', aliasPayload);
+      const tokens = tokenize(aliasPayload);
+
+      console.error(
+        '[alias-e2e] tokenize(aliasPayload):',
+        JSON.stringify(tokens),
+      );
+
+      let stdout = '';
+      let exitCode = Number.NaN;
+      try {
+        const result = await execa(nodeBin, argv, {
+          env: childEnv,
+          all: true, // capture merged stdout/stderr for breadcrumbs context
+        });
+        stdout = result.stdout;
+        exitCode =
+          typeof result.exitCode === 'number' ? result.exitCode : Number.NaN;
+        if (typeof result.all === 'string' && result.all.trim()) {
+          console.error(
+            '[alias-e2e] child merged output (all):\n' + result.all.trim(),
+          );
+        }
+      } catch (err) {
+        const e = err as {
+          exitCode?: number;
+          signal?: string;
+          timedOut?: boolean;
+          failed?: boolean;
+          killed?: boolean;
+          code?: string;
+          shortMessage?: string;
+          stdout?: string;
+          stderr?: string;
+          all?: string;
+        };
+
+        console.error('[alias-e2e] execa error summary:', {
+          exitCode: e.exitCode,
+          signal: e.signal,
+          timedOut: e.timedOut,
+          failed: e.failed,
+          killed: e.killed,
+          code: e.code,
+        });
+        if (e.shortMessage) {
+          console.error('[alias-e2e] shortMessage:', e.shortMessage);
+        }
+        if (typeof e.stderr === 'string' && e.stderr.trim()) {
+          console.error('[alias-e2e] child stderr:\n' + e.stderr.trim());
+        }
+        if (typeof e.stdout === 'string' && e.stdout.trim()) {
+          console.error('[alias-e2e] child stdout:\n' + e.stdout.trim());
+        }
+        if (typeof e.all === 'string' && e.all.trim()) {
+          console.error(
+            '[alias-e2e] child merged output (all):\n' + e.all.trim(),
+          );
+        }
+        throw err; // preserve failing behavior with added diagnostics
+      }
       expect(exitCode).toBe(0);
 
       const txt = stdout.trim();
