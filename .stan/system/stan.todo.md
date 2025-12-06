@@ -266,3 +266,10 @@ When updated: 2025-12-06T00:00:00Z
   - src/cliCore/exec.ts: flip command union guards to `typeof command === 'string'`
     instead of Array.isArray(command) in both runCommandResult and runCommand,
     preserving readonly argv types and avoiding any[] retyping concerns.
+
+- Lint/typecheck: include templates
+  - ESLint: removed "templates/**" from the global ignores so template JSON/JS/TS
+    are linted (YAML remains unaffected; no YAML plugin required).
+  - TypeScript: removed "templates/**" from tsconfig.json and tsconfig.base.json
+    excludes so templates are typechecked. Path aliases already cover CLI subpaths
+    used in templates, keeping checks robust while avoiding bundling them.

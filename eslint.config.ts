@@ -45,7 +45,6 @@ export default [
       'coverage/**',
       'dist/**',
       'docs/**',
-      'templates/**',
       'node_modules/**',
     ],
   }, // Base JS rules (apply to JS; TS is handled by typed configs below)

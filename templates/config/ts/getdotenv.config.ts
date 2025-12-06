@@ -20,4 +20,4 @@ export default defineGetDotenvConfig<Vars>({
     ENV_TAG: (_vars: Record<string, string | undefined>, env?: string) =>
       env ? `for-${env}` : '',
   },
-});
+});

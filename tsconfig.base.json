@@ -22,6 +22,5 @@
     "target": "esnext",
     "types": ["node"],
     "verbatimModuleSyntax": true
-  },
-  "exclude": ["templates/**"]
+  }
 }
