@@ -1,9 +1,8 @@
+import type { GetDotenvCliPublic } from '@karmaniverous/get-dotenv/cliHost';
+import { readMergedOptions } from '@karmaniverous/get-dotenv/cliHost';
 import type { Command } from 'commander';
 
-import type {
-  definePlugin,
-  GetDotenvCliPublic,
-} from '../../../cliHost/definePlugin';
+import type { definePlugin } from '../../../cliHost/definePlugin';
 import type { Logger } from '../../../GetDotenvOptions';
 import { execShellCommandBatch } from '../../../services/batch/execShellCommandBatch';
 import type { Scripts } from '../../../services/batch/resolve';
@@ -57,16 +56,7 @@ export const buildDefaultCmdAction =
 
     // Resolve scripts/shell with precedence:
     // plugin opts → plugin config → merged root CLI options
-    const mergedBag = ((
-      (batchCmd.parent as
-        | (GetDotenvCliPublic & {
-            getDotenvCliOptions?: {
-              scripts?: Scripts;
-              shell?: string | boolean;
-            };
-          })
-        | null) ?? null
-    )?.getDotenvCliOptions ?? {}) as {
+    const mergedBag = (readMergedOptions(batchCmd) ?? {}) as {
       scripts?: Scripts;
       shell?: string | boolean;
     };
@@ -92,14 +82,7 @@ export const buildDefaultCmdAction =
         return;
       }
       if (raw.list || localList) {
-        const shellBag = ((
-          (batchCmd.parent as
-            | (GetDotenvCliPublic & {
-                getDotenvCliOptions?: { shell?: string | boolean };
-              })
-            | undefined) ?? undefined
-        )?.getDotenvCliOptions ?? {}) as { shell?: string | boolean };
-
+        const bag = readMergedOptions(batchCmd) ?? {};
         await execShellCommandBatch({
           globs,
           ignoreErrors,
@@ -107,7 +90,7 @@ export const buildDefaultCmdAction =
           logger: loggerLocal,
           ...(pkgCwd ? { pkgCwd } : {}),
           rootPath,
-          shell: shell ?? shellBag.shell ?? false,
+          shell: shell ?? bag.shell ?? false,
         });
         return;
       }
@@ -127,14 +110,7 @@ export const buildDefaultCmdAction =
     if (localList && typeof raw.command !== 'string') {
       const extraGlobs = args.map(String).join(' ').trim();
       const mergedGlobs = [globs, extraGlobs].filter(Boolean).join(' ');
-      const shellBag = ((
-        (batchCmd.parent as
-          | (GetDotenvCliPublic & {
-              getDotenvCliOptions?: { shell?: string | boolean };
-            })
-          | undefined) ?? undefined
-      )?.getDotenvCliOptions ?? {}) as { shell?: string | boolean };
-
+      const bag = readMergedOptions(batchCmd) ?? {};
       await execShellCommandBatch({
         globs: mergedGlobs,
         ignoreErrors,
@@ -142,7 +118,7 @@ export const buildDefaultCmdAction =
         logger: loggerLocal,
         ...(pkgCwd ? { pkgCwd } : {}),
         rootPath,
-        shell: shell ?? shellBag.shell ?? false,
+        shell: shell ?? bag.shell ?? false,
       });
       return;
     }
@@ -152,13 +128,7 @@ export const buildDefaultCmdAction =
     if (listFromParent && args.length > 0 && typeof raw.command !== 'string') {
       const extra = args.map(String).join(' ').trim();
       const mergedGlobs = [globs, extra].filter(Boolean).join(' ');
-      const mergedBag2 = ((
-        (batchCmd.parent as
-          | (GetDotenvCliPublic & {
-              getDotenvCliOptions?: { shell?: string | boolean };
-            })
-          | undefined) ?? undefined
-      )?.getDotenvCliOptions ?? {}) as { shell?: string | boolean };
+      const bag = readMergedOptions(batchCmd) ?? {};
       await execShellCommandBatch({
         globs: mergedGlobs,
         ignoreErrors,
@@ -166,10 +136,7 @@ export const buildDefaultCmdAction =
         logger: loggerLocal,
         ...(pkgCwd ? { pkgCwd } : {}),
         rootPath,
-        shell: (shell ?? mergedBag2.shell ?? false) as unknown as
-          | string
-          | boolean
-          | URL,
+        shell: shell ?? bag.shell ?? false,
       });
       return;
     }
@@ -185,21 +152,9 @@ export const buildDefaultCmdAction =
         | undefined) ?? undefined
     )?.getDotenvCliOptions;
 
-    const mergedExec = ((
-      (batchCmd.parent as
-        | (GetDotenvCliPublic & {
-            getDotenvCliOptions?: {
-              scripts?: Scripts;
-              shell?: string | boolean;
-            };
-          })
-        | undefined) ?? undefined
-    )?.getDotenvCliOptions ?? {}) as {
-      scripts?: Scripts;
-      shell?: string | boolean;
-    };
-    const scriptsExec = scripts ?? mergedExec.scripts;
-    const shellExec = shell ?? mergedExec.shell;
+    const bag = readMergedOptions(batchCmd) ?? {};
+    const scriptsExec = scripts ?? bag.scripts;
+    const shellExec = shell ?? bag.shell;
     const resolved = resolveCommand(scriptsExec, input);
     const shellSetting = resolveShell(scriptsExec, input, shellExec);
     // Preserve argv array only for shell-off Node -e snippets to avoid
@@ -207,7 +162,7 @@ export const buildDefaultCmdAction =
     // commands (e.g., "echo OK") keep string form to satisfy unit tests.
     let commandArg: string | string[] = resolved;
     if (shellSetting === false && resolved === input) {
-      const first = (args[0] ?? '').toLowerCase();
+      const first = args.length > 0 ? args[0]!.toLowerCase() : '';
       const hasEval = args.includes('-e') || args.includes('--eval');
       if (first === 'node' && hasEval) {
         commandArg = args.map(String);

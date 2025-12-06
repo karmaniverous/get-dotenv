@@ -296,4 +296,9 @@ When updated: 2025-12-06T00:00:00Z
   - src/getDotenv.ts: changed {@link GetDotenvOptions.loadProcess} and
     {@link GetDotenvOptions.outputPath} to {@link GetDotenvOptions | loadProcess}
     and {@link GetDotenvOptions | outputPath}.
-  - src/GetDotenvOptions.ts: replaced {@link customOptions} with plain text.
+  - src/GetDotenvOptions.ts: replaced {@link customOptions} with plain text.
+
+- Batch: use readMergedOptions in defaultCmdAction
+  - Replaced manual parent casts to read merged root options with the
+    helper readMergedOptions(batchCmd) for shell/scripts lookups across
+    all branches; improves clarity and consistency.
