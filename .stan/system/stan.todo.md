@@ -87,3 +87,4 @@ When updated: 2025-12-06T00:00:00Z
   - Tied set-env effective default to the root --load-process (when unset);
     help text clarifies “(default: follows --load-process)”.
   - Updated guides/shipped/aws.md to reflect the new behavior and safer mirroring.
+- Typecheck: fix duplicate 'desc' param in definePlugin.createPluginDynamicOption implementation (TS2300/TS2322).
