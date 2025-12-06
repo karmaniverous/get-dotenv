@@ -90,13 +90,13 @@ export async function runCommandResult(
   if (shell === false) {
     let file: string | undefined;
     let args: string[] = [];
-    if (Array.isArray(command)) {
-      file = command[0];
-      args = command.slice(1).map(stripOuterQuotes);
-    } else {
-      const tokens = tokenize(command as string);
+    if (typeof command === 'string') {
+      const tokens = tokenize(command);
       file = tokens[0];
       args = tokens.slice(1);
+    } else {
+      file = command[0];
+      args = command.slice(1).map(stripOuterQuotes);
     }
     if (!file) return { exitCode: 0, stdout: '', stderr: '' };
 
@@ -120,9 +120,8 @@ export async function runCommandResult(
       return out;
     }
   } else {
-    const commandStr: string = Array.isArray(command)
-      ? command.join(' ')
-      : (command as string);
+    const commandStr: string =
+      typeof command === 'string' ? command : command.join(' ');
     dbg('exec:capture (shell)', {
       command: commandStr,
       shell: typeof shell === 'string' ? shell : 'custom',
@@ -179,13 +178,13 @@ export async function runCommand(
   if (shell === false) {
     let file: string | undefined;
     let args: string[] = [];
-    if (Array.isArray(command)) {
-      file = command[0];
-      args = command.slice(1).map(stripOuterQuotes);
-    } else {
-      const tokens = tokenize(command as string);
+    if (typeof command === 'string') {
+      const tokens = tokenize(command);
       file = tokens[0];
       args = tokens.slice(1);
+    } else {
+      file = command[0];
+      args = command.slice(1).map(stripOuterQuotes);
     }
     if (!file) return 0;
     dbg('exec (plain)', { file, args, stdio: opts.stdio });
@@ -200,27 +199,25 @@ export async function runCommand(
     if (envSan !== undefined) plainOpts.env = envSan;
     if (opts.stdio !== undefined) plainOpts.stdio = opts.stdio;
 
-    const result = await execa(
-      file,
-      args,
-      plainOpts as {
-        cwd?: string | URL;
-        env?: Readonly<Partial<Record<string, string>>>;
-        stdio?: 'inherit' | 'pipe';
-      },
+    const ok = pickResult(
+      (await execa(
+        file,
+        args,
+        plainOpts as {
+          cwd?: string | URL;
+          env?: Readonly<Partial<Record<string, string>>>;
+          stdio?: 'inherit' | 'pipe';
+        },
+      )) as unknown,
     );
-    if (opts.stdio === 'pipe' && result.stdout) {
-      process.stdout.write(
-        result.stdout + (result.stdout.endsWith('\n') ? '' : '\n'),
-      );
+    if (opts.stdio === 'pipe' && ok.stdout) {
+      process.stdout.write(ok.stdout + (ok.stdout.endsWith('\n') ? '' : '\n'));
     }
-    const exit = (result as { exitCode?: unknown } | undefined)?.exitCode;
-    dbg('exit (plain)', { exitCode: exit });
-    return typeof exit === 'number' ? exit : Number.NaN;
+    dbg('exit (plain)', { exitCode: ok.exitCode });
+    return typeof ok.exitCode === 'number' ? ok.exitCode : Number.NaN;
   } else {
-    const commandStr: string = Array.isArray(command)
-      ? command.join(' ')
-      : (command as string);
+    const commandStr: string =
+      typeof command === 'string' ? command : command.join(' ');
     dbg('exec (shell)', {
       shell: typeof shell === 'string' ? shell : 'custom',
       stdio: opts.stdio,
@@ -237,21 +234,21 @@ export async function runCommand(
     if (envSan !== undefined) shellOpts.env = envSan;
     if (opts.stdio !== undefined) shellOpts.stdio = opts.stdio;
 
-    const result = await execaCommand(
-      commandStr,
-      shellOpts as {
-        cwd?: string | URL;
-        shell: string | boolean | URL;
-        env?: Readonly<Partial<Record<string, string>>>;
-        stdio?: 'inherit' | 'pipe';
-      },
+    const ok = pickResult(
+      (await execaCommand(
+        commandStr,
+        shellOpts as {
+          cwd?: string | URL;
+          shell: string | boolean | URL;
+          env?: Readonly<Partial<Record<string, string>>>;
+          stdio?: 'inherit' | 'pipe';
+        },
+      )) as unknown,
     );
-    const out = (result as { stdout?: string } | undefined)?.stdout;
-    if (opts.stdio === 'pipe' && out) {
-      process.stdout.write(out + (out.endsWith('\n') ? '' : '\n'));
+    if (opts.stdio === 'pipe' && ok.stdout) {
+      process.stdout.write(ok.stdout + (ok.stdout.endsWith('\n') ? '' : '\n'));
     }
-    const exit = (result as { exitCode?: unknown } | undefined)?.exitCode;
-    dbg('exit (shell)', { exitCode: exit });
-    return typeof exit === 'number' ? exit : Number.NaN;
+    dbg('exit (shell)', { exitCode: ok.exitCode });
+    return typeof ok.exitCode === 'number' ? ok.exitCode : Number.NaN;
   }
 }
