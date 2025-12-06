@@ -13,7 +13,6 @@ import { validateEnvAgainstSources } from '../config/validate';
 import type { RootOptionsShapeCompat } from '../GetDotenvOptions';
 import { getDotenvCliOptions2Options } from '../GetDotenvOptions';
 import { attachRootOptions as attachRootOptionsBuilder } from './attachRootOptions';
-import type { ResolvedHelpConfig } from './GetDotenvCli';
 import { GetDotenvCli as BaseGetDotenvCli } from './GetDotenvCli';
 import { toHelpConfig } from './helpConfig';
 

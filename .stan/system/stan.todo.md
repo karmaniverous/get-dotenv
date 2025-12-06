@@ -54,4 +54,8 @@ When updated: 2025-12-06T00:00:00Z
     filters for exactOptionalPropertyTypes).
   - Added cliHost/helpConfig.toHelpConfig and updated host hooks and createCli()
     help path to centralize help‑bag construction for dynamic option evaluation,
-    reducing inline casts while keeping types precise.
+    reducing inline casts while keeping types precise.
+
+- Typecheck/lint follow‑through (omitUndefined boundary & unused import)
+  - Made Zod-parse boundary explicit in computeContext so omitUndefined preserves
+    the GetDotenvOptions overlay; removed an unused type import in cliHost/index.ts.

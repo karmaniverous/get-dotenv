@@ -55,7 +55,11 @@ export const computeContext = async <
   hostMetaUrl: string,
 ): Promise<GetDotenvCliCtx<TOptions>> => {
   const optionsResolved = await resolveGetDotenvOptions(customOptions);
-  const validated = getDotenvOptionsSchemaResolved.parse(optionsResolved);
+  // Zod boundary: parse returns the schema-derived shape; we adopt our public
+  // GetDotenvOptions overlay (logger/dynamic typing) for internal processing.
+  const validated = getDotenvOptionsSchemaResolved.parse(
+    optionsResolved,
+  ) as unknown as GetDotenvOptions;
   // Always-on loader path
   // 1) Base from files only (no dynamic, no programmatic vars)
   // Sanitize to avoid passing properties explicitly set to undefined.
