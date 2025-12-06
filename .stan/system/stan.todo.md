@@ -278,3 +278,11 @@ When updated: 2025-12-06T00:00:00Z
   - templates/cli/ts/plugins/hello.ts: wrap keys.length in String(...) inside
     template literals to satisfy @typescript-eslint/restrict-template-expressions
     after enabling linting on templates.
+
+- Docs: quick-start and npx fix
+  - README.md: added a compact Quick Start with zero‑install one‑off, scaffold,
+    and install steps; updated all CLI examples to use
+    `npx @karmaniverous/get-dotenv` for copy‑paste readiness and added a
+    Windows/PowerShell one‑off variant.
+  - guides/getting-started.md: mirrored the npx fix in on‑ramp examples so they
+    run as‑is without prior installation.

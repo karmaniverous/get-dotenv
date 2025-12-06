@@ -11,7 +11,7 @@ This page gives you four fast on‑ramps. Each section includes a minimal snippe
 Use the parent alias so flags apply to getdotenv, not the inner command. Prefer single quotes to avoid outer‑shell expansion.
 
 ```bash
-getdotenv -c 'node -e "console.log(process.env.APP_SETTING ?? \"\")"'
+npx @karmaniverous/get-dotenv -c 'node -e "console.log(process.env.APP_SETTING ?? \"\")"'
 ```
 
 Tips:
@@ -62,8 +62,8 @@ Notes:
 Use `init` to copy templates and a host‑based CLI skeleton into your project.
 
 ```bash
-# JSON config + .local variant, and a CLI skeleton named "acme"
-npx getdotenv init . \
+# JSON config + .local + CLI named "acme"
+npx @karmaniverous/get-dotenv init . \
   --config-format json \
   --with-local \
   --cli-name acme \
@@ -73,7 +73,7 @@ npx getdotenv init . \
 or a TypeScript config with dynamic examples:
 
 ```bash
-npx getdotenv init ./apps/toolbox \
+npx @karmaniverous/get-dotenv init ./apps/toolbox \
   --config-format ts \
   --cli-name toolbox
 ```

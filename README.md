@@ -60,20 +60,45 @@ When you plug your own [`commander`](https://www.npmjs.com/package/commander) CL
 
 - Node.js >= 20 (this repository pins 22.19.0 for CI/reproducibility)
 
+## Quick Start
+
+- Zero‑install one‑off command with your env (POSIX):
+
+  ```
+  npx @karmaniverous/get-dotenv -c 'node -e "console.log(process.env.APP_SETTING ?? \"\")"'
+  ```
+
+  Windows/PowerShell:
+
+  ```
+  npx @karmaniverous/get-dotenv -c 'node -e "console.log(process.env.APP_SETTING ?? \"\")"'
+  ```
+
+- Scaffold config and a CLI skeleton (JSON config + .local + CLI “acme”):
+
+  ```
+  npx @karmaniverous/get-dotenv init . \
+    --config-format json \
+    --with-local \
+    --cli-name acme \
+    --force
+  ```
+
+- Install (for programmatic use and local scripts):
+  ```
+  npm install @karmaniverous/get-dotenv
+  ```
+
 ## Getting Started
 
-- One‑off CLI with your env: `getdotenv -c 'node -e "console.log(process.env.APP_SETTING ?? \"\")"'` — see [Shell execution behavior](./guides/shell.md) and [cmd plugin](./guides/shipped/cmd.md).
+- One‑off CLI with your env: `npx @karmaniverous/get-dotenv -c 'node -e "console.log(process.env.APP_SETTING ?? \"\")"'` — see [Shell execution behavior](./guides/shell.md) and [cmd plugin](./guides/shipped/cmd.md).
 - Programmatic load: `const vars = await getDotenv({ env: 'dev', paths: ['./'] });` — see [Config files and overlays](./guides/config.md).
 - Embed a CLI quickly: use [createCli](#cli-embedding-createcli), or wire a [custom host](#custom-host-wire-plugins) to choose plugins.
-- Scaffold config and a CLI skeleton: `npx getdotenv init . --config-format json --with-local --cli-name acme` — see [init plugin](./guides/shipped/init.md).
+- Scaffold config and a CLI skeleton: `npx @karmaniverous/get-dotenv init . --config-format json --with-local --cli-name acme` — see [init plugin](./guides/shipped/init.md).
 
 ## API Reference
 
-Generated API documentation is hosted at:
-
-- https://docs.karmanivero.us/get-dotenv
-
-The site is built with TypeDoc from the source code in this repository.
+[API documentation](https://docs.karmanivero.us/get-dotenv) is built with TypeDoc from the source code in this repository.
 
 ## Testing
 
@@ -97,7 +122,7 @@ Examples:
 
 ```bash
 # JSON config + .local variant, and a CLI skeleton named "acme"
-npx getdotenv init . \
+npx @karmaniverous/get-dotenv init . \
   --config-format json \
   --with-local \
   --cli-name acme \
@@ -106,7 +131,7 @@ npx getdotenv init . \
 
 ```bash
 # TypeScript config with a dynamic example; CLI named "toolbox"
-npx getdotenv init ./apps/toolbox \
+npx @karmaniverous/get-dotenv init ./apps/toolbox \
   --config-format ts \
   --cli-name toolbox
 ```
@@ -409,7 +434,8 @@ Diagnostics and CI capture:
 - [Shipped Plugins](./guides/shipped/index.md) - The get‑dotenv host ships a small set of plugins that cover needs.
 
 Note: Dynamic option descriptions and help‑time default labels are documented under [Authoring Plugins → Lifecycle](./guides/authoring/lifecycle.md) (plugin‑bound createPluginDynamicOption), [Config files and overlays](./guides/config.md) (plugin config), and [Shell execution behavior](./guides/shell.md) (dynamic defaults).
-
 The guides are also included in the [hosted API docs](https://docs.karmanivero.us/get-dotenv).
+
+---
 
 See more great templates & tools on [my GitHub Profile](https://github.com/karmaniverous)!
