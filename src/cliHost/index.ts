@@ -18,6 +18,15 @@ import { toHelpConfig } from './helpConfig';
 
 export type { DefineSpec, GetDotenvCliPlugin } from './definePlugin';
 export type { GetDotenvCliPublic } from './definePlugin';
+export type { PluginWithInstanceHelpers } from './definePlugin';
+/**
+ * Infer the compile-time plugin config type from a plugin instance created by definePlugin.
+ * Returns a deeply readonly view to discourage mutation at call sites.
+ */
+export type InferPluginConfig<P> =
+  P extends import('./definePlugin').PluginWithInstanceHelpers<any, infer C>
+    ? Readonly<C>
+    : never;
 export { definePlugin } from './definePlugin';
 export type { GetDotenvCliCtx } from './GetDotenvCli';
 // Downstream-friendly type re-exports (single import path)

@@ -31,6 +31,16 @@ export {
   type ProcessEnv,
 } from './GetDotenvOptions';
 export { interpolateDeep } from './util/interpolateDeep';
+// Flattened exports for plugin author ergonomics
+export type {
+  GetDotenvCliOptions,
+  GetDotenvCliPlugin,
+  GetDotenvCliPublic,
+  PluginWithInstanceHelpers,
+  ScriptsTable,
+} from './cliHost';
+export type { InferPluginConfig } from './cliHost';
+export { definePlugin, GetDotenvCli, readMergedOptions } from './cliHost';
 
 /**
  * Create a get-dotenv CLI host with included plugins.

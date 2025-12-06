@@ -106,3 +106,12 @@ When updated: 2025-12-06T00:00:00Z
     parameter non-optional to align with public type; resolves TS2322.
   - Remove redundant “?? {}” after readConfig in aws and batch to satisfy
     @typescript-eslint/no-unnecessary-condition.
+- Plugin config DX: strict default schema + readonly surfaces + barrels
+  - definePlugin now injects a strict empty Zod object schema
+    (z.object({}).strict()) when no configSchema is provided, so “no-config”
+    plugins fail fast on unknown keys and still receive {} at runtime.
+  - readConfig(cli) returns Readonly<TConfig>; plugin-bound dynamic option
+    callbacks receive pluginCfg: Readonly<TConfig>. WeakMap continues to
+    store concrete objects.
+  - Added InferPluginConfig<P> helper and re-exported it (and
+    PluginWithInstanceHelpers) from cliHost and the top-level index to flatten imports.

@@ -8,7 +8,7 @@
 
 // Optional per-plugin config validation (host validates when loader is enabled).
 import type { Command, Option } from 'commander';
-import type { ZodType } from 'zod';
+import { z, type ZodType } from 'zod';
 
 import type { GetDotenvOptions } from '../GetDotenvOptions';
 import { _getPluginConfigForInstance } from './computeContext';
@@ -92,13 +92,13 @@ export type PluginWithInstanceHelpers<
   TConfig = unknown,
 > = GetDotenvCliPlugin<TOptions> & {
   // Default TCfg to the plugin’s TConfig to improve inference at call sites.
-  readConfig<TCfg = TConfig>(cli: GetDotenvCliPublic<TOptions>): TCfg;
+  readConfig<TCfg = TConfig>(cli: GetDotenvCliPublic<TOptions>): Readonly<TCfg>;
   createPluginDynamicOption<TCfg = TConfig>(
     cli: GetDotenvCliPublic<TOptions>,
     flags: string,
     desc: (
       cfg: ResolvedHelpConfig & { plugins: Record<string, unknown> },
-      pluginCfg: TCfg,
+      pluginCfg: Readonly<TCfg>,
     ) => string,
     parser?: (value: string, previous?: unknown) => unknown,
     defaultValue?: unknown,
@@ -140,9 +140,17 @@ export function definePlugin<
   spec: DefineSpec<TOptions> & { configSchema?: ZodType<TConfig> },
 ): PluginWithInstanceHelpers<TOptions, TConfig> {
   const { children = [], ...rest } = spec;
+  // Default to a strict empty-object schema so “no config” plugins fail fast
+  // on unknown keys and provide a concrete {} at runtime.
+  const normalizedSchema =
+    (spec as { configSchema?: ZodType<TConfig> }).configSchema ??
+    z.object({}).strict();
   // Build base plugin first, then extend with instance-bound helpers.
   const base: GetDotenvCliPlugin<TOptions> = {
     ...rest,
+    // Always carry a schema (strict empty by default) to simplify host logic
+    // and improve inference/ergonomics for plugin authors.
+    configSchema: normalizedSchema as unknown as ZodType,
     children: [...children],
     use(child) {
       this.children.push(child);
@@ -153,7 +161,7 @@ export function definePlugin<
   const extended = base as PluginWithInstanceHelpers<TOptions, TConfig>;
   extended.readConfig = function <TCfg = TConfig>(
     _cli: GetDotenvCliPublic<TOptions>,
-  ): TCfg {
+  ): Readonly<TCfg> {
     // Config is stored per-plugin-instance by the host (WeakMap in computeContext).
     const value = _getPluginConfigForInstance(
       extended as unknown as GetDotenvCliPlugin,
@@ -164,7 +172,7 @@ export function definePlugin<
         'Plugin config not available. Ensure resolveAndLoad() has been called before readConfig().',
       );
     }
-    return value as TCfg;
+    return value as Readonly<TCfg>;
   };
   // Plugin-bound dynamic option factory
   extended.createPluginDynamicOption = function <TCfg = TConfig>(
@@ -184,12 +192,13 @@ export function definePlugin<
         // (by-id) so top-level `-h` can render effective defaults before resolve.
         const fromStore = _getPluginConfigForInstance(
           extended as unknown as GetDotenvCliPlugin,
-        ) as TCfg | undefined;
+        ) as Readonly<TCfg> | undefined;
         const id = (extended as { id?: string }).id;
-        let fromBag: TCfg | undefined;
+        let fromBag: Readonly<TCfg> | undefined;
         if (!fromStore && id) {
           const maybe = cfg.plugins[id];
-          if (maybe && typeof maybe === 'object') fromBag = maybe as TCfg;
+          if (maybe && typeof maybe === 'object')
+            fromBag = maybe as unknown as Readonly<TCfg>;
         }
         // Always provide a concrete object to dynamic callbacks:
         // - With a schema: computeContext stores the parsed object.
@@ -197,7 +206,7 @@ export function definePlugin<
         // - Help-time fallback: coalesce to {} when only a by-id bag exists.
         // Localized cast justified: TCfg is compile-time only (DX), {} is a safe
         // neutral object for optional shapes.
-        const cfgVal = (fromStore ?? fromBag ?? {}) as TCfg;
+        const cfgVal = (fromStore ?? fromBag ?? {}) as Readonly<TCfg>;
         return desc(cfg, cfgVal);
       },
       parser,
