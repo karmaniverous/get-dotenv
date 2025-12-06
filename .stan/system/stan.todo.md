@@ -24,7 +24,7 @@ When updated: 2025-12-06T00:00:00Z
 - Lint cleanup: unnecessary generics and unused imports
   - GetDotenvCli: removed TPlugins generics from createDynamicOption overloads
     and dynamicOption signature; retained TValue parser inference; simplified
-    implementation to avoid generic cast. 
+    implementation to avoid generic cast.
   - computeContext: removed unused ZodError/ZodType imports to satisfy lints.
 - Typecheck/lint: dynamic option overloads and Zod v4 generics
   - GetDotenvCli: reordered createDynamicOption overloads (base first) and
@@ -33,7 +33,7 @@ When updated: 2025-12-06T00:00:00Z
   - computeContext/definePlugin: updated ZodObject typing for Zod v4 (removed
     legacy multi‑generic), replaced ZodTypeAny with ZodType, and localized
     ESLint suppressions around safeParse error handling to satisfy
-    no‑unsafe‑* rules without broad disables. Added file‑level tsdoc/syntax
+    no‑unsafe‑\* rules without broad disables. Added file‑level tsdoc/syntax
     suppression for the example block in definePlugin.
 - Requirements/doc: typed env, config builder, Zod canonical options, loader flag removal
   - Updated stan.requirements.md to document:
@@ -152,3 +152,18 @@ When updated: 2025-12-06T00:00:00Z
   - src/GetDotenvOptions.ts: add compile-only
     InferGetDotenvVarsFromConfig<T> to derive Vars from a typed config.
   - Avoided use of any; used ZodTypeAny/unknown where necessary.
+
+- Decompose large modules and fix template lint
+  - cliHost/GetDotenvCli: moved to folder; extracted dynamic option helpers
+    (dynamicOptions.ts) and grouped help renderer (groups.ts). Class now
+    delegates to helpers via index.ts; behavior unchanged.
+  - plugins/cmd/alias: moved to folder; extracted alias-only executor into
+    maybeRunAlias.ts; index.ts wires hooks and delegates. Behavior unchanged.
+  - templates/cli/ts/plugins/hello.ts: use Object.keys(ctx?.dotenv ?? {}) to
+    avoid potential lint/type noise; templates remain ignored by default ESLint.
+
+- Alias decomposition follow-up: type/lint fix
+  - maybeRunAlias: remove invalid import of omitUndefinedRecord from
+    GetDotenvOptions; use resolveCliOptions<RootOptionsShape & { scripts?: ScriptsTable }>
+    and call opts() without optional chain; precompute expanded to avoid
+    unnecessary nullish coalescing.

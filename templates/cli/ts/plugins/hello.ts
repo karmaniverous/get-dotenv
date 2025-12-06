@@ -26,7 +26,7 @@ export const helloPlugin = () => {
           const ctx = cli.getCtx();
           const name = '__CLI_NAME__';
           const cfg = plugin.readConfig(cli);
-          const keys = Object.keys(ctx?.dotenv ?? []);
+          const keys = Object.keys(ctx?.dotenv ?? {});
           const label =
             cfg.loud === true
               ? `[${name}] DOTENV KEYS (${keys.length}):`
@@ -36,4 +36,4 @@ export const helloPlugin = () => {
     },
   });
   return plugin;
-};
+};

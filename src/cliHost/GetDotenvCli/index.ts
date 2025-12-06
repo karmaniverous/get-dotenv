@@ -1,28 +1,29 @@
-import { Command, Option } from 'commander';
+import type { Option } from 'commander';
+import { Command } from 'commander';
 import fs from 'fs-extra';
 import { packageDirectory } from 'package-directory';
 import { fileURLToPath } from 'url';
 
-import type { GetDotenvCliOptions } from '../cliCore/GetDotenvCliOptions';
-import type { ProcessEnv } from '../GetDotenvOptions';
-// NOTE: host class kept thin; heavy context computation lives in computeContext.
+import type { GetDotenvCliOptions } from '../../cliCore/GetDotenvCliOptions';
+import type { ProcessEnv } from '../../GetDotenvOptions';
 import {
   type GetDotenvOptions,
   resolveGetDotenvOptions,
-} from '../GetDotenvOptions';
-import { getDotenvOptionsSchemaResolved } from '../schema/getDotenvOptions';
-import { computeContext } from './computeContext';
-import type { GetDotenvCliPlugin, GetDotenvCliPublic } from './definePlugin';
-
-// Host-owned metadata stores (no Commander mutation).
-const DYN_DESC = new WeakMap<Option, (cfg: ResolvedHelpConfig) => string>();
-const GROUP_TAG = new WeakMap<Option, string>();
+} from '../../GetDotenvOptions';
+import { getDotenvOptionsSchemaResolved } from '../../schema/getDotenvOptions';
+import { computeContext } from '../computeContext';
+import type { GetDotenvCliPlugin, GetDotenvCliPublic } from '../definePlugin';
+import {
+  evaluateDynamicOptions as evalDyn,
+  makeDynamicOption,
+} from './dynamicOptions';
+import { GROUP_TAG, renderOptionGroups } from './groups';
 
 export type ResolvedHelpConfig = Partial<GetDotenvCliOptions> & {
   plugins: Record<string, unknown>;
 };
 
-/** * Per-invocation context shared with plugins and actions. */
+/** Per-invocation context shared with plugins and actions. */
 export type GetDotenvCliCtx<
   TOptions extends GetDotenvOptions = GetDotenvOptions,
 > = {
@@ -31,6 +32,7 @@ export type GetDotenvCliCtx<
   plugins?: Record<string, unknown>;
   pluginConfigs?: Record<string, unknown>;
 };
+
 const HOST_META_URL = import.meta.url;
 
 const CTX_SYMBOL = Symbol('GetDotenvCli.ctx');
@@ -45,8 +47,6 @@ const HELP_HEADER_SYMBOL = Symbol('GetDotenvCli.helpHeader');
  * - Expose a stable accessor for the current context (getCtx).
  * - Provide a namespacing helper (ns).
  * - Support composable plugins with parent → children install and afterResolve.
- *
- * NOTE: This host is additive and does not alter the legacy CLI.
  */
 export class GetDotenvCli<TOptions extends GetDotenvOptions = GetDotenvOptions>
   extends Command
@@ -70,12 +70,14 @@ export class GetDotenvCli<TOptions extends GetDotenvOptions = GetDotenvOptions>
     // Explicitly construct a GetDotenvCli (drop subclass constructor semantics).
     return new GetDotenvCli(name);
   }
+
   constructor(alias = 'getdotenv') {
     super(alias);
     // Ensure subcommands that use passThroughOptions can be attached safely.
     // Commander requires parent commands to enable positional options when a
     // child uses passThroughOptions.
     this.enablePositionalOptions();
+
     // Configure grouped help: show only base options in default "Options";
     // we will insert App/Plugin sections before Commands in helpInformation().
     this.configureHelp({
@@ -103,12 +105,15 @@ export class GetDotenvCli<TOptions extends GetDotenvOptions = GetDotenvOptions>
         return list;
       },
     });
+
     this.addHelpText('beforeAll', () => {
       const header = this[HELP_HEADER_SYMBOL];
       return header && header.length > 0 ? `${header}\n\n` : '';
     });
+
     // Skeleton preSubcommand hook: produce a context if absent, without
-    // mutating process.env. The passOptions hook (when installed) will    // compute the final context using merged CLI options; keeping
+    // mutating process.env. The passOptions hook (when installed) will
+    // compute the final context using merged CLI options; keeping
     // loadProcess=false here avoids leaking dotenv values into the parent
     // process env before subcommands execute.
     this.hook('preSubcommand', async () => {
@@ -187,14 +192,12 @@ export class GetDotenvCli<TOptions extends GetDotenvOptions = GetDotenvOptions>
     parser?: (value: string, previous?: unknown) => unknown,
     defaultValue?: unknown,
   ): Option {
-    const opt = new Option(flags, '');
-    const wrapped = (c: ResolvedHelpConfig) => desc(c);
-    DYN_DESC.set(opt, wrapped);
-    if (parser) {
-      opt.argParser((value, previous) => parser(value, previous));
-    }
-    if (defaultValue !== undefined) opt.default(defaultValue);
-    return opt;
+    return makeDynamicOption(
+      flags,
+      (c) => desc(c as ResolvedHelpConfig),
+      parser,
+      defaultValue,
+    );
   }
 
   /**
@@ -209,8 +212,7 @@ export class GetDotenvCli<TOptions extends GetDotenvOptions = GetDotenvOptions>
     parser?: (value: string, previous?: unknown) => unknown,
     defaultValue?: unknown,
   ): this {
-    const opt = this.createDynamicOption(flags, desc, parser, defaultValue);
-    this.addOption(opt);
+    this.addOption(this.createDynamicOption(flags, desc, parser, defaultValue));
     return this;
   }
 
@@ -220,23 +222,7 @@ export class GetDotenvCli<TOptions extends GetDotenvOptions = GetDotenvOptions>
    * place so Commander help renders updated text.
    */
   evaluateDynamicOptions(resolved: ResolvedHelpConfig): void {
-    const visit = (cmd: Command) => {
-      const arr = cmd.options;
-      for (const o of arr) {
-        const dyn = DYN_DESC.get(o);
-        if (typeof dyn === 'function') {
-          try {
-            const txt = dyn(resolved);
-            // Commander Option has a public "description" field used by help.
-            o.description = txt;
-          } catch {
-            // Best-effort: leave description as-is on evaluation failure.
-          }
-        }
-      }
-      for (const c of cmd.commands) visit(c);
-    };
-    visit(this);
+    evalDyn(this, resolved);
   }
 
   /**
@@ -259,12 +245,9 @@ export class GetDotenvCli<TOptions extends GetDotenvOptions = GetDotenvOptions>
     this[OPTS_SYMBOL] = bag;
   }
 
-  /**   * Convenience helper to create a namespaced subcommand.
-   */
+  /** Convenience helper to create a namespaced subcommand. */
   ns(name: string): Command {
     // Guard against same-level duplicate command names for clearer diagnostics.
-    // Commander may also enforce this in some flows, but we prefer an explicit,
-    // early error to avoid subtle help/parse behavior differences.
     const exists = this.commands.some((c) => c.name() === name);
     if (exists) {
       throw new Error(`Duplicate command name: ${name}`);
@@ -326,7 +309,6 @@ export class GetDotenvCli<TOptions extends GetDotenvOptions = GetDotenvOptions>
     if (typeof helpHeader === 'string') {
       this[HELP_HEADER_SYMBOL] = helpHeader;
     } else if (v) {
-      // Use the current command name (possibly overridden by 'name' above).
       const header = `${this.name()} v${v}`;
       this[HELP_HEADER_SYMBOL] = header;
     }
@@ -340,7 +322,7 @@ export class GetDotenvCli<TOptions extends GetDotenvOptions = GetDotenvOptions>
   override helpInformation(): string {
     // Base help text first (includes beforeAll/after hooks).
     const base = super.helpInformation();
-    const groups = this.#renderOptionGroups(this as Command);
+    const groups = renderOptionGroups(this as Command);
     const block = typeof groups === 'string' ? groups.trim() : '';
     let out = base;
     if (!block) {
@@ -414,66 +396,6 @@ export class GetDotenvCli<TOptions extends GetDotenvOptions = GetDotenvOptions>
       for (const child of p.children) await run(child);
     };
     for (const p of this._plugins) await run(p);
-  }
-
-  // Render App/Plugin grouped options (used by helpInformation override).
-  #renderOptionGroups(cmd: Command): string {
-    const all = cmd.options;
-    type Row = { flags: string; description: string };
-    const byGroup = new Map<string, Row[]>();
-    for (const o of all) {
-      const opt = o;
-      const g = GROUP_TAG.get(opt);
-      if (!g || g === 'base') continue; // base handled by default help
-      const rows = byGroup.get(g) ?? [];
-      rows.push({
-        flags: opt.flags,
-        description: opt.description,
-      });
-      byGroup.set(g, rows);
-    }
-    if (byGroup.size === 0) return '';
-    const renderRows = (title: string, rows: Row[]) => {
-      const width = Math.min(
-        40,
-        rows.reduce((m, r) => Math.max(m, r.flags.length), 0),
-      );
-      // Sort within group: short-aliased flags first
-      rows.sort((a, b) => {
-        const aS = /(^|\s|,)-[A-Za-z]/.test(a.flags) ? 1 : 0;
-        const bS = /(^|\s|,)-[A-Za-z]/.test(b.flags) ? 1 : 0;
-        return bS - aS || a.flags.localeCompare(b.flags);
-      });
-      const lines = rows
-        .map((r) => {
-          const pad = ' '.repeat(Math.max(2, width - r.flags.length + 2));
-          return `  ${r.flags}${pad}${r.description}`.trimEnd();
-        })
-        .join('\n');
-      return `\n${title}:\n${lines}\n`;
-    };
-    let out = '';
-    // App options (if any)
-    const app = byGroup.get('app');
-    if (app && app.length > 0) {
-      out += renderRows('App options', app);
-    }
-    // Plugin groups sorted by id
-    const pluginKeys = Array.from(byGroup.keys()).filter((k) =>
-      k.startsWith('plugin:'),
-    );
-    const currentName = cmd.name();
-    pluginKeys.sort((a, b) => a.localeCompare(b));
-    for (const k of pluginKeys) {
-      const id = k.slice('plugin:'.length) || '(unknown)';
-      const rows = byGroup.get(k) ?? [];
-      // Do not show a "Plugin options — <self>" section on the command that owns those options.
-      // Only child-injected plugin groups should render at this level.
-      if (rows.length > 0 && id !== currentName) {
-        out += renderRows(`Plugin options — ${id}`, rows);
-      }
-    }
-    return out;
   }
 }
 
