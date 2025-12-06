@@ -21,6 +21,15 @@ When updated: 2025-12-06T00:00:00Z
 
 **CRITICAL: Append-only list. Add new completed items at the end. Prune old completed entries from the top. Do not edit existing entries.**
 
+- Typecheck/lint: dynamic option overloads and Zod v4 generics
+  - GetDotenvCli: reordered createDynamicOption overloads (base first) and
+    added TPlugins generic to typed-parser overload to restore 2‑arg calls and
+    preserve plugin typing for 4‑arg parser forms.
+  - computeContext/definePlugin: updated ZodObject typing for Zod v4 (removed
+    legacy multi‑generic), replaced ZodTypeAny with ZodType, and localized
+    ESLint suppressions around safeParse error handling to satisfy
+    no‑unsafe‑* rules without broad disables. Added file‑level tsdoc/syntax
+    suppression for the example block in definePlugin.
 - Requirements/doc: typed env, config builder, Zod canonical options, loader flag removal
   - Updated stan.requirements.md to document:
     - ESM-only distribution and exports.

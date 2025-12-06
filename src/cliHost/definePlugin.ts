@@ -5,10 +5,11 @@
  * should use (GetDotenvCliPublic). Using a structural type at the seam avoids
  * nominal class identity issues (private fields) in downstream consumers.
  */
+/* eslint-disable tsdoc/syntax */
 
 // Optional per-plugin config validation (host validates when loader is enabled).
 import type { Command, Option } from 'commander';
-import { z, type ZodObject, type ZodTypeAny } from 'zod';
+import { z, type ZodObject } from 'zod';
 
 import type { GetDotenvOptions } from '../GetDotenvOptions';
 import { _getPluginConfigForInstance } from './computeContext';
@@ -69,11 +70,7 @@ export interface GetDotenvCliPlugin<
    * Zod schema for this plugin's config slice (from config.plugins[id]).
    * Enforced object-like (ZodObject) to simplify code paths and inference.
    */
-  configSchema?: ZodObject<
-    Record<string, ZodTypeAny>,
-    unknown,
-    Record<string, unknown>
-  >;
+  configSchema?: ZodObject;
   /**
    * Compositional children. Installed after the parent per pre-order.
    */
@@ -128,11 +125,7 @@ export type DefineSpec<TOptions extends GetDotenvOptions = GetDotenvOptions> =
 // Overload A (Zod-first): infer TConfig from provided ZodObject schema
 export function definePlugin<
   TOptions extends GetDotenvOptions,
-  Schema extends ZodObject<
-    Record<string, ZodTypeAny>,
-    unknown,
-    Record<string, unknown>
-  >,
+  Schema extends ZodObject,
 >(
   spec: Omit<DefineSpec<TOptions>, 'configSchema'> & { configSchema: Schema },
 ): PluginWithInstanceHelpers<TOptions, z.output<Schema>>;
@@ -141,25 +134,15 @@ export function definePlugin<TOptions extends GetDotenvOptions>(
   spec: DefineSpec<TOptions>,
 ): PluginWithInstanceHelpers<TOptions, {}>;
 export function definePlugin<TOptions extends GetDotenvOptions>(
-  spec: DefineSpec<TOptions> & {
-    configSchema?: ZodObject<
-      Record<string, ZodTypeAny>,
-      unknown,
-      Record<string, unknown>
-    >;
-  },
+  spec: DefineSpec<TOptions> & { configSchema?: ZodObject },
 ): PluginWithInstanceHelpers<TOptions> {
   const { children = [], ...rest } = spec;
-  // Default to a strict empty-object schema so “no config” plugins fail fast
+  // Default to a strict empty-object schema so “no-config” plugins fail fast
   // on unknown keys and provide a concrete {} at runtime.
   const effectiveSchema =
     (
       spec as {
-        configSchema?: ZodObject<
-          Record<string, ZodTypeAny>,
-          unknown,
-          Record<string, unknown>
-        >;
+        configSchema?: ZodObject;
       }
     ).configSchema ?? z.object({}).strict();
 

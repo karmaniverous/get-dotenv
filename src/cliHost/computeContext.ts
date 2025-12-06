@@ -212,15 +212,13 @@ export const computeContext = async <
         : ({} as Record<string, unknown>);
 
     // Enforced: plugins always carry a schema (strict empty by default).
-    const schema = p.configSchema as unknown as ZodObject<
-      Record<string, ZodType>,
-      unknown,
-      Record<string, unknown>
-    >;
+    // Zod v4: avoid legacy multi-generic usage; treat as generic ZodObject.
+    const schema = p.configSchema as unknown as ZodObject;
     const toParse = interpolated;
     const parsed = schema.safeParse(toParse);
     if (!parsed.success) {
-      const err = parsed.error as ZodError<Record<string, unknown>>;
+      const err = parsed.error;
+
       const msgs = err.issues
         .map((i) => {
           const path = Array.isArray(i.path) ? i.path.join('.') : '';
@@ -232,7 +230,7 @@ export const computeContext = async <
       throw new Error(`Invalid config for plugin '${p.id}':\n${msgs}`);
     }
     // Store a readonly (shallow-frozen) value for runtime safety.
-    const frozen = Object.freeze(parsed.data as Record<string, unknown>);
+    const frozen = Object.freeze(parsed.data);
     _setPluginConfigForInstance(
       p as unknown as GetDotenvCliPlugin,
       frozen as unknown,

@@ -160,16 +160,21 @@ export class GetDotenvCli<TOptions extends GetDotenvOptions = GetDotenvOptions>
    * The returned Option may be configured (conflicts, default, parser) and
    * added via addOption().
    */
-  // Overload: typed parser & default for value inference (plugin typing handled by base overload)
-  createDynamicOption<TValue>(
+  // Base overload (parser/default optional; preferred match for 2-arg calls)
+  createDynamicOption<TPlugins = Record<string, unknown>>(
     flags: string,
-    desc: (
-      cfg: ResolvedHelpConfig & { plugins: Record<string, unknown> },
-    ) => string,
+    desc: (cfg: ResolvedHelpConfig & { plugins: TPlugins }) => string,
+    parser?: (value: string, previous?: unknown) => unknown,
+    defaultValue?: unknown,
+  ): Option;
+  // Overload: typed parser & default for value inference (preserves plugin typing too)
+  createDynamicOption<TPlugins = Record<string, unknown>, TValue = unknown>(
+    flags: string,
+    desc: (cfg: ResolvedHelpConfig & { plugins: TPlugins }) => string,
     parser: (value: string, previous?: TValue) => TValue,
     defaultValue?: TValue,
   ): Option;
-  // Base overload
+  // Implementation
   createDynamicOption<TPlugins = Record<string, unknown>>(
     flags: string,
     desc: (cfg: ResolvedHelpConfig & { plugins: TPlugins }) => string,
@@ -471,3 +476,22 @@ export class GetDotenvCli<TOptions extends GetDotenvOptions = GetDotenvOptions>
     return out;
   }
 }
+
+/**
+ * Helper to retrieve the merged root options bag from any action handler
+ * that only has access to thisCommand. Avoids structural casts.
+ */
+export const readMergedOptions = (
+  cmd: Command,
+): GetDotenvCliOptions | undefined => {
+  // Ascend to the root command
+  let root: Command = cmd;
+  while ((root as unknown as { parent?: Command }).parent) {
+    root = (root as unknown as { parent?: Command }).parent as Command;
+  }
+  const hostAny = root as unknown as { getOptions?: () => unknown };
+  return typeof hostAny.getOptions === 'function'
+    ? (hostAny.getOptions() as GetDotenvCliOptions)
+    : ((root as unknown as { getDotenvCliOptions?: unknown })
+        .getDotenvCliOptions as GetDotenvCliOptions | undefined);
+};
