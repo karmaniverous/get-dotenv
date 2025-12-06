@@ -161,3 +161,10 @@ When updated: 2025-12-05T00:00:00Z
   - Use RootOptionsShape & ScriptsTable in resolveCliOptions call sites (cliHost, index, cmd alias).
   - Cast merged bags to GetDotenvCliOptions where needed for downstream DX (logger/trace/capture/etc.).
   - Add scripts type guard in cmd alias; import ScriptsTable; remove unsafe casts. Escape TSDoc angle brackets.
+
+- Follow-up: compat casts and TSDoc cleanup
+  - Cast to RootOptionsShapeCompat at getDotenvCliOptions2Options boundaries in
+    cliHost and cmd alias to satisfy exactOptionalPropertyTypes.
+  - Widen readonly defaults via unknown when passing baseRootOptionDefaults into
+    resolveCliOptions generics (help-time path).
+  - Escape "\<alias\> v\<version\>" in TSDoc; locally disable tsdoc/syntax in cliCore/GetDotenvCliOptions.ts.

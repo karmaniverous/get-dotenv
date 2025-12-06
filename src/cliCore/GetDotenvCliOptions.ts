@@ -22,7 +22,7 @@ export type GetDotenvCliOptions = z.output<
    */
   logger?: Logger;
   /**
-   * Compile-only overlay for DX: scripts narrowed from Record<string, unknown>.
+   * Compile-only overlay for DX: scripts narrowed from Record\<string, unknown\>.
    */
   scripts?: Scripts;
 };

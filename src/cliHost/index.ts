@@ -10,6 +10,7 @@ import type {
 } from '../cliCore/types';
 import { resolveGetDotenvConfigSources } from '../config/loader';
 import { validateEnvAgainstSources } from '../config/validate';
+import type { RootOptionsShapeCompat } from '../GetDotenvOptions';
 import { getDotenvCliOptions2Options } from '../GetDotenvOptions';
 import { attachRootOptions as attachRootOptionsBuilder } from './attachRootOptions';
 import type { ResolvedHelpConfig } from './GetDotenvCli';
@@ -26,7 +27,7 @@ export type { ScriptsTable } from '../cliCore/types';
 /**
  * GetDotenvCli with root helpers as real class methods.
  * - attachRootOptions: installs legacy/base root flags on the command.
- * - passOptions: merges flags (parent < current), computes dotenv context once,
+ * - passOptions: merges flags (parent \< current), computes dotenv context once,
  *   runs validation, and persists merged options for nested flows.
  */
 export class GetDotenvCli extends BaseGetDotenvCli {
@@ -65,7 +66,7 @@ export class GetDotenvCli extends BaseGetDotenvCli {
 
         // Build service options and compute context (always-on loader path).
         const serviceOptions = getDotenvCliOptions2Options(
-          merged as unknown as GetDotenvCliOptions,
+          merged as unknown as RootOptionsShapeCompat,
         );
         await this.resolveAndLoad(serviceOptions);
 
@@ -120,7 +121,7 @@ export class GetDotenvCli extends BaseGetDotenvCli {
         // Avoid duplicate heavy work if a context is already present.
         if (!this.getCtx()) {
           const serviceOptions = getDotenvCliOptions2Options(
-            merged as unknown as GetDotenvCliOptions,
+            merged as unknown as RootOptionsShapeCompat,
           );
           await this.resolveAndLoad(serviceOptions);
           try {

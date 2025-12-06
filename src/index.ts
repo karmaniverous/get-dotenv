@@ -36,7 +36,7 @@ export { interpolateDeep } from './util/interpolateDeep';
  *
  * Options:
  * - alias: command name used for help/argv scaffolding (default: "getdotenv")
- * - branding: optional help header; when omitted, brand() uses "<alias> v<version>"
+ * - branding: optional help header; when omitted, brand() uses "\<alias\> v\<version\>"
  *
  * Usage:
  *   import \{ createCli \} from '\@karmaniverous/get-dotenv';
@@ -154,7 +154,11 @@ export function createCli(opts: CreateCliOptions = {}): {
           // Build a defaults-only merged CLI bag for help-time parity (no side effects).
           const { merged: defaultsMerged } = resolveCliOptions<
             RootOptionsShape & { scripts?: ScriptsTable }
-          >({}, baseRootOptionDefaults as Partial<RootOptionsShape>, undefined);
+          >(
+            {},
+            baseRootOptionDefaults as unknown as Partial<RootOptionsShape>,
+            undefined,
+          );
           program.evaluateDynamicOptions({
             ...(defaultsMerged as unknown as GetDotenvCliOptions),
             plugins: ctx.pluginConfigs ?? {},
