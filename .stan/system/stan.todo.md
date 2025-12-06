@@ -222,3 +222,8 @@ When updated: 2025-12-06T00:00:00Z
     - Use preserve mode in the alias executor when parsing shell-off
       Node -e payloads so code is passed to Node unchanged.
   - Tests: the existing Windows alias E2E now exercises the fixed path.
+
+- E2E (Windows alias): stop enabling GETDOTENV_DEBUG in child
+  - src/e2e/alias.termination.test.ts: remove GETDOTENV_DEBUG from childEnv to
+    prevent plugin breadcrumbs printing to stdout and breaking JSON parse.
+    Pre-run diagnostics remain via stderr and are suppressed on pass.

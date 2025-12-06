@@ -56,8 +56,6 @@ describe('E2E alias termination (Windows)', () => {
       const childEnv = {
         ...process.env,
         GETDOTENV_STDIO: 'pipe',
-        // Enable CLI-internal breadcrumbs on stderr ([getdotenv:alias], [getdotenv:run], etc.).
-        GETDOTENV_DEBUG: '1',
         VITEST_WORKER_ID: undefined,
         GETDOTENV_TEST: undefined,
       } as NodeJS.ProcessEnv;
