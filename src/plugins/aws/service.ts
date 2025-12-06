@@ -1,10 +1,6 @@
 import { runCommandResult } from '../../cliCore/exec';
 import type { ProcessEnv } from '../../GetDotenvOptions';
-import type {
-  AwsContext,
-  AwsCredentials,
-  AwsPluginConfigResolved,
-} from './types';
+import type { AwsContext, AwsCredentials, AwsPluginConfig } from './types';
 
 const DEFAULT_TIMEOUT_MS = 15_000;
 
@@ -147,7 +143,7 @@ export const resolveAwsContext = async ({
   cfg,
 }: {
   dotenv: ProcessEnv;
-  cfg: AwsPluginConfigResolved;
+  cfg: AwsPluginConfig;
 }): Promise<AwsContext> => {
   const profileKey = cfg.profileKey ?? 'AWS_LOCAL_PROFILE';
   const profileFallbackKey = cfg.profileFallbackKey ?? 'AWS_PROFILE';

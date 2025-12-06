@@ -3,14 +3,9 @@ import type { GetDotenvCliPublic } from '@karmaniverous/get-dotenv/cliHost';
 import { Command } from 'commander';
 
 import { definePlugin } from '../../cliHost/definePlugin';
-import type { GetDotenvOptions } from '../../GetDotenvOptions';
 import { buildDefaultCmdAction } from './actions/defaultCmdAction';
 import { buildParentAction } from './actions/parentAction';
-import {
-  type BatchConfig,
-  BatchConfigSchema,
-  type BatchPluginOptions,
-} from './types';
+import { BatchConfigSchema, type BatchPluginOptions } from './types';
 
 /**
  * Batch plugin for the GetDotenv CLI host.

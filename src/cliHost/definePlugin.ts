@@ -151,23 +151,24 @@ export function definePlugin<
       return this;
     },
   };
-  const extended = base;
-  // Instance-bound config accessor
-  (extended as Required<GetDotenvCliPlugin<TOptions>>).readConfig = function <
-    TCfg = TConfig,
-  >(_cli: GetDotenvCliPublic<TOptions>): TCfg | undefined {
+  // Attach instance-bound helpers on the returned plugin object.
+  const extended = base as PluginWithInstanceHelpers<TOptions, TConfig>;
+  extended.readConfig = function <TCfg = TConfig>(
+    _cli: GetDotenvCliPublic<TOptions>,
+  ): TCfg | undefined {
     // Config is stored per-plugin-instance by the host (WeakMap in computeContext).
     return _getPluginConfigForInstance(
       extended as unknown as GetDotenvCliPlugin,
     ) as TCfg | undefined;
   };
   // Plugin-bound dynamic option factory
-  (
-    extended as Required<GetDotenvCliPlugin<TOptions>>
-  ).createPluginDynamicOption = function <TCfg = TConfig>(
+  extended.createPluginDynamicOption = function <TCfg = TConfig>(
     cli: GetDotenvCliPublic<TOptions>,
     flags: string,
-
+    desc: (
+      cfg: ResolvedHelpConfig & { plugins: Record<string, unknown> },
+      pluginCfg: TCfg | undefined,
+    ) => string,
     desc: (
       cfg: ResolvedHelpConfig & { plugins: Record<string, unknown> },
       pluginCfg: TCfg | undefined,
@@ -195,5 +196,5 @@ export function definePlugin<
       defaultValue,
     );
   };
-  return extended as PluginWithInstanceHelpers<TOptions, TConfig>;
+  return extended;
 }

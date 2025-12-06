@@ -5,7 +5,7 @@ import {
   parseExportCredentialsJson,
   resolveAwsContext,
 } from './service';
-import type { AwsPluginConfigResolved } from './types';
+import type { AwsPluginConfig } from './types';
 
 // Mock the exec seam used by the service.
 const runCommandResultMock = vi.fn<
@@ -27,7 +27,7 @@ vi.mock('../../cliCore/exec', () => ({
   ) => runCommandResultMock(cmd, shell, opts ?? {}),
 }));
 
-const baseCfg: AwsPluginConfigResolved = {
+const baseCfg: AwsPluginConfig = {
   strategy: 'cli-export',
   loginOnDemand: false,
   profileKey: 'AWS_LOCAL_PROFILE',

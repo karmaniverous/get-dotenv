@@ -3,10 +3,10 @@ import type { GetDotenvCliPublic } from '@karmaniverous/get-dotenv/cliHost';
 import { runCommand } from '../../cliCore/exec';
 import { buildSpawnEnv } from '../../cliCore/spawnEnv';
 import { definePlugin } from '../../cliHost/definePlugin';
-import type { GetDotenvOptions, Logger } from '../../GetDotenvOptions';
+import type { Logger } from '../../GetDotenvOptions';
 import { resolveShell } from '../../services/batch/resolve';
 import { resolveAwsContext } from './service';
-import { type AwsPluginConfigResolved, AwsPluginConfigSchema } from './types';
+import { type AwsPluginConfig, AwsPluginConfigSchema } from './types';
 
 export const awsPlugin = () => {
   const plugin = definePlugin({
@@ -134,30 +134,29 @@ export const awsPlugin = () => {
 
             // Build overlay cfg from subcommand flags layered over discovered config.
             const ctx = cli.getCtx();
-            const cfgBase =
-              pluginInst.readConfig<AwsPluginConfigResolved>(cli) ?? {};
-            const overlay: Partial<AwsPluginConfigResolved> = {};
+            const cfgBase = pluginInst.readConfig(cli) ?? {};
+            type AwsCliFlags = Partial<AwsPluginConfig>;
+            const o = opts as AwsCliFlags;
+            const overlay: Partial<AwsPluginConfig> = {};
             // Map boolean toggles (respect explicit --no-*)
-            if (Object.prototype.hasOwnProperty.call(opts, 'loginOnDemand'))
-              overlay.loginOnDemand = Boolean(opts.loginOnDemand);
+            if (Object.prototype.hasOwnProperty.call(o, 'loginOnDemand'))
+              overlay.loginOnDemand = Boolean(o.loginOnDemand);
             // Strings/enums
-            if (typeof opts.profile === 'string')
-              overlay.profile = opts.profile;
-            if (typeof opts.region === 'string') overlay.region = opts.region;
-            if (typeof opts.defaultRegion === 'string')
-              overlay.defaultRegion = opts.defaultRegion;
-            if (typeof opts.strategy === 'string')
-              overlay.strategy =
-                opts.strategy as AwsPluginConfigResolved['strategy'];
+            if (typeof o.profile === 'string') overlay.profile = o.profile;
+            if (typeof o.region === 'string') overlay.region = o.region;
+            if (typeof o.defaultRegion === 'string')
+              overlay.defaultRegion = o.defaultRegion;
+            if (typeof o.strategy === 'string')
+              overlay.strategy = o.strategy as AwsPluginConfig['strategy'];
             // Advanced key overrides
-            if (typeof opts.profileKey === 'string')
-              overlay.profileKey = opts.profileKey;
-            if (typeof opts.profileFallbackKey === 'string')
-              overlay.profileFallbackKey = opts.profileFallbackKey;
-            if (typeof opts.regionKey === 'string')
-              overlay.regionKey = opts.regionKey;
+            if (typeof o.profileKey === 'string')
+              overlay.profileKey = o.profileKey;
+            if (typeof o.profileFallbackKey === 'string')
+              overlay.profileFallbackKey = o.profileFallbackKey;
+            if (typeof o.regionKey === 'string')
+              overlay.regionKey = o.regionKey;
 
-            const cfg: AwsPluginConfigResolved = {
+            const cfg: AwsPluginConfig = {
               ...cfgBase,
               ...overlay,
             };
