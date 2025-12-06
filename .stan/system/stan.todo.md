@@ -291,3 +291,9 @@ When updated: 2025-12-06T00:00:00Z
   - Converted GetDotenvCliPublic from a type alias (intersection) to an
     interface extending Command so TypeDoc can assign a URL to the reflection.
     This removes the “router target … **type.**type” error during npm run docs.
+
+- Docs: fix TypeDoc link warnings on non-linkable members
+  - src/getDotenv.ts: changed {@link GetDotenvOptions.loadProcess} and
+    {@link GetDotenvOptions.outputPath} to {@link GetDotenvOptions | loadProcess}
+    and {@link GetDotenvOptions | outputPath}.
+  - src/GetDotenvOptions.ts: replaced {@link customOptions} with plain text.

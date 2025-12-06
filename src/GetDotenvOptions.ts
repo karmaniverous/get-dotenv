@@ -230,7 +230,7 @@ export const getDotenvCliOptions2Options = ({
  *    ({@link baseGetDotenvCliOptions}).
  * 2. Local project overrides from a `getdotenv.config.json` in the nearest
  *    package root (if present).
- * 3. The provided {@link customOptions}.
+ * 3. The provided customOptions.
  *
  * The result preserves explicit empty values and drops only `undefined`.
  */
