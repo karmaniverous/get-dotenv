@@ -181,4 +181,10 @@ When updated: 2025-12-06T00:00:00Z
   - maybeRunAlias: parts[0] is guaranteed by length guard; drop the "?? ''" fallback to satisfy @typescript-eslint/no-unnecessary-condition.
 
 - Alias executor: revert Node execPath substitution (preserve argv passthrough)
-  - maybeRunAlias: for shell-off "node -e/--eval", pass the tokenized argv unchanged to align with historical behavior.
+  - maybeRunAlias: for shell-off "node -e/--eval", pass the tokenized argv unchanged to align with historical behavior.
+
+- Tests: remove env-based per-step timeout from Windows alias E2E
+  - src/e2e/alias.termination.test.ts: drop GETDOTENV_VITEST_STEP_TIMEOUT_MS
+    and execa timeout/killSignal; rely on Vitest testTimeout from
+    vitest.config.ts. Keeps capture ON and preserves existing validation
+    of stdout/exitCode.

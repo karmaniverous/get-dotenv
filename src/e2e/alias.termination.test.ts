@@ -2,9 +2,8 @@ import { execa } from 'execa';
 import { describe, expect, it } from 'vitest';
 
 // Windows-only alias termination check with capture enabled.
-// Ensures the alias path (--cmd) terminates within a bounded time and
-// produces the expected output. Uses execa's timeout to guarantee the test
-// never hangs the runner; on failure, partial stdout/stderr are printed.
+// Ensures the alias path (--cmd) terminates and produces the expected output.
+// Timeout is governed by Vitest (see vitest.config.ts testTimeout).
 describe('E2E alias termination (Windows)', () => {
   const isWindows = process.platform === 'win32';
 
@@ -40,12 +39,7 @@ describe('E2E alias termination (Windows)', () => {
         '--cmd',
         aliasPayload,
       );
-
-      // 5s step timeout; adjust via env if needed (CI variance).
-      const STEP_TIMEOUT_MS = Number.parseInt(
-        process.env.GETDOTENV_VITEST_STEP_TIMEOUT_MS ?? '20000',
-        10,
-      ); // Ensure the child CLI is NOT treated as "under tests" so the alias
+      // Ensure the child CLI is NOT treated as "under tests" so the alias
       // path is free to call process.exit normally. Keep capture ON.
       const childEnv = {
         ...process.env,
@@ -54,13 +48,9 @@ describe('E2E alias termination (Windows)', () => {
         GETDOTENV_TEST: undefined,
       } as NodeJS.ProcessEnv;
 
-      const { stdout, exitCode, timedOut } = await execa(nodeBin, argv, {
+      const { stdout, exitCode } = await execa(nodeBin, argv, {
         env: childEnv,
-        timeout: STEP_TIMEOUT_MS,
-        killSignal: 'SIGKILL',
       });
-      // If we timed out, fail hard with context; Vitest will print stdout/stderr.
-      expect(timedOut).toBeFalsy();
       expect(exitCode).toBe(0);
 
       const txt = stdout.trim();
