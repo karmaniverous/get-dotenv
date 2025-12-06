@@ -13,7 +13,7 @@ export const helloPlugin = () => {
         .ns('hello')
         .description('Say hello with current dotenv context')
         .addOption(
-          plugin.createPluginDynamicOption<HelloConfig>(
+          plugin.createPluginDynamicOption(
             cli,
             '--loud',
             (_bag, cfg) =>

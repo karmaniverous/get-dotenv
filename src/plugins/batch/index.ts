@@ -40,7 +40,7 @@ export const batchPlugin = (opts: BatchPluginOptions = {}) => {
         // Dynamic help: show effective defaults from the merged/interpolated plugin config slice.
         .addOption(
           (() => {
-            const opt = plugin.createPluginDynamicOption<BatchConfig>(
+            const opt = plugin.createPluginDynamicOption(
               cli,
               '-p, --pkg-cwd',
               (_bag, cfg) =>
@@ -52,7 +52,7 @@ export const batchPlugin = (opts: BatchPluginOptions = {}) => {
         )
         .addOption(
           (() => {
-            const opt = plugin.createPluginDynamicOption<BatchConfig>(
+            const opt = plugin.createPluginDynamicOption(
               cli,
               '-r, --root-path <string>',
               (_bag, cfg) =>
@@ -66,7 +66,7 @@ export const batchPlugin = (opts: BatchPluginOptions = {}) => {
         )
         .addOption(
           (() => {
-            const opt = plugin.createPluginDynamicOption<BatchConfig>(
+            const opt = plugin.createPluginDynamicOption(
               cli,
               '-g, --globs <string>',
               (_bag, cfg) =>
