@@ -167,3 +167,6 @@ When updated: 2025-12-06T00:00:00Z
     GetDotenvOptions; use resolveCliOptions<RootOptionsShape & { scripts?: ScriptsTable }>
     and call opts() without optional chain; precompute expanded to avoid
     unnecessary nullish coalescing.
+
+- Lint: fix optional chain and unsafe assignment in cmd alias executor
+  - maybeRunAlias: replace optional chain with typed dynamic index access and avoid any‑typed assignment.

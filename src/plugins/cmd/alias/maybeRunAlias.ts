@@ -54,7 +54,7 @@ export async function maybeRunAlias(
   const o = (
     thisCommand as unknown as Command & { opts: () => Record<string, unknown> }
   ).opts();
-  const val = o?.[aliasKey];
+  const val = (o as Record<string, unknown>)[aliasKey];
   const provided =
     typeof val === 'string'
       ? val.length > 0
