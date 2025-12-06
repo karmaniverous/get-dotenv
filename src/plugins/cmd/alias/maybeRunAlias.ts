@@ -227,7 +227,10 @@ export async function maybeRunAlias(
   // Preserve argv array for Node -e snippets under shell-off
   let commandArg: string | string[] = resolved;
   if (shellSetting === false && resolved === input) {
-    const parts = tokenize(input);
+    // Important: preserve doubled quotes within the Node -e payload so
+    // empty string literals ("") survive; Windows-style doubling must not
+    // collapse "" -> " in this path.
+    const parts = tokenize(input, { preserveDoubledQuotes: true });
     if (
       parts.length >= 3 &&
       parts[0]?.toLowerCase() === 'node' &&

@@ -9,8 +9,7 @@ const stripOne = (s: string) => {
   if (s.length < 2) return s;
   const a = s.charAt(0);
   const b = s.charAt(s.length - 1);
-  const symmetric =
-    (a === '"' && b === '"') || (a === "'" && b === "'");
+  const symmetric = (a === '"' && b === '"') || (a === "'" && b === "'");
   return symmetric ? s.slice(1, -1) : s;
 };
 
@@ -91,12 +90,12 @@ describe('E2E alias termination (Windows)', () => {
       const simulatedEval = stripOne(codeToken);
       const quoteCount = (simulatedEval.match(/"/g) ?? []).length;
       const hasEmptyLiterals = /\?\?\s*""/.test(simulatedEval);
-      // eslint-disable-next-line no-console
+
       console.error(
         '[alias-e2e] simulatedEval:',
         JSON.stringify(simulatedEval),
       );
-      // eslint-disable-next-line no-console
+
       console.error(
         '[alias-e2e] simulatedEval length / quoteCount / has ?? "":',
         simulatedEval.length,

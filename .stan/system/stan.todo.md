@@ -210,4 +210,15 @@ When updated: 2025-12-06T00:00:00Z
   - src/e2e/alias.termination.test.ts: add stripOne (mirrors CLI) and compute
     simulated eval string from tokenize(aliasPayload). Log the simulated eval,
     length, quote count, and a regex check for '?? ""' to confirm whether
-    empty-string literals survive alias processing.
+    empty-string literals survive alias processing.
+
+- Windows alias fix: preserve "" in Node -e payloads
+  - Root cause: tokenize() collapses doubled quotes inside quoted segments
+    (Windows/PowerShell convention), which turns empty string literals ("")
+    in Node -e code into a single " and produces invalid JS.
+  - Change:
+    - Add optional `{ preserveDoubledQuotes: true }` to tokenize() to keep
+      "" and '' intact inside quoted segments.
+    - Use preserve mode in the alias executor when parsing shell-off
+      Node -e payloads so code is passed to Node unchanged.
+  - Tests: the existing Windows alias E2E now exercises the fixed path.
