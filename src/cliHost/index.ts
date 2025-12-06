@@ -10,7 +10,10 @@ import type {
 } from '../cliCore/types';
 import { resolveGetDotenvConfigSources } from '../config/loader';
 import { validateEnvAgainstSources } from '../config/validate';
-import type { RootOptionsShapeCompat } from '../GetDotenvOptions';
+import type {
+  GetDotenvOptions,
+  RootOptionsShapeCompat,
+} from '../GetDotenvOptions';
 import { getDotenvCliOptions2Options } from '../GetDotenvOptions';
 import { attachRootOptions as attachRootOptionsBuilder } from './attachRootOptions';
 import type { PluginWithInstanceHelpers as PluginWithInstanceHelpersType } from './definePlugin';
@@ -25,7 +28,7 @@ export type { PluginWithInstanceHelpers } from './definePlugin';
  * Returns a deeply readonly view to discourage mutation at call sites.
  */
 export type InferPluginConfig<P> =
-  P extends PluginWithInstanceHelpersType<unknown, infer C>
+  P extends PluginWithInstanceHelpersType<GetDotenvOptions, infer C>
     ? Readonly<C>
     : never;
 export { definePlugin } from './definePlugin';

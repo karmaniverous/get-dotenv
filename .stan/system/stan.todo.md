@@ -118,4 +118,8 @@ When updated: 2025-12-06T00:00:00Z
 
 - Lint fixes: InferPluginConfig import and any → unknown
   - src/cliHost/index.ts: replace inline import() type with a type-only import
-    and swap any for unknown to satisfy ESLint rules.
+    and swap any for unknown to satisfy ESLint rules.
+
+- Types: satisfy InferPluginConfig constraint
+  - src/cliHost/index.ts: import GetDotenvOptions and use it in the conditional
+    type so the generic constraint matches PluginWithInstanceHelpers<TOptions, TConfig>.
