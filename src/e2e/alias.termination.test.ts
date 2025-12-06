@@ -1,18 +1,6 @@
 import { execa } from 'execa';
 import { describe, expect, it } from 'vitest';
 
-import { tokenize } from '../plugins/cmd/tokenize';
-
-// Mirror of the CLI alias executor's peel logic:
-// Strip exactly one symmetric outer quote layer from a string token.
-const stripOne = (s: string) => {
-  if (s.length < 2) return s;
-  const a = s.charAt(0);
-  const b = s.charAt(s.length - 1);
-  const symmetric = (a === '"' && b === '"') || (a === "'" && b === "'");
-  return symmetric ? s.slice(1, -1) : s;
-};
-
 // Windows-only alias termination check with capture enabled.
 // Ensures the alias path (--cmd) terminates and produces the expected output.
 // Timeout is governed by Vitest (see vitest.config.ts testTimeout).
@@ -51,8 +39,8 @@ describe('E2E alias termination (Windows)', () => {
         '--cmd',
         aliasPayload,
       );
-      // Ensure the child CLI is NOT treated as "under tests" so the alias
-      // path is free to call process.exit normally. Keep capture ON.
+      // Ensure the child CLI is NOT treated as "under tests" so the alias path may exit normally.
+      // Keep capture ON so stdout is deterministic for parsing.
       const childEnv = {
         ...process.env,
         GETDOTENV_STDIO: 'pipe',
@@ -60,100 +48,9 @@ describe('E2E alias termination (Windows)', () => {
         GETDOTENV_TEST: undefined,
       } as NodeJS.ProcessEnv;
 
-      // Pre-run diagnostics (printed only when the test fails due to Vitest
-      // onConsoleLog config): platform, argv, and alias tokenization.
-
-      console.error(
-        '[alias-e2e] node:',
-        process.version,
-        `${process.platform}/${process.arch}`,
-      );
-
-      console.error(
-        '[alias-e2e] argv JSON:',
-        JSON.stringify([nodeBin, ...argv]),
-      );
-
-      console.error('[alias-e2e] aliasPayload:', aliasPayload);
-      const tokens = tokenize(aliasPayload);
-
-      console.error(
-        '[alias-e2e] tokenize(aliasPayload):',
-        JSON.stringify(tokens),
-      );
-      // Simulate the CLI alias transform for the code arg:
-      // - tokenize (done above)
-      // - peel one symmetric layer of outer quotes on the code token
-      const codeToken = Array.isArray(tokens) ? (tokens[2] ?? '') : '';
-      const simulatedEval = stripOne(codeToken);
-      const quoteCount = (simulatedEval.match(/"/g) ?? []).length;
-      const hasEmptyLiterals = /\?\?\s*""/.test(simulatedEval);
-
-      console.error(
-        '[alias-e2e] simulatedEval:',
-        JSON.stringify(simulatedEval),
-      );
-
-      console.error(
-        '[alias-e2e] simulatedEval length / quoteCount / has ?? "":',
-        simulatedEval.length,
-        quoteCount,
-        hasEmptyLiterals,
-      );
-
-      let stdout = '';
-      let exitCode = Number.NaN;
-      try {
-        const result = await execa(nodeBin, argv, {
-          env: childEnv,
-          all: true, // capture merged stdout/stderr for breadcrumbs context
-        });
-        stdout = result.stdout;
-        exitCode =
-          typeof result.exitCode === 'number' ? result.exitCode : Number.NaN;
-        if (typeof result.all === 'string' && result.all.trim()) {
-          console.error(
-            '[alias-e2e] child merged output (all):\n' + result.all.trim(),
-          );
-        }
-      } catch (err) {
-        const e = err as {
-          exitCode?: number;
-          signal?: string;
-          timedOut?: boolean;
-          failed?: boolean;
-          killed?: boolean;
-          code?: string;
-          shortMessage?: string;
-          stdout?: string;
-          stderr?: string;
-          all?: string;
-        };
-
-        console.error('[alias-e2e] execa error summary:', {
-          exitCode: e.exitCode,
-          signal: e.signal,
-          timedOut: e.timedOut,
-          failed: e.failed,
-          killed: e.killed,
-          code: e.code,
-        });
-        if (e.shortMessage) {
-          console.error('[alias-e2e] shortMessage:', e.shortMessage);
-        }
-        if (typeof e.stderr === 'string' && e.stderr.trim()) {
-          console.error('[alias-e2e] child stderr:\n' + e.stderr.trim());
-        }
-        if (typeof e.stdout === 'string' && e.stdout.trim()) {
-          console.error('[alias-e2e] child stdout:\n' + e.stdout.trim());
-        }
-        if (typeof e.all === 'string' && e.all.trim()) {
-          console.error(
-            '[alias-e2e] child merged output (all):\n' + e.all.trim(),
-          );
-        }
-        throw err; // preserve failing behavior with added diagnostics
-      }
+      const { stdout, exitCode } = await execa(nodeBin, argv, {
+        env: childEnv,
+      });
       expect(exitCode).toBe(0);
 
       const txt = stdout.trim();

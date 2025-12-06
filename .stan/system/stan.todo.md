@@ -226,4 +226,8 @@ When updated: 2025-12-06T00:00:00Z
 - E2E (Windows alias): stop enabling GETDOTENV_DEBUG in child
   - src/e2e/alias.termination.test.ts: remove GETDOTENV_DEBUG from childEnv to
     prevent plugin breadcrumbs printing to stdout and breaking JSON parse.
-    Pre-run diagnostics remain via stderr and are suppressed on pass.
+    Pre-run diagnostics remain via stderr and are suppressed on pass.
+
+- E2E (Windows alias): remove verbose diagnostics from test
+  - src/e2e/alias.termination.test.ts: drop tokenization simulation and console.error
+    breadcrumbs; keep capture ON and validate JSON-only output now that the fix is stable.
