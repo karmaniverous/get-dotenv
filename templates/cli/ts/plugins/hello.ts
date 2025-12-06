@@ -28,8 +28,8 @@ export const helloPlugin = () => {
           const cfg = plugin.readConfig(cli);
           const keys = Object.keys(ctx?.dotenv ?? {});
           const label = cfg.loud
-            ? `[${name}] DOTENV KEYS (${keys.length}):`
-            : `[${name}] dotenv keys (${keys.length}):`;
+            ? `[${name}] DOTENV KEYS (${String(keys.length)}):`
+            : `[${name}] dotenv keys (${String(keys.length)}):`;
           console.log(label, keys.join(', '));
         });
     },

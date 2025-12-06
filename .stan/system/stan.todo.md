@@ -268,8 +268,13 @@ When updated: 2025-12-06T00:00:00Z
     preserving readonly argv types and avoiding any[] retyping concerns.
 
 - Lint/typecheck: include templates
-  - ESLint: removed "templates/**" from the global ignores so template JSON/JS/TS
+  - ESLint: removed "templates/\*\*" from the global ignores so template JSON/JS/TS
     are linted (YAML remains unaffected; no YAML plugin required).
-  - TypeScript: removed "templates/**" from tsconfig.json and tsconfig.base.json
+  - TypeScript: removed "templates/\*\*" from tsconfig.json and tsconfig.base.json
     excludes so templates are typechecked. Path aliases already cover CLI subpaths
-    used in templates, keeping checks robust while avoiding bundling them.
+    used in templates, keeping checks robust while avoiding bundling them.
+
+- Lint: fix template number interpolation
+  - templates/cli/ts/plugins/hello.ts: wrap keys.length in String(...) inside
+    template literals to satisfy @typescript-eslint/restrict-template-expressions
+    after enabling linting on templates.
