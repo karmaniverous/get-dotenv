@@ -311,4 +311,12 @@ When updated: 2025-12-06T00:00:00Z
   - Updated src/cliHost/GetDotenvCli/index.ts so readMergedOptions always
     returns an object ({} fallback) instead of undefined. Removed “?? {}”
     coalescing in batch defaultCmdAction and relied on the helper’s
-    concrete return.
+    concrete return.
+
+- Refactor: adopt readMergedOptions across plugins
+  - batch parentAction: replace manual parent getDotenvCliOptions casts with
+    readMergedOptions for scripts/shell in all branches.
+  - aws plugin: use readMergedOptions for capture/scripts/shell when forwarding.
+  - demo plugin: use readMergedOptions in "script" action for scripts/shell.
+  - cmd plugin: unify merged bag retrieval with readMergedOptions and remove
+    direct parent.getDotenvCliOptions casts.

@@ -4,6 +4,7 @@ import type {
   definePlugin,
   GetDotenvCliPublic,
 } from '../../../cliHost/definePlugin';
+import { readMergedOptions } from '../../../cliHost/GetDotenvCli';
 import type { Logger } from '../../../GetDotenvOptions';
 import { execShellCommandBatch } from '../../../services/batch/execShellCommandBatch';
 import type { Scripts } from '../../../services/batch/resolve';
@@ -47,21 +48,14 @@ export const buildParentAction =
     const argsParent = Array.isArray(commandParts) ? commandParts : [];
     if (argsParent.length > 0 && !list) {
       const input = argsParent.map(String).join(' ');
-      const mergedBag = ((
-        (thisCommand.parent as
-          | (GetDotenvCliPublic & {
-              getDotenvCliOptions?: {
-                scripts?: Scripts;
-                shell?: string | boolean;
-              };
-            })
-          | null) ?? null
-      )?.getDotenvCliOptions ?? {}) as {
-        scripts?: Scripts;
-        shell?: string | boolean;
-      };
-      const scriptsAll = opts.scripts ?? cfg.scripts ?? mergedBag.scripts;
-      const shellAll = opts.shell ?? cfg.shell ?? mergedBag.shell;
+      const bag = readMergedOptions(thisCommand);
+      const scriptsAll =
+        opts.scripts ??
+        cfg.scripts ??
+        (bag.scripts as Scripts | undefined) ??
+        undefined;
+      const shellAll = opts.shell ?? cfg.shell ?? bag.shell;
+
       const resolved = resolveCommand(scriptsAll, input);
       const shellSetting = resolveShell(scriptsAll, input, shellAll);
       // Parent path: pass a string; executor handles shell-specific details.
@@ -84,15 +78,10 @@ export const buildParentAction =
     if (list && argsParent.length > 0 && !commandOpt) {
       const extra = argsParent.map(String).join(' ').trim();
       if (extra.length > 0) globs = [globs, extra].filter(Boolean).join(' ');
-      const mergedBag = ((
-        (thisCommand.parent as
-          | (GetDotenvCliPublic & {
-              getDotenvCliOptions?: { shell?: string | boolean };
-            })
-          | null) ?? null
-      )?.getDotenvCliOptions ?? {}) as { shell?: string | boolean };
 
-      const shellMerged = opts.shell ?? cfg.shell ?? mergedBag.shell ?? false;
+      const bag = readMergedOptions(thisCommand);
+      const shellMerged = opts.shell ?? cfg.shell ?? bag.shell ?? false;
+
       await execShellCommandBatch({
         globs,
         ignoreErrors,
@@ -110,21 +99,13 @@ export const buildParentAction =
       process.exit(0);
     }
     if (typeof commandOpt === 'string') {
-      const mergedBag = ((
-        (thisCommand.parent as
-          | (GetDotenvCliPublic & {
-              getDotenvCliOptions?: {
-                scripts?: Scripts;
-                shell?: string | boolean;
-              };
-            })
-          | null) ?? null
-      )?.getDotenvCliOptions ?? {}) as {
-        scripts?: Scripts;
-        shell?: string | boolean;
-      };
-      const scriptsOpt = opts.scripts ?? cfg.scripts ?? mergedBag.scripts;
-      const shellOpt = opts.shell ?? cfg.shell ?? mergedBag.shell;
+      const bag = readMergedOptions(thisCommand);
+      const scriptsOpt =
+        opts.scripts ??
+        cfg.scripts ??
+        (bag.scripts as Scripts | undefined) ??
+        undefined;
+      const shellOpt = opts.shell ?? cfg.shell ?? bag.shell;
 
       await execShellCommandBatch({
         command: resolveCommand(scriptsOpt, commandOpt),
@@ -141,20 +122,8 @@ export const buildParentAction =
     }
 
     // list only (explicit --list without --command)
-    const mergedBag = ((
-      (thisCommand.parent as
-        | (GetDotenvCliPublic & {
-            getDotenvCliOptions?: {
-              scripts?: Scripts;
-              shell?: string | boolean;
-            };
-          })
-        | null) ?? null
-    )?.getDotenvCliOptions ?? {}) as {
-      scripts?: Scripts;
-      shell?: string | boolean;
-    };
-    const shellOnly = opts.shell ?? cfg.shell ?? mergedBag.shell ?? false;
+    const bag = readMergedOptions(thisCommand);
+    const shellOnly = opts.shell ?? cfg.shell ?? bag.shell ?? false;
 
     await execShellCommandBatch({
       globs,

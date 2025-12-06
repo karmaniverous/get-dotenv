@@ -5,6 +5,7 @@ import type { GetDotenvCliOptions } from '../../cliCore/GetDotenvCliOptions';
 import { buildSpawnEnv } from '../../cliCore/spawnEnv';
 import type { CommandWithOptions } from '../../cliCore/types';
 import { definePlugin } from '../../cliHost/definePlugin';
+import { readMergedOptions } from '../../cliHost/GetDotenvCli';
 import type { EntropyOptions } from '../../diagnostics/entropy';
 import { maybeWarnEntropy } from '../../diagnostics/entropy';
 import type { RedactOptions } from '../../diagnostics/redact';
@@ -64,6 +65,8 @@ export const cmdPlugin = (options: CmdPluginOptions = {}) =>
             const args = Array.isArray(commandParts) ? commandParts : [];
             // No-op when invoked as the default command with no args.
             if (args.length === 0) return;
+            // Access merged root options via helper (root ascension inside)
+            const merged = readMergedOptions(thisCommand as unknown as Command);
             const parent = thisCommand.parent as
               | (CommandWithOptions<GetDotenvCliOptions> & Command)
               | null;
@@ -75,12 +78,6 @@ export const cmdPlugin = (options: CmdPluginOptions = {}) =>
               ).opts();
               const ov = (pv as unknown as Record<string, unknown>)[aliasKey];
               if (ov !== undefined) {
-                const merged =
-                  (
-                    parent as unknown as {
-                      getDotenvCliOptions?: Record<string, unknown>;
-                    }
-                  ).getDotenvCliOptions ?? {};
                 const logger: Logger =
                   (merged as { logger?: Logger }).logger ?? console;
                 const lr = logger as unknown as {
@@ -93,13 +90,6 @@ export const cmdPlugin = (options: CmdPluginOptions = {}) =>
               }
             }
 
-            // Merged CLI options are persisted by the shipped CLI preSubcommand hook.
-            const merged =
-              (
-                parent as unknown as {
-                  getDotenvCliOptions?: Record<string, unknown>;
-                }
-              ).getDotenvCliOptions ?? {};
             const logger: Logger =
               (merged as { logger?: Logger }).logger ?? console;
             // Join positional args into the command string.

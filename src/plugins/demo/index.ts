@@ -29,12 +29,13 @@
  *   getdotenv --trace demo run --print ENV_SETTING
  */
 
+import type { Command } from 'commander';
+
+import { readMergedOptions } from '@/src/cliHost/GetDotenvCli';
+
 import { runCommand } from '../../cliCore/exec';
 import { buildSpawnEnv } from '../../cliCore/spawnEnv';
-import {
-  definePlugin,
-  type GetDotenvCliPublic,
-} from '../../cliHost/definePlugin';
+import { definePlugin } from '../../cliHost/definePlugin';
 import type { Logger } from '../../GetDotenvOptions';
 import { resolveCommand, resolveShell } from '../../services/batch/resolve';
 
@@ -130,21 +131,8 @@ export const demoPlugin = () =>
             _opts: unknown,
             thisCommand: unknown,
           ) => {
-            // Safely access the parent’s merged options (installed by passOptions()).
-            const parent = (thisCommand as { parent?: unknown }).parent as
-              | (GetDotenvCliPublic & {
-                  getDotenvCliOptions?: {
-                    scripts?: Record<
-                      string,
-                      string | { cmd: string; shell?: string | boolean }
-                    >;
-                    shell?: string | boolean;
-                  };
-                })
-              | undefined;
-            const bag = (parent?.getDotenvCliOptions ?? {}) as NonNullable<
-              typeof parent
-            >['getDotenvCliOptions'];
+            // Access merged root options via helper
+            const bag = readMergedOptions(thisCommand as Command);
 
             const input = Array.isArray(commandParts)
               ? commandParts.map(String).join(' ')
@@ -156,8 +144,8 @@ export const demoPlugin = () =>
               return;
             }
 
-            const resolved = resolveCommand(bag?.scripts, input);
-            const shell = resolveShell(bag?.scripts, input, bag?.shell);
+            const resolved = resolveCommand(bag.scripts, input);
+            const shell = resolveShell(bag.scripts, input, bag.shell);
 
             // Compose child env (parent + ctx.dotenv). This mirrors cmd/batch behavior.
             const ctx = cli.getCtx();

@@ -1,9 +1,9 @@
+import type { Command } from 'commander';
+
 import { runCommand } from '../../cliCore/exec';
 import { buildSpawnEnv } from '../../cliCore/spawnEnv';
-import {
-  definePlugin,
-  type GetDotenvCliPublic,
-} from '../../cliHost/definePlugin';
+import { definePlugin } from '../../cliHost/definePlugin';
+import { readMergedOptions } from '../../cliHost/GetDotenvCli';
 import type { Logger } from '../../GetDotenvOptions';
 import { resolveShell } from '../../services/batch/resolve';
 import { resolveAwsContext } from './service';
@@ -108,27 +108,11 @@ export const awsPlugin = () => {
             thisCommand: unknown,
           ) => {
             const pluginInst = plugin;
-            const cmdSelf = thisCommand as { parent?: unknown };
-            const parent = (cmdSelf.parent ?? null) as
-              | (GetDotenvCliPublic & {
-                  getDotenvCliOptions?: {
-                    scripts?: Record<
-                      string,
-                      string | { cmd: string; shell?: string | boolean }
-                    >;
-                    shell?: string | boolean;
-                    capture?: boolean;
-                  };
-                })
-              | null;
-
             // Access merged root CLI options (installed by passOptions())
-            const rootOpts = (parent?.getDotenvCliOptions ?? {}) as NonNullable<
-              typeof parent
-            >['getDotenvCliOptions'];
+            const bag = readMergedOptions(thisCommand as Command);
             const capture =
               process.env.GETDOTENV_STDIO === 'pipe' ||
-              Boolean(rootOpts?.capture);
+              Boolean((bag as { capture?: boolean }).capture);
             const underTests =
               process.env.GETDOTENV_TEST === '1' ||
               typeof process.env.VITEST_WORKER_ID === 'string';
@@ -194,11 +178,7 @@ export const awsPlugin = () => {
             // Forward when positional args are present; otherwise session-only.
             if (Array.isArray(args) && args.length > 0) {
               const argv = ['aws', ...args];
-              const shellSetting = resolveShell(
-                rootOpts?.scripts,
-                'aws',
-                rootOpts?.shell,
-              );
+              const shellSetting = resolveShell(bag.scripts, 'aws', bag.shell);
               const exit = await runCommand(argv, shellSetting, {
                 env: buildSpawnEnv(process.env, ctx?.dotenv),
                 stdio: capture ? 'pipe' : 'inherit',
