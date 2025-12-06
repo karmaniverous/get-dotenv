@@ -175,7 +175,9 @@ export async function maybeRunAlias(
             ? 'parent'
             : 'unset';
       const redFlag = (mergedBag as { redact?: boolean }).redact;
-      const redPatterns = (mergedBag as { redactPatterns?: string[] })
+      const redPatterns = (mergedBag as {
+        redactPatterns?: Array<string | RegExp>;
+      })
         .redactPatterns;
       const redOpts: { redact?: boolean; redactPatterns?: string[] } = {};
       if (redFlag) redOpts.redact = true;
@@ -201,7 +203,9 @@ export async function maybeRunAlias(
         .entropyThreshold;
       const entropyMinLength = (mergedBag as { entropyMinLength?: number })
         .entropyMinLength;
-      const entropyWhitelist = (mergedBag as { entropyWhitelist?: string[] })
+      const entropyWhitelist = (mergedBag as {
+        entropyWhitelist?: Array<string | RegExp>;
+      })
         .entropyWhitelist;
       if (typeof warnEntropy === 'boolean') entOpts.warnEntropy = warnEntropy;
       if (typeof entropyThreshold === 'number')

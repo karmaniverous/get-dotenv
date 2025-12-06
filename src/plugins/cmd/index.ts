@@ -163,7 +163,9 @@ export const cmdPlugin = (options: CmdPluginOptions = {}) =>
                       : 'unset';
                 // Apply presentation-time redaction (if enabled)
                 const redFlag = (merged as { redact?: boolean }).redact;
-                const redPatterns = (merged as { redactPatterns?: string[] })
+              const redPatterns = (merged as {
+                redactPatterns?: Array<string | RegExp>;
+              })
                   .redactPatterns;
                 const redOpts: { redact?: boolean; redactPatterns?: string[] } =
                   {};
@@ -197,11 +199,9 @@ export const cmdPlugin = (options: CmdPluginOptions = {}) =>
                     entropyMinLength?: number;
                   }
                 ).entropyMinLength;
-                const entropyWhitelist = (
-                  merged as {
-                    entropyWhitelist?: string[];
-                  }
-                ).entropyWhitelist;
+                const entropyWhitelist = (merged as {
+                  entropyWhitelist?: Array<string | RegExp>;
+                }).entropyWhitelist;
                 if (typeof warnEntropy === 'boolean')
                   entOpts.warnEntropy = warnEntropy;
                 if (typeof entropyThreshold === 'number')

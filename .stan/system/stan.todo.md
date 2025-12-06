@@ -231,3 +231,13 @@ When updated: 2025-12-06T00:00:00Z
 - E2E (Windows alias): remove verbose diagnostics from test
   - src/e2e/alias.termination.test.ts: drop tokenization simulation and console.error
     breadcrumbs; keep capture ON and validate JSON-only output now that the fix is stable.
+
+- DX: broaden programmatic patterns & exports
+  - diagnostics/redact: accept RegExp in redactPatterns; compile strings or reuse RegExp.
+  - diagnostics/entropy: accept RegExp in entropyWhitelist; compile strings or reuse RegExp.
+  - getDotenv/cmd/alias: widen casts to Array<string|RegExp> for programmatic use.
+  - cliCore/exec: add overloads for runCommand/runCommandResult with readonly argv and shell-off.
+  - index: re-export defineScripts and add satisfies typing to output config.
+  - types: add DeepReadonly<T> utility export.
+  - Benefit: improved type inference and ergonomics without changing CLI/config shapes
+    (CLI options remain string-based; programmatic usage gains RegExp support and overloads).

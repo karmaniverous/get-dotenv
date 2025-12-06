@@ -58,6 +58,15 @@ const sanitizeEnv = (
  * - Never re-emits stdout/stderr to parent; returns captured buffers.
  * - Supports optional timeout (ms).
  */
+export function runCommandResult(
+  command: readonly string[],
+  shell: false,
+  opts?: {
+    cwd?: string | URL;
+    env?: NodeJS.ProcessEnv;
+    timeoutMs?: number;
+  },
+): Promise<{ exitCode: number; stdout: string; stderr: string }>;
 export const runCommandResult = async (
   command: string | string[],
   shell: string | boolean | URL,
@@ -127,6 +136,11 @@ export const runCommandResult = async (
   }
 };
 
+export function runCommand(
+  command: readonly string[],
+  shell: false,
+  opts: { cwd?: string | URL; env?: NodeJS.ProcessEnv; stdio?: 'inherit' | 'pipe' },
+): Promise<number>;
 export const runCommand = async (
   command: string | string[],
   shell: string | boolean | URL,

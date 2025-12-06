@@ -10,13 +10,13 @@ export type EntropyOptions = {
   warnEntropy?: boolean;
   entropyThreshold?: number; // default 3.8
   entropyMinLength?: number; // default 16
-  entropyWhitelist?: string[]; // regex strings
+  entropyWhitelist?: Array<string | RegExp>; // string or RegExp patterns
 };
 
 const isPrintableAscii = (s: string) => /^[\x20-\x7E]+$/.test(s);
 
-const compile = (patterns?: string[]) =>
-  (patterns ?? []).map((p) => new RegExp(p, 'i'));
+const compile = (patterns?: Array<string | RegExp>) =>
+  (patterns ?? []).map((p) => (typeof p === 'string' ? new RegExp(p, 'i') : p));
 
 const whitelisted = (key: string, regs: RegExp[]) =>
   regs.some((re) => re.test(key));

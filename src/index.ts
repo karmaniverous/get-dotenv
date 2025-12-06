@@ -1,5 +1,6 @@
 import type { Command } from 'commander';
 
+export { defineScripts } from './cliCore/types';
 export { z } from 'zod';
 import { baseRootOptionDefaults } from './cliCore/defaults';
 import type { GetDotenvCliOptions } from './cliCore/GetDotenvCliOptions';
@@ -32,6 +33,7 @@ export {
   type InferGetDotenvVarsFromConfig,
   type ProcessEnv,
 } from './GetDotenvOptions';
+export type { DeepReadonly } from './types/deepReadonly';
 export { interpolateDeep } from './util/interpolateDeep';
 // Flattened exports for plugin author ergonomics
 export type {
@@ -88,7 +90,11 @@ export function createCli(opts: CreateCliOptions = {}): {
     writeErr(str: string) {
       process.stderr.write(str);
     },
+  } satisfies {
+    writeOut: (str: string) => void;
+    writeErr: (str: string) => void;
   };
+
   // Apply to root and recursively to subcommands so all help paths are normalized.
   program.configureOutput(outputCfg);
   const applyOutputRecursively = (cmd: Command) => {

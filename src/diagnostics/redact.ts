@@ -8,7 +8,7 @@ import type { ProcessEnv } from '../GetDotenvOptions';
 
 export type RedactOptions = {
   redact?: boolean;
-  redactPatterns?: string[];
+  redactPatterns?: Array<string | RegExp>;
 };
 
 const DEFAULT_PATTERNS = [
@@ -19,7 +19,12 @@ const DEFAULT_PATTERNS = [
   '\\bkey\\b',
 ];
 
-const compile = (patterns?: string[]) =>
+const compile = (patterns?: Array<string | RegExp>) =>
+  (patterns && patterns.length > 0 ? patterns : DEFAULT_PATTERNS).map((p) =>
+    typeof p === 'string' ? new RegExp(p, 'i') : p,
+  );
+
+const compileStrings = (patterns?: string[]) =>
   (patterns && patterns.length > 0 ? patterns : DEFAULT_PATTERNS).map(
     (p) => new RegExp(p, 'i'),
   );
