@@ -240,4 +240,19 @@ When updated: 2025-12-06T00:00:00Z
   - index: re-export defineScripts and add satisfies typing to output config.
   - types: add DeepReadonly<T> utility export.
   - Benefit: improved type inference and ergonomics without changing CLI/config shapes
-    (CLI options remain string-based; programmatic usage gains RegExp support and overloads).
+    (CLI options remain string-based; programmatic usage gains RegExp support and overloads).
+
+- DX follow-up: fix overload placement & typing to restore typecheck/lint
+  - cliCore/exec: convert arrow exports to function declarations; add general
+    overloads for (string | readonly string[]) and keep shell-off readonly argv
+    overloads; no runtime change.
+  - diagnostics/redact: remove unused helper; types/deepReadonly: replace any with unknown.
+
+- Typecheck/lint: exec argv union narrowing and safe execa assignments
+  - cliCore/exec: explicitly type commandStr as string before execaCommand to
+    satisfy TS when command is string | readonly string[].
+  - Narrow tokenize() inputs with (command as string) in non-array branches.
+  - Avoid assigning potential any from execa/execaCommand; cast awaited results
+    to unknown and pass through pickResult; use catch (e: unknown) to prevent
+    any in catch variables. Resolves TS2345/TS2769 and no-unsafe-assignment
+    errors reported by typecheck/lint on exec.ts.

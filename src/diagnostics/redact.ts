@@ -24,11 +24,6 @@ const compile = (patterns?: Array<string | RegExp>) =>
     typeof p === 'string' ? new RegExp(p, 'i') : p,
   );
 
-const compileStrings = (patterns?: string[]) =>
-  (patterns && patterns.length > 0 ? patterns : DEFAULT_PATTERNS).map(
-    (p) => new RegExp(p, 'i'),
-  );
-
 const shouldRedactKey = (key: string, regs: RegExp[]) =>
   regs.some((re) => re.test(key));
 

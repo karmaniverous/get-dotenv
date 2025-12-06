@@ -4,7 +4,7 @@
  */
 export type DeepReadonly<T> =
   // Functions are left as-is
-  T extends (...args: any[]) => any
+  T extends (...args: unknown[]) => unknown
     ? T
     : // Arrays (and readonly arrays) become readonly arrays of deeply readonly elements
       T extends ReadonlyArray<infer U>

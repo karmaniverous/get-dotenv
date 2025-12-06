@@ -207,9 +207,11 @@ export async function getDotenv(
   if (log) {
     const redactFlag = (options as { redact?: boolean }).redact ?? false;
     const redactPatterns =
-      (options as {
-        redactPatterns?: Array<string | RegExp>;
-      }).redactPatterns ?? undefined;
+      (
+        options as {
+          redactPatterns?: Array<string | RegExp>;
+        }
+      ).redactPatterns ?? undefined;
     const redOpts: RedactOptions = {};
     if (redactFlag) redOpts.redact = true;
     if (redactFlag && Array.isArray(redactPatterns))
@@ -225,10 +227,11 @@ export async function getDotenv(
       .entropyThreshold;
     const entropyMinLengthVal = (options as { entropyMinLength?: number })
       .entropyMinLength;
-    const entropyWhitelistVal = (options as {
-      entropyWhitelist?: Array<string | RegExp>;
-    })
-      .entropyWhitelist;
+    const entropyWhitelistVal = (
+      options as {
+        entropyWhitelist?: Array<string | RegExp>;
+      }
+    ).entropyWhitelist;
     const entOpts: EntropyOptions = {};
     if (typeof warnEntropyVal === 'boolean')
       entOpts.warnEntropy = warnEntropyVal;

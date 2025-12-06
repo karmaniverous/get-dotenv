@@ -67,15 +67,24 @@ export function runCommandResult(
     timeoutMs?: number;
   },
 ): Promise<{ exitCode: number; stdout: string; stderr: string }>;
-export const runCommandResult = async (
-  command: string | string[],
+export function runCommandResult(
+  command: string | readonly string[],
+  shell: string | boolean | URL,
+  opts?: {
+    cwd?: string | URL;
+    env?: NodeJS.ProcessEnv;
+    timeoutMs?: number;
+  },
+): Promise<{ exitCode: number; stdout: string; stderr: string }>;
+export async function runCommandResult(
+  command: string | readonly string[],
   shell: string | boolean | URL,
   opts: {
     cwd?: string | URL;
     env?: NodeJS.ProcessEnv;
     timeoutMs?: number;
   } = {},
-): Promise<{ exitCode: number; stdout: string; stderr: string }> => {
+): Promise<{ exitCode: number; stdout: string; stderr: string }> {
   const envSan = sanitizeEnv(opts.env);
 
   if (shell === false) {
@@ -85,7 +94,7 @@ export const runCommandResult = async (
       file = command[0];
       args = command.slice(1).map(stripOuterQuotes);
     } else {
-      const tokens = tokenize(command);
+      const tokens = tokenize(command as string);
       file = tokens[0];
       args = tokens.slice(1);
     }
@@ -93,30 +102,32 @@ export const runCommandResult = async (
 
     dbg('exec:capture (plain)', { file, args });
     try {
-      const result = await execa(file, args, {
+      const r = (await execa(file, args, {
         ...(opts.cwd !== undefined ? { cwd: opts.cwd } : {}),
         ...(envSan !== undefined ? { env: envSan } : {}),
         stdio: 'pipe',
         ...(opts.timeoutMs !== undefined
           ? { timeout: opts.timeoutMs, killSignal: 'SIGKILL' }
           : {}),
-      });
-      const ok = pickResult(result);
+      })) as unknown;
+      const ok = pickResult(r);
       dbg('exit:capture (plain)', { exitCode: ok.exitCode });
       return ok;
-    } catch (err) {
-      const out = pickResult(err);
+    } catch (e: unknown) {
+      const out = pickResult(e);
       dbg('exit:capture:error (plain)', { exitCode: out.exitCode });
       return out;
     }
   } else {
-    const commandStr = Array.isArray(command) ? command.join(' ') : command;
+    const commandStr: string = Array.isArray(command)
+      ? command.join(' ')
+      : (command as string);
     dbg('exec:capture (shell)', {
       command: commandStr,
       shell: typeof shell === 'string' ? shell : 'custom',
     });
     try {
-      const result = await execaCommand(commandStr, {
+      const r = (await execaCommand(commandStr, {
         shell,
         ...(opts.cwd !== undefined ? { cwd: opts.cwd } : {}),
         ...(envSan !== undefined ? { env: envSan } : {}),
@@ -124,32 +135,45 @@ export const runCommandResult = async (
         ...(opts.timeoutMs !== undefined
           ? { timeout: opts.timeoutMs, killSignal: 'SIGKILL' }
           : {}),
-      });
-      const ok = pickResult(result);
+      })) as unknown;
+      const ok = pickResult(r);
       dbg('exit:capture (shell)', { exitCode: ok.exitCode });
       return ok;
-    } catch (err) {
-      const out = pickResult(err);
+    } catch (e: unknown) {
+      const out = pickResult(e);
       dbg('exit:capture:error (shell)', { exitCode: out.exitCode });
       return out;
     }
   }
-};
+}
 
 export function runCommand(
   command: readonly string[],
   shell: false,
-  opts: { cwd?: string | URL; env?: NodeJS.ProcessEnv; stdio?: 'inherit' | 'pipe' },
+  opts: {
+    cwd?: string | URL;
+    env?: NodeJS.ProcessEnv;
+    stdio?: 'inherit' | 'pipe';
+  },
 ): Promise<number>;
-export const runCommand = async (
-  command: string | string[],
+export function runCommand(
+  command: string | readonly string[],
   shell: string | boolean | URL,
   opts: {
     cwd?: string | URL;
     env?: NodeJS.ProcessEnv;
     stdio?: 'inherit' | 'pipe';
   },
-): Promise<number> => {
+): Promise<number>;
+export async function runCommand(
+  command: string | readonly string[],
+  shell: string | boolean | URL,
+  opts: {
+    cwd?: string | URL;
+    env?: NodeJS.ProcessEnv;
+    stdio?: 'inherit' | 'pipe';
+  },
+): Promise<number> {
   if (shell === false) {
     let file: string | undefined;
     let args: string[] = [];
@@ -157,7 +181,7 @@ export const runCommand = async (
       file = command[0];
       args = command.slice(1).map(stripOuterQuotes);
     } else {
-      const tokens = tokenize(command);
+      const tokens = tokenize(command as string);
       file = tokens[0];
       args = tokens.slice(1);
     }
@@ -192,7 +216,9 @@ export const runCommand = async (
     dbg('exit (plain)', { exitCode: exit });
     return typeof exit === 'number' ? exit : Number.NaN;
   } else {
-    const commandStr = Array.isArray(command) ? command.join(' ') : command;
+    const commandStr: string = Array.isArray(command)
+      ? command.join(' ')
+      : (command as string);
     dbg('exec (shell)', {
       shell: typeof shell === 'string' ? shell : 'custom',
       stdio: opts.stdio,
@@ -226,4 +252,4 @@ export const runCommand = async (
     dbg('exit (shell)', { exitCode: exit });
     return typeof exit === 'number' ? exit : Number.NaN;
   }
-};
+}

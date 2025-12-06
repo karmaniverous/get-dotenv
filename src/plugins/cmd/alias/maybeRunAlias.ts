@@ -14,7 +14,9 @@ import { buildSpawnEnv } from '../../../cliCore/spawnEnv';
 import type { RootOptionsShape } from '../../../cliCore/types';
 import type { ScriptsTable } from '../../../cliCore/types';
 import type { GetDotenvCliPublic } from '../../../cliHost';
+import type { EntropyOptions } from '../../../diagnostics/entropy';
 import { maybeWarnEntropy } from '../../../diagnostics/entropy';
+import type { RedactOptions } from '../../../diagnostics/redact';
 import { redactTriple } from '../../../diagnostics/redact';
 import { dotenvExpandFromProcessEnv } from '../../../dotenvExpand';
 import type { RootOptionsShapeCompat } from '../../../GetDotenvOptions';
@@ -175,11 +177,12 @@ export async function maybeRunAlias(
             ? 'parent'
             : 'unset';
       const redFlag = (mergedBag as { redact?: boolean }).redact;
-      const redPatterns = (mergedBag as {
-        redactPatterns?: Array<string | RegExp>;
-      })
-        .redactPatterns;
-      const redOpts: { redact?: boolean; redactPatterns?: string[] } = {};
+      const redPatterns = (
+        mergedBag as {
+          redactPatterns?: Array<string | RegExp>;
+        }
+      ).redactPatterns;
+      const redOpts: RedactOptions = {};
       if (redFlag) redOpts.redact = true;
       if (redFlag && Array.isArray(redPatterns))
         redOpts.redactPatterns = redPatterns;
@@ -192,21 +195,17 @@ export async function maybeRunAlias(
       process.stderr.write(
         `[trace] key=${k} origin=${origin} parent=${triple.parent ?? ''} dotenv=${triple.dotenv ?? ''} final=${triple.final ?? ''}\n`,
       );
-      const entOpts: {
-        warnEntropy?: boolean;
-        entropyThreshold?: number;
-        entropyMinLength?: number;
-        entropyWhitelist?: string[];
-      } = {};
+      const entOpts: EntropyOptions = {};
       const warnEntropy = (mergedBag as { warnEntropy?: boolean }).warnEntropy;
       const entropyThreshold = (mergedBag as { entropyThreshold?: number })
         .entropyThreshold;
       const entropyMinLength = (mergedBag as { entropyMinLength?: number })
         .entropyMinLength;
-      const entropyWhitelist = (mergedBag as {
-        entropyWhitelist?: Array<string | RegExp>;
-      })
-        .entropyWhitelist;
+      const entropyWhitelist = (
+        mergedBag as {
+          entropyWhitelist?: Array<string | RegExp>;
+        }
+      ).entropyWhitelist;
       if (typeof warnEntropy === 'boolean') entOpts.warnEntropy = warnEntropy;
       if (typeof entropyThreshold === 'number')
         entOpts.entropyThreshold = entropyThreshold;
