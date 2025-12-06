@@ -12,7 +12,6 @@ export const AwsPluginConfigSchema = z.object({
 });
 
 export type AwsPluginConfig = z.infer<typeof AwsPluginConfigSchema>;
-export type AwsPluginConfigResolved = z.infer<typeof AwsPluginConfigSchema>;
 
 export type AwsCredentials = {
   accessKeyId: string;

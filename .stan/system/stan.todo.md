@@ -75,6 +75,12 @@ When updated: 2025-12-06T00:00:00Z
     specify the generic (in aws and other plugins).
 - Lint: suppress no-unnecessary-type-parameters in definePlugin (file-level) to allow generic-default DX without false positives.
 
+- Plugin DX: remove base-interface helpers to prevent poor inference
+  - Dropped readConfig/createPluginDynamicOption from GetDotenvCliPlugin; the
+    instance-bound helpers remain on plugins returned by definePlugin and
+    default to the plugin’s TConfig, enabling “no explicit type params.”
+  - AWS types: removed duplicate AwsPluginConfigResolved; single exported type now.
+
 - AWS plugin defaults and ctx mirror hardening
   - Removed add-ctx flag and behavior; the plugin now always publishes only
     non‑sensitive metadata (profile, region) under ctx.plugins.aws.

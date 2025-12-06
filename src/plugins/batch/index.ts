@@ -21,7 +21,7 @@ import {
  * - logger: defaults to console.
  */
 export const batchPlugin = (opts: BatchPluginOptions = {}) => {
-  const plugin = definePlugin<GetDotenvOptions, BatchConfig>({
+  const plugin = definePlugin({
     id: 'batch',
     // Host validates this when config-loader is enabled; plugins may also
     // re-validate at action time as a safety belt.

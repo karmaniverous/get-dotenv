@@ -79,27 +79,6 @@ export interface GetDotenvCliPlugin<
    * Compose a child plugin. Returns the parent to enable chaining.
    */
   use: (child: GetDotenvCliPlugin<TOptions>) => GetDotenvCliPlugin<TOptions>;
-  /**
-   * Instance-bound accessor: read the validated, interpolated config slice for
-   * this plugin instance (when present).
-   */
-
-  readConfig?<TConfig>(cli: GetDotenvCliPublic<TOptions>): TConfig | undefined;
-  /**
-   * Create a plugin-bound dynamic option. The callback receives the resolved
-   * configuration bag and this plugin instance’s validated config slice.
-   */
-
-  createPluginDynamicOption?<TConfig>(
-    cli: GetDotenvCliPublic<TOptions>,
-    flags: string,
-    desc: (
-      cfg: ResolvedHelpConfig & { plugins: Record<string, unknown> },
-      pluginCfg: TConfig | undefined,
-    ) => string,
-    parser?: (value: string, previous?: unknown) => unknown,
-    defaultValue?: unknown,
-  ): Option;
 }
 
 /**

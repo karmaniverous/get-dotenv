@@ -9,7 +9,7 @@ import { resolveAwsContext } from './service';
 import { type AwsPluginConfigResolved, AwsPluginConfigSchema } from './types';
 
 export const awsPlugin = () => {
-  const plugin = definePlugin<GetDotenvOptions, AwsPluginConfigResolved>({
+  const plugin = definePlugin({
     id: 'aws',
     // Host validates this slice when the loader path is active.
     configSchema: AwsPluginConfigSchema,
@@ -227,7 +227,7 @@ export const awsPlugin = () => {
     },
     async afterResolve(_cli, ctx) {
       const log: Logger = console;
-      const cfg = plugin.readConfig<AwsPluginConfigResolved>(_cli) ?? {};
+      const cfg = plugin.readConfig(_cli) ?? {};
 
       const out = await resolveAwsContext({
         dotenv: ctx.dotenv,

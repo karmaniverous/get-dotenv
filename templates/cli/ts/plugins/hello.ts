@@ -23,7 +23,7 @@ export const helloPlugin = () => {
         .action(() => {
           const ctx = cli.getCtx();
           const name = '__CLI_NAME__';
-          const cfg = plugin.readConfig<HelloConfig>(cli) ?? {};
+          const cfg = plugin.readConfig(cli) ?? {};
           const keys = Object.keys(ctx?.dotenv ?? []);
           const label =
             cfg.loud === true
