@@ -23,16 +23,16 @@ import type { GetDotenvCliCtx, ResolvedHelpConfig } from './GetDotenvCli';
  * Purpose: remove nominal class identity (private fields) from the plugin seam
  * to avoid TS2379 under exactOptionalPropertyTypes in downstream consumers.
  */
-export type GetDotenvCliPublic<
+export interface GetDotenvCliPublic<
   TOptions extends GetDotenvOptions = GetDotenvOptions,
-> = Command & {
-  ns: (name: string) => Command;
-  getCtx: () => GetDotenvCliCtx<TOptions> | undefined;
-  resolveAndLoad: (
+> extends Command {
+  ns(name: string): Command;
+  getCtx(): GetDotenvCliCtx<TOptions> | undefined;
+  resolveAndLoad(
     customOptions?: Partial<TOptions>,
     opts?: { runAfterResolve?: boolean },
-  ) => Promise<GetDotenvCliCtx<TOptions>>;
-  setOptionGroup: (opt: Option, group: string) => void;
+  ): Promise<GetDotenvCliCtx<TOptions>>;
+  setOptionGroup(opt: Option, group: string): void;
   /**
    * Create a dynamic option whose description is computed at help time
    * from the resolved configuration.
@@ -45,7 +45,16 @@ export type GetDotenvCliPublic<
     parser?: (value: string, previous?: unknown) => unknown,
     defaultValue?: unknown,
   ): Option;
-};
+  // Overload: typed parser & default for value inference
+  createDynamicOption<TValue = unknown>(
+    flags: string,
+    desc: (
+      cfg: ResolvedHelpConfig & { plugins: Record<string, unknown> },
+    ) => string,
+    parser: (value: string, previous?: TValue) => TValue,
+    defaultValue?: TValue,
+  ): Option;
+}
 
 /** Public plugin contract used by the GetDotenv CLI host. */
 export interface GetDotenvCliPlugin<

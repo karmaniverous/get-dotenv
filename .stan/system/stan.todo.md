@@ -286,3 +286,8 @@ When updated: 2025-12-06T00:00:00Z
     Windows/PowerShell one‑off variant.
   - guides/getting-started.md: mirrored the npx fix in on‑ramp examples so they
     run as‑is without prior installation.
+
+- Docs build: fix TypeDoc router target error
+  - Converted GetDotenvCliPublic from a type alias (intersection) to an
+    interface extending Command so TypeDoc can assign a URL to the reflection.
+    This removes the “router target … **type.**type” error during npm run docs.
