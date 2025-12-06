@@ -306,3 +306,9 @@ When updated: 2025-12-06T00:00:00Z
 - Lint: remove non-null assertion in batch defaultCmdAction
   - Replaced args[0]! with (args[0] ?? '') when computing the first token
     under shell-off eval preservation to satisfy no-non-null-assertion.
+
+- DX: readMergedOptions returns a concrete bag
+  - Updated src/cliHost/GetDotenvCli/index.ts so readMergedOptions always
+    returns an object ({} fallback) instead of undefined. Removed “?? {}”
+    coalescing in batch defaultCmdAction and relied on the helper’s
+    concrete return.

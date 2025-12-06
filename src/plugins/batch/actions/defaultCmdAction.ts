@@ -59,7 +59,7 @@ export const buildDefaultCmdAction =
 
     // Resolve scripts/shell with precedence:
     // plugin opts → plugin config → merged root CLI options
-    const mergedBag = (readMergedOptions(batchCmd) ?? {}) as {
+    const mergedBag = readMergedOptions(batchCmd) as {
       scripts?: Scripts;
       shell?: string | boolean;
     };
@@ -85,7 +85,7 @@ export const buildDefaultCmdAction =
         return;
       }
       if (raw.list || localList) {
-        const bag = readMergedOptions(batchCmd) ?? {};
+        const bag = readMergedOptions(batchCmd);
         await execShellCommandBatch({
           globs,
           ignoreErrors,
@@ -113,7 +113,7 @@ export const buildDefaultCmdAction =
     if (localList && typeof raw.command !== 'string') {
       const extraGlobs = args.map(String).join(' ').trim();
       const mergedGlobs = [globs, extraGlobs].filter(Boolean).join(' ');
-      const bag = readMergedOptions(batchCmd) ?? {};
+      const bag = readMergedOptions(batchCmd);
       await execShellCommandBatch({
         globs: mergedGlobs,
         ignoreErrors,
@@ -131,7 +131,7 @@ export const buildDefaultCmdAction =
     if (listFromParent && args.length > 0 && typeof raw.command !== 'string') {
       const extra = args.map(String).join(' ').trim();
       const mergedGlobs = [globs, extra].filter(Boolean).join(' ');
-      const bag = readMergedOptions(batchCmd) ?? {};
+      const bag = readMergedOptions(batchCmd);
       await execShellCommandBatch({
         globs: mergedGlobs,
         ignoreErrors,
@@ -155,7 +155,7 @@ export const buildDefaultCmdAction =
         | undefined) ?? undefined
     )?.getDotenvCliOptions;
 
-    const bag = readMergedOptions(batchCmd) ?? {};
+    const bag = readMergedOptions(batchCmd);
     const scriptsExec = scripts ?? bag.scripts;
     const shellExec = shell ?? bag.shell;
     const resolved = resolveCommand(scriptsExec, input);
