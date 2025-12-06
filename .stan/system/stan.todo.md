@@ -58,4 +58,9 @@ When updated: 2025-12-06T00:00:00Z
 
 - Typecheck/lint follow‑through (omitUndefined boundary & unused import)
   - Made Zod-parse boundary explicit in computeContext so omitUndefined preserves
-    the GetDotenvOptions overlay; removed an unused type import in cliHost/index.ts.
+    the GetDotenvOptions overlay; removed an unused type import in cliHost/index.ts.
+
+- Converter & aws help DX polish
+  - Use omitUndefinedRecord in getDotenvCliOptions2Options to drop undefined
+    vars consistently at the boundary.
+  - Switch aws plugin flags to plugin.createPluginDynamicOption so help shows effective defaults.

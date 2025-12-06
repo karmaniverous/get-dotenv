@@ -23,28 +23,113 @@ export const awsPlugin = () => {
         .enablePositionalOptions()
         .passThroughOptions()
         .allowUnknownOption(true)
-        // Boolean toggles
-        .option('--login-on-demand', 'attempt aws sso login on-demand')
-        .option('--no-login-on-demand', 'disable sso login on-demand')
-        .option('--set-env', 'write resolved values into process.env')
-        .option('--no-set-env', 'do not write resolved values into process.env')
-        .option('--add-ctx', 'mirror results under ctx.plugins.aws')
-        .option('--no-add-ctx', 'do not mirror results under ctx.plugins.aws')
+        // Boolean toggles with dynamic help labels (effective defaults)
+        .addOption(
+          plugin.createPluginDynamicOption<AwsPluginConfigResolved>(
+            cli,
+            '--login-on-demand',
+            (_bag, cfg) =>
+              `attempt aws sso login on-demand${cfg?.loginOnDemand ? ' (default)' : ''}`,
+          ),
+        )
+        .addOption(
+          plugin.createPluginDynamicOption<AwsPluginConfigResolved>(
+            cli,
+            '--no-login-on-demand',
+            (_bag, cfg) =>
+              `disable sso login on-demand${cfg?.loginOnDemand === false ? ' (default)' : ''}`,
+          ),
+        )
+        .addOption(
+          plugin.createPluginDynamicOption<AwsPluginConfigResolved>(
+            cli,
+            '--set-env',
+            (_bag, cfg) =>
+              `write resolved values into process.env${cfg?.setEnv !== false ? ' (default)' : ''}`,
+          ),
+        )
+        .addOption(
+          plugin.createPluginDynamicOption<AwsPluginConfigResolved>(
+            cli,
+            '--no-set-env',
+            (_bag, cfg) =>
+              `do not write resolved values into process.env${cfg?.setEnv === false ? ' (default)' : ''}`,
+          ),
+        )
+        .addOption(
+          plugin.createPluginDynamicOption<AwsPluginConfigResolved>(
+            cli,
+            '--add-ctx',
+            (_bag, cfg) =>
+              `mirror results under ctx.plugins.aws${cfg?.addCtx !== false ? ' (default)' : ''}`,
+          ),
+        )
+        .addOption(
+          plugin.createPluginDynamicOption<AwsPluginConfigResolved>(
+            cli,
+            '--no-add-ctx',
+            (_bag, cfg) =>
+              `do not mirror results under ctx.plugins.aws${cfg?.addCtx === false ? ' (default)' : ''}`,
+          ),
+        )
         // Strings / enums
-        .option('--profile <string>', 'AWS profile name')
-        .option('--region <string>', 'AWS region')
-        .option('--default-region <string>', 'fallback region')
-        .option(
-          '--strategy <string>',
-          'credential acquisition strategy: cli-export|none',
+        .addOption(
+          plugin.createPluginDynamicOption<AwsPluginConfigResolved>(
+            cli,
+            '--profile <string>',
+            (_bag, cfg) =>
+              `AWS profile name${cfg?.profile ? ` (default: ${JSON.stringify(cfg.profile)})` : ''}`,
+          ),
+        )
+        .addOption(
+          plugin.createPluginDynamicOption<AwsPluginConfigResolved>(
+            cli,
+            '--region <string>',
+            (_bag, cfg) =>
+              `AWS region${cfg?.region ? ` (default: ${JSON.stringify(cfg.region)})` : ''}`,
+          ),
+        )
+        .addOption(
+          plugin.createPluginDynamicOption<AwsPluginConfigResolved>(
+            cli,
+            '--default-region <string>',
+            (_bag, cfg) =>
+              `fallback region${cfg?.defaultRegion ? ` (default: ${JSON.stringify(cfg.defaultRegion)})` : ''}`,
+          ),
+        )
+        .addOption(
+          plugin.createPluginDynamicOption<AwsPluginConfigResolved>(
+            cli,
+            '--strategy <string>',
+            (_bag, cfg) =>
+              `credential acquisition strategy: cli-export|none${cfg?.strategy ? ` (default: ${JSON.stringify(cfg.strategy)})` : ''}`,
+          ),
         )
         // Advanced key overrides
-        .option('--profile-key <string>', 'dotenv/config key for local profile')
-        .option(
-          '--profile-fallback-key <string>',
-          'fallback dotenv/config key for profile',
+        .addOption(
+          plugin.createPluginDynamicOption<AwsPluginConfigResolved>(
+            cli,
+            '--profile-key <string>',
+            (_bag, cfg) =>
+              `dotenv/config key for local profile${cfg?.profileKey ? ` (default: ${JSON.stringify(cfg.profileKey)})` : ''}`,
+          ),
         )
-        .option('--region-key <string>', 'dotenv/config key for region')
+        .addOption(
+          plugin.createPluginDynamicOption<AwsPluginConfigResolved>(
+            cli,
+            '--profile-fallback-key <string>',
+            (_bag, cfg) =>
+              `fallback dotenv/config key for profile${cfg?.profileFallbackKey ? ` (default: ${JSON.stringify(cfg.profileFallbackKey)})` : ''}`,
+          ),
+        )
+        .addOption(
+          plugin.createPluginDynamicOption<AwsPluginConfigResolved>(
+            cli,
+            '--region-key <string>',
+            (_bag, cfg) =>
+              `dotenv/config key for region${cfg?.regionKey ? ` (default: ${JSON.stringify(cfg.regionKey)})` : ''}`,
+          ),
+        )
         // Accept any extra operands so Commander does not error when tokens appear after "--".
         .argument('[args...]')
         .action(

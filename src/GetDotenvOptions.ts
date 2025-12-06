@@ -197,9 +197,7 @@ export const getDotenvCliOptions2Options = ({
   // Drop undefined-valued entries at the converter stage to match ProcessEnv
   // expectations and the compat test assertions.
   if (parsedVars) {
-    parsedVars = Object.fromEntries(
-      Object.entries(parsedVars).filter(([, v]) => v !== undefined),
-    );
+    parsedVars = omitUndefinedRecord(parsedVars);
   }
 
   // Tolerate paths as either a delimited string or string[]
