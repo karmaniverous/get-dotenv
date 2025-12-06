@@ -4,35 +4,64 @@ title: aws
 
 # Shipped Plugins: aws
 
-The AWS plugin resolves profile/region and acquires credentials using a safe cascade, writes them to `process.env`, and mirrors non‑sensitive metadata under `ctx.plugins.aws`. It also provides an `aws` subcommand to establish a session and optionally forward to the AWS CLI.
+The aws plugin establishes an AWS session once per invocation, writes the resolved region and credentials to `process.env`, and publishes a minimal, non‑sensitive breadcrumb under `ctx.plugins.aws` for downstream consumers. It also provides a small `aws` subcommand for session establishment and optional forwarding to the AWS CLI.
 
-## What it does
+This plugin is intended to be the parent for child plugins that need AWS auth. Compose your child plugin under `awsPlugin()` so that ordering and context are guaranteed: the aws parent resolves profile/region/credentials first; the child runs afterward and can safely use the AWS SDK (v3) with the environment already in place.
 
-Resolution precedence:
+At a glance:
 
-1. Profile
+- Resolution precedence (profile/region/credentials)
+- Always‑on env writes (region + credentials)
+- Minimal metadata mirrored under `ctx.plugins.aws` (e.g., `{ profile?, region? }`)
+- A simple `aws` subcommand to resolve a session and optionally forward to the AWS CLI
 
-- `plugins.aws.profile` (config override) → `ctx.dotenv['AWS_LOCAL_PROFILE']` → `ctx.dotenv['AWS_PROFILE']` → undefined
+## How it works (high level)
 
-2. Region
+- Profile resolve:
+  - From config (`plugins.aws.profile`) → dotenv (`AWS_LOCAL_PROFILE`) → dotenv fallback (`AWS_PROFILE`) → undefined.
+- Region resolve:
+  - From config (`plugins.aws.region`) → dotenv (`AWS_REGION`) → `aws configure get region --profile <profile>` (best‑effort) → `plugins.aws.defaultRegion`.
+- Credentials resolve (strategy: `cli-export` default):
+  - If `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` exist in the parent env, they are used (no CLI call).
+  - Else try `aws configure export-credentials` (JSON first, then env‑lines).
+  - If export fails and the profile looks like SSO and `loginOnDemand` is true, run `aws sso login --profile <profile>` once and retry export.
+  - As a last resort, fall back to `aws configure get aws_access_key_id`, `aws_secret_access_key`, and optional `aws_session_token`.
+- Effects:
+  - Writes `AWS_REGION` and (when unset) `AWS_DEFAULT_REGION`, plus credentials vars, into `process.env`.
+  - Mirrors non‑sensitive metadata only (`{ profile?, region? }`) under `ctx.plugins.aws`.
+  - Child plugins can rely on `process.env` for AWS SDK default providers and can read profile/region via `ctx.plugins.aws`.
 
-- `plugins.aws.region` (config override) → `ctx.dotenv['AWS_REGION']` → best‑effort `aws configure get region --profile <profile>` → `plugins.aws.defaultRegion`
+## Options and flags
 
-3. Credentials (strategy: `cli-export` by default)
+You can configure the aws plugin via getdotenv config (JSON/YAML/JS/TS) and/or via the `aws` subcommand flags. Config is recommended for defaults; flags are useful per‑run.
 
-- Env‑first: if `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` are set, they’re used and no CLI calls are made.
-- Otherwise, try `aws configure export-credentials` (JSON, then env‑lines).
-- If export fails and the profile looks like SSO and `loginOnDemand` is true, run `aws sso login --profile <profile>` once, then retry export.
-- Static fallback: `aws configure get aws_access_key_id/secret_access_key[/aws_session_token]`.
+Config keys (under `plugins.aws`):
 
-Effects:
+- `profile?: string` — preferred AWS profile
+- `region?: string` — preferred region
+- `defaultRegion?: string` — fallback region when none can be detected
+- `profileKey?: string` — dotenv/config key for local profile (default: `"AWS_LOCAL_PROFILE"`)
+- `profileFallbackKey?: string` — fallback dotenv/config key for profile (default: `"AWS_PROFILE"`)
+- `regionKey?: string` — dotenv/config key for region (default: `"AWS_REGION"`)
+- `strategy?: "cli-export" | "none"` — credential acquisition strategy (default `"cli-export"`). Use `"none"` to skip credential resolution; region resolution still applies.
+- `loginOnDemand?: boolean` — attempt `aws sso login` once when export fails for SSO profiles (default `false`)
 
-- Always write `AWS_REGION` and (if unset) `AWS_DEFAULT_REGION`, plus credentials variables to `process.env`.
-- Mirror non‑sensitive metadata only: `{ profile?, region? }` is always published under `ctx.plugins.aws`. Credentials are intentionally not mirrored there; they still flow to child processes via env injection when forwarding.
+Subcommand flags (map directly to config for effective defaults):
 
-## Config (plugins.aws)
+- `--login-on-demand` / `--no-login-on-demand` — enable/disable SSO login retry
+- `--profile <string>` — override profile
+- `--region <string>` — override region
+- `--default-region <string>` — override fallback region
+- `--strategy <string>` — `cli-export` | `none`
+- `--profile-key <string>` — override config key name for profile (`AWS_LOCAL_PROFILE` by default)
+- `--profile-fallback-key <string>` — override fallback key (`AWS_PROFILE` by default)
+- `--region-key <string>` — override config key name for region (`AWS_REGION` by default)
 
-Config keys (JSON/YAML/JS/TS under `plugins.aws`):
+Note on capture: The shipped host treats `--capture` (or `GETDOTENV_STDIO=pipe`) as a global behavior. The aws subcommand honors it when forwarding to the AWS CLI and in child processes.
+
+## Config examples
+
+JSON:
 
 ```json
 {
@@ -41,9 +70,6 @@ Config keys (JSON/YAML/JS/TS under `plugins.aws`):
       "profile": "dev",
       "region": "us-east-1",
       "defaultRegion": "us-east-1",
-      "profileKey": "AWS_LOCAL_PROFILE",
-      "profileFallbackKey": "AWS_PROFILE",
-      "regionKey": "AWS_REGION",
       "strategy": "cli-export",
       "loginOnDemand": true
     }
@@ -51,97 +77,116 @@ Config keys (JSON/YAML/JS/TS under `plugins.aws`):
 }
 ```
 
-All fields are optional; defaults favor `cli-export`.
+YAML:
 
-## Subcommand: `aws`
-
-Establish a session and optionally forward to the AWS CLI.
-
-- Session only (no forwarding):
-
-```bash
-getdotenv aws --profile dev --region us-east-1
+```yaml
+plugins:
+  aws:
+    profile: dev
+    region: us-east-1
+    defaultRegion: us-east-1
+    strategy: cli-export
+    loginOnDemand: true
 ```
 
-Writes region/credentials into `process.env`, mirrors `{ profile?, region? }` into `ctx.plugins.aws`, and exits 0.
+JS/TS (dynamic allowed): Same keys as above; you can also compute values at runtime.
+
+## Authoring child plugins (recommended pattern)
+
+Compose your plugin as a child of the aws plugin so that auth is established first. Your plugin should:
+
+- Read region/profile from `ctx.plugins.aws` (non‑sensitive metadata).
+- Use AWS SDK v3 (or any AWS client) that respects `process.env` for credentials.
+- Avoid duplicating profile/credential logic. Let the aws parent resolve and publish.
+
+### Example: whoami child plugin (STS GetCallerIdentity)
+
+Install the AWS SDK client:
+
+```bash
+npm i @aws-sdk/client-sts
+```
+
+Author the child plugin:
+
+```ts
+import { definePlugin } from '@karmaniverous/get-dotenv/cliHost';
+import { STSClient, GetCallerIdentityCommand } from '@aws-sdk/client-sts';
+
+export const whoamiPlugin = () =>
+  definePlugin({
+    id: 'aws-whoami',
+    setup(cli) {
+      cli
+        .ns('whoami')
+        .description('Print AWS caller identity (uses parent aws session)')
+        .action(async () => {
+          // The AWS SDK default providers will read credentials from
+          // process.env, which the aws parent has already populated.
+          const client = new STSClient();
+          const result = await client.send(new GetCallerIdentityCommand());
+          console.log(JSON.stringify(result, null, 2));
+        });
+    },
+  });
+```
+
+Wire the child under the aws parent:
+
+```ts
+#!/usr/bin/env node
+import { GetDotenvCli } from '@karmaniverous/get-dotenv/cliHost';
+import { awsPlugin } from '@karmaniverous/get-dotenv/plugins';
+import { whoamiPlugin } from './plugins/aws-whoami';
+
+const program = new GetDotenvCli('mycli');
+
+// Compose aws as parent and whoami as its child.
+program.attachRootOptions().use(awsPlugin().use(whoamiPlugin()));
+
+await program.brand({
+  importMetaUrl: import.meta.url,
+  description: 'mycli',
+});
+
+await program.parseAsync();
+```
+
+Usage:
+
+```bash
+# Establish session and then print identity
+mycli aws --login-on-demand whoami
+```
+
+Notes:
+
+- Composition (`awsPlugin().use(whoamiPlugin())`) guarantees that the aws parent resolves profile/region/credentials before the child runs.
+- The child plugin does not need to manage profile/credential logic. The default AWS SDK providers will use environment variables populated by the aws parent.
+- For diagnostics without altering behavior, run with `--capture` or set `GETDOTENV_STDIO=pipe` to buffer outputs deterministically in CI.
+
+## Session‑only and AWS CLI forwarding
+
+The `aws` subcommand establishes the session and can optionally forward to the AWS CLI:
+
+- Session only:
+
+```bash
+mycli aws --profile dev --region us-east-1
+```
+
+Writes region and credentials to `process.env`, mirrors `{ profile, region }` to `ctx.plugins.aws`, then exits.
 
 - Forward to AWS CLI:
 
 ```bash
-getdotenv aws -- sts get-caller-identity
+mycli aws -- sts get-caller-identity
 ```
 
-Forwarded tokens appear after `--`. The subprocess is invoked with:
+Tokens after `--` are forwarded to `aws …`. The subprocess runs with an environment composed from `{ ...process.env, ...ctx.dotenv }` and honors capture (`--capture` or `GETDOTENV_STDIO=pipe`).
 
-- Explicit env injection: `{ ...process.env, ...ctx.dotenv }`
-- `stdio`: inherits by default; use `--capture` or `GETDOTENV_STDIO=pipe` for deterministic buffering in CI.
-- Shell resolution: honors per‑script overrides and the global shell setting (see the [Shell execution behavior](../shell.md) guide).
+## Security & behavior notes
 
-## Usage examples
-
-Session only (respecting config and dotenv overlays):
-
-```bash
-getdotenv aws --login-on-demand
-```
-
-Assuming `plugins.aws` in your config sets `profile: "dev"`, the plugin will log in if required and populate both `process.env` and `ctx.plugins.aws`.
-
-Forward to AWS:
-
-```bash
-getdotenv --capture aws -- sts get-caller-identity
-```
-
-Runs the AWS CLI with captured stdout/stderr (buffered and re‑emitted), using a child env composed from the current context.
-
-## Import paths
-
-```ts
-// Recommended: plugins barrel (shares type identity with cliHost)
-import { awsPlugin } from '@karmaniverous/get-dotenv/plugins';
-```
-
-Use it with the plugin‑first host:
-
-```ts
-import { GetDotenvCli } from '@karmaniverous/get-dotenv/cliHost';
-import { awsPlugin } from '@karmaniverous/get-dotenv/plugins';
-
-const program = new GetDotenvCli('mycli').use(awsPlugin());
-
-await program.resolveAndLoad();
-await program.parseAsync();
-```
-
-Per‑plugin subpaths remain available when needed:
-
-```ts
-import { awsPlugin } from '@karmaniverous/get-dotenv/plugins/aws';
-```
-
-## Typed config (DX)
-
-You can retrieve the validated, merged plugin config slice with strong typing using the helper:
-
-```ts
-import { definePlugin } from '@karmaniverous/get-dotenv/cliHost';
-import type { AwsPluginConfig } from '@karmaniverous/get-dotenv/plugins/aws';
-
-export const myAwsAwarePlugin = () => {
-  const plugin = definePlugin({
-    id: 'my-aws',
-    setup(cli) {
-      const cfg = plugin.readConfig<AwsPluginConfig>(cli);
-      // cfg.profile / cfg.region / cfg.strategy ... are strongly typed here
-    },
-  });
-  return plugin;
-};
-```
-
-## Notes and caveats
-
-- The plugin ensures `AWS_REGION` is set and copies it to `AWS_DEFAULT_REGION` if that var is unset for broader compatibility.
-- SSO login is best‑effort and only triggered when export fails and the profile looks like SSO; static profiles fall back to credential getters.
-- Forwarding respects `--trace` diagnostics and `--capture`; see the Shell and Plugin‑first host guides for details.
+- The plugin writes standard AWS environment variables (`AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, optional `AWS_SESSION_TOKEN`) to `process.env` for this process only. It also ensures `AWS_REGION` is set and synchronizes `AWS_DEFAULT_REGION` when missing.
+- Only non‑sensitive metadata is mirrored under `ctx.plugins.aws`. Credentials are not mirrored there.
+- With `strategy: "none"`, credential resolution is skipped; region resolution still applies. This can be useful when credentials arrive via other means (e.g., container IMDS or an external provider), but you still want normalized region handling.

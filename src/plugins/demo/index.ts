@@ -28,18 +28,20 @@
  *   getdotenv demo script echo OK
  *   getdotenv --trace demo run --print ENV_SETTING
  */
-import type { GetDotenvCliPublic } from '@karmaniverous/get-dotenv/cliHost';
 
 import { runCommand } from '../../cliCore/exec';
 import { buildSpawnEnv } from '../../cliCore/spawnEnv';
-import { definePlugin } from '../../cliHost/definePlugin';
+import {
+  definePlugin,
+  type GetDotenvCliPublic,
+} from '../../cliHost/definePlugin';
 import type { Logger } from '../../GetDotenvOptions';
 import { resolveCommand, resolveShell } from '../../services/batch/resolve';
 
 export const demoPlugin = () =>
   definePlugin({
     id: 'demo',
-    setup(cli: GetDotenvCliPublic) {
+    setup(cli) {
       const logger: Logger = console;
       const ns = cli
         .ns('demo')
