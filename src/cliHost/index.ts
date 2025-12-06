@@ -1,5 +1,3 @@
-import type { Command } from 'commander';
-
 export { z } from 'zod';
 import { baseRootOptionDefaults } from '../cliCore/defaults';
 import type { GetDotenvCliOptions } from '../cliCore/GetDotenvCliOptions';
@@ -181,22 +179,3 @@ export class GetDotenvCli extends BaseGetDotenvCli {
     return this;
   }
 }
-
-/**
- * Helper to retrieve the merged root options bag from any action handler
- * that only has access to thisCommand. Avoids structural casts.
- */
-export const readMergedOptions = (
-  cmd: Command,
-): GetDotenvCliOptions | undefined => {
-  // Ascend to the root command
-  let root: Command = cmd;
-  while ((root as unknown as { parent?: Command }).parent) {
-    root = (root as unknown as { parent?: Command }).parent as Command;
-  }
-  const hostAny = root as unknown as { getOptions?: () => unknown };
-  return typeof hostAny.getOptions === 'function'
-    ? (hostAny.getOptions() as GetDotenvCliOptions)
-    : ((root as unknown as { getDotenvCliOptions?: unknown })
-        .getDotenvCliOptions as GetDotenvCliOptions | undefined);
-};

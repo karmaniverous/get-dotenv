@@ -44,7 +44,8 @@ export type {
   ScriptsTable,
 } from './cliHost';
 export type { InferPluginConfig } from './cliHost';
-export { definePlugin, GetDotenvCli, readMergedOptions } from './cliHost';
+export { definePlugin, GetDotenvCli } from './cliHost';
+export { readMergedOptions } from './cliHost/GetDotenvCli';
 
 /**
  * Create a get-dotenv CLI host with included plugins.
