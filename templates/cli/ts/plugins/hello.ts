@@ -1,13 +1,15 @@
 import { definePlugin } from '@karmaniverous/get-dotenv/cliHost';
+import { z } from 'zod';
 
-type HelloConfig = {
-  loud?: boolean;
-  color?: string;
-};
+const HelloConfigSchema = z.object({
+  loud: z.boolean().optional().default(false),
+  color: z.string().optional(),
+});
 
 export const helloPlugin = () => {
-  const plugin = definePlugin<unknown, HelloConfig>({
+  const plugin = definePlugin({
     id: 'hello',
+    configSchema: HelloConfigSchema,
     setup(cli) {
       cli
         .ns('hello')
@@ -17,13 +19,13 @@ export const helloPlugin = () => {
             cli,
             '--loud',
             (_bag, cfg) =>
-              `print greeting in ALL CAPS${cfg?.loud ? ' (default)' : ''}`,
+              `print greeting in ALL CAPS${cfg.loud ? ' (default)' : ''}`,
           ),
         )
         .action(() => {
           const ctx = cli.getCtx();
           const name = '__CLI_NAME__';
-          const cfg = plugin.readConfig(cli) ?? {};
+          const cfg = plugin.readConfig(cli);
           const keys = Object.keys(ctx?.dotenv ?? []);
           const label =
             cfg.loud === true
@@ -34,4 +36,4 @@ export const helloPlugin = () => {
     },
   });
   return plugin;
-};
+};

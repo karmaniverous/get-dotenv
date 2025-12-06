@@ -87,4 +87,16 @@ When updated: 2025-12-06T00:00:00Z
   - Tied set-env effective default to the root --load-process (when unset);
     help text clarifies “(default: follows --load-process)”.
   - Updated guides/shipped/aws.md to reflect the new behavior and safer mirroring.
-- Typecheck: fix duplicate 'desc' param in definePlugin.createPluginDynamicOption implementation (TS2300/TS2322).
+- Typecheck: fix duplicate 'desc' param in definePlugin.createPluginDynamicOption implementation (TS2300/TS2322).
+
++- Plugin config defaults & non-optional readConfig
+
+- - Host: materialize plugin config defaults by validating {} when no slice is
+- present (schema-safe); store per-instance config for all plugins ({} when
+- no schema).
+- - API: readConfig(cli) now returns a concrete object (never undefined) and
+- throws a friendly error if called before resolveAndLoad().
+- - Dynamic option callbacks receive a non-optional pluginCfg; always a concrete
+- object.
+- - Updated shipped plugins and the hello template to use schema defaults only
+- and remove redundant “?? {}”. Docs updated to reflect the new DX.

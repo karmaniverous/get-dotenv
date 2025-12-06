@@ -57,21 +57,19 @@ export const myPlugin = () => {
     configSchema: MyPluginConfig,
     setup(cli) {
       cli.ns('my').action(() => {
-        const cfg = plugin.readConfig<MyPluginConfig>(cli) ?? {};
+        const cfg = plugin.readConfig<MyPluginConfig>(cli);
         // cfg is validated and strings are already interpolated
       });
     },
   });
-  return plugin;
-};
+  return plugin;};
 ```
 
 ## Typed accessor (DX)
 
 When your plugin declares a config schema, prefer the instance‑bound helper to read the validated slice ergonomically at call sites. The helper is compile‑time only and preserves runtime behavior; the host still validates the interpolated slice against your schema before `afterResolve`.
 
-```ts
-import { z } from 'zod';
+```tsimport { z } from 'zod';
 import { definePlugin } from '@karmaniverous/get-dotenv/cliHost';
 
 export const MyPluginConfig = z.object({
@@ -86,18 +84,22 @@ export const myPlugin = () => {
     configSchema: MyPluginConfig,
     setup(cli) {
       cli.ns('my').action(() => {
-        const cfg = plugin.readConfig<MyPluginConfig>(cli) ?? {};
+        const cfg = plugin.readConfig<MyPluginConfig>(cli);
         // cfg is validated and strings are already interpolated once
       });
     },
   });
-  return plugin;
-};
+  return plugin;};
 ```
 
 ## Plugin-scoped scripts (rare)
 
 For CLI‑driven, arbitrary‑command plugins (like cmd/batch), you may offer `plugins.<id>.scripts`. Prefer plugin‑scoped scripts over root scripts for clarity, and optionally fall back to root scripts when it improves UX. Use the object form to allow rare per‑script shell overrides; otherwise rely on the root shell.
+
+## Runtime contract (validation & defaults)
+
+- With a schema, the host materializes defaults by validating `{}` when no slice is present. Missing required fields without defaults fail early with a consolidated error.
+- `plugin.readConfig(cli)` returns a concrete object (never `undefined`) after the host resolves context. Calling it before `resolveAndLoad()` throws a friendly error.
 
 ## Error reporting vs failure
 

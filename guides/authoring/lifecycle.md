@@ -61,8 +61,8 @@ await program.parseAsync();
 
 Notes:
 
-- `attachRootOptions()` installs base flags (env/paths/shell/trace/etc.).
-- `passOptions()` merges flags (parent < current), resolves dotenv context once, validates against config, and persists the merged options bag for nested flows.
+- attachRootOptions() installs base flags (env/paths/shell/trace/etc.).
+- passOptions() merges flags (parent < current), resolves dotenv context once, validates against config, and persists the merged options bag for nested flows.
 
 ## Branding the host
 
@@ -92,8 +92,8 @@ cli.ns('print').action((_args, _opts, thisCommand) => {
 
 See also:
 
-- [Config & Validation](./config.md)
-- [Executing Shell Commands](./exec.md)
+- Config & Validation
+- Executing Shell Commands
 
 ## Dynamic option descriptions
 
@@ -124,11 +124,11 @@ export const helloPlugin = () => {
             cli,
             '--loud',
             (_bag, cfg) =>
-              `print greeting in ALL CAPS${cfg?.loud ? ' (default)' : ''}`,
+              `print greeting in ALL CAPS${cfg.loud ? ' (default)' : ''}`,
           ),
         )
         .action(() => {
-          const cfg = plugin.readConfig<HelloConfig>(cli) ?? {};
+          const cfg = plugin.readConfig<HelloConfig>(cli);
           // use cfg.loud at runtime
         });
     },
@@ -143,8 +143,7 @@ Or build the Option first:
 const opt = plugin.createPluginDynamicOption<{ color?: string }>(
   cli,
   '--color <string>',
-  (_bag, cfg) =>
-    `text color (default: ${JSON.stringify(cfg?.color ?? 'blue')})`,
+  (_bag, cfg) => `text color (default: ${JSON.stringify(cfg.color ?? 'blue')})`,
 );
 cli.addOption(opt);
 ```
@@ -154,7 +153,7 @@ Notes:
 - Use concise labels for ON/OFF toggles (e.g., “(default)”) and “(default: "...")” for string defaults.
 - Plugin config is validated and deep‑interpolated once by the host; read it via plugin.readConfig(cli).
 
-See also:
+Update (DX: no undefined):
 
-- Config files & overlays → “Plugin config” for where defaults come from and how they’re merged.
-- Shell execution behavior for examples of dynamic default labels at root and in plugins.
+- With the current host, readConfig returns a concrete object (never undefined). Defaults are materialized from the schema when no slice is present.
+- The dynamic option callback receives a concrete plugin config object too, so you can reference cfg.foo without optional chaining when you have defaults in your schema.

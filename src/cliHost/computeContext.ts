@@ -200,20 +200,26 @@ export const computeContext = async <
   for (const p of plugins) {
     if (!p.id) continue;
     const slice = mergedPluginConfigsById[p.id];
-    if (slice === undefined) continue;
-    // Per-plugin interpolation just before validation/afterResolve:
-    // precedence: process.env wins over ctx.dotenv for slice defaults.
+    // Build interpolation reference once per plugin:
     const envRef: Record<string, string | undefined> = {
       ...dotenv,
       ...process.env,
     };
-    const interpolated = interpolateDeep(
-      slice as Record<string, unknown>,
-      envRef,
-    );
-    // Validate if a schema is provided; otherwise accept interpolated slice as-is.
+    const hasSlice = slice !== undefined;
+    const interpolated =
+      hasSlice && typeof slice === 'object'
+        ? interpolateDeep(slice as Record<string, unknown>, envRef)
+        : undefined;
+
     if (p.configSchema) {
-      const parsed = p.configSchema.safeParse(interpolated);
+      // With a schema:
+      // - If a slice exists, validate the interpolated slice.
+      // - If absent, materialize defaults by parsing {}.
+      const toParse =
+        interpolated !== undefined
+          ? interpolated
+          : ({} as Record<string, unknown>);
+      const parsed = p.configSchema.safeParse(toParse);
       if (!parsed.success) {
         const msgs = parsed.error.issues
           .map((i) => `${i.path.join('.')}: ${i.message}`)
@@ -226,11 +232,13 @@ export const computeContext = async <
       );
       mergedPluginConfigsById[p.id] = parsed.data;
     } else {
-      _setPluginConfigForInstance(
-        p as unknown as GetDotenvCliPlugin,
-        interpolated,
-      );
-      mergedPluginConfigsById[p.id] = interpolated;
+      // No schema: always store a concrete object for DX.
+      const value =
+        interpolated !== undefined
+          ? interpolated
+          : ({} as Record<string, unknown>);
+      _setPluginConfigForInstance(p as unknown as GetDotenvCliPlugin, value);
+      mergedPluginConfigsById[p.id] = value;
     }
   }
 

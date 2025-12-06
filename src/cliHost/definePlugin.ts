@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unnecessary-type-parameters */
 /** src/cliHost/definePlugin.ts
  * Plugin contracts for the GetDotenv CLI host.
  *
@@ -14,6 +13,7 @@ import type { ZodType } from 'zod';
 import type { GetDotenvOptions } from '../GetDotenvOptions';
 import { _getPluginConfigForInstance } from './computeContext';
 import type { GetDotenvCliCtx, ResolvedHelpConfig } from './GetDotenvCli';
+/* eslint-disable @typescript-eslint/no-unnecessary-type-parameters */
 
 /**
  * Structural public interface for the host exposed to plugins.
@@ -92,15 +92,13 @@ export type PluginWithInstanceHelpers<
   TConfig = unknown,
 > = GetDotenvCliPlugin<TOptions> & {
   // Default TCfg to the plugin’s TConfig to improve inference at call sites.
-  readConfig<TCfg = TConfig>(
-    cli: GetDotenvCliPublic<TOptions>,
-  ): TCfg | undefined;
+  readConfig<TCfg = TConfig>(cli: GetDotenvCliPublic<TOptions>): TCfg;
   createPluginDynamicOption<TCfg = TConfig>(
     cli: GetDotenvCliPublic<TOptions>,
     flags: string,
     desc: (
       cfg: ResolvedHelpConfig & { plugins: Record<string, unknown> },
-      pluginCfg: TCfg | undefined,
+      pluginCfg: TCfg,
     ) => string,
     parser?: (value: string, previous?: unknown) => unknown,
     defaultValue?: unknown,
@@ -155,11 +153,18 @@ export function definePlugin<
   const extended = base as PluginWithInstanceHelpers<TOptions, TConfig>;
   extended.readConfig = function <TCfg = TConfig>(
     _cli: GetDotenvCliPublic<TOptions>,
-  ): TCfg | undefined {
+  ): TCfg {
     // Config is stored per-plugin-instance by the host (WeakMap in computeContext).
-    return _getPluginConfigForInstance(
+    const value = _getPluginConfigForInstance(
       extended as unknown as GetDotenvCliPlugin,
-    ) as TCfg | undefined;
+    );
+    if (value === undefined) {
+      // Guard: host has not resolved config yet (incorrect lifecycle usage).
+      throw new Error(
+        'Plugin config not available. Ensure resolveAndLoad() has been called before readConfig().',
+      );
+    }
+    return value as TCfg;
   };
   // Plugin-bound dynamic option factory
   extended.createPluginDynamicOption = function <TCfg = TConfig>(
@@ -186,7 +191,14 @@ export function definePlugin<
           const maybe = cfg.plugins[id];
           if (maybe && typeof maybe === 'object') fromBag = maybe as TCfg;
         }
-        return desc(cfg, fromStore ?? fromBag);
+        // Always provide a concrete object to dynamic callbacks:
+        // - With a schema: computeContext stores the parsed object.
+        // - Without a schema: computeContext stores {}.
+        // - Help-time fallback: coalesce to {} when only a by-id bag exists.
+        // Localized cast justified: TCfg is compile-time only (DX), {} is a safe
+        // neutral object for optional shapes.
+        const cfgVal = (fromStore ?? fromBag ?? {}) as TCfg;
+        return desc(cfg, cfgVal);
       },
       parser,
       defaultValue,

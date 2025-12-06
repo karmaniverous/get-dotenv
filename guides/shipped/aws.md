@@ -127,13 +127,13 @@ You can retrieve the validated, merged plugin config slice with strong typing us
 
 ```ts
 import { definePlugin } from '@karmaniverous/get-dotenv/cliHost';
-import type { AwsPluginConfigResolved } from '@karmaniverous/get-dotenv/plugins/aws';
+import type { AwsPluginConfig } from '@karmaniverous/get-dotenv/plugins/aws';
 
 export const myAwsAwarePlugin = () => {
   const plugin = definePlugin({
     id: 'my-aws',
     setup(cli) {
-      const cfg = plugin.readConfig<AwsPluginConfigResolved>(cli) ?? {};
+      const cfg = plugin.readConfig<AwsPluginConfig>(cli);
       // cfg.profile / cfg.region / cfg.strategy ... are strongly typed here
     },
   });

@@ -29,7 +29,7 @@ export const awsPlugin = () => {
             cli,
             '--login-on-demand',
             (_bag, cfg) =>
-              `attempt aws sso login on-demand${cfg?.loginOnDemand ? ' (default)' : ''}`,
+              `attempt aws sso login on-demand${cfg.loginOnDemand ? ' (default)' : ''}`,
           ),
         )
         .addOption(
@@ -37,7 +37,7 @@ export const awsPlugin = () => {
             cli,
             '--no-login-on-demand',
             (_bag, cfg) =>
-              `disable sso login on-demand${cfg?.loginOnDemand === false ? ' (default)' : ''}`,
+              `disable sso login on-demand${cfg.loginOnDemand === false ? ' (default)' : ''}`,
           ),
         )
         // Strings / enums
@@ -46,7 +46,7 @@ export const awsPlugin = () => {
             cli,
             '--profile <string>',
             (_bag, cfg) =>
-              `AWS profile name${cfg?.profile ? ` (default: ${JSON.stringify(cfg.profile)})` : ''}`,
+              `AWS profile name${cfg.profile ? ` (default: ${JSON.stringify(cfg.profile)})` : ''}`,
           ),
         )
         .addOption(
@@ -54,7 +54,7 @@ export const awsPlugin = () => {
             cli,
             '--region <string>',
             (_bag, cfg) =>
-              `AWS region${cfg?.region ? ` (default: ${JSON.stringify(cfg.region)})` : ''}`,
+              `AWS region${cfg.region ? ` (default: ${JSON.stringify(cfg.region)})` : ''}`,
           ),
         )
         .addOption(
@@ -62,7 +62,7 @@ export const awsPlugin = () => {
             cli,
             '--default-region <string>',
             (_bag, cfg) =>
-              `fallback region${cfg?.defaultRegion ? ` (default: ${JSON.stringify(cfg.defaultRegion)})` : ''}`,
+              `fallback region${cfg.defaultRegion ? ` (default: ${JSON.stringify(cfg.defaultRegion)})` : ''}`,
           ),
         )
         .addOption(
@@ -70,7 +70,7 @@ export const awsPlugin = () => {
             cli,
             '--strategy <string>',
             (_bag, cfg) =>
-              `credential acquisition strategy: cli-export|none${cfg?.strategy ? ` (default: ${JSON.stringify(cfg.strategy)})` : ''}`,
+              `credential acquisition strategy: cli-export|none${cfg.strategy ? ` (default: ${JSON.stringify(cfg.strategy)})` : ''}`,
           ),
         )
         // Advanced key overrides
@@ -79,7 +79,7 @@ export const awsPlugin = () => {
             cli,
             '--profile-key <string>',
             (_bag, cfg) =>
-              `dotenv/config key for local profile${cfg?.profileKey ? ` (default: ${JSON.stringify(cfg.profileKey)})` : ''}`,
+              `dotenv/config key for local profile${cfg.profileKey ? ` (default: ${JSON.stringify(cfg.profileKey)})` : ''}`,
           ),
         )
         .addOption(
@@ -87,7 +87,7 @@ export const awsPlugin = () => {
             cli,
             '--profile-fallback-key <string>',
             (_bag, cfg) =>
-              `fallback dotenv/config key for profile${cfg?.profileFallbackKey ? ` (default: ${JSON.stringify(cfg.profileFallbackKey)})` : ''}`,
+              `fallback dotenv/config key for profile${cfg.profileFallbackKey ? ` (default: ${JSON.stringify(cfg.profileFallbackKey)})` : ''}`,
           ),
         )
         .addOption(
@@ -95,7 +95,7 @@ export const awsPlugin = () => {
             cli,
             '--region-key <string>',
             (_bag, cfg) =>
-              `dotenv/config key for region${cfg?.regionKey ? ` (default: ${JSON.stringify(cfg.regionKey)})` : ''}`,
+              `dotenv/config key for region${cfg.regionKey ? ` (default: ${JSON.stringify(cfg.regionKey)})` : ''}`,
           ),
         )
         // Accept any extra operands so Commander does not error when tokens appear after "--".
@@ -134,7 +134,7 @@ export const awsPlugin = () => {
 
             // Build overlay cfg from subcommand flags layered over discovered config.
             const ctx = cli.getCtx();
-            const cfgBase = pluginInst.readConfig(cli) ?? {};
+            const cfgBase = pluginInst.readConfig(cli);
             type AwsCliFlags = Partial<AwsPluginConfig>;
             const o = opts as AwsCliFlags;
             const overlay: Partial<AwsPluginConfig> = {};

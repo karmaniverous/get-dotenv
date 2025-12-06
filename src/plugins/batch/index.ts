@@ -39,7 +39,7 @@ export const batchPlugin = (opts: BatchPluginOptions = {}) => {
               cli,
               '-p, --pkg-cwd',
               (_bag, cfg) =>
-                `use nearest package directory as current working directory${cfg?.pkgCwd ? ' (default)' : ''}`,
+                `use nearest package directory as current working directory${cfg.pkgCwd ? ' (default)' : ''}`,
             );
             cli.setOptionGroup(opt, GROUP);
             return opt;
@@ -52,7 +52,7 @@ export const batchPlugin = (opts: BatchPluginOptions = {}) => {
               '-r, --root-path <string>',
               (_bag, cfg) =>
                 `path to batch root directory from current working directory (default: ${JSON.stringify(
-                  cfg?.rootPath || './',
+                  cfg.rootPath || './',
                 )})`,
             );
             cli.setOptionGroup(opt, GROUP);
@@ -66,7 +66,7 @@ export const batchPlugin = (opts: BatchPluginOptions = {}) => {
               '-g, --globs <string>',
               (_bag, cfg) =>
                 `space-delimited globs from root path (default: ${JSON.stringify(
-                  cfg?.globs || '*',
+                  cfg.globs || '*',
                 )})`,
             );
             cli.setOptionGroup(opt, GROUP);

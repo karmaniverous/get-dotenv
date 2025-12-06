@@ -37,7 +37,7 @@ export const buildDefaultCmdAction =
       : argsRaw;
 
     // Access merged per-plugin config from host context (if any).
-    const cfg = plugin.readConfig<BatchConfig>(cli) ?? {};
+    const cfg = plugin.readConfig<BatchConfig>(cli);
     const dotenvEnv = (cli.getCtx()?.dotenv ?? {}) as Record<
       string,
       string | undefined
