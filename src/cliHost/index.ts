@@ -13,6 +13,7 @@ import { validateEnvAgainstSources } from '../config/validate';
 import type { RootOptionsShapeCompat } from '../GetDotenvOptions';
 import { getDotenvCliOptions2Options } from '../GetDotenvOptions';
 import { attachRootOptions as attachRootOptionsBuilder } from './attachRootOptions';
+import type { PluginWithInstanceHelpers as PluginWithInstanceHelpersType } from './definePlugin';
 import { GetDotenvCli as BaseGetDotenvCli } from './GetDotenvCli';
 import { toHelpConfig } from './helpConfig';
 
@@ -24,7 +25,7 @@ export type { PluginWithInstanceHelpers } from './definePlugin';
  * Returns a deeply readonly view to discourage mutation at call sites.
  */
 export type InferPluginConfig<P> =
-  P extends import('./definePlugin').PluginWithInstanceHelpers<any, infer C>
+  P extends PluginWithInstanceHelpersType<unknown, infer C>
     ? Readonly<C>
     : never;
 export { definePlugin } from './definePlugin';

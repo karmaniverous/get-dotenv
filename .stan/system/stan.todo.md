@@ -114,4 +114,8 @@ When updated: 2025-12-06T00:00:00Z
     callbacks receive pluginCfg: Readonly<TConfig>. WeakMap continues to
     store concrete objects.
   - Added InferPluginConfig<P> helper and re-exported it (and
-    PluginWithInstanceHelpers) from cliHost and the top-level index to flatten imports.
+    PluginWithInstanceHelpers) from cliHost and the top-level index to flatten imports.
+
+- Lint fixes: InferPluginConfig import and any → unknown
+  - src/cliHost/index.ts: replace inline import() type with a type-only import
+    and swap any for unknown to satisfy ESLint rules.
