@@ -183,8 +183,15 @@ When updated: 2025-12-06T00:00:00Z
 - Alias executor: revert Node execPath substitution (preserve argv passthrough)
   - maybeRunAlias: for shell-off "node -e/--eval", pass the tokenized argv unchanged to align with historical behavior.
 
+- E2E diagnostics: enrich Windows alias termination test
+  - src/e2e/alias.termination.test.ts:
+    - Enable GETDOTENV_DEBUG in child env to surface internal CLI breadcrumbs.
+    - Log node/platform, argv JSON, aliasPayload, and tokenize(aliasPayload).
+    - Capture merged child output (all: true) and print execa error details
+      (exitCode/signal/timedOut/failed/killed/code/shortMessage) plus
+      child stdout/stderr/all on failure.
 - Tests: remove env-based per-step timeout from Windows alias E2E
   - src/e2e/alias.termination.test.ts: drop GETDOTENV_VITEST_STEP_TIMEOUT_MS
     and execa timeout/killSignal; rely on Vitest testTimeout from
     vitest.config.ts. Keeps capture ON and preserves existing validation
-    of stdout/exitCode.
+    of stdout/exitCode.

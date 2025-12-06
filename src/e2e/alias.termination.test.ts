@@ -1,6 +1,8 @@
 import { execa } from 'execa';
 import { describe, expect, it } from 'vitest';
 
+import { tokenize } from '../plugins/cmd/tokenize';
+
 // Windows-only alias termination check with capture enabled.
 // Ensures the alias path (--cmd) terminates and produces the expected output.
 // Timeout is governed by Vitest (see vitest.config.ts testTimeout).
