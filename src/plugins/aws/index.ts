@@ -226,7 +226,7 @@ export const awsPlugin = () => {
     },
     async afterResolve(_cli, ctx) {
       const log: Logger = console;
-      const cfg = plugin.readConfig(_cli) ?? {};
+      const cfg = plugin.readConfig(_cli);
 
       const out = await resolveAwsContext({
         dotenv: ctx.dotenv,

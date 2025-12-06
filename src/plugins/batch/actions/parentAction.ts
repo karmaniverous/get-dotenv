@@ -29,7 +29,7 @@ export const buildParentAction =
       string,
       string | undefined
     >;
-    const cfg = plugin.readConfig<BatchConfig>(cli) ?? {};
+    const cfg = plugin.readConfig<BatchConfig>(cli);
 
     const raw = thisCommand.opts();
     const commandOpt =

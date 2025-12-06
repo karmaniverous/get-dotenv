@@ -172,7 +172,7 @@ export function definePlugin<
     flags: string,
     desc: (
       cfg: ResolvedHelpConfig & { plugins: Record<string, unknown> },
-      pluginCfg: TCfg | undefined,
+      pluginCfg: TCfg,
     ) => string,
     parser?: (value: string, previous?: unknown) => unknown,
     defaultValue?: unknown,

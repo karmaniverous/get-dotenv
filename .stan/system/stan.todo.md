@@ -100,3 +100,9 @@ When updated: 2025-12-06T00:00:00Z
 - object.
 - - Updated shipped plugins and the hello template to use schema defaults only
 - and remove redundant “?? {}”. Docs updated to reflect the new DX.
+
+- Fixes: non-optional plugin cfg type & redundant coalesce
+  - definePlugin.createPluginDynamicOption: make desc callback's pluginCfg
+    parameter non-optional to align with public type; resolves TS2322.
+  - Remove redundant “?? {}” after readConfig in aws and batch to satisfy
+    @typescript-eslint/no-unnecessary-condition.
