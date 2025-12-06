@@ -3,6 +3,7 @@ import type { Command } from 'commander';
 import { baseRootOptionDefaults } from './cliCore/defaults';
 import type { GetDotenvCliOptions } from './cliCore/GetDotenvCliOptions';
 import { resolveCliOptions } from './cliCore/resolveCliOptions';
+import type { RootOptionsShape, ScriptsTable } from './cliCore/types';
 import { GetDotenvCli } from './cliHost';
 import { awsPlugin } from './plugins/aws';
 import { batchPlugin } from './plugins/batch';
@@ -151,14 +152,11 @@ export function createCli(opts: CreateCliOptions = {}): {
             { runAfterResolve: false },
           );
           // Build a defaults-only merged CLI bag for help-time parity (no side effects).
-          const { merged: defaultsMerged } =
-            resolveCliOptions<GetDotenvCliOptions>(
-              {},
-              baseRootOptionDefaults as unknown as Partial<GetDotenvCliOptions>,
-              undefined,
-            );
+          const { merged: defaultsMerged } = resolveCliOptions<
+            RootOptionsShape & { scripts?: ScriptsTable }
+          >({}, baseRootOptionDefaults as Partial<RootOptionsShape>, undefined);
           program.evaluateDynamicOptions({
-            ...defaultsMerged,
+            ...(defaultsMerged as unknown as GetDotenvCliOptions),
             plugins: ctx.pluginConfigs ?? {},
           });
           // Suppress output only during unit tests; allow E2E to capture.

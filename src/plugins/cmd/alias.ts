@@ -13,7 +13,8 @@ import type { GetDotenvCliOptions } from '../../cliCore/GetDotenvCliOptions';
 import { baseGetDotenvCliOptions } from '../../cliCore/GetDotenvCliOptions';
 import { resolveCliOptions } from '../../cliCore/resolveCliOptions';
 import { buildSpawnEnv } from '../../cliCore/spawnEnv';
-import type { CommandWithOptions } from '../../cliCore/types';
+import type { CommandWithOptions, RootOptionsShape } from '../../cliCore/types';
+import type { ScriptsTable } from '../../cliCore/types';
 import { maybeWarnEntropy } from '../../diagnostics/entropy';
 import { redactTriple } from '../../diagnostics/redact';
 import { dotenvExpandFromProcessEnv } from '../../dotenvExpand';
@@ -88,13 +89,16 @@ export const attachParentAlias = (
 
     dbg('alias-only invocation detected');
     // Merge CLI options and resolve dotenv context.
-    const { merged } = resolveCliOptions<GetDotenvCliOptions>(
+    const { merged } = resolveCliOptions<
+      RootOptionsShape & { scripts?: ScriptsTable }
+    >(
       o,
-      baseGetDotenvCliOptions,
+      baseGetDotenvCliOptions as Partial<RootOptionsShape>,
       process.env.getDotenvCliOptions,
     );
-    const logger: Logger = merged.logger ?? console;
-    const serviceOptions = getDotenvCliOptions2Options(merged);
+    const mergedBag = merged as unknown as GetDotenvCliOptions;
+    const logger: Logger = mergedBag.logger ?? console;
+    const serviceOptions = getDotenvCliOptions2Options(mergedBag);
     await cli.resolveAndLoad(serviceOptions);
 
     // Normalize alias value.
@@ -110,22 +114,37 @@ export const attachParentAlias = (
         : (dotenvExpandFromProcessEnv(joined) ?? joined);
 
     dbg('resolved input', { input });
-    // Narrow merged.scripts locally for safer downstream typing.
-    const scripts = (
-      merged as {
+    // Guard and narrow scripts for downstream helpers.
+    const maybeScripts = (
+      mergedBag as {
         scripts?: Record<
           string,
           string | { cmd: string; shell?: string | boolean }
         >;
       }
     ).scripts;
-    const resolved = resolveCommand(scripts as unknown as ScriptsTable, input);
-    if ((merged as { debug?: boolean }).debug) {
+    const isScriptsTable = (v: unknown): v is ScriptsTable => {
+      if (!v || typeof v !== 'object') return false;
+      const rec = v as Record<string, unknown>;
+      return Object.values(rec).every(
+        (val) =>
+          typeof val === 'string' ||
+          (val &&
+            typeof val === 'object' &&
+            typeof (val as { cmd?: unknown }).cmd === 'string'),
+      );
+    };
+    const scripts: ScriptsTable | undefined = isScriptsTable(maybeScripts)
+      ? (maybeScripts as ScriptsTable)
+      : undefined;
+
+    const resolved = resolveCommand(scripts, input);
+    if ((mergedBag as { debug?: boolean }).debug) {
       logger.log('\n*** command ***\n', `'${resolved}'`);
     }
     // Build env overlay propagation for nested CLI behavior
     // (stringify merged bag; JSON will naturally drop functions like logger methods).
-    const nestedBag = JSON.stringify(merged);
+    const nestedBag = JSON.stringify(mergedBag);
     // Test guard: when running under tests, prefer stdio: 'inherit' to avoid
     // assertions depending on captured stdio; ignore GETDOTENV_STDIO/capture.
     const underTests =
@@ -134,18 +153,15 @@ export const attachParentAlias = (
     const forceExit = process.env.GETDOTENV_FORCE_EXIT === '1';
     const capture =
       !underTests &&
-      (process.env.GETDOTENV_STDIO === 'pipe' || Boolean(merged.capture));
-    dbg('run:start', { capture, shell: merged.shell });
+      (process.env.GETDOTENV_STDIO === 'pipe' ||
+        Boolean((mergedBag as { capture?: boolean }).capture));
+    dbg('run:start', { capture, shell: mergedBag.shell });
     // Prefer explicit env injection: include resolved dotenv map to avoid leaking
     // parent process.env secrets when exclusions are set.
     const ctx = cli.getCtx();
     const dotenv = (ctx?.dotenv ?? {}) as Record<string, string | undefined>;
     // Diagnostics: --trace [keys...]
-    const traceOpt = (
-      merged as {
-        trace?: boolean | string[];
-      }
-    ).trace;
+    const traceOpt = (mergedBag as { trace?: boolean | string[] }).trace;
     if (traceOpt) {
       const parentKeys = Object.keys(process.env);
       const dotenvKeys = Object.keys(dotenv);
@@ -169,8 +185,8 @@ export const attachParentAlias = (
               : 'unset';
         // Build redact options and triple bag without undefined-valued fields
         const redOpts: { redact?: boolean; redactPatterns?: string[] } = {};
-        const redFlag = (merged as { redact?: boolean }).redact;
-        const redPatterns = (merged as { redactPatterns?: string[] })
+        const redFlag = (mergedBag as { redact?: boolean }).redact;
+        const redPatterns = (mergedBag as { redactPatterns?: string[] })
           .redactPatterns;
         if (redFlag) redOpts.redact = true;
         if (redFlag && Array.isArray(redPatterns))
@@ -185,12 +201,13 @@ export const attachParentAlias = (
           `[trace] key=${k} origin=${origin} parent=${triple.parent ?? ''} dotenv=${triple.dotenv ?? ''} final=${triple.final ?? ''}\n`,
         );
         const entOpts: EntropyOptions = {};
-        const warnEntropy = (merged as { warnEntropy?: boolean }).warnEntropy;
-        const entropyThreshold = (merged as { entropyThreshold?: number })
+        const warnEntropy = (mergedBag as { warnEntropy?: boolean })
+          .warnEntropy;
+        const entropyThreshold = (mergedBag as { entropyThreshold?: number })
           .entropyThreshold;
-        const entropyMinLength = (merged as { entropyMinLength?: number })
+        const entropyMinLength = (mergedBag as { entropyMinLength?: number })
           .entropyMinLength;
-        const entropyWhitelist = (merged as { entropyWhitelist?: string[] })
+        const entropyWhitelist = (mergedBag as { entropyWhitelist?: string[] })
           .entropyWhitelist;
         if (typeof warnEntropy === 'boolean') entOpts.warnEntropy = warnEntropy;
         if (typeof entropyThreshold === 'number')
@@ -207,11 +224,7 @@ export const attachParentAlias = (
     let exitCode = Number.NaN;
     try {
       // Resolve shell and preserve argv for Node -e snippets under shell-off.
-      const shellSetting = resolveShell(
-        scripts as unknown as ScriptsTable<string | boolean>,
-        input,
-        merged.shell,
-      );
+      const shellSetting = resolveShell(scripts, input, mergedBag.shell);
 
       let commandArg: string | string[] = resolved;
       /**       * Special-case: when shell is OFF and no script alias remap occurred

@@ -151,3 +151,13 @@ When updated: 2025-12-05T00:00:00Z
     - Canonical options types derived from Zod schemas.
     - Typed config builder for JS/TS configs (defineGetDotenvConfig).
     - Optional typed getDotenv<Vars>() env shape and explicit removal of useConfigLoader.
+
+- Fix typecheck/lints (schema-derived overlays and resolver generics)
+  - Use RootOptionsShape & ScriptsTable in resolveCliOptions call sites (cliHost, index, cmd alias).
+  - Cast merged bags to GetDotenvCliOptions where needed for downstream DX (logger/trace/capture/etc.).
+  - Add scripts type guard in cmd alias; import ScriptsTable; remove unsafe casts. Escape TSDoc angle brackets.
+
+- Fix typecheck/lints (schema-derived overlays and resolver generics)
+  - Use RootOptionsShape & ScriptsTable in resolveCliOptions call sites (cliHost, index, cmd alias).
+  - Cast merged bags to GetDotenvCliOptions where needed for downstream DX (logger/trace/capture/etc.).
+  - Add scripts type guard in cmd alias; import ScriptsTable; remove unsafe casts. Escape TSDoc angle brackets.

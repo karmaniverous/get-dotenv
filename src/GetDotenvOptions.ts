@@ -255,7 +255,9 @@ export const resolveGetDotenvOptions = async (
     localOptions,
   ) as unknown as GetDotenvCliOptions;
 
-  const defaultsFromCli = getDotenvCliOptions2Options(mergedCli);
+  const defaultsFromCli = getDotenvCliOptions2Options(
+    mergedCli as unknown as RootOptionsShapeCompat,
+  );
 
   const result = defaultsDeep(
     defaultsFromCli as Partial<GetDotenvOptions>,
