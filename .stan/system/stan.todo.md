@@ -256,3 +256,8 @@ When updated: 2025-12-06T00:00:00Z
     to unknown and pass through pickResult; use catch (e: unknown) to prevent
     any in catch variables. Resolves TS2345/TS2769 and no-unsafe-assignment
     errors reported by typecheck/lint on exec.ts.
+
+- Lint: inline pickResult to avoid unsafe assignment in capture paths
+  - src/cliCore/exec.ts: inline pickResult((await execa(...)) as unknown) and
+    pickResult((await execaCommand(...)) as unknown) to satisfy
+    @typescript-eslint/no-unsafe-assignment.

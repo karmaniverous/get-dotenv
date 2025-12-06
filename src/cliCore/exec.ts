@@ -102,15 +102,16 @@ export async function runCommandResult(
 
     dbg('exec:capture (plain)', { file, args });
     try {
-      const r = (await execa(file, args, {
-        ...(opts.cwd !== undefined ? { cwd: opts.cwd } : {}),
-        ...(envSan !== undefined ? { env: envSan } : {}),
-        stdio: 'pipe',
-        ...(opts.timeoutMs !== undefined
-          ? { timeout: opts.timeoutMs, killSignal: 'SIGKILL' }
-          : {}),
-      })) as unknown;
-      const ok = pickResult(r);
+      const ok = pickResult(
+        (await execa(file, args, {
+          ...(opts.cwd !== undefined ? { cwd: opts.cwd } : {}),
+          ...(envSan !== undefined ? { env: envSan } : {}),
+          stdio: 'pipe',
+          ...(opts.timeoutMs !== undefined
+            ? { timeout: opts.timeoutMs, killSignal: 'SIGKILL' }
+            : {}),
+        })) as unknown,
+      );
       dbg('exit:capture (plain)', { exitCode: ok.exitCode });
       return ok;
     } catch (e: unknown) {
@@ -127,16 +128,17 @@ export async function runCommandResult(
       shell: typeof shell === 'string' ? shell : 'custom',
     });
     try {
-      const r = (await execaCommand(commandStr, {
-        shell,
-        ...(opts.cwd !== undefined ? { cwd: opts.cwd } : {}),
-        ...(envSan !== undefined ? { env: envSan } : {}),
-        stdio: 'pipe',
-        ...(opts.timeoutMs !== undefined
-          ? { timeout: opts.timeoutMs, killSignal: 'SIGKILL' }
-          : {}),
-      })) as unknown;
-      const ok = pickResult(r);
+      const ok = pickResult(
+        (await execaCommand(commandStr, {
+          shell,
+          ...(opts.cwd !== undefined ? { cwd: opts.cwd } : {}),
+          ...(envSan !== undefined ? { env: envSan } : {}),
+          stdio: 'pipe',
+          ...(opts.timeoutMs !== undefined
+            ? { timeout: opts.timeoutMs, killSignal: 'SIGKILL' }
+            : {}),
+        })) as unknown,
+      );
       dbg('exit:capture (shell)', { exitCode: ok.exitCode });
       return ok;
     } catch (e: unknown) {
