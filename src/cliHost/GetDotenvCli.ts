@@ -160,7 +160,15 @@ export class GetDotenvCli<TOptions extends GetDotenvOptions = GetDotenvOptions>
    * The returned Option may be configured (conflicts, default, parser) and
    * added via addOption().
    */
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters
+  // Overload: typed parser & default for value inference
+  createDynamicOption<TValue, TPlugins = Record<string, unknown>>(
+    flags: string,
+    desc: (cfg: ResolvedHelpConfig & { plugins: TPlugins }) => string,
+    parser: (value: string, previous?: TValue) => TValue,
+    defaultValue?: TValue,
+  ): Option;
+  // Base overload
+
   createDynamicOption<TPlugins = Record<string, unknown>>(
     flags: string,
     desc: (cfg: ResolvedHelpConfig & { plugins: TPlugins }) => string,

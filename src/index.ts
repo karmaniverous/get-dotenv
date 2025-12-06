@@ -1,5 +1,6 @@
 import type { Command } from 'commander';
 
+export { z } from 'zod';
 import { baseRootOptionDefaults } from './cliCore/defaults';
 import type { GetDotenvCliOptions } from './cliCore/GetDotenvCliOptions';
 import { resolveCliOptions } from './cliCore/resolveCliOptions';
@@ -28,6 +29,7 @@ export {
   type GetDotenvConfig,
   type GetDotenvDynamic,
   type GetDotenvOptions,
+  type InferGetDotenvVarsFromConfig,
   type ProcessEnv,
 } from './GetDotenvOptions';
 export { interpolateDeep } from './util/interpolateDeep';

@@ -89,8 +89,7 @@ When updated: 2025-12-06T00:00:00Z
   - Updated guides/shipped/aws.md to reflect the new behavior and safer mirroring.
 - Typecheck: fix duplicate 'desc' param in definePlugin.createPluginDynamicOption implementation (TS2300/TS2322).
 
-+- Plugin config defaults & non-optional readConfig
-
+- Plugin config defaults & non-optional readConfig
 - - Host: materialize plugin config defaults by validating {} when no slice is
 - present (schema-safe); store per-instance config for all plugins ({} when
 - no schema).
@@ -105,7 +104,8 @@ When updated: 2025-12-06T00:00:00Z
   - definePlugin.createPluginDynamicOption: make desc callback's pluginCfg
     parameter non-optional to align with public type; resolves TS2322.
   - Remove redundant “?? {}” after readConfig in aws and batch to satisfy
-    @typescript-eslint/no-unnecessary-condition.
+    @typescript-eslint/no-unnecessary-condition.
+
 - Plugin config DX: strict default schema + readonly surfaces + barrels
   - definePlugin now injects a strict empty Zod object schema
     (z.object({}).strict()) when no configSchema is provided, so “no-config”
@@ -122,4 +122,19 @@ When updated: 2025-12-06T00:00:00Z
 
 - Types: satisfy InferPluginConfig constraint
   - src/cliHost/index.ts: import GetDotenvOptions and use it in the conditional
-    type so the generic constraint matches PluginWithInstanceHelpers<TOptions, TConfig>.
+    type so the generic constraint matches PluginWithInstanceHelpers<TOptions, TConfig>.
+
+- Enforce ZodObject-only plugin schemas and finalize DX polish
+  - src/cliHost/definePlugin.ts: require ZodObject (Zod v4), default to
+    z.object({}).strict(), add Zod-first overload that infers config type,
+    no-schema overload returns {}. readConfig returns Readonly<T>; dynamic
+    option helper passes Readonly<T>.
+  - src/cliHost/computeContext.ts: remove no-schema branch; always validate
+    {} to materialize defaults; store shallow-frozen config in the WeakMap.
+  - src/cliHost/GetDotenvCli.ts: add typed overload for createDynamicOption
+    parser/defaultValue (compile-time DX).
+  - src/cliHost/index.ts and src/index.ts: re-export z from 'zod' for
+    authoring convenience (Zod v4).
+  - src/GetDotenvOptions.ts: add compile-only
+    InferGetDotenvVarsFromConfig<T> to derive Vars from a typed config.
+  - Avoided use of any; used ZodTypeAny/unknown where necessary.

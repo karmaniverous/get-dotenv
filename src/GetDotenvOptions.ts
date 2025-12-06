@@ -141,6 +141,16 @@ export function defineGetDotenvConfig<
 }
 
 /**
+ * Compile-time helper to derive the Vars shape from a typed getdotenv config document.
+ */
+export type InferGetDotenvVarsFromConfig<T> = T extends {
+  vars?: infer V;
+}
+  ? V extends Record<string, string | undefined>
+    ? V
+    : never
+  : never;
+/**
  * Converts programmatic CLI options to `getDotenv` options.
  *
  * Accepts "stringly" CLI inputs for vars/paths and normalizes them into

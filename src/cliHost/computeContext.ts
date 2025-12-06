@@ -1,5 +1,6 @@
 import fs from 'fs-extra';
 import path from 'path';
+import { type ZodObject, type ZodTypeAny } from 'zod';
 
 import { resolveGetDotenvConfigSources } from '../config/loader';
 import { overlayEnv } from '../env/overlay';
@@ -205,41 +206,34 @@ export const computeContext = async <
       ...dotenv,
       ...process.env,
     };
-    const hasSlice = slice !== undefined;
     const interpolated =
-      hasSlice && typeof slice === 'object'
+      slice && typeof slice === 'object'
         ? interpolateDeep(slice as Record<string, unknown>, envRef)
-        : undefined;
+        : ({} as Record<string, unknown>);
 
-    if (p.configSchema) {
-      // With a schema:
-      // - If a slice exists, validate the interpolated slice.
-      // - If absent, materialize defaults by parsing {}.
-      const toParse =
-        interpolated !== undefined
-          ? interpolated
-          : ({} as Record<string, unknown>);
-      const parsed = p.configSchema.safeParse(toParse);
-      if (!parsed.success) {
-        const msgs = parsed.error.issues
-          .map((i) => `${i.path.join('.')}: ${i.message}`)
-          .join('\n');
-        throw new Error(`Invalid config for plugin '${p.id}':\n${msgs}`);
-      }
-      _setPluginConfigForInstance(
-        p as unknown as GetDotenvCliPlugin,
-        parsed.data,
-      );
-      mergedPluginConfigsById[p.id] = parsed.data;
-    } else {
-      // No schema: always store a concrete object for DX.
-      const value =
-        interpolated !== undefined
-          ? interpolated
-          : ({} as Record<string, unknown>);
-      _setPluginConfigForInstance(p as unknown as GetDotenvCliPlugin, value);
-      mergedPluginConfigsById[p.id] = value;
+    // Enforced: plugins always carry a schema (strict empty by default).
+    const schema = p.configSchema as unknown as ZodObject<
+      Record<string, ZodTypeAny>,
+      unknown,
+      Record<string, unknown>
+    >;
+    const toParse = interpolated ?? ({} as Record<string, unknown>);
+    const parsed = schema.safeParse(toParse);
+    if (!parsed.success) {
+      const msgs = parsed.error.issues
+        .map((i) => `${i.path.join('.')}: ${i.message}`)
+        .join('\n');
+      throw new Error(`Invalid config for plugin '${p.id}':\n${msgs}`);
     }
+    // Store a readonly (shallow-frozen) value for runtime safety.
+    const frozen = Object.freeze(
+      parsed.data as unknown as Record<string, unknown>,
+    );
+    _setPluginConfigForInstance(
+      p as unknown as GetDotenvCliPlugin,
+      frozen as unknown,
+    );
+    mergedPluginConfigsById[p.id] = frozen;
   }
 
   return {
