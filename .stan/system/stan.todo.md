@@ -169,4 +169,7 @@ When updated: 2025-12-06T00:00:00Z
     unnecessary nullish coalescing.
 
 - Lint: fix optional chain and unsafe assignment in cmd alias executor
-  - maybeRunAlias: replace optional chain with typed dynamic index access and avoid any‑typed assignment.
+  - maybeRunAlias: replace optional chain with typed dynamic index access and avoid any‑typed assignment.
+
+- Alias executor: guard stringify and omit logger for nested bag
+  - maybeRunAlias: omit logger before JSON.stringify; wrap in try/catch and only inject getDotenvCliOptions when serialization succeeds to prevent exit 1 on Windows alias path.

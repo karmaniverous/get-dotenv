@@ -126,7 +126,17 @@ export async function maybeRunAlias(
   if ((mergedBag as { debug?: boolean }).debug) {
     logger.log('\n*** command ***\n', `'${resolved}'`);
   }
-  const nestedBag = JSON.stringify(mergedBag);
+  // Round-trip CLI options for nested getdotenv invocations. Omit logger
+  // (functions/circulars) and guard JSON serialization to avoid hard failures.
+  const { logger: _omitLogger, ...envBag } = mergedBag as unknown as {
+    logger?: unknown;
+  } & Record<string, unknown>;
+  let nestedBag: string | undefined;
+  try {
+    nestedBag = JSON.stringify(envBag);
+  } catch {
+    nestedBag = undefined;
+  }
   const underTests =
     process.env.GETDOTENV_TEST === '1' ||
     typeof process.env.VITEST_WORKER_ID === 'string';
@@ -231,10 +241,17 @@ export async function maybeRunAlias(
   let exitCode = Number.NaN;
   try {
     exitCode = await runCommand(commandArg, shellSetting, {
-      env: buildSpawnEnv(process.env, {
-        ...dotenv,
-        getDotenvCliOptions: nestedBag,
-      }),
+      env: buildSpawnEnv(
+        process.env,
+        nestedBag
+          ? {
+              ...dotenv,
+              getDotenvCliOptions: nestedBag,
+            }
+          : {
+              ...dotenv,
+            },
+      ),
       stdio: capture ? 'pipe' : 'inherit',
     });
     dbg('run:done', { exitCode });
