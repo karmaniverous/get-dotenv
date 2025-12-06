@@ -172,4 +172,7 @@ When updated: 2025-12-06T00:00:00Z
   - maybeRunAlias: replace optional chain with typed dynamic index access and avoid any‑typed assignment.
 
 - Alias executor: guard stringify and omit logger for nested bag
-  - maybeRunAlias: omit logger before JSON.stringify; wrap in try/catch and only inject getDotenvCliOptions when serialization succeeds to prevent exit 1 on Windows alias path.
+  - maybeRunAlias: omit logger before JSON.stringify; wrap in try/catch and only inject getDotenvCliOptions when serialization succeeds to prevent exit 1 on Windows alias path.
+
+- Alias executor: use process.execPath for Node -e path (shell-off)
+  - maybeRunAlias: when command starts with "node -e/--eval", replace the program token with process.execPath to avoid PATH resolution issues on Windows.
