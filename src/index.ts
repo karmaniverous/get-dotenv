@@ -5,6 +5,7 @@ import type { GetDotenvCliOptions } from './cliCore/GetDotenvCliOptions';
 import { resolveCliOptions } from './cliCore/resolveCliOptions';
 import type { RootOptionsShape, ScriptsTable } from './cliCore/types';
 import { GetDotenvCli } from './cliHost';
+import { toHelpConfig } from './cliHost/helpConfig';
 import { awsPlugin } from './plugins/aws';
 import { batchPlugin } from './plugins/batch';
 import { cmdPlugin } from './plugins/cmd';
@@ -159,10 +160,11 @@ export function createCli(opts: CreateCliOptions = {}): {
             baseRootOptionDefaults as unknown as Partial<RootOptionsShape>,
             undefined,
           );
-          program.evaluateDynamicOptions({
-            ...(defaultsMerged as unknown as GetDotenvCliOptions),
-            plugins: ctx.pluginConfigs ?? {},
-          });
+          const helpCfg = toHelpConfig(
+            defaultsMerged as unknown as GetDotenvCliOptions,
+            ctx.pluginConfigs ?? {},
+          );
+          program.evaluateDynamicOptions(helpCfg);
           // Suppress output only during unit tests; allow E2E to capture.
           const piping =
             process.env.GETDOTENV_STDIO === 'pipe' ||

@@ -1,6 +1,6 @@
 # Development Plan
 
-When updated: 2025-12-05T00:00:00Z
+When updated: 2025-12-06T00:00:00Z
 
 ## Next up (near‑term, actionable)
 
@@ -47,3 +47,11 @@ When updated: 2025-12-05T00:00:00Z
 - Alias converter boundary: compat cast
   - plugins/cmd/alias.ts: import RootOptionsShapeCompat and cast mergedBag to
     RootOptionsShapeCompat when calling getDotenvCliOptions2Options.
+
+- Helpers for inference polish (omitUndefined/toHelpConfig)
+  - Added util/omitUndefined (omitUndefined and omitUndefinedRecord) and refactored
+    computeContext/resolveGetDotenvOptions to use them (replacing ad‑hoc Object.entries
+    filters for exactOptionalPropertyTypes).
+  - Added cliHost/helpConfig.toHelpConfig and updated host hooks and createCli()
+    help path to centralize help‑bag construction for dynamic option evaluation,
+    reducing inline casts while keeping types precise.

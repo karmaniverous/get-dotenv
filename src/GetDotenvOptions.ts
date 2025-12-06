@@ -21,6 +21,7 @@ import {
 import type { RootOptionsShape } from './cliCore/types';
 import type { getDotenvOptionsSchemaResolved } from './schema/getDotenvOptions';
 import { defaultsDeep } from './util/defaultsDeep';
+import { omitUndefinedRecord } from './util/omitUndefined';
 
 export const getDotenvOptionsFilename = 'getdotenv.config.json';
 
@@ -266,8 +267,6 @@ export const resolveGetDotenvOptions = async (
 
   return {
     ...result, // Keep explicit empty strings/zeros; drop only undefined
-    vars: Object.fromEntries(
-      Object.entries(result.vars ?? {}).filter(([, v]) => v !== undefined),
-    ),
+    vars: omitUndefinedRecord(result.vars ?? {}),
   };
 };

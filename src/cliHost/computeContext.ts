@@ -15,6 +15,7 @@ import { getDotenvOptionsSchemaResolved } from '../schema/getDotenvOptions';
 import { defaultsDeep } from '../util/defaultsDeep';
 import { interpolateDeep } from '../util/interpolateDeep';
 import { loadModuleDefault } from '../util/loadModuleDefault';
+import { omitUndefined } from '../util/omitUndefined';
 import type { GetDotenvCliPlugin } from './definePlugin';
 import type { GetDotenvCliCtx } from './GetDotenvCli';
 
@@ -57,11 +58,8 @@ export const computeContext = async <
   const validated = getDotenvOptionsSchemaResolved.parse(optionsResolved);
   // Always-on loader path
   // 1) Base from files only (no dynamic, no programmatic vars)
-  // Sanitize to avoid passing properties explicitly set to undefined
-  // (exactOptionalPropertyTypes).
-  const cleanedValidated = Object.fromEntries(
-    Object.entries(validated).filter(([, v]) => v !== undefined),
-  ) as Partial<GetDotenvOptions>;
+  // Sanitize to avoid passing properties explicitly set to undefined.
+  const cleanedValidated: Partial<GetDotenvOptions> = omitUndefined(validated);
 
   const base = await getDotenv({
     ...cleanedValidated,
