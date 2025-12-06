@@ -13,7 +13,6 @@ import { z, type ZodObject, type ZodTypeAny } from 'zod';
 import type { GetDotenvOptions } from '../GetDotenvOptions';
 import { _getPluginConfigForInstance } from './computeContext';
 import type { GetDotenvCliCtx, ResolvedHelpConfig } from './GetDotenvCli';
-/* eslint-disable @typescript-eslint/no-unnecessary-type-parameters */
 
 /**
  * Structural public interface for the host exposed to plugins.
@@ -122,7 +121,7 @@ export type DefineSpec<TOptions extends GetDotenvOptions = GetDotenvOptions> =
  * Define a GetDotenv CLI plugin with compositional helpers.
  *
  * @example
- * const parent = definePlugin({ id: 'p', setup(cli) { /* ... */ } })
+ * const parent = definePlugin({ id: 'p', setup(cli) { /* omitted *\/ } })
  *   .use(childA)
  *   .use(childB);
  */
@@ -141,9 +140,7 @@ export function definePlugin<
 export function definePlugin<TOptions extends GetDotenvOptions>(
   spec: DefineSpec<TOptions>,
 ): PluginWithInstanceHelpers<TOptions, {}>;
-export function definePlugin<
-  TOptions extends GetDotenvOptions,
->(
+export function definePlugin<TOptions extends GetDotenvOptions>(
   spec: DefineSpec<TOptions> & {
     configSchema?: ZodObject<
       Record<string, ZodTypeAny>,
@@ -151,18 +148,20 @@ export function definePlugin<
       Record<string, unknown>
     >;
   },
-): PluginWithInstanceHelpers<TOptions, unknown> {
+): PluginWithInstanceHelpers<TOptions> {
   const { children = [], ...rest } = spec;
   // Default to a strict empty-object schema so “no config” plugins fail fast
   // on unknown keys and provide a concrete {} at runtime.
   const effectiveSchema =
-    (spec as {
-      configSchema?: ZodObject<
-        Record<string, ZodTypeAny>,
-        unknown,
-        Record<string, unknown>
-      >;
-    }).configSchema ?? z.object({}).strict();
+    (
+      spec as {
+        configSchema?: ZodObject<
+          Record<string, ZodTypeAny>,
+          unknown,
+          Record<string, unknown>
+        >;
+      }
+    ).configSchema ?? z.object({}).strict();
 
   // Build base plugin first, then extend with instance-bound helpers.
   const base: GetDotenvCliPlugin<TOptions> = {
@@ -178,8 +177,7 @@ export function definePlugin<
   };
 
   // Attach instance-bound helpers on the returned plugin object.
-  const extended =
-    base as PluginWithInstanceHelpers<TOptions, unknown>;
+  const extended = base as PluginWithInstanceHelpers<TOptions>;
 
   extended.readConfig = function <TCfg = unknown>(
     _cli: GetDotenvCliPublic<TOptions>,

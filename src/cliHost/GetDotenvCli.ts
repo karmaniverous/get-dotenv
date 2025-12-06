@@ -160,15 +160,16 @@ export class GetDotenvCli<TOptions extends GetDotenvOptions = GetDotenvOptions>
    * The returned Option may be configured (conflicts, default, parser) and
    * added via addOption().
    */
-  // Overload: typed parser & default for value inference
-  createDynamicOption<TValue, TPlugins = Record<string, unknown>>(
+  // Overload: typed parser & default for value inference (plugin typing handled by base overload)
+  createDynamicOption<TValue>(
     flags: string,
-    desc: (cfg: ResolvedHelpConfig & { plugins: TPlugins }) => string,
+    desc: (
+      cfg: ResolvedHelpConfig & { plugins: Record<string, unknown> },
+    ) => string,
     parser: (value: string, previous?: TValue) => TValue,
     defaultValue?: TValue,
   ): Option;
   // Base overload
-
   createDynamicOption<TPlugins = Record<string, unknown>>(
     flags: string,
     desc: (cfg: ResolvedHelpConfig & { plugins: TPlugins }) => string,

@@ -1,6 +1,6 @@
 import fs from 'fs-extra';
 import path from 'path';
-import { type ZodObject, type ZodTypeAny } from 'zod';
+import { type ZodError, type ZodObject, type ZodType } from 'zod';
 
 import { resolveGetDotenvConfigSources } from '../config/loader';
 import { overlayEnv } from '../env/overlay';
@@ -213,22 +213,26 @@ export const computeContext = async <
 
     // Enforced: plugins always carry a schema (strict empty by default).
     const schema = p.configSchema as unknown as ZodObject<
-      Record<string, ZodTypeAny>,
+      Record<string, ZodType>,
       unknown,
       Record<string, unknown>
     >;
-    const toParse = interpolated ?? ({} as Record<string, unknown>);
+    const toParse = interpolated;
     const parsed = schema.safeParse(toParse);
     if (!parsed.success) {
-      const msgs = parsed.error.issues
-        .map((i) => `${i.path.join('.')}: ${i.message}`)
+      const err = parsed.error as ZodError<Record<string, unknown>>;
+      const msgs = err.issues
+        .map((i) => {
+          const path = Array.isArray(i.path) ? i.path.join('.') : '';
+          const msg =
+            typeof i.message === 'string' ? i.message : 'Invalid value';
+          return path ? `${path}: ${msg}` : msg;
+        })
         .join('\n');
       throw new Error(`Invalid config for plugin '${p.id}':\n${msgs}`);
     }
     // Store a readonly (shallow-frozen) value for runtime safety.
-    const frozen = Object.freeze(
-      parsed.data as unknown as Record<string, unknown>,
-    );
+    const frozen = Object.freeze(parsed.data as Record<string, unknown>);
     _setPluginConfigForInstance(
       p as unknown as GetDotenvCliPlugin,
       frozen as unknown,
