@@ -66,7 +66,7 @@ export const cmdPlugin = (options: CmdPluginOptions = {}) =>
             // No-op when invoked as the default command with no args.
             if (args.length === 0) return;
             // Access merged root options via helper (root ascension inside)
-            const merged = readMergedOptions(thisCommand as unknown as Command);
+            const merged = readMergedOptions(thisCommand);
             const parent = thisCommand.parent as
               | (CommandWithOptions<GetDotenvCliOptions> & Command)
               | null;

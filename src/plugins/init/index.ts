@@ -6,7 +6,6 @@ import { stdin as input, stdout as output } from 'node:process';
 
 // NOTE: pay attention to non-interactive detection and precedence
 // (--force > --yes > auto-detect). See README for details.
-import type { Command } from 'commander';
 import fs from 'fs-extra';
 import path from 'path';
 import { createInterface } from 'readline/promises';
@@ -45,10 +44,7 @@ export const initPlugin = (opts: InitPluginOptions = {}) =>
         .action(async (destArg?: string) => {
           // Read options directly from the captured command instance.
           // Cast to a plain record to satisfy exact-optional and lint safety.
-          const o =
-            ((cmd as unknown as Command).opts() as
-              | Record<string, unknown>
-              | undefined) ?? {};
+          const o = (cmd.opts() as Record<string, unknown> | undefined) ?? {};
           const destRel =
             typeof destArg === 'string' && destArg.length > 0 ? destArg : '.';
           const cwd = process.cwd();

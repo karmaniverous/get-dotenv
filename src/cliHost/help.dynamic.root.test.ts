@@ -11,14 +11,14 @@ describe('GetDotenvCli root dynamic help', () => {
 
     // Evaluate dynamic descriptions with an explicit resolved config bag.
     // Set OFF defaults for shell/log/loadProcess to assert "(default)" tags.
-    const cfg = {
+    const cfg: ResolvedHelpConfig = {
       shell: false,
       loadProcess: false,
       log: false,
       plugins: {},
-    } as unknown as ResolvedHelpConfig;
+    };
 
-    (cli as unknown as GetDotenvCli).evaluateDynamicOptions(cfg);
+    cli.evaluateDynamicOptions(cfg);
 
     // Render help and assert the OFF variants include "(default)".
     const help = cli.helpInformation();

@@ -19,12 +19,12 @@ describe('/cliHost helpers exposure', () => {
     const cli = new GetDotenvCli('test');
     // The following assignments compile only if module augmentation is visible.
     const attach = (
-      cli as unknown as {
+      cli as {
         attachRootOptions?: (...args: unknown[]) => unknown;
       }
     ).attachRootOptions;
     const pass = (
-      cli as unknown as {
+      cli as {
         passOptions?: (...args: unknown[]) => unknown;
       }
     ).passOptions;

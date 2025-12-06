@@ -60,7 +60,7 @@ export const computeContext = async <
   // GetDotenvOptions overlay (logger/dynamic typing) for internal processing.
   const validated = getDotenvOptionsSchemaResolved.parse(
     optionsResolved,
-  ) as unknown as GetDotenvOptions;
+  ) as GetDotenvOptions;
   // Always-on loader path
   // 1) Base from files only (no dynamic, no programmatic vars)
   // Sanitize to avoid passing properties explicitly set to undefined.
@@ -109,7 +109,7 @@ export const computeContext = async <
   const dotenv = { ...dotenvOverlaid };
   applyDynamic(
     dotenv,
-    (validated as unknown as { dynamic?: GetDotenvDynamic }).dynamic,
+    (validated as { dynamic?: GetDotenvDynamic }).dynamic,
     validated.env ?? validated.defaultEnv,
   );
   applyDynamic(

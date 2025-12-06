@@ -105,11 +105,11 @@ export const awsPlugin = () => {
           async (
             args: string[] | undefined,
             opts: Record<string, unknown>,
-            thisCommand: unknown,
+            thisCommand: Command,
           ) => {
             const pluginInst = plugin;
             // Access merged root CLI options (installed by passOptions())
-            const bag = readMergedOptions(thisCommand as Command);
+            const bag = readMergedOptions(thisCommand);
             const capture =
               process.env.GETDOTENV_STDIO === 'pipe' ||
               Boolean((bag as { capture?: boolean }).capture);

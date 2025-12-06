@@ -265,7 +265,7 @@ export class GetDotenvCli<TOptions extends GetDotenvOptions = GetDotenvOptions>
     root.addOption = function patchedAdd(this: Command, opt: Option) {
       (root as GetDotenvCli).setOptionGroup(opt, 'app');
       return originalAddOption(opt);
-    } as Command['addOption'];
+    };
     try {
       return fn(root);
     } finally {
@@ -322,7 +322,7 @@ export class GetDotenvCli<TOptions extends GetDotenvOptions = GetDotenvOptions>
   override helpInformation(): string {
     // Base help text first (includes beforeAll/after hooks).
     const base = super.helpInformation();
-    const groups = renderOptionGroups(this as Command);
+    const groups = renderOptionGroups(this);
     const block = typeof groups === 'string' ? groups.trim() : '';
     let out = base;
     if (!block) {

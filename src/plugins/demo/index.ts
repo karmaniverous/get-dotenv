@@ -129,10 +129,10 @@ export const demoPlugin = () =>
           async (
             commandParts: string[] | undefined,
             _opts: unknown,
-            thisCommand: unknown,
+            thisCommand: Command,
           ) => {
             // Access merged root options via helper
-            const bag = readMergedOptions(thisCommand as Command);
+            const bag = readMergedOptions(thisCommand);
 
             const input = Array.isArray(commandParts)
               ? commandParts.map(String).join(' ')
