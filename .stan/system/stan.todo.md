@@ -73,6 +73,7 @@ When updated: 2025-12-06T00:00:00Z
   - Improved plugin DX: createPluginDynamicOption now defaults its type
     parameter to the plugin’s TConfig, so call sites no longer need to
     specify the generic (in aws and other plugins).
+- Lint: suppress no-unnecessary-type-parameters in definePlugin (file-level) to allow generic-default DX without false positives.
 
 - AWS plugin defaults and ctx mirror hardening
   - Removed add-ctx flag and behavior; the plugin now always publishes only

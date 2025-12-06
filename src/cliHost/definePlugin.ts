@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unnecessary-type-parameters */
 /** src/cliHost/definePlugin.ts
  * Plugin contracts for the GetDotenv CLI host.
  *
@@ -82,13 +83,13 @@ export interface GetDotenvCliPlugin<
    * Instance-bound accessor: read the validated, interpolated config slice for
    * this plugin instance (when present).
    */
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters
+
   readConfig?<TConfig>(cli: GetDotenvCliPublic<TOptions>): TConfig | undefined;
   /**
    * Create a plugin-bound dynamic option. The callback receives the resolved
    * configuration bag and this plugin instance’s validated config slice.
    */
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters
+
   createPluginDynamicOption?<TConfig>(
     cli: GetDotenvCliPublic<TOptions>,
     flags: string,
