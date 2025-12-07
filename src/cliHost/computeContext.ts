@@ -258,7 +258,7 @@ export const computeContext = async <
 
   return {
     optionsResolved: validated as TOptions,
-    dotenv: dotenv as ProcessEnv,
+    dotenv,
     plugins: {},
     // Retained for legacy root help dynamic evaluation only. Instance-bound
     // access is used by plugins themselves and tests/docs moving forward.

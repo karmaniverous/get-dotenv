@@ -144,4 +144,9 @@ When updated: 2025-12-07T00:00:00Z
 
 - Cmd alias: simplify entOpts and remove casts in catch
   - Refactored EntropyOptions/RedactOptions construction to concise object
-    literals and introduced a type guard to extract exitCode without casts.
+    literals and introduced a type guard to extract exitCode without casts.
+
+- Init plugin: inherit logger; remove logger option and unsafe opts cast
+  - Dropped plugin-scoped logger in init; readMergedOptions supplies the base
+    logger inside the action. Replaced Record<string, unknown> opts cast with a
+    typed local shape for flags. Updated tests to call initPlugin() without args.
