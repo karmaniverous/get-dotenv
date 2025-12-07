@@ -136,4 +136,8 @@ When updated: 2025-12-07T00:00:00Z
   - GetDotenvCli now imports GROUP_TAG from ./groups to restore grouped help
     tagging and resolve runtime ReferenceError/TS2304.
   - tagAppOptions now delegates to tagAppOptionsAround to remove duplicate
-    monkey‑patch logic and clear lint for unused imports.
+    monkey‑patch logic and clear lint for unused imports.
+
+- Cmd alias: type-safe scripts usage in maybeRunAlias
+  - Removed unknown→Record casts; use ScriptsTable | undefined directly and pass
+    to resolveCommand/resolveShell. No behavior change; safer typing.

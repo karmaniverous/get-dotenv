@@ -118,19 +118,9 @@ export async function maybeRunAlias(
   const input = effectiveExpand && expanded !== undefined ? expanded : joined;
 
   // Scripts: prefer well-formed records; tolerate absent/bad shapes
-  const maybeScripts = (mergedBag as { scripts?: unknown }).scripts;
-  const scripts =
-    maybeScripts && typeof maybeScripts === 'object'
-      ? (maybeScripts as Record<string, unknown>)
-      : undefined;
+  const scripts = (mergedBag as { scripts?: ScriptsTable | undefined }).scripts;
 
-  const resolved = resolveCommand(
-    scripts as unknown as Record<
-      string,
-      string | { cmd: string; shell?: string | boolean }
-    >,
-    input,
-  );
+  const resolved = resolveCommand(scripts, input);
   if (debug) {
     logger.debug('\n*** command ***\n', `'${resolved}'`);
   }
@@ -210,15 +200,7 @@ export async function maybeRunAlias(
       );
     }
   }
-
-  const shellSetting = resolveShell(
-    scripts as unknown as Record<
-      string,
-      string | { cmd: string; shell?: string | boolean }
-    >,
-    input,
-    shell,
-  );
+  const shellSetting = resolveShell(scripts, input, shell);
   // Preserve argv array for Node -e snippets under shell-off
   let commandArg: string | string[] = resolved;
   if (shellSetting === false && resolved === input) {
@@ -240,17 +222,10 @@ export async function maybeRunAlias(
   let exitCode = Number.NaN;
   try {
     exitCode = await runCommand(commandArg, shellSetting, {
-      env: buildSpawnEnv(
-        process.env,
-        nestedBag
-          ? {
-              ...dotenv,
-              getDotenvCliOptions: nestedBag,
-            }
-          : {
-              ...dotenv,
-            },
-      ),
+      env: buildSpawnEnv(process.env, {
+        ...dotenv,
+        ...(nestedBag ? { getDotenvCliOptions: nestedBag } : {}),
+      }),
       stdio: capture ? 'pipe' : 'inherit',
     });
     dbg('run:done', { exitCode });

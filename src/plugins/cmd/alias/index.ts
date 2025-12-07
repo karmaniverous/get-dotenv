@@ -53,22 +53,13 @@ export const attachParentAlias = (
     } catch {
       /* config may be unavailable before resolve; default handled downstream */
     }
-    await maybeRunAlias(
-      cli as unknown as GetDotenvCliPublic,
-      thisCommand,
-      aliasKey,
-      aliasState,
-      expandDefault,
-    );
+    await maybeRunAlias(cli, thisCommand, aliasKey, aliasState, expandDefault);
   };
 
-  cli.hook(
-    'preAction',
-    async (thisCommand: Command, _actionCommand: Command) => {
-      await maybeRun(thisCommand);
-    },
-  );
-  cli.hook('preSubcommand', async (thisCommand: Command) => {
+  cli.hook('preAction', async (thisCommand, _actionCommand) => {
+    await maybeRun(thisCommand);
+  });
+  cli.hook('preSubcommand', async (thisCommand) => {
     await maybeRun(thisCommand);
   });
 };
