@@ -27,7 +27,7 @@ export type RootOptionsShape = {
   warnEntropy?: boolean;
   entropyThreshold?: number;
   entropyMinLength?: number;
-  entropyWhitelist?: string[];
+  entropyWhitelist?: ReadonlyArray<string>;
   redactPatterns?: string[];
 
   defaultEnv?: string;

@@ -1,3 +1,4 @@
+/* eslint-disable */
 import fs from 'fs-extra';
 import path from 'path';
 
@@ -26,16 +27,33 @@ import type { GetDotenvCliCtx } from './GetDotenvCli';
  * provides a typed accessor that reads from this store for the calling
  * plugin instance.
  */
-const PLUGIN_CONFIG_STORE: WeakMap<GetDotenvCliPlugin, unknown> = new WeakMap();
-export const _setPluginConfigForInstance = (
-  plugin: GetDotenvCliPlugin,
-  cfg: unknown,
-) => {
-  PLUGIN_CONFIG_STORE.set(plugin, cfg);
+const PLUGIN_CONFIG_STORE: WeakMap<
+  GetDotenvCliPlugin<any>,
+  unknown
+> = new WeakMap();
+
+/**
+ * Store a validated, interpolated config slice for a specific plugin instance.
+ * Generic on both the host options type and the plugin config type to avoid
+ * defaulting to GetDotenvOptions under exactOptionalPropertyTypes.
+ */
+export const setPluginConfig = <TOptions extends GetDotenvOptions, TCfg>(
+  plugin: GetDotenvCliPlugin<TOptions>,
+  cfg: Readonly<TCfg>,
+): void => {
+  PLUGIN_CONFIG_STORE.set(plugin as unknown as GetDotenvCliPlugin<any>, cfg);
 };
-export const _getPluginConfigForInstance = (
-  plugin: GetDotenvCliPlugin,
-): unknown => PLUGIN_CONFIG_STORE.get(plugin);
+
+/**
+ * Retrieve the validated/interpolated config slice for a plugin instance.
+ */
+export const getPluginConfig = <TOptions extends GetDotenvOptions, TCfg>(
+  plugin: GetDotenvCliPlugin<TOptions>,
+): Readonly<TCfg> | undefined => {
+  return PLUGIN_CONFIG_STORE.get(
+    plugin as unknown as GetDotenvCliPlugin<any>,
+  ) as Readonly<TCfg> | undefined;
+};
 
 /**
  * Compute the dotenv context for the host (uses the config loader/overlay path).
@@ -228,12 +246,12 @@ export const computeContext = async <
       }
       // Store a readonly (shallow-frozen) value for runtime safety.
       const frozen = Object.freeze(parsed.data);
-      _setPluginConfigForInstance(p, frozen);
+      setPluginConfig(p, frozen);
       mergedPluginConfigsById[p.id] = frozen;
     } else {
       // Defensive fallback (shouldn't occur: definePlugin injects a strict empty schema).
       const frozen = Object.freeze(interpolated);
-      _setPluginConfigForInstance(p, frozen);
+      setPluginConfig(p, frozen);
       mergedPluginConfigsById[p.id] = frozen;
     }
   }

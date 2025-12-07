@@ -21,6 +21,16 @@ When updated: 2025-12-07T00:00:00Z
 
 **CRITICAL: Append-only list. Add new completed items at the end. Prune old completed entries from the top. Do not edit existing entries.**
 
+- Typecheck fixes: generic plugin-config wrappers and readonly whitelist
+  - Introduced generic setPluginConfig/getPluginConfig over the WeakMap
+    to carry TOptions/TConfig and eliminate defaulting to
+    GetDotenvOptions in store helpers. Replaced underscored helpers and
+    updated computeContext/definePlugin call sites. Resolves TS2379 with
+    exactOptionalPropertyTypes.
+  - Switched RootOptionsShape.entropyWhitelist to ReadonlyArray<string>
+    to align with readonly tuple defaults and remove readonly→mutable
+    cast issues (TS2352). No runtime changes.
+
 - Type casts: remove unnecessary casts and ease help config typing
   - helpConfig: toHelpConfig now accepts Partial<GetDotenvCliOptions>, removing
     cast-at-call-site patterns.

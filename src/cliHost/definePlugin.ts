@@ -12,7 +12,7 @@ import type { Command, Option } from 'commander';
 import { z, type ZodObject } from 'zod';
 
 import type { GetDotenvOptions } from '../GetDotenvOptions';
-import { _getPluginConfigForInstance } from './computeContext';
+import { getPluginConfig } from './computeContext';
 import type { GetDotenvCliCtx, ResolvedHelpConfig } from './GetDotenvCli';
 
 /**
