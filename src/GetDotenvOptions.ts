@@ -220,7 +220,7 @@ export const getDotenvCliOptions2Options = ({
     ...(rest as Partial<GetDotenvOptions>),
     ...(pathsOut.length > 0 ? { paths: pathsOut } : {}),
     ...(parsedVars !== undefined ? { vars: parsedVars } : {}),
-  } as GetDotenvOptions;
+  };
 };
 
 /**
@@ -271,7 +271,7 @@ export const resolveGetDotenvOptions = async (
   const result = defaultsDeep(
     defaultsFromCli as Partial<GetDotenvOptions>,
     customOptions,
-  ) as unknown as GetDotenvOptions;
+  );
 
   return {
     ...result, // Keep explicit empty strings/zeros; drop only undefined
