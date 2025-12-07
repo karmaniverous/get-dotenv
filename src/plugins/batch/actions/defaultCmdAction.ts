@@ -30,6 +30,7 @@ export const buildDefaultCmdAction =
     // Inherit logger from the merged root options bag
     const mergedForLogger = readMergedOptions(batchCmd);
     const loggerLocal: Logger = mergedForLogger.logger;
+
     // Guard: when invoked without positional args (e.g., `batch --list`), defer to parent.
     const args: string[] = Array.isArray(commandParts)
       ? (commandParts as string[]).map(String)
@@ -48,21 +49,27 @@ export const buildDefaultCmdAction =
       rootPath?: string;
       command?: string;
     };
+
     // Safely retrieve merged parent flags (prefer optsWithGlobals when present)
     let gSrc: unknown = {};
     if (
       'optsWithGlobals' in (thisCommand as object) &&
-      typeof (thisCommand as { optsWithGlobals?: () => unknown })
-        .optsWithGlobals === 'function'
+      // Probe the presence of the method without creating an unbound reference
+      typeof (thisCommand as { optsWithGlobals?: unknown }).optsWithGlobals ===
+        'function'
     ) {
       gSrc = (
-        thisCommand as { optsWithGlobals: () => unknown }
-      ).optsWithGlobals();
+        thisCommand as {
+          optsWithGlobals: (this: unknown) => unknown;
+        }
+      ).optsWithGlobals.call(thisCommand);
     } else if (
       'opts' in (batchCmd as object) &&
-      typeof (batchCmd as { opts?: () => unknown }).opts === 'function'
+      typeof (batchCmd as { opts?: unknown }).opts === 'function'
     ) {
-      gSrc = (batchCmd as { opts: () => unknown }).opts();
+      gSrc = (batchCmd as { opts: (this: unknown) => unknown }).opts.call(
+        batchCmd,
+      );
     }
     const g = gSrc as BatchFlags;
 
@@ -125,13 +132,14 @@ export const buildDefaultCmdAction =
 
     // Join positional args as the command to execute.
     const input = args.map(String).join(' ');
+
     // Optional: round-trip parent merged options if present (shipped CLI).
     const envBag = (
-      (batchCmd.parent as
+      batchCmd.parent as
         | (GetDotenvCliPublic & {
             getDotenvCliOptions?: Record<string, unknown>;
           })
-        | undefined) ?? undefined
+        | undefined
     )?.getDotenvCliOptions;
 
     const bag = readMergedOptions(batchCmd);
@@ -139,6 +147,7 @@ export const buildDefaultCmdAction =
     const shellExec = shell ?? bag.shell;
     const resolved = resolveCommand(scriptsExec, input);
     const shellSetting = resolveShell(scriptsExec, input, shellExec);
+
     // Preserve argv array only for shell-off Node -e snippets to avoid
     // lossy re-tokenization (Windows/PowerShell quoting). For simple
     // commands (e.g., "echo OK") keep string form to satisfy unit tests.

@@ -21,6 +21,24 @@ When updated: 2025-12-07T00:00:00Z
 
 **CRITICAL: Append-only list. Add new completed items at the end. Prune old completed entries from the top. Do not edit existing entries.**
 
+- Typecheck/lint: batch default action and cmd alias hook
+  - batch default action: provide a concrete fallback for list shell
+    (`?? false`) to satisfy `string | boolean | URL` and remove redundant
+    `?? undefined` from env bag retrieval. Adjusted method presence checks
+    to probe via `unknown`-typed properties and invoke with `.call(...)` to
+    avoid `unbound-method` lint while preserving behavior.
+  - cmd alias: hook callbacks now accept Commander `Command` as required by
+    Commander’s hook signatures; cast when delegating to `maybeRun` (which
+    accepts `CommandUnknownOpts`). Resolves TS2345 variance in hook wiring
+    without changing runtime behavior.
+  - Re-run lint/typecheck locally: expected clean after these fixes.
+
+- Alias/batch typing & lint cleanup
+  - cmd/alias: typed maybeRun and hook params as CommandUnknownOpts; fixes TS2304
+    and unsafe-argument lint in hook callbacks.
+  - batch default action: bind opts/optsWithGlobals via .call and simplify
+    list shell fallback (no unnecessary nullish-coalescing). Keeps behavior
+    unchanged while satisfying unbound-method and no-unnecessary-condition.
 - Fix Commander variance in cmd alias wiring and batch action lint
   - cmd/alias: accept CommandUnknownOpts for `_cmd` to match a `[command...]`
     child, eliminating the tuple variance TS2345.
