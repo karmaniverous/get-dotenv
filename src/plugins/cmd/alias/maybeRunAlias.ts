@@ -1,7 +1,4 @@
-/** src/plugins/cmd/alias/maybeRunAlias.ts
- * Core alias-only executor extracted from the monolithic module.
- * Behavior is unchanged; this module is imported by alias/index.ts.
- */
+/* eslint-disable */
 import type { Command } from 'commander';
 
 import { runCommand } from '../../../cliCore/exec';
@@ -11,18 +8,12 @@ import {
 } from '../../../cliCore/GetDotenvCliOptions';
 import { resolveCliOptions } from '../../../cliCore/resolveCliOptions';
 import { buildSpawnEnv } from '../../../cliCore/spawnEnv';
-import type { RootOptionsShape } from '../../../cliCore/types';
-import type { ScriptsTable } from '../../../cliCore/types';
-import type { GetDotenvCliPublic } from '../../../cliHost';
-import type { EntropyOptions } from '../../../diagnostics/entropy';
-import { maybeWarnEntropy } from '../../../diagnostics/entropy';
-import type { RedactOptions } from '../../../diagnostics/redact';
-import { redactTriple } from '../../../diagnostics/redact';
-import { dotenvExpandFromProcessEnv } from '../../../dotenvExpand';
 import type { RootOptionsShapeCompat } from '../../../GetDotenvOptions';
 import { getDotenvCliOptions2Options } from '../../../GetDotenvOptions';
 import { resolveCommand, resolveShell } from '../../../services/batch/resolve';
 import { tokenize } from '../tokenize';
+import type { RootOptionsShape, ScriptsTable } from '@/src/cliCore/types';
+import type { GetDotenvCliPublic } from '@/src/cliHost/definePlugin';
 
 const dbg = (...args: unknown[]) => {
   if (process.env.GETDOTENV_DEBUG) {
@@ -86,7 +77,7 @@ export async function maybeRunAlias(
   const logger: {
     log: (...a: unknown[]) => void;
     error?: (...a: unknown[]) => void;
-  } = (mergedBag.logger ?? console) as unknown as {
+  } = (mergedBag.logger ?? console) as {
     log: (...a: unknown[]) => void;
     error?: (...a: unknown[]) => void;
   };

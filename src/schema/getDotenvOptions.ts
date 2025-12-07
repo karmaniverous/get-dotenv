@@ -24,7 +24,7 @@ export const getDotenvOptionsSchemaRaw = z.object({
   excludePublic: z.boolean().optional(),
   loadProcess: z.boolean().optional(),
   log: z.boolean().optional(),
-  logger: z.unknown().optional(),
+  logger: z.unknown().default(console),
   outputPath: z.string().optional(),
   paths: z.array(z.string()).optional(),
   privateToken: z.string().optional(),

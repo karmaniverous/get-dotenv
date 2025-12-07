@@ -21,6 +21,14 @@ When updated: 2025-12-07T00:00:00Z
 
 **CRITICAL: Append-only list. Add new completed items at the end. Prune old completed entries from the top. Do not edit existing entries.**
 
+- Logger: strict contract + schema defaults; remove coalescing
+  - Defined Logger as Pick<Console, 'log' | 'info' | 'error' | 'debug'> for a
+    concrete compile-time contract. Defaulted logger to console in the
+    programmatic schema so runtime presence is guaranteed. Switched host and
+    cmd plugin to use merged/validated logger directly (no “?? console”),
+    emitting via logger.error/info/log/debug. Nested env JSON continues to omit
+    logger as before.
+
 - Typecheck fixes: generic plugin-config wrappers and readonly whitelist
   - Introduced generic setPluginConfig/getPluginConfig over the WeakMap
     to carry TOptions/TConfig and eliminate defaulting to

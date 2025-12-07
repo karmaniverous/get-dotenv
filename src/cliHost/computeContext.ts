@@ -177,7 +177,7 @@ export const computeContext = async <
     );
   }
   const logger: Logger =
-    (customOptions as { logger?: Logger }).logger ?? console;
+    (validated as GetDotenvOptions).logger!;
   if (validated.log) logger.log(dotenv);
   if (validated.loadProcess) Object.assign(process.env, dotenv);
 

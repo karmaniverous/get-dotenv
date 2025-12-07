@@ -78,20 +78,15 @@ export const cmdPlugin = (options: CmdPluginOptions = {}) =>
               ).opts();
               const ov = (pv as unknown as Record<string, unknown>)[aliasKey];
               if (ov !== undefined) {
-                const logger: Logger =
-                  (merged as { logger?: Logger }).logger ?? console;
-                const lr = logger as unknown as {
-                  error?: (...a: unknown[]) => void;
-                  log: (...a: unknown[]) => void;
-                };
-                const emit = lr.error ?? lr.log;
-                emit(`--${aliasKey} option conflicts with cmd subcommand.`);
+                const logger = merged.logger!;
+                logger.error(
+                  `--${aliasKey} option conflicts with cmd subcommand.`,
+                );
                 process.exit(0);
               }
             }
 
-            const logger: Logger =
-              (merged as { logger?: Logger }).logger ?? console;
+            const logger = merged.logger!;
             // Join positional args into the command string.
             const input = args.map(String).join(' ');
 
@@ -107,13 +102,8 @@ export const cmdPlugin = (options: CmdPluginOptions = {}) =>
             const shell = (merged as { shell?: string | boolean }).shell;
             const resolved = resolveCommand(scripts, input);
 
-            if ((merged as { debug?: boolean }).debug) {
-              const lg = logger as unknown as {
-                debug?: (...a: unknown[]) => void;
-                log: (...a: unknown[]) => void;
-              };
-              (lg.debug ?? lg.log)('\n*** command ***\n', `'${resolved}'`);
-            }
+            if ((merged as { debug?: boolean }).debug)
+              logger.debug('\n*** command ***\n', `'${resolved}'`);
 
             // Round-trip CLI options for nested getdotenv invocations.
             // Omit logger (functions are not serializable).

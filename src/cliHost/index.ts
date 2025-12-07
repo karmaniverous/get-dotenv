@@ -64,13 +64,15 @@ export class GetDotenvCli extends BaseGetDotenvCli {
       'preSubcommand',
       async (thisCommand: CommandWithOptions<GetDotenvCliOptions>) => {
         const raw = thisCommand.opts();
-        const { merged } = resolveCliOptions<
-          RootOptionsShape & { scripts?: ScriptsTable }
-        >(raw, d, process.env.getDotenvCliOptions);
+        const { merged } = resolveCliOptions<GetDotenvCliOptions>(
+          raw,
+          d as Partial<GetDotenvCliOptions>,
+          process.env.getDotenvCliOptions,
+        );
 
         // Persist merged options (for nested behavior and ergonomic access).
-        thisCommand.getDotenvCliOptions = merged as GetDotenvCliOptions;
-        this._setOptionsBag(merged as GetDotenvCliOptions);
+        thisCommand.getDotenvCliOptions = merged;
+        this._setOptionsBag(merged);
 
         // Build service options and compute context (always-on loader path).
         const serviceOptions = getDotenvCliOptions2Options(merged);
@@ -91,14 +93,9 @@ export class GetDotenvCli extends BaseGetDotenvCli {
           const sources = await resolveGetDotenvConfigSources(import.meta.url);
           const issues = validateEnvAgainstSources(dotenv, sources);
           if (Array.isArray(issues) && issues.length > 0) {
-            const logger = ((merged as { logger?: unknown }).logger ??
-              console) as {
-              log: (...a: unknown[]) => void;
-              error?: (...a: unknown[]) => void;
-            };
-            const emit = logger.error ?? logger.log;
+            const logger = merged.logger!;
             issues.forEach((m) => {
-              emit(m);
+              logger.error(m);
             });
             if ((merged as { strict?: boolean }).strict) process.exit(1);
           }
@@ -114,11 +111,13 @@ export class GetDotenvCli extends BaseGetDotenvCli {
       'preAction',
       async (thisCommand: CommandWithOptions<GetDotenvCliOptions>) => {
         const raw = thisCommand.opts();
-        const { merged } = resolveCliOptions<
-          RootOptionsShape & { scripts?: ScriptsTable }
-        >(raw, d, process.env.getDotenvCliOptions);
-        thisCommand.getDotenvCliOptions = merged as GetDotenvCliOptions;
-        this._setOptionsBag(merged as GetDotenvCliOptions);
+        const { merged } = resolveCliOptions<GetDotenvCliOptions>(
+          raw,
+          d as Partial<GetDotenvCliOptions>,
+          process.env.getDotenvCliOptions,
+        );
+        thisCommand.getDotenvCliOptions = merged;
+        this._setOptionsBag(merged);
         // Avoid duplicate heavy work if a context is already present.
         if (!this.getCtx()) {
           const serviceOptions = getDotenvCliOptions2Options(merged);
@@ -141,14 +140,9 @@ export class GetDotenvCli extends BaseGetDotenvCli {
             );
             const issues = validateEnvAgainstSources(dotenv, sources);
             if (Array.isArray(issues) && issues.length > 0) {
-              const logger = ((merged as { logger?: unknown }).logger ??
-                console) as {
-                log: (...a: unknown[]) => void;
-                error?: (...a: unknown[]) => void;
-              };
-              const emit = logger.error ?? logger.log;
+              const logger = merged.logger!;
               issues.forEach((m) => {
-                emit(m);
+                logger.error(m);
               });
               if ((merged as { strict?: boolean }).strict) {
                 process.exit(1);
