@@ -80,7 +80,19 @@ export async function maybeRunAlias(
     process.env.getDotenvCliOptions,
   );
   const mergedBag = merged as unknown as GetDotenvCliOptions;
-  const logger = mergedBag.logger;
+  const {
+    logger,
+    debug,
+    capture: mergedCapture,
+    shell,
+    trace,
+    redact,
+    redactPatterns,
+    warnEntropy,
+    entropyThreshold,
+    entropyMinLength,
+    entropyWhitelist,
+  } = mergedBag;
 
   const serviceOptions = getDotenvCliOptions2Options(
     mergedBag as unknown as RootOptionsShapeCompat,
@@ -119,14 +131,15 @@ export async function maybeRunAlias(
     >,
     input,
   );
-  if ((mergedBag as { debug?: boolean }).debug) {
+  if (debug) {
     logger.debug('\n*** command ***\n', `'${resolved}'`);
   }
   // Round-trip CLI options for nested getdotenv invocations. Omit logger
   // (functions/circulars) and guard JSON serialization to avoid hard failures.
-  const { logger: _omitLogger, ...envBag } = mergedBag as unknown as {
-    logger?: unknown;
-  } & Record<string, unknown>;
+  const { logger: _omitLogger, ...envBag } = mergedBag as unknown as Record<
+    string,
+    unknown
+  >;
   let nestedBag: string | undefined;
   try {
     nestedBag = JSON.stringify(envBag);
@@ -139,17 +152,16 @@ export async function maybeRunAlias(
   const forceExit = process.env.GETDOTENV_FORCE_EXIT === '1';
   const capture =
     !underTests &&
-    (process.env.GETDOTENV_STDIO === 'pipe' ||
-      Boolean((mergedBag as { capture?: boolean }).capture));
+    (process.env.GETDOTENV_STDIO === 'pipe' || Boolean(mergedCapture));
   dbg('run:start', {
     capture,
-    shell: (mergedBag as { shell?: unknown }).shell,
+    shell,
   });
 
-  const dotenv = cli.getCtx().dotenv as Record<string, string | undefined>;
+  const dotenv = cli.getCtx().dotenv;
 
   // Diagnostics: --trace [keys...]
-  const traceOpt = (mergedBag as { trace?: boolean | string[] }).trace;
+  const traceOpt = trace;
   if (traceOpt) {
     const parentKeys = Object.keys(process.env);
     const dotenvKeys = Object.keys(dotenv);
@@ -169,16 +181,12 @@ export async function maybeRunAlias(
           : parent !== undefined
             ? 'parent'
             : 'unset';
-      const redFlag = (mergedBag as { redact?: boolean }).redact;
-      const redPatterns = (
-        mergedBag as {
-          redactPatterns?: Array<string | RegExp>;
-        }
-      ).redactPatterns;
+      const redFlag = redact;
+      const redPatternsArr = redactPatterns;
       const redOpts: RedactOptions = {};
       if (redFlag) redOpts.redact = true;
-      if (redFlag && Array.isArray(redPatterns))
-        redOpts.redactPatterns = redPatterns;
+      if (redFlag && Array.isArray(redPatternsArr))
+        redOpts.redactPatterns = redPatternsArr;
       const tripleBag: { parent?: string; dotenv?: string; final?: string } =
         {};
       if (parent !== undefined) tripleBag.parent = parent;
@@ -189,16 +197,7 @@ export async function maybeRunAlias(
         `[trace] key=${k} origin=${origin} parent=${triple.parent ?? ''} dotenv=${triple.dotenv ?? ''} final=${triple.final ?? ''}\n`,
       );
       const entOpts: EntropyOptions = {};
-      const warnEntropy = (mergedBag as { warnEntropy?: boolean }).warnEntropy;
-      const entropyThreshold = (mergedBag as { entropyThreshold?: number })
-        .entropyThreshold;
-      const entropyMinLength = (mergedBag as { entropyMinLength?: number })
-        .entropyMinLength;
-      const entropyWhitelist = (
-        mergedBag as {
-          entropyWhitelist?: Array<string | RegExp>;
-        }
-      ).entropyWhitelist;
+      // use destructured warnEntropy, entropyThreshold, entropyMinLength, entropyWhitelist
       if (typeof warnEntropy === 'boolean') entOpts.warnEntropy = warnEntropy;
       if (typeof entropyThreshold === 'number')
         entOpts.entropyThreshold = entropyThreshold;
@@ -218,7 +217,7 @@ export async function maybeRunAlias(
       string | { cmd: string; shell?: string | boolean }
     >,
     input,
-    (mergedBag as { shell?: string | boolean }).shell,
+    shell,
   );
   // Preserve argv array for Node -e snippets under shell-off
   let commandArg: string | string[] = resolved;

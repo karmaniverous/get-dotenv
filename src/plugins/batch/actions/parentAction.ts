@@ -32,7 +32,7 @@ export const buildParentAction =
     const loggerLocal: Logger = mergedForLogger.logger;
 
     // Ensure context exists (host preSubcommand on root creates if missing).
-    const dotenvEnv = cli.getCtx().dotenv as Record<string, string | undefined>;
+    const dotenvEnv = cli.getCtx().dotenv;
     const cfg = plugin.readConfig<BatchConfig>(cli);
 
     const raw = thisCommand.opts();

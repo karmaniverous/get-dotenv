@@ -21,6 +21,13 @@ When updated: 2025-12-07T00:00:00Z
 
 **CRITICAL: Append-only list. Add new completed items at the end. Prune old completed entries from the top. Do not edit existing entries.**
 
+- Refactor: drop redundant inline casts for merged options; destructure
+  - cmd plugin (index): destructured logger/debug/capture/scripts/shell/trace/redact/entropy flags;
+    simplified capture computation and removed per‑property casts.
+  - cmd alias path: same refactor; simplified debug/shell/trace/redact/entropy access;
+    streamlined envBag build for nested invocations.
+  - aws plugin: use bag.capture directly.
+  - passOptions: access merged.strict directly (no cast).
 - passOptions helper: typecheck/lint fixes
   - Coerced service options to Partial<TOptions> for resolveAndLoad under
     exactOptionalPropertyTypes; this is safe because TOptions extends

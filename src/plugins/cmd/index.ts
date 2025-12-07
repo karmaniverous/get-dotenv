@@ -80,6 +80,21 @@ export const cmdPlugin = (options: CmdPluginOptions = {}) =>
             const parent = thisCommand.parent as
               | (CommandWithOptions<GetDotenvCliOptions> & Command)
               | null;
+            // Destructure frequently used flags/options up front
+            const {
+              logger,
+              debug,
+              capture,
+              scripts: scriptsCfg,
+              shell: shellPref,
+              trace,
+              redact,
+              redactPatterns,
+              warnEntropy,
+              entropyThreshold,
+              entropyMinLength,
+              entropyWhitelist,
+            } = merged;
             if (!parent) throw new Error('parent command not found'); // Conflict detection: if an alias option is present on parent, do not
             // also accept positional cmd args.
             if (aliasKey) {
@@ -88,7 +103,6 @@ export const cmdPlugin = (options: CmdPluginOptions = {}) =>
               ).opts();
               const ov = (pv as unknown as Record<string, unknown>)[aliasKey];
               if (ov !== undefined) {
-                const logger = merged.logger;
                 logger.error(
                   `--${aliasKey} option conflicts with cmd subcommand.`,
                 );
@@ -96,38 +110,23 @@ export const cmdPlugin = (options: CmdPluginOptions = {}) =>
               }
             }
 
-            const logger = merged.logger;
             // Join positional args into the command string.
             const input = args.map(String).join(' ');
 
             // Resolve command and shell using shared helpers.
-            const scripts = (
-              merged as {
-                scripts?: Record<
-                  string,
-                  string | { cmd: string; shell?: string | boolean }
-                >;
-              }
-            ).scripts;
-            const shell = (merged as { shell?: string | boolean }).shell;
-            const resolved = resolveCommand(scripts, input);
+            const resolved = resolveCommand(scriptsCfg, input);
 
-            if ((merged as { debug?: boolean }).debug)
-              logger.debug('\n*** command ***\n', `'${resolved}'`);
+            if (debug) logger.debug('\n*** command ***\n', `'${resolved}'`);
 
             // Round-trip CLI options for nested getdotenv invocations.
             // Omit logger (functions are not serializable).
             const { logger: _omit, ...envBag } = merged;
-            const capture =
-              process.env.GETDOTENV_STDIO === 'pipe' ||
-              Boolean((merged as { capture?: boolean }).capture);
+            const captureFlag =
+              process.env.GETDOTENV_STDIO === 'pipe' || Boolean(capture);
             // Prefer explicit env injection using the resolved dotenv map.
-            const dotenv = cli.getCtx().dotenv as Record<
-              string,
-              string | undefined
-            >;
+            const dotenv = cli.getCtx().dotenv;
             // Diagnostics: --trace [keys...] (space-delimited keys if provided; all keys when true)
-            const traceOpt = (merged as { trace?: boolean | string[] }).trace;
+            const traceOpt = trace;
             if (traceOpt) {
               // Determine keys to trace: all keys (parent ∪ dotenv) or selected.
               const parentKeys = Object.keys(process.env);
@@ -152,12 +151,12 @@ export const cmdPlugin = (options: CmdPluginOptions = {}) =>
                       ? 'parent'
                       : 'unset';
                 // Apply presentation-time redaction (if enabled)
-                const redFlag = merged.redact;
-                const redPatterns = merged.redactPatterns;
+                const redFlag = redact;
+                const redPatternsArr = redactPatterns;
                 const redOpts: RedactOptions = {};
                 if (redFlag) redOpts.redact = true;
-                if (redFlag && Array.isArray(redPatterns))
-                  redOpts.redactPatterns = redPatterns;
+                if (redFlag && Array.isArray(redPatternsArr))
+                  redOpts.redactPatterns = redPatternsArr;
                 const tripleBag: {
                   parent?: string;
                   dotenv?: string;
@@ -173,23 +172,6 @@ export const cmdPlugin = (options: CmdPluginOptions = {}) =>
                 );
                 // Optional entropy warning (once-per-key)
                 const entOpts: EntropyOptions = {};
-                const warnEntropy = (merged as { warnEntropy?: boolean })
-                  .warnEntropy;
-                const entropyThreshold = (
-                  merged as {
-                    entropyThreshold?: number;
-                  }
-                ).entropyThreshold;
-                const entropyMinLength = (
-                  merged as {
-                    entropyMinLength?: number;
-                  }
-                ).entropyMinLength;
-                const entropyWhitelist = (
-                  merged as {
-                    entropyWhitelist?: Array<string | RegExp>;
-                  }
-                ).entropyWhitelist;
                 if (typeof warnEntropy === 'boolean')
                   entOpts.warnEntropy = warnEntropy;
                 if (typeof entropyThreshold === 'number')
@@ -203,7 +185,7 @@ export const cmdPlugin = (options: CmdPluginOptions = {}) =>
                 );
               }
             }
-            const shellSetting = resolveShell(scripts, input, shell);
+            const shellSetting = resolveShell(scriptsCfg, input, shellPref);
             /**
              * Preserve original argv array when:
              * - shell is OFF (plain execa), and
@@ -223,7 +205,7 @@ export const cmdPlugin = (options: CmdPluginOptions = {}) =>
                 ...dotenv,
                 getDotenvCliOptions: JSON.stringify(envBag),
               }),
-              stdio: capture ? 'pipe' : 'inherit',
+              stdio: captureFlag ? 'pipe' : 'inherit',
             });
           },
         );

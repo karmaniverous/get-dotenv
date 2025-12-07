@@ -76,7 +76,7 @@ export function installPassOptions<TOptions extends GetDotenvOptions>(
           issues.forEach((m) => {
             logger.error(m);
           });
-          if ((merged as { strict?: boolean }).strict) process.exit(1);
+          if (merged.strict) process.exit(1);
         }
       } catch {
         // Be tolerant: do not crash non-strict flows on unexpected validator failures.
@@ -120,7 +120,7 @@ export function installPassOptions<TOptions extends GetDotenvOptions>(
             issues.forEach((m) => {
               logger.error(m);
             });
-            if ((merged as { strict?: boolean }).strict) {
+            if (merged.strict) {
               process.exit(1);
             }
           }

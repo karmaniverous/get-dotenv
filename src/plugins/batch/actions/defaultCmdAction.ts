@@ -45,7 +45,7 @@ export const buildDefaultCmdAction =
 
     // Access merged per-plugin config from host context (if any).
     const cfg = plugin.readConfig<BatchConfig>(cli);
-    const dotenvEnv = cli.getCtx().dotenv as Record<string, string | undefined>;
+    const dotenvEnv = cli.getCtx().dotenv;
 
     // Resolve batch flags from the captured parent (batch) command.
     const raw = batchCmd.opts();

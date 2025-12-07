@@ -112,8 +112,7 @@ export const awsPlugin = () => {
             // Access merged root CLI options (installed by passOptions())
             const bag = readMergedOptions(thisCommand);
             const capture =
-              process.env.GETDOTENV_STDIO === 'pipe' ||
-              Boolean((bag as { capture?: boolean }).capture);
+              process.env.GETDOTENV_STDIO === 'pipe' || bag.capture;
             const underTests =
               process.env.GETDOTENV_TEST === '1' ||
               typeof process.env.VITEST_WORKER_ID === 'string';
