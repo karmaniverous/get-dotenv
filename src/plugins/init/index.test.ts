@@ -2,7 +2,7 @@ import fs from 'fs-extra';
 import path from 'path';
 import { describe, expect, it } from 'vitest';
 
-import { GetDotenvCli } from '@/src/cliHost/GetDotenvCli';
+import { GetDotenvCli } from '@/src/cliHost/GetDotEnvCli';
 
 import { initPlugin } from './index';
 

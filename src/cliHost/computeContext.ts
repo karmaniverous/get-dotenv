@@ -19,7 +19,7 @@ import { loadModuleDefault } from '@/src/util/loadModuleDefault';
 import { omitUndefined } from '@/src/util/omitUndefined';
 
 import type { GetDotenvCliPlugin } from './definePlugin';
-import type { GetDotenvCliCtx } from './GetDotenvCli';
+import type { GetDotenvCliCtx } from './GetDotEnvCli';
 
 /**
  * Instance-bound plugin config store.

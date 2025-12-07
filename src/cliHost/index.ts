@@ -12,7 +12,7 @@ import { defaultsDeep } from '@/src/util/defaultsDeep';
 import { attachRootOptions as attachRootOptionsBuilder } from './attachRootOptions';
 import { baseRootOptionDefaults } from './defaults';
 import type { PluginWithInstanceHelpers as PluginWithInstanceHelpersType } from './definePlugin';
-import { GetDotenvCli as BaseGetDotenvCli } from './GetDotenvCli';
+import { GetDotenvCli as BaseGetDotenvCli } from './GetDotEnvCli';
 import type { GetDotenvCliOptions } from './GetDotenvCliOptions';
 import { toHelpConfig } from './helpConfig';
 import { resolveCliOptions } from './resolveCliOptions';
@@ -34,7 +34,7 @@ export type InferPluginConfig<P> =
     ? Readonly<C>
     : never;
 export { definePlugin } from './definePlugin';
-export type { GetDotenvCliCtx } from './GetDotenvCli';
+export type { GetDotenvCliCtx } from './GetDotEnvCli';
 // Downstream-friendly type re-exports (single import path)
 export type { GetDotenvCliOptions } from './GetDotenvCliOptions';
 export type { ScriptsTable } from './types';

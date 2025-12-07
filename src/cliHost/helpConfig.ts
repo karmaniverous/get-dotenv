@@ -1,4 +1,4 @@
-import type { ResolvedHelpConfig } from './GetDotenvCli';
+import type { ResolvedHelpConfig } from './GetDotEnvCli';
 import type { GetDotenvCliOptions } from './GetDotenvCliOptions';
 import type { RootOptionsShape } from './types';
 

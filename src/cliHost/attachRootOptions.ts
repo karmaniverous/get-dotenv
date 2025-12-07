@@ -3,7 +3,7 @@ import { Option } from 'commander';
 
 import { dotenvExpandFromProcessEnv } from '@/src/dotenvExpand';
 
-import type { GetDotenvCli } from './GetDotenvCli';
+import type { GetDotenvCli } from './GetDotEnvCli';
 import type { RootOptionsShape } from './types';
 
 /**
