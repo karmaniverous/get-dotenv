@@ -130,8 +130,7 @@ export const buildDefaultCmdAction =
         return;
       }
       {
-        const emit = loggerLocal.error ?? loggerLocal.log;
-        emit('No command provided. Use --command or --list.');
+        loggerLocal.error('No command provided. Use --command or --list.');
       }
       process.exit(0);
     }

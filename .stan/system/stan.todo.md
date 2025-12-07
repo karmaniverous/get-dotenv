@@ -21,6 +21,11 @@ When updated: 2025-12-07T00:00:00Z
 
 **CRITICAL: Append-only list. Add new completed items at the end. Prune old completed entries from the top. Do not edit existing entries.**
 
+- Lint: batch default action emit call
+  - Replace unnecessary nullish-coalescing fallback and stored method variable
+    with a direct `loggerLocal.error(...)` call to satisfy
+    `no-unnecessary-condition` and `unbound-method` rules.
+
 - Typecheck/lint: batch default action and cmd alias hook
   - batch default action: provide a concrete fallback for list shell
     (`?? false`) to satisfy `string | boolean | URL` and remove redundant
