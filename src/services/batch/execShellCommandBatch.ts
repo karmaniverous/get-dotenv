@@ -87,7 +87,7 @@ export const execShellCommandBatch = async ({
   }
   const { absRootPath, paths } = await globPaths({
     globs,
-    logger,
+    logger: logger,
     rootPath,
     // exactOptionalPropertyTypes: only include when defined
     ...(pkgCwd !== undefined ? { pkgCwd } : {}),

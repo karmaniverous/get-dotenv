@@ -1,4 +1,5 @@
 import type { Command } from 'commander';
+import { z } from 'zod';
 
 import { runCommand } from '../../cliCore/exec';
 import type { GetDotenvCliOptions } from '../../cliCore/GetDotenvCliOptions';
@@ -24,6 +25,14 @@ export type CmdPluginOptions = {
     | { flags: string; description?: string; expand?: boolean };
 };
 
+// Plugin config (Zod): currently a single optional flag to control alias expansion default.
+export const CmdConfigSchema = z
+  .object({
+    expand: z.boolean().optional(),
+  })
+  .strict();
+export type CmdConfig = z.infer<typeof CmdConfigSchema>;
+
 /**+ Cmd plugin: executes a command using the current getdotenv CLI context.
  *
  * - Joins positional args into a single command string.
@@ -33,6 +42,7 @@ export type CmdPluginOptions = {
 export const cmdPlugin = (options: CmdPluginOptions = {}) =>
   definePlugin({
     id: 'cmd',
+    configSchema: CmdConfigSchema,
     setup(cli) {
       const aliasSpec =
         typeof options.optionAlias === 'string'
@@ -225,6 +235,12 @@ export const cmdPlugin = (options: CmdPluginOptions = {}) =>
       else cli.addCommand(cmd);
 
       // Parent-attached option alias (optional).
-      if (aliasSpec) attachParentAlias(cli, options, cmd);
+      if (aliasSpec)
+        attachParentAlias(
+          cli,
+          options,
+          cmd,
+          /* plugin */ this as unknown as ReturnType<typeof definePlugin>,
+        );
     },
   });

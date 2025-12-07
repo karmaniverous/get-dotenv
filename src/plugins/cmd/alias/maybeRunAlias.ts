@@ -41,6 +41,7 @@ export async function maybeRunAlias(
   thisCommand: Command,
   aliasKey: string,
   state: { handled: boolean },
+  expandDefault?: boolean,
 ): Promise<void> {
   dbg('alias:maybe:start');
   const raw = (thisCommand as unknown as { rawArgs?: string[] }).rawArgs ?? [];
@@ -94,12 +95,15 @@ export async function maybeRunAlias(
         ? (val as unknown[]).map(String).join(' ')
         : '';
   const expanded = dotenvExpandFromProcessEnv(joined);
-  const input =
-    (mergedBag as { expand?: boolean }).expand === false
-      ? joined
-      : expanded !== undefined
-        ? expanded
-        : joined;
+  // Effective expansion: merged CLI override > plugin config default > true
+  const expandOverride = (mergedBag as { expand?: boolean }).expand;
+  const effectiveExpand =
+    typeof expandOverride === 'boolean'
+      ? expandOverride
+      : expandDefault === false
+        ? false
+        : true;
+  const input = effectiveExpand && expanded !== undefined ? expanded : joined;
 
   // Scripts: prefer well-formed records; tolerate absent/bad shapes
   const maybeScripts = (mergedBag as { scripts?: unknown }).scripts;

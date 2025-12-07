@@ -1,6 +1,7 @@
 import type { Command } from 'commander';
 
 import type { GetDotenvCliPublic } from '../../../cliHost';
+import type { PluginWithInstanceHelpers } from '../../../cliHost/definePlugin';
 import type { CmdPluginOptions } from '../index';
 import { maybeRunAlias } from './maybeRunAlias';
 
@@ -8,6 +9,7 @@ export const attachParentAlias = (
   cli: GetDotenvCliPublic,
   options: CmdPluginOptions,
   _cmd: Command,
+  plugin: PluginWithInstanceHelpers,
 ) => {
   const aliasSpec =
     typeof options.optionAlias === 'string'
@@ -42,11 +44,20 @@ export const attachParentAlias = (
   // Ensure we only execute once even if both hooks fire in a single parse.
   const aliasState = { handled: false };
   const maybeRun = async (thisCommand: Command) => {
+    // Read plugin config expand default; fall back to undefined (handled in maybeRunAlias)
+    let expandDefault: boolean | undefined = undefined;
+    try {
+      const cfg = plugin.readConfig<{ expand?: boolean }>(cli);
+      if (typeof cfg.expand === 'boolean') expandDefault = cfg.expand;
+    } catch {
+      /* config may be unavailable before resolve; default handled downstream */
+    }
     await maybeRunAlias(
       cli as unknown as GetDotenvCliPublic,
       thisCommand,
       aliasKey,
       aliasState,
+      expandDefault,
     );
   };
 
