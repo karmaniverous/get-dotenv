@@ -40,3 +40,8 @@ When updated: 2025-12-07T00:00:00Z
     toHelpConfig for plugin defaulting.
   - computeContext: drop identity casts when storing plugin config; reduce
     optionsResolved cast to a single “as TOptions”.
+
+- Cast/fallback pass (continued):
+  - index: remove intermediate 'unknown' in defaults cast.
+  - cliHost/index: eliminate remaining double casts; keep only precise single casts
+    and rely on helper defaults instead of manual fallbacks.
