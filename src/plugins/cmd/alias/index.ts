@@ -1,4 +1,5 @@
 import type { CommandUnknownOpts } from '@commander-js/extra-typings';
+import type { Command } from '@commander-js/extra-typings';
 
 import type { GetDotenvCliPublic } from '@/src/cliHost';
 import type { PluginWithInstanceHelpers } from '@/src/cliHost/definePlugin';
@@ -44,7 +45,7 @@ export const attachParentAlias = (
   // Shared alias executor for either preAction or preSubcommand hooks.
   // Ensure we only execute once even if both hooks fire in a single parse.
   const aliasState = { handled: false };
-  const maybeRun = async (thisCommand: CommandUnknownOpts) => {
+  const maybeRun = async (thisCommand: unknown) => {
     // Read plugin config expand default; fall back to undefined (handled in maybeRunAlias)
     let expandDefault: boolean | undefined = undefined;
     try {
@@ -53,13 +54,19 @@ export const attachParentAlias = (
     } catch {
       /* config may be unavailable before resolve; default handled downstream */
     }
-    await maybeRunAlias(cli, thisCommand, aliasKey, aliasState, expandDefault);
+    await maybeRunAlias(
+      cli,
+      thisCommand as Command,
+      aliasKey,
+      aliasState,
+      expandDefault,
+    );
   };
 
   cli.hook('preAction', async (thisCommand) => {
-    await maybeRun(thisCommand as unknown as CommandUnknownOpts);
+    await maybeRun(thisCommand);
   });
   cli.hook('preSubcommand', async (thisCommand) => {
-    await maybeRun(thisCommand as unknown as CommandUnknownOpts);
+    await maybeRun(thisCommand);
   });
 };

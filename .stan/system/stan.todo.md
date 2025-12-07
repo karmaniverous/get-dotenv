@@ -196,3 +196,11 @@ When updated: 2025-12-07T00:00:00Z
   - batch default action: drop unnecessary `?? false` on a non-nullable root
     shell; use Reflect.get to retrieve methods and invoke with `.call(...)` to
     avoid unbound-method lint.
+
+- Typecheck/lint: finalize batch list shell and alias hook adapter
+  - batch default action: ensure `listShell` never undefined (fallback to
+    `false`), avoid `??` in config fallbacks (ternaries), and replace
+    `.call(...)` with `Reflect.apply(...)` for optsWithGlobals/opts to
+    eliminate unbound-method lint.
+  - cmd alias: adapt hook forwarding to accept `unknown` and cast once inside
+    the wrapper to Commander `Command` for maybeRunAlias, removing TS2345.

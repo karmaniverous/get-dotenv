@@ -53,28 +53,37 @@ export const buildDefaultCmdAction =
     // Safely retrieve merged parent flags (prefer optsWithGlobals when present)
     let gSrc: unknown = {};
     if ('optsWithGlobals' in (thisCommand as object)) {
-      // Retrieve method via Reflect to avoid unbound-method lint, then call
+      // Retrieve method via Reflect to avoid unbound-method lint, then invoke
       const owg = Reflect.get(thisCommand as object, 'optsWithGlobals') as
         | ((this: unknown) => unknown)
         | undefined;
       if (typeof owg === 'function') {
-        gSrc = owg.call(thisCommand);
+        gSrc = Reflect.apply(owg, thisCommand, []);
       }
     } else if ('opts' in (batchCmd as object)) {
       const opts = Reflect.get(batchCmd as object, 'opts') as
         | ((this: unknown) => unknown)
         | undefined;
       if (typeof opts === 'function') {
-        gSrc = opts.call(batchCmd);
+        gSrc = Reflect.apply(opts, batchCmd, []);
       }
     }
     const g = gSrc as BatchFlags;
 
     const ignoreErrors = Boolean(g.ignoreErrors);
-    const globs = typeof g.globs === 'string' ? g.globs : (cfg.globs ?? '*');
+    const globs =
+      typeof g.globs === 'string'
+        ? g.globs
+        : typeof cfg.globs === 'string'
+          ? cfg.globs
+          : '*';
     const pkgCwd = g.pkgCwd !== undefined ? g.pkgCwd : Boolean(cfg.pkgCwd);
     const rootPath =
-      typeof g.rootPath === 'string' ? g.rootPath : (cfg.rootPath ?? './');
+      typeof g.rootPath === 'string'
+        ? g.rootPath
+        : typeof cfg.rootPath === 'string'
+          ? cfg.rootPath
+          : './';
 
     // Resolve scripts/shell with precedence:
     // plugin opts → plugin config → merged root CLI options
@@ -101,9 +110,14 @@ export const buildDefaultCmdAction =
         return;
       }
       if (g.list) {
-        // Resolve shell fallback without chained nullish checks (lint-friendly)
+        // Resolve shell fallback to a concrete value (never undefined)
         const rootShell = readMergedOptions(batchCmd).shell;
-        const listShell = shell !== undefined ? shell : rootShell;
+        const listShell: string | boolean =
+          shell !== undefined
+            ? shell
+            : rootShell !== undefined
+              ? rootShell
+              : false;
         await execShellCommandBatch({
           globs,
           ignoreErrors,
