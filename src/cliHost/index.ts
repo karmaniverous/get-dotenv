@@ -2,10 +2,18 @@ export { z } from 'zod';
 import { baseRootOptionDefaults } from '../cliCore/defaults';
 import type { GetDotenvCliOptions } from '../cliCore/GetDotenvCliOptions';
 import { resolveCliOptions } from '../cliCore/resolveCliOptions';
-import type { CommandWithOptions, RootOptionsShape } from '../cliCore/types';
+import type {
+  CommandWithOptions,
+  RootOptionsShape,
+  ScriptsTable,
+} from '../cliCore/types';
 import { resolveGetDotenvConfigSources } from '../config/loader';
 import { validateEnvAgainstSources } from '../config/validate';
-import type { GetDotenvOptions } from '../GetDotenvOptions';
+import type {
+  GetDotenvOptions,
+  Logger,
+  RootOptionsShapeCompat,
+} from '../GetDotenvOptions';
 import { getDotenvCliOptions2Options } from '../GetDotenvOptions';
 import { defaultsDeep } from '../util/defaultsDeep';
 import { attachRootOptions as attachRootOptionsBuilder } from './attachRootOptions';
@@ -67,9 +75,7 @@ export class GetDotenvCli extends BaseGetDotenvCli {
       async (thisCommand: CommandWithOptions<GetDotenvCliOptions>) => {
         const raw = thisCommand.opts();
         const { merged } = resolveCliOptions<
-          RootOptionsShape & {
-            scripts?: import('../cliCore/types').ScriptsTable;
-          }
+          RootOptionsShape & { scripts?: ScriptsTable }
         >(raw, d, process.env.getDotenvCliOptions);
 
         // Persist merged options (for nested behavior and ergonomic access).
@@ -79,7 +85,7 @@ export class GetDotenvCli extends BaseGetDotenvCli {
 
         // Build service options and compute context (always-on loader path).
         const serviceOptions = getDotenvCliOptions2Options(
-          merged as unknown as import('../GetDotenvOptions').RootOptionsShapeCompat,
+          merged as unknown as RootOptionsShapeCompat,
         );
         await this.resolveAndLoad(serviceOptions);
 
@@ -98,7 +104,8 @@ export class GetDotenvCli extends BaseGetDotenvCli {
           const sources = await resolveGetDotenvConfigSources(import.meta.url);
           const issues = validateEnvAgainstSources(dotenv, sources);
           if (Array.isArray(issues) && issues.length > 0) {
-            const logger = merged.logger;
+            const logger: Logger = (merged as unknown as GetDotenvCliOptions)
+              .logger;
             issues.forEach((m) => {
               logger.error(m);
             });
@@ -117,9 +124,7 @@ export class GetDotenvCli extends BaseGetDotenvCli {
       async (thisCommand: CommandWithOptions<GetDotenvCliOptions>) => {
         const raw = thisCommand.opts();
         const { merged } = resolveCliOptions<
-          RootOptionsShape & {
-            scripts?: import('../cliCore/types').ScriptsTable;
-          }
+          RootOptionsShape & { scripts?: ScriptsTable }
         >(raw, d, process.env.getDotenvCliOptions);
         thisCommand.getDotenvCliOptions =
           merged as unknown as GetDotenvCliOptions;
@@ -127,15 +132,12 @@ export class GetDotenvCli extends BaseGetDotenvCli {
         // Avoid duplicate heavy work if a context is already present.
         if (!this.getCtx()) {
           const serviceOptions = getDotenvCliOptions2Options(
-            merged as unknown as import('../GetDotenvOptions').RootOptionsShapeCompat,
+            merged as unknown as RootOptionsShapeCompat,
           );
           await this.resolveAndLoad(serviceOptions);
           try {
             const ctx = this.getCtx();
-            const helpCfg = toHelpConfig(
-              merged as unknown as Partial<GetDotenvCliOptions>,
-              ctx?.pluginConfigs,
-            );
+            const helpCfg = toHelpConfig(merged, ctx?.pluginConfigs);
             this.evaluateDynamicOptions(helpCfg);
           } catch {
             /* tolerate */
@@ -151,7 +153,8 @@ export class GetDotenvCli extends BaseGetDotenvCli {
             );
             const issues = validateEnvAgainstSources(dotenv, sources);
             if (Array.isArray(issues) && issues.length > 0) {
-              const logger = (merged as unknown as GetDotenvCliOptions).logger;
+              const logger: Logger = (merged as unknown as GetDotenvCliOptions)
+                .logger;
               issues.forEach((m) => {
                 logger.error(m);
               });

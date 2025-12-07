@@ -34,10 +34,15 @@ When updated: 2025-12-07T00:00:00Z
     includes the required logger field (console), satisfying typecheck without
     relying on downstream schema defaults.
 
+- Typecheck/lint cleanup (cliHost/index)
+  - Replaced inline import() type annotations with import type for ScriptsTable,
+    Logger, and RootOptionsShapeCompat (consistent-type-imports).
+  - Annotated logger as Logger in both hooks to avoid unsafe assignment/member
+    access/call warnings and to keep the base logger wired without fallbacks.
+
 - Logger: strict contract + schema defaults; remove coalescing
   - Defined Logger as Pick<Console, 'log' | 'info' | 'error' | 'debug'> for a
-    concrete compile-time contract. Defaulted logger to console in the
-    programmatic schema so runtime presence is guaranteed. Switched host and
+    concrete compile-time contract. Defaulted logger to console in the    programmatic schema so runtime presence is guaranteed. Switched host and
     cmd plugin to use merged/validated logger directly (no “?? console”),
     emitting via logger.error/info/log/debug. Nested env JSON continues to omit
     logger as before.
