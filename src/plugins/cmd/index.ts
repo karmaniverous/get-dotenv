@@ -217,7 +217,7 @@ export const cmdPlugin = (options: CmdPluginOptions = {}) =>
       else cli.addCommand(cmd);
 
       // Parent-attached option alias (optional).
-      if (aliasSpec)
+      if (aliasSpec !== undefined)
         attachParentAlias(
           cli,
           options,

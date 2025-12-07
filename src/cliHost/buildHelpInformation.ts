@@ -2,11 +2,14 @@
  * Compose root/parent help output by inserting grouped sections between
  * Options and Commands and ensuring a trailing blank line.
  */
-import type { Command } from '@commander-js/extra-typings';
+import type { CommandUnknownOpts } from '@commander-js/extra-typings';
 
 import { renderOptionGroups } from './groups';
 
-export function buildHelpInformation(base: string, cmd: Command): string {
+export function buildHelpInformation(
+  base: string,
+  cmd: CommandUnknownOpts,
+): string {
   const groups = renderOptionGroups(cmd);
   const block = typeof groups === 'string' ? groups.trim() : '';
   if (!block) {

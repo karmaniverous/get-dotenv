@@ -13,7 +13,6 @@ import { createInterface } from 'readline/promises';
 
 import { definePlugin } from '@/src/cliHost/definePlugin';
 import { readMergedOptions } from '@/src/cliHost/readMergedOptions';
-import type { Logger } from '@/src/GetDotenvOptions';
 
 import { copyTextFile, ensureLines } from './io';
 import { planCliCopies, planConfigCopies } from './plan';
@@ -25,7 +24,7 @@ export const initPlugin = () =>
   definePlugin({
     id: 'init',
     setup(cli) {
-      const cmd = cli
+      cli
         .ns('init')
         .description(
           'Scaffold getdotenv config files and a host-based CLI skeleton.',
@@ -41,7 +40,7 @@ export const initPlugin = () =>
         .option('--cli-name <string>', 'CLI name for skeleton and tokens')
         .option('--force', 'overwrite all existing files')
         .option('--yes', 'skip all collisions (no overwrite)')
-        .action(async (destArg, opts, thisCommand: Command) => {
+        .action(async (destArg, opts, thisCommand) => {
           // Inherit logger from merged root options (base).
           const bag = readMergedOptions(thisCommand);
           const logger = bag.logger;

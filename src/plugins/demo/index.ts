@@ -29,8 +29,6 @@
  *   getdotenv --trace demo run --print ENV_SETTING
  */
 
-import type { Command } from '@commander-js/extra-typings';
-
 import { definePlugin } from '@/src/cliHost/definePlugin';
 import { runCommand } from '@/src/cliHost/exec';
 import { readMergedOptions } from '@/src/cliHost/readMergedOptions';
@@ -123,7 +121,6 @@ export const demoPlugin = () =>
         )
         .argument('[command...]')
         .action(async (commandParts, _opts, thisCommand: Command) => {
-          // Access merged root options via helper
           const bag = readMergedOptions(thisCommand);
 
           const input = Array.isArray(commandParts)

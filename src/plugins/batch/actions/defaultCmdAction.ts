@@ -1,5 +1,3 @@
-import type { Command } from '@commander-js/extra-typings';
-
 import type {
   definePlugin,
   GetDotenvCliPublic,
@@ -21,27 +19,18 @@ export const buildDefaultCmdAction =
     plugin: ReturnType<typeof definePlugin>,
     cli: GetDotenvCliPublic,
     batchCmd: Command,
-    opts: BatchPluginOptions,
+    pluginOpts: BatchPluginOptions,
   ) =>
-  async (
-    commandParts: string[] | undefined,
-    _subOpts: unknown,
-    thisCommand: Command,
-  ): Promise<void> => {
+  async (commandParts, _subOpts, thisCommand): Promise<void> => {
     // Inherit logger from the merged root options bag
-    const mergedForLogger = readMergedOptions(batchCmd) as {
-      logger: Logger;
-    };
+    const mergedForLogger = readMergedOptions(batchCmd);
     const loggerLocal: Logger = mergedForLogger.logger;
     // Guard: when invoked without positional args (e.g., `batch --list`),
     // defer entirely to the parent action handler.
     const argsRaw = Array.isArray(commandParts)
       ? commandParts
       : ([] as string[]);
-    const localList = argsRaw.includes('-l') || argsRaw.includes('--list');
-    const args = localList
-      ? argsRaw.filter((t) => t !== '-l' && t !== '--list')
-      : argsRaw;
+    const args = argsRaw;
 
     // Access merged per-plugin config from host context (if any).
     const cfg = plugin.readConfig<BatchConfig>(cli);
@@ -57,12 +46,12 @@ export const buildDefaultCmdAction =
       command?: string;
     };
     const g = (
-      (thisCommand as Command & { optsWithGlobals?: () => unknown })
+      (thisCommand as unknown as { optsWithGlobals?: () => unknown })
         .optsWithGlobals
         ? (
-            thisCommand as Command & { optsWithGlobals: () => unknown }
+            thisCommand as unknown as { optsWithGlobals: () => unknown }
           ).optsWithGlobals()
-        : batchCmd.opts()
+        : (batchCmd as unknown as { opts: () => unknown }).opts()
     ) as BatchFlags;
 
     const listFromParent = !!g.list;
@@ -74,13 +63,10 @@ export const buildDefaultCmdAction =
 
     // Resolve scripts/shell with precedence:
     // plugin opts → plugin config → merged root CLI options
-    const mergedBag = readMergedOptions(batchCmd) as {
-      scripts?: Scripts;
-      shell?: string | boolean;
-      logger: Logger;
-    };
-    const scripts = opts.scripts ?? cfg.scripts ?? mergedBag.scripts;
-    const shell = opts.shell ?? cfg.shell ?? mergedBag.shell;
+    const mergedBag = readMergedOptions(batchCmd);
+    const scripts =
+      pluginOpts.scripts ?? cfg.scripts ?? mergedBag.scripts ?? undefined;
+    const shell = pluginOpts.shell ?? cfg.shell ?? mergedBag.shell;
 
     // If no positional args were given, bridge to --command/--list paths here.
     if (args.length === 0) {
@@ -113,51 +99,14 @@ export const buildDefaultCmdAction =
         return;
       }
       {
-        const lr = loggerLocal as unknown as {
-          error?: (...a: unknown[]) => void;
-          log: (...a: unknown[]) => void;
-        };
-        const emit = lr.error ?? lr.log;
-        emit(`No command provided. Use --command or --list.`);
+        const emit = loggerLocal.error ?? loggerLocal.log;
+        emit('No command provided. Use --command or --list.');
       }
       process.exit(0);
     }
 
-    // If a local list flag was supplied with positional tokens (and no --command),
-    // treat tokens as additional globs and execute list mode.
-    if (localList && typeof g.command !== 'string') {
-      const extraGlobs = args.map(String).join(' ').trim();
-      const mergedGlobs = [globs, extraGlobs].filter(Boolean).join(' ');
-      const bag = readMergedOptions(batchCmd);
-      await execShellCommandBatch({
-        globs: mergedGlobs,
-        ignoreErrors,
-        list: true,
-        logger: loggerLocal,
-        ...(pkgCwd ? { pkgCwd } : {}),
-        rootPath,
-        shell: shell ?? bag.shell ?? false,
-      });
-      return;
-    }
-
-    // If parent list flag is set and positional tokens are present (and no --command),
-    // treat tokens as additional globs for list-only mode.
-    if (listFromParent && args.length > 0 && typeof g.command !== 'string') {
-      const extra = args.map(String).join(' ').trim();
-      const mergedGlobs = [globs, extra].filter(Boolean).join(' ');
-      const bag = readMergedOptions(batchCmd);
-      await execShellCommandBatch({
-        globs: mergedGlobs,
-        ignoreErrors,
-        list: true,
-        logger: loggerLocal,
-        ...(pkgCwd ? { pkgCwd } : {}),
-        rootPath,
-        shell: shell ?? bag.shell ?? false,
-      });
-      return;
-    }
+    // Note: Local "-l/--list" tokens are no longer interpreted here.
+    // List-only mode must be requested via the parent flag ("batch -l ...").
 
     // Join positional args as the command to execute.
     const input = args.map(String).join(' ');
@@ -171,7 +120,7 @@ export const buildDefaultCmdAction =
     )?.getDotenvCliOptions;
 
     const bag = readMergedOptions(batchCmd);
-    const scriptsExec = scripts ?? bag.scripts;
+    const scriptsExec = scripts ?? bag.scripts ?? undefined;
     const shellExec = shell ?? bag.shell;
     const resolved = resolveCommand(scriptsExec, input);
     const shellSetting = resolveShell(scriptsExec, input, shellExec);
@@ -181,7 +130,7 @@ export const buildDefaultCmdAction =
     let commandArg: string | string[] = resolved;
     if (shellSetting === false && resolved === input) {
       const first = (args[0] ?? '').toLowerCase();
-      const hasEval = args.includes('-e') || args.includes('--eval');
+      const hasEval = args.some((t) => t === '-e' || t === '--eval');
       if (first === 'node' && hasEval) {
         commandArg = args.map(String);
       }

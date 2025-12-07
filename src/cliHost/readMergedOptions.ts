@@ -2,12 +2,14 @@
  * Helper to retrieve the merged root options bag from any action handler
  * that only has access to thisCommand. Avoids structural casts.
  */
-import type { Command } from '@commander-js/extra-typings';
+import type { CommandUnknownOpts } from '@commander-js/extra-typings';
 
 import { GetDotenvCli } from './GetDotEnvCli';
 import type { GetDotenvCliOptions } from './GetDotenvCliOptions';
 
-export const readMergedOptions = (cmd: Command): GetDotenvCliOptions => {
+export const readMergedOptions = (
+  cmd: CommandUnknownOpts,
+): GetDotenvCliOptions => {
   // Climb to the true root
   let root = cmd;
   while (root.parent) root = root.parent;

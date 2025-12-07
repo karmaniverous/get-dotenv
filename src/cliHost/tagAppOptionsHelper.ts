@@ -1,12 +1,12 @@
 /** src/cliHost/tagAppOptionsHelper.ts
  * Temporarily tag options added during a callback as 'app' for grouped help.
  */
-import type { Command, Option } from '@commander-js/extra-typings';
+import type { CommandUnknownOpts, Option } from '@commander-js/extra-typings';
 
 export function tagAppOptionsAround<T>(
-  root: Command,
+  root: CommandUnknownOpts,
   setOptionGroup: (opt: Option, group: string) => void,
-  fn: (root: Command) => T,
+  fn: (root: CommandUnknownOpts) => T,
 ): T {
   const originalAddOption = root.addOption.bind(root);
   root.addOption = function patchedAdd(this: Command, opt: Option) {

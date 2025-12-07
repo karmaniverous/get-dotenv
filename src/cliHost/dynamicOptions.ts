@@ -1,7 +1,7 @@
 /** src/cliHost/GetDotenvCli/dynamicOptions.ts
  * Helpers for dynamic option descriptions and evaluation.
  */
-import type { Command, Option } from '@commander-js/extra-typings';
+import type { CommandUnknownOpts, Option } from '@commander-js/extra-typings';
 import { Option as CommanderOption } from '@commander-js/extra-typings';
 
 import type { GetDotenvCliOptions } from '@/src/cliHost/GetDotenvCliOptions';
@@ -38,10 +38,10 @@ export function makeDynamicOption(
  * Evaluate dynamic descriptions across a command tree using the resolved config.
  */
 export function evaluateDynamicOptions(
-  root: Command,
+  root: CommandUnknownOpts,
   resolved: ResolvedHelpConfigLite,
 ): void {
-  const visit = (cmd: Command) => {
+  const visit = (cmd: CommandUnknownOpts) => {
     const arr = cmd.options;
     for (const o of arr) {
       const dyn = DYN_DESC.get(o);

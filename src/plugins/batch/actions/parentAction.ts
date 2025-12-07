@@ -1,5 +1,3 @@
-import type { Command } from '@commander-js/extra-typings';
-
 import type {
   definePlugin,
   GetDotenvCliPublic,
@@ -19,11 +17,11 @@ export const buildParentAction =
   (
     plugin: ReturnType<typeof definePlugin>,
     cli: GetDotenvCliPublic,
-    opts: BatchPluginOptions,
+    pluginOpts: BatchPluginOptions,
   ) =>
   async (
-    commandParts: string[] | undefined,
-    opts: {
+    commandParts,
+    _opts: {
       command?: string;
       globs?: string;
       list?: boolean;
@@ -31,12 +29,10 @@ export const buildParentAction =
       pkgCwd?: boolean;
       rootPath?: string;
     },
-    thisCommand: Command,
+    thisCommand,
   ): Promise<void> => {
     // Inherit logger from merged root options
-    const mergedForLogger = readMergedOptions(thisCommand) as {
-      logger: Logger;
-    };
+    const mergedForLogger = readMergedOptions(thisCommand);
     const loggerLocal: Logger = mergedForLogger.logger;
 
     // Ensure context exists (host preSubcommand on root creates if missing).
@@ -56,16 +52,15 @@ export const buildParentAction =
         : (cfg.rootPath ?? './');
 
     // Treat parent positional tokens as the command when no explicit 'cmd' is used.
-    const argsParent = Array.isArray(commandParts) ? commandParts : [];
+    const argsParent = Array.isArray(commandParts)
+      ? (commandParts as string[])
+      : [];
     if (argsParent.length > 0 && !list) {
       const input = argsParent.map(String).join(' ');
       const bag = readMergedOptions(thisCommand);
       const scriptsAll =
-        opts.scripts ??
-        cfg.scripts ??
-        (bag.scripts as Scripts | undefined) ??
-        undefined;
-      const shellAll = opts.shell ?? cfg.shell ?? bag.shell;
+        pluginOpts.scripts ?? cfg.scripts ?? bag.scripts ?? undefined;
+      const shellAll = pluginOpts.shell ?? cfg.shell ?? bag.shell;
 
       const resolved = resolveCommand(scriptsAll, input);
       const shellSetting = resolveShell(scriptsAll, input, shellAll);
@@ -85,13 +80,13 @@ export const buildParentAction =
       });
       return;
     }
-    // List-only: merge extra positional tokens into globs when no --command is present.
-    if (list && argsParent.length > 0 && !commandOpt) {
+    // List-only (parent flag): merge extra positional tokens into globs when no --command is present.
+    if (list && !commandOpt) {
       const extra = argsParent.map(String).join(' ').trim();
       if (extra.length > 0) globs = [globs, extra].filter(Boolean).join(' ');
 
       const bag = readMergedOptions(thisCommand);
-      const shellMerged = opts.shell ?? cfg.shell ?? bag.shell ?? false;
+      const shellMerged = pluginOpts.shell ?? cfg.shell ?? bag.shell ?? false;
 
       await execShellCommandBatch({
         globs,
@@ -112,11 +107,8 @@ export const buildParentAction =
     if (typeof commandOpt === 'string') {
       const bag = readMergedOptions(thisCommand);
       const scriptsOpt =
-        opts.scripts ??
-        cfg.scripts ??
-        (bag.scripts as Scripts | undefined) ??
-        undefined;
-      const shellOpt = opts.shell ?? cfg.shell ?? bag.shell;
+        pluginOpts.scripts ?? cfg.scripts ?? bag.scripts ?? undefined;
+      const shellOpt = pluginOpts.shell ?? cfg.shell ?? bag.shell;
 
       await execShellCommandBatch({
         command: resolveCommand(scriptsOpt, commandOpt),
@@ -134,7 +126,7 @@ export const buildParentAction =
 
     // list only (explicit --list without --command)
     const bag = readMergedOptions(thisCommand);
-    const shellOnly = opts.shell ?? cfg.shell ?? bag.shell ?? false;
+    const shellOnly = pluginOpts.shell ?? cfg.shell ?? bag.shell ?? false;
 
     await execShellCommandBatch({
       globs,

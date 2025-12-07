@@ -1,5 +1,3 @@
-import type { Command } from '@commander-js/extra-typings';
-
 import { definePlugin } from '@/src/cliHost/definePlugin';
 import { runCommand } from '@/src/cliHost/exec';
 import { readMergedOptions } from '@/src/cliHost/readMergedOptions';
@@ -102,7 +100,7 @@ export const awsPlugin = () => {
         )
         // Accept any extra operands so Commander does not error when tokens appear after "--".
         .argument('[args...]')
-        .action(async (args, opts, thisCommand: Command) => {
+        .action(async (args, opts, thisCommand) => {
           const pluginInst = plugin;
           // Access merged root CLI options (installed by passOptions())
           const bag = readMergedOptions(thisCommand);
