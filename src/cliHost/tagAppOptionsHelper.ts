@@ -1,7 +1,7 @@
 /** src/cliHost/tagAppOptionsHelper.ts
  * Temporarily tag options added during a callback as 'app' for grouped help.
  */
-import type { Command, Option } from 'commander';
+import type { Command, Option } from '@commander-js/extra-typings';
 
 export function tagAppOptionsAround<T>(
   root: Command,

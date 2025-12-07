@@ -2,7 +2,7 @@
  * Compose root/parent help output by inserting grouped sections between
  * Options and Commands and ensuring a trailing blank line.
  */
-import type { Command } from 'commander';
+import type { Command } from '@commander-js/extra-typings';
 
 import { renderOptionGroups } from './groups';
 

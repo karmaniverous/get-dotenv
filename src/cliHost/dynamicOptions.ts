@@ -1,8 +1,8 @@
 /** src/cliHost/GetDotenvCli/dynamicOptions.ts
  * Helpers for dynamic option descriptions and evaluation.
  */
-import type { Command, Option } from 'commander';
-import { Option as CommanderOption } from 'commander';
+import type { Command, Option } from '@commander-js/extra-typings';
+import { Option as CommanderOption } from '@commander-js/extra-typings';
 
 import type { GetDotenvCliOptions } from '@/src/cliHost/GetDotenvCliOptions';
 

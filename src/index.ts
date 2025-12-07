@@ -1,4 +1,4 @@
-import type { Command } from 'commander';
+import type { Command } from '@commander-js/extra-typings';
 
 export { defineScripts } from '@/src/cliHost/types';
 export { z } from 'zod';

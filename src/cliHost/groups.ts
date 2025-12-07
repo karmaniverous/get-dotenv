@@ -1,7 +1,7 @@
 /** src/cliHost/GetDotenvCli/groups.ts
  * Grouped help rendering helpers for App/Plugin sections.
  */
-import type { Command, Option } from 'commander';
+import type { Command, Option } from '@commander-js/extra-typings';
 
 // Registry for grouping; root help renders groups between Options and Commands.
 export const GROUP_TAG = new WeakMap<Option, string>();

@@ -1,5 +1,5 @@
 /** src/plugins/batch/index.ts */
-import { Command } from 'commander';
+import { Command } from '@commander-js/extra-typings';
 
 import { definePlugin } from '@/src/cliHost/definePlugin';
 

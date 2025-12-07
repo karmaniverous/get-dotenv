@@ -8,7 +8,7 @@
 /* eslint-disable tsdoc/syntax */
 
 // Optional per-plugin config validation (host validates when loader is enabled).
-import type { Command, Option } from 'commander';
+import type { Command, Option } from '@commander-js/extra-typings';
 import { z, type ZodObject } from 'zod';
 
 import type { GetDotenvOptions } from '@/src/GetDotenvOptions';

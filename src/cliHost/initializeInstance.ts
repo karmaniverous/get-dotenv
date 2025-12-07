@@ -2,7 +2,7 @@
  * Helper to initialize a GetDotenvCli instance with help configuration,
  * header injection, and a lazy preSubcommand context resolver.
  */
-import type { Command, Option } from 'commander';
+import type { Command, Option } from '@commander-js/extra-typings';
 
 import type { GetDotenvCli } from './GetDotEnvCli';
 import { GROUP_TAG } from './groups';

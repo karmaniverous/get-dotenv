@@ -1,5 +1,5 @@
 /* eslint-disable */
-import type { Command } from 'commander';
+import type { Command } from '@commander-js/extra-typings';
 
 import { runCommand } from '@/src/cliHost/exec';
 import {

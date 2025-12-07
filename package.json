@@ -13,6 +13,7 @@
     "url": "https://github.com/karmaniverous/get-dotenv/issues"
   },
   "dependencies": {
+    "@commander-js/extra-typings": "^14.0.0",
     "commander": "^14.0.1",
     "dotenv": "^17.2.3",
     "execa": "^9.6.0",

@@ -2,7 +2,7 @@
  * Helper to retrieve the merged root options bag from any action handler
  * that only has access to thisCommand. Avoids structural casts.
  */
-import type { Command } from 'commander';
+import type { Command } from '@commander-js/extra-typings';
 
 import { GetDotenvCli } from './GetDotEnvCli';
 import type { GetDotenvCliOptions } from './GetDotenvCliOptions';

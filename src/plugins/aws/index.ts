@@ -1,4 +1,4 @@
-import type { Command } from 'commander';
+import type { Command } from '@commander-js/extra-typings';
 
 import { definePlugin } from '@/src/cliHost/definePlugin';
 import { runCommand } from '@/src/cliHost/exec';
@@ -104,6 +104,7 @@ export const awsPlugin = () => {
         .argument('[args...]')
         .action(
           async (
+            cmd, args
             args: string[] | undefined,
             opts: Record<string, unknown>,
             thisCommand: Command,

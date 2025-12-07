@@ -1,4 +1,4 @@
-import type { Command } from 'commander';
+import type { Command } from '@commander-js/extra-typings';
 
 /**
  * Minimal root options shape shared by CLI and generator layers.

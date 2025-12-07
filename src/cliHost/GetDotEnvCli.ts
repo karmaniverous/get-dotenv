@@ -1,5 +1,5 @@
-import type { Option } from 'commander';
-import { Command } from 'commander';
+import type { Option } from '@commander-js/extra-typings';
+import { Command } from '@commander-js/extra-typings';
 
 import type {
   GetDotenvCliPlugin,
