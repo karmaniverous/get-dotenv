@@ -30,12 +30,10 @@ export const buildDefaultCmdAction =
     // Inherit logger from the merged root options bag
     const mergedForLogger = readMergedOptions(batchCmd);
     const loggerLocal: Logger = mergedForLogger.logger;
-    // Guard: when invoked without positional args (e.g., `batch --list`),
-    // defer entirely to the parent action handler.
-    const argsRaw = Array.isArray(commandParts)
-      ? commandParts
-      : ([] as string[]);
-    const args = argsRaw;
+    // Guard: when invoked without positional args (e.g., `batch --list`), defer to parent.
+    const args: string[] = Array.isArray(commandParts)
+      ? (commandParts as string[]).map(String)
+      : [];
 
     // Access merged per-plugin config from host context (if any).
     const cfg = plugin.readConfig<BatchConfig>(cli);
@@ -50,12 +48,22 @@ export const buildDefaultCmdAction =
       rootPath?: string;
       command?: string;
     };
-    const gSrc =
-      'optsWithGlobals' in thisCommand &&
+    // Safely retrieve merged parent flags (prefer optsWithGlobals when present)
+    let gSrc: unknown = {};
+    if (
+      'optsWithGlobals' in (thisCommand as object) &&
       typeof (thisCommand as { optsWithGlobals?: () => unknown })
         .optsWithGlobals === 'function'
-        ? (thisCommand as { optsWithGlobals: () => unknown }).optsWithGlobals()
-        : ((batchCmd as unknown as { opts?: () => unknown }).opts?.() ?? {});
+    ) {
+      gSrc = (
+        thisCommand as { optsWithGlobals: () => unknown }
+      ).optsWithGlobals();
+    } else if (
+      'opts' in (batchCmd as object) &&
+      typeof (batchCmd as { opts?: () => unknown }).opts === 'function'
+    ) {
+      gSrc = (batchCmd as { opts: () => unknown }).opts();
+    }
     const g = gSrc as BatchFlags;
 
     const ignoreErrors = Boolean(g.ignoreErrors);
@@ -89,6 +97,11 @@ export const buildDefaultCmdAction =
         return;
       }
       if (g.list) {
+        // Resolve shell fallback without chained nullish checks (lint-friendly)
+        const listShell =
+          shell !== undefined
+            ? shell
+            : (readMergedOptions(batchCmd).shell ?? false);
         await execShellCommandBatch({
           globs,
           ignoreErrors,
@@ -96,7 +109,7 @@ export const buildDefaultCmdAction =
           logger: loggerLocal,
           ...(pkgCwd ? { pkgCwd } : {}),
           rootPath,
-          shell: shell ?? readMergedOptions(batchCmd).shell ?? false,
+          shell: listShell,
         });
         return;
       }
@@ -132,7 +145,7 @@ export const buildDefaultCmdAction =
     let commandArg: string | string[] = resolved;
     if (shellSetting === false && resolved === input) {
       const first = (args[0] ?? '').toLowerCase();
-      const hasEval = args.some((t) => t === '-e' || t === '--eval');
+      const hasEval = args.some((t: string) => t === '-e' || t === '--eval');
       if (first === 'node' && hasEval) {
         commandArg = args.map(String);
       }

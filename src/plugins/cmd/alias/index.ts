@@ -1,4 +1,4 @@
-import type { Command } from '@commander-js/extra-typings';
+import type { CommandUnknownOpts } from '@commander-js/extra-typings';
 
 import type { GetDotenvCliPublic } from '@/src/cliHost';
 import type { PluginWithInstanceHelpers } from '@/src/cliHost/definePlugin';
@@ -9,7 +9,7 @@ import { maybeRunAlias } from './maybeRunAlias';
 export const attachParentAlias = (
   cli: GetDotenvCliPublic,
   options: CmdPluginOptions,
-  _cmd: Command,
+  _cmd: CommandUnknownOpts,
   plugin: PluginWithInstanceHelpers,
 ) => {
   const aliasSpec =

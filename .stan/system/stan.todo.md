@@ -21,6 +21,13 @@ When updated: 2025-12-07T00:00:00Z
 
 **CRITICAL: Append-only list. Add new completed items at the end. Prune old completed entries from the top. Do not edit existing entries.**
 
+- Fix Commander variance in cmd alias wiring and batch action lint
+  - cmd/alias: accept CommandUnknownOpts for `_cmd` to match a `[command...]`
+    child, eliminating the tuple variance TS2345.
+  - batch default action: typed positional args as string[], replaced chained
+    nullish shell fallback with explicit selection, and reworked parent opts
+    retrieval to avoid unbound-method lint. Preserved runtime behavior (parent
+    --list only; no local -l scan).
 - Typing cleanup: adopt CommandUnknownOpts across helpers/actions
   - GetDotenvCli.tagAppOptions now accepts (root: CommandUnknownOpts) to align
     with tagAppOptionsAround and avoid Commander tuple variance.
