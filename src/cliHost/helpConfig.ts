@@ -6,12 +6,8 @@ import type { ResolvedHelpConfig } from './GetDotenvCli';
  * Centralizes construction and reduces inline casts at call sites.
  */
 export const toHelpConfig = (
-  merged: GetDotenvCliOptions,
+  merged: Partial<GetDotenvCliOptions>,
   plugins: Record<string, unknown> | undefined,
 ): ResolvedHelpConfig => {
-  const bag: ResolvedHelpConfig = {
-    ...(merged as Partial<GetDotenvCliOptions>),
-    plugins: plugins ?? {},
-  };
-  return bag;
+  return { ...merged, plugins: plugins ?? {} };
 };

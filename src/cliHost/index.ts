@@ -85,10 +85,7 @@ export class GetDotenvCli extends BaseGetDotenvCli {
         // Refresh dynamic option descriptions using resolved config + plugin slices
         try {
           const ctx = this.getCtx();
-          const helpCfg = toHelpConfig(
-            merged as unknown as GetDotenvCliOptions,
-            ctx?.pluginConfigs ?? {},
-          );
+          const helpCfg = toHelpConfig(merged, ctx?.pluginConfigs ?? {});
           this.evaluateDynamicOptions(helpCfg);
         } catch {
           /* best-effort */
@@ -138,10 +135,7 @@ export class GetDotenvCli extends BaseGetDotenvCli {
           await this.resolveAndLoad(serviceOptions);
           try {
             const ctx = this.getCtx();
-            const helpCfg = toHelpConfig(
-              merged as unknown as GetDotenvCliOptions,
-              ctx?.pluginConfigs ?? {},
-            );
+            const helpCfg = toHelpConfig(merged, ctx?.pluginConfigs ?? {});
             this.evaluateDynamicOptions(helpCfg);
           } catch {
             /* tolerate */

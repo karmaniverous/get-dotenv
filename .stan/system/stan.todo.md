@@ -1,6 +1,6 @@
 # Development Plan
 
-When updated: 2025-12-06T00:00:00Z
+When updated: 2025-12-07T00:00:00Z
 
 ## Next up (near‑term, actionable)
 
@@ -319,4 +319,11 @@ When updated: 2025-12-06T00:00:00Z
   - aws plugin: use readMergedOptions for capture/scripts/shell when forwarding.
   - demo plugin: use readMergedOptions in "script" action for scripts/shell.
   - cmd plugin: unify merged bag retrieval with readMergedOptions and remove
-    direct parent.getDotenvCliOptions casts.
+    direct parent.getDotenvCliOptions casts.
+
+- Type casts: remove unnecessary casts and ease help config typing
+  - helpConfig: toHelpConfig now accepts Partial<GetDotenvCliOptions>, removing
+    cast-at-call-site patterns.
+  - Updated call sites in cliHost/index.ts and index.ts.
+  - computeContext: dropped redundant "as unknown as ZodObject" by asserting
+    plugin schema presence; removed unused ZodObject import.

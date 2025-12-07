@@ -179,10 +179,7 @@ export function createCli(opts: CreateCliOptions = {}): {
             baseRootOptionDefaults as unknown as Partial<RootOptionsShape>,
             undefined,
           );
-          const helpCfg = toHelpConfig(
-            defaultsMerged as unknown as GetDotenvCliOptions,
-            ctx.pluginConfigs ?? {},
-          );
+          const helpCfg = toHelpConfig(defaultsMerged, ctx.pluginConfigs ?? {});
           program.evaluateDynamicOptions(helpCfg);
           // Suppress output only during unit tests; allow E2E to capture.
           const piping =

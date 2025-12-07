@@ -1,6 +1,5 @@
 import fs from 'fs-extra';
 import path from 'path';
-import { type ZodObject } from 'zod';
 
 import { resolveGetDotenvConfigSources } from '../config/loader';
 import { overlayEnv } from '../env/overlay';
@@ -212,8 +211,7 @@ export const computeContext = async <
         : ({} as Record<string, unknown>);
 
     // Enforced: plugins always carry a schema (strict empty by default).
-    // Zod v4: avoid legacy multi-generic usage; treat as generic ZodObject.
-    const schema = p.configSchema as unknown as ZodObject;
+    const schema = p.configSchema!;
     const toParse = interpolated;
     const parsed = schema.safeParse(toParse);
     if (!parsed.success) {
