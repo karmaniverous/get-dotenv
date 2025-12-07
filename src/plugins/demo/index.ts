@@ -61,8 +61,7 @@ export const demoPlugin = () =>
       ns.command('ctx')
         .description('Print a summary of the current dotenv context')
         .action(() => {
-          const ctx = cli.getCtx();
-          const dotenv = ctx?.dotenv ?? {};
+          const dotenv = cli.getCtx().dotenv;
           const keys = Object.keys(dotenv).sort();
           const sample = keys.slice(0, 5);
           logger.log('[demo] Context summary:');
@@ -97,11 +96,10 @@ export const demoPlugin = () =>
 
           // Build a minimal node -e payload via argv array (avoid quoting issues).
           const code = `console.log(process.env.${key} ?? "")`;
-          const ctx = cli.getCtx();
 
           // Inherit stdio for an interactive demo. Use --capture for CI.
           await runCommand(['node', '-e', code], false, {
-            env: buildSpawnEnv(process.env, ctx?.dotenv),
+            env: buildSpawnEnv(process.env, cli.getCtx().dotenv),
             stdio: 'inherit',
           });
         });
@@ -149,7 +147,7 @@ export const demoPlugin = () =>
             // Compose child env (parent + ctx.dotenv). This mirrors cmd/batch behavior.
             const ctx = cli.getCtx();
             await runCommand(resolved, shell, {
-              env: buildSpawnEnv(process.env, ctx?.dotenv),
+              env: buildSpawnEnv(process.env, ctx.dotenv),
               stdio: 'inherit',
             });
           },

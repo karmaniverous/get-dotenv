@@ -149,7 +149,7 @@ export const awsPlugin = () => {
 
             // Resolve current context with overrides
             const out = await resolveAwsContext({
-              dotenv: ctx?.dotenv ?? {},
+              dotenv: ctx.dotenv,
               cfg,
             });
 
@@ -167,21 +167,20 @@ export const awsPlugin = () => {
                 process.env.AWS_SESSION_TOKEN = out.credentials.sessionToken;
               }
             }
+
             // Always publish minimal non-sensitive metadata
-            if (ctx) {
-              ctx.plugins ??= {};
-              ctx.plugins['aws'] = {
-                ...(out.profile ? { profile: out.profile } : {}),
-                ...(out.region ? { region: out.region } : {}),
-              };
-            }
+            ctx.plugins ??= {};
+            ctx.plugins['aws'] = {
+              ...(out.profile ? { profile: out.profile } : {}),
+              ...(out.region ? { region: out.region } : {}),
+            };
 
             // Forward when positional args are present; otherwise session-only.
             if (Array.isArray(args) && args.length > 0) {
               const argv = ['aws', ...args];
               const shellSetting = resolveShell(bag.scripts, 'aws', bag.shell);
               const exit = await runCommand(argv, shellSetting, {
-                env: buildSpawnEnv(process.env, ctx?.dotenv),
+                env: buildSpawnEnv(process.env, ctx.dotenv),
                 stdio: capture ? 'pipe' : 'inherit',
               });
               // Deterministic termination (suppressed under tests)

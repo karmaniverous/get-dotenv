@@ -209,8 +209,21 @@ export class GetDotenvCli<TOptions extends GetDotenvOptions = GetDotenvOptions>
   /**
    * Retrieve the current invocation context (if any).
    */
-  getCtx(): GetDotenvCliCtx<TOptions> | undefined {
-    return this[CTX_SYMBOL];
+  getCtx(): GetDotenvCliCtx<TOptions> {
+    const ctx = this[CTX_SYMBOL];
+    if (!ctx) {
+      throw new Error(
+        'Dotenv context unavailable. Ensure resolveAndLoad() has been called or the host is wired with passOptions() before invoking commands.',
+      );
+    }
+    return ctx;
+  }
+
+  /**
+   * Check whether a context has been resolved (non-throwing guard).
+   */
+  hasCtx(): boolean {
+    return this[CTX_SYMBOL] !== undefined;
   }
 
   /**

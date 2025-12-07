@@ -59,7 +59,7 @@ export function installPassOptions<TOptions extends GetDotenvOptions>(
       // Refresh dynamic option descriptions using resolved config + plugin slices.
       try {
         const ctx = program.getCtx();
-        const helpCfg = toHelpConfig(merged, ctx?.pluginConfigs);
+        const helpCfg = toHelpConfig(merged, ctx.pluginConfigs);
         program.evaluateDynamicOptions(helpCfg);
       } catch {
         /* best-effort */
@@ -68,7 +68,7 @@ export function installPassOptions<TOptions extends GetDotenvOptions>(
       // Global validation: once after Phase C using config sources.
       try {
         const ctx = program.getCtx();
-        const dotenv = ctx?.dotenv ?? {};
+        const dotenv = ctx.dotenv;
         const sources = await resolveGetDotenvConfigSources(import.meta.url);
         const issues = validateEnvAgainstSources(dotenv, sources);
         if (Array.isArray(issues) && issues.length > 0) {
@@ -98,21 +98,21 @@ export function installPassOptions<TOptions extends GetDotenvOptions>(
         merged as unknown as GetDotenvCliOptions,
       );
       // Avoid duplicate heavy work if a context is already present.
-      if (!program.getCtx()) {
+      if (!program.hasCtx()) {
         const serviceOptions = getDotenvCliOptions2Options(
           merged as unknown as RootOptionsShapeCompat,
         ) as unknown as Partial<TOptions>;
         await program.resolveAndLoad(serviceOptions);
         try {
           const ctx = program.getCtx();
-          const helpCfg = toHelpConfig(merged, ctx?.pluginConfigs);
+          const helpCfg = toHelpConfig(merged, ctx.pluginConfigs);
           program.evaluateDynamicOptions(helpCfg);
         } catch {
           /* tolerate */
         }
         try {
           const ctx = program.getCtx();
-          const dotenv = ctx?.dotenv ?? {};
+          const dotenv = ctx.dotenv;
           const sources = await resolveGetDotenvConfigSources(import.meta.url);
           const issues = validateEnvAgainstSources(dotenv, sources);
           if (Array.isArray(issues) && issues.length > 0) {

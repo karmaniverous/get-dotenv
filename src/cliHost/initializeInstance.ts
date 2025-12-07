@@ -47,7 +47,7 @@ export function initializeInstance(
   // PreSubcommand hook: compute a context if absent, without mutating process.env.
   // The passOptions() helper, when installed, resolves the final context.
   cli.hook('preSubcommand', async () => {
-    if (cli.getCtx()) return;
+    if (cli.hasCtx()) return;
     await cli.resolveAndLoad({ loadProcess: false });
   });
 }

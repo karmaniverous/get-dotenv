@@ -28,7 +28,10 @@ export interface GetDotenvCliPublic<
   TOptions extends GetDotenvOptions = GetDotenvOptions,
 > extends Command {
   ns(name: string): Command;
-  getCtx(): GetDotenvCliCtx<TOptions> | undefined;
+  /** Return the current context; throws if not yet resolved. */
+  getCtx(): GetDotenvCliCtx<TOptions>;
+  /** Check whether a context has been resolved (non-throwing). */
+  hasCtx(): boolean;
   resolveAndLoad(
     customOptions?: Partial<TOptions>,
     opts?: { runAfterResolve?: boolean },

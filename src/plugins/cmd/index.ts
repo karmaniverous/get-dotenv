@@ -122,8 +122,7 @@ export const cmdPlugin = (options: CmdPluginOptions = {}) =>
               process.env.GETDOTENV_STDIO === 'pipe' ||
               Boolean((merged as { capture?: boolean }).capture);
             // Prefer explicit env injection using the resolved dotenv map.
-            const ctx = cli.getCtx();
-            const dotenv = (ctx?.dotenv ?? {}) as Record<
+            const dotenv = cli.getCtx().dotenv as Record<
               string,
               string | undefined
             >;
@@ -153,12 +152,8 @@ export const cmdPlugin = (options: CmdPluginOptions = {}) =>
                       ? 'parent'
                       : 'unset';
                 // Apply presentation-time redaction (if enabled)
-                const redFlag = (merged as { redact?: boolean }).redact;
-                const redPatterns = (
-                  merged as {
-                    redactPatterns?: Array<string | RegExp>;
-                  }
-                ).redactPatterns;
+                const redFlag = merged.redact;
+                const redPatterns = merged.redactPatterns;
                 const redOpts: RedactOptions = {};
                 if (redFlag) redOpts.redact = true;
                 if (redFlag && Array.isArray(redPatterns))

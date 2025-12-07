@@ -146,8 +146,7 @@ export async function maybeRunAlias(
     shell: (mergedBag as { shell?: unknown }).shell,
   });
 
-  const ctx = cli.getCtx();
-  const dotenv = (ctx?.dotenv ?? {}) as Record<string, string | undefined>;
+  const dotenv = cli.getCtx().dotenv as Record<string, string | undefined>;
 
   // Diagnostics: --trace [keys...]
   const traceOpt = (mergedBag as { trace?: boolean | string[] }).trace;
