@@ -228,24 +228,18 @@ export const computeContext = async <
       }
       // Store a readonly (shallow-frozen) value for runtime safety.
       const frozen = Object.freeze(parsed.data);
-      _setPluginConfigForInstance(
-        p as unknown as GetDotenvCliPlugin,
-        frozen as unknown,
-      );
+      _setPluginConfigForInstance(p, frozen);
       mergedPluginConfigsById[p.id] = frozen;
     } else {
       // Defensive fallback (shouldn't occur: definePlugin injects a strict empty schema).
       const frozen = Object.freeze(interpolated);
-      _setPluginConfigForInstance(
-        p as unknown as GetDotenvCliPlugin,
-        frozen as unknown,
-      );
+      _setPluginConfigForInstance(p, frozen);
       mergedPluginConfigsById[p.id] = frozen;
     }
   }
 
   return {
-    optionsResolved: validated as unknown as TOptions,
+    optionsResolved: validated as TOptions,
     dotenv: dotenv as ProcessEnv,
     plugins: {},
     // Retained for legacy root help dynamic evaluation only. Instance-bound

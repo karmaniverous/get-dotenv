@@ -69,9 +69,8 @@ export class GetDotenvCli extends BaseGetDotenvCli {
         >(raw, d, process.env.getDotenvCliOptions);
 
         // Persist merged options (for nested behavior and ergonomic access).
-        thisCommand.getDotenvCliOptions =
-          merged as unknown as GetDotenvCliOptions;
-        this._setOptionsBag(merged as unknown as GetDotenvCliOptions);
+        thisCommand.getDotenvCliOptions = merged as GetDotenvCliOptions;
+        this._setOptionsBag(merged as GetDotenvCliOptions);
 
         // Build service options and compute context (always-on loader path).
         const serviceOptions = getDotenvCliOptions2Options(merged);
@@ -92,8 +91,8 @@ export class GetDotenvCli extends BaseGetDotenvCli {
           const sources = await resolveGetDotenvConfigSources(import.meta.url);
           const issues = validateEnvAgainstSources(dotenv, sources);
           if (Array.isArray(issues) && issues.length > 0) {
-            const logger = ((merged as unknown as { logger?: unknown })
-              .logger ?? console) as {
+            const logger = ((merged as { logger?: unknown }).logger ??
+              console) as {
               log: (...a: unknown[]) => void;
               error?: (...a: unknown[]) => void;
             };
@@ -101,8 +100,7 @@ export class GetDotenvCli extends BaseGetDotenvCli {
             issues.forEach((m) => {
               emit(m);
             });
-            if ((merged as unknown as { strict?: boolean }).strict)
-              process.exit(1);
+            if ((merged as { strict?: boolean }).strict) process.exit(1);
           }
         } catch {
           // Be tolerant: do not crash non-strict flows on unexpected validator failures.
@@ -119,9 +117,8 @@ export class GetDotenvCli extends BaseGetDotenvCli {
         const { merged } = resolveCliOptions<
           RootOptionsShape & { scripts?: ScriptsTable }
         >(raw, d, process.env.getDotenvCliOptions);
-        thisCommand.getDotenvCliOptions =
-          merged as unknown as GetDotenvCliOptions;
-        this._setOptionsBag(merged as unknown as GetDotenvCliOptions);
+        thisCommand.getDotenvCliOptions = merged as GetDotenvCliOptions;
+        this._setOptionsBag(merged as GetDotenvCliOptions);
         // Avoid duplicate heavy work if a context is already present.
         if (!this.getCtx()) {
           const serviceOptions = getDotenvCliOptions2Options(merged);
@@ -144,8 +141,8 @@ export class GetDotenvCli extends BaseGetDotenvCli {
             );
             const issues = validateEnvAgainstSources(dotenv, sources);
             if (Array.isArray(issues) && issues.length > 0) {
-              const logger = ((merged as unknown as { logger?: unknown })
-                .logger ?? console) as {
+              const logger = ((merged as { logger?: unknown }).logger ??
+                console) as {
                 log: (...a: unknown[]) => void;
                 error?: (...a: unknown[]) => void;
               };
@@ -153,7 +150,7 @@ export class GetDotenvCli extends BaseGetDotenvCli {
               issues.forEach((m) => {
                 emit(m);
               });
-              if ((merged as unknown as { strict?: boolean }).strict) {
+              if ((merged as { strict?: boolean }).strict) {
                 process.exit(1);
               }
             }
