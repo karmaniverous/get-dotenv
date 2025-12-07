@@ -21,6 +21,19 @@ When updated: 2025-12-07T00:00:00Z
 
 **CRITICAL: Append-only list. Add new completed items at the end. Prune old completed entries from the top. Do not edit existing entries.**
 
+- Batch logger wiring: preserve base logger through passOptions
+  - Fixed host passOptions to merge provided defaults over baseRootOptionDefaults
+    (instead of replacing them). This guarantees the base logger (console) is
+    always present in the merged CLI options bag and flows through to plugin
+    actions and services. Removed the implicit runtime “fallback to console” in
+    the failing path by ensuring the merged bag itself carries the logger, which
+    plugins pass along explicitly.
+  - Relaxed resolveCliOptions generic usage in cliHost/index.ts to satisfy
+    exactOptionalPropertyTypes and cast once when persisting the merged bag.
+  - getDotenvCliOptions2Options now returns a service options object that always
+    includes the required logger field (console), satisfying typecheck without
+    relying on downstream schema defaults.
+
 - Logger: strict contract + schema defaults; remove coalescing
   - Defined Logger as Pick<Console, 'log' | 'info' | 'error' | 'debug'> for a
     concrete compile-time contract. Defaulted logger to console in the

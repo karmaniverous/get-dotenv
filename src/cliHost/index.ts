@@ -7,6 +7,7 @@ import { resolveGetDotenvConfigSources } from '../config/loader';
 import { validateEnvAgainstSources } from '../config/validate';
 import type { GetDotenvOptions } from '../GetDotenvOptions';
 import { getDotenvCliOptions2Options } from '../GetDotenvOptions';
+import { defaultsDeep } from '../util/defaultsDeep';
 import { attachRootOptions as attachRootOptionsBuilder } from './attachRootOptions';
 import type { PluginWithInstanceHelpers as PluginWithInstanceHelpersType } from './definePlugin';
 import { GetDotenvCli as BaseGetDotenvCli } from './GetDotenvCli';
@@ -54,24 +55,32 @@ export class GetDotenvCli extends BaseGetDotenvCli {
    * - Validate the composed env against discovered config (warn or --strict fail).
    */
   passOptions(defaults?: Partial<RootOptionsShape>): this {
-    const d = (defaults ?? baseRootOptionDefaults) as Partial<RootOptionsShape>;
+    // Merge provided defaults over the base root defaults so critical keys
+    // (e.g., logger: console) are preserved unless explicitly overridden.
+    const d = defaultsDeep<Partial<RootOptionsShape>>(
+      baseRootOptionDefaults as Partial<RootOptionsShape>,
+      defaults ?? {},
+    );
 
     this.hook(
       'preSubcommand',
       async (thisCommand: CommandWithOptions<GetDotenvCliOptions>) => {
         const raw = thisCommand.opts();
-        const { merged } = resolveCliOptions<GetDotenvCliOptions>(
-          raw,
-          d as Partial<GetDotenvCliOptions>,
-          process.env.getDotenvCliOptions,
-        );
+        const { merged } = resolveCliOptions<
+          RootOptionsShape & {
+            scripts?: import('../cliCore/types').ScriptsTable;
+          }
+        >(raw, d, process.env.getDotenvCliOptions);
 
         // Persist merged options (for nested behavior and ergonomic access).
-        thisCommand.getDotenvCliOptions = merged;
-        this._setOptionsBag(merged);
+        thisCommand.getDotenvCliOptions =
+          merged as unknown as GetDotenvCliOptions;
+        this._setOptionsBag(merged as unknown as GetDotenvCliOptions);
 
         // Build service options and compute context (always-on loader path).
-        const serviceOptions = getDotenvCliOptions2Options(merged);
+        const serviceOptions = getDotenvCliOptions2Options(
+          merged as unknown as import('../GetDotenvOptions').RootOptionsShapeCompat,
+        );
         await this.resolveAndLoad(serviceOptions);
 
         // Refresh dynamic option descriptions using resolved config + plugin slices
@@ -107,20 +116,26 @@ export class GetDotenvCli extends BaseGetDotenvCli {
       'preAction',
       async (thisCommand: CommandWithOptions<GetDotenvCliOptions>) => {
         const raw = thisCommand.opts();
-        const { merged } = resolveCliOptions<GetDotenvCliOptions>(
-          raw,
-          d as Partial<GetDotenvCliOptions>,
-          process.env.getDotenvCliOptions,
-        );
-        thisCommand.getDotenvCliOptions = merged;
-        this._setOptionsBag(merged);
+        const { merged } = resolveCliOptions<
+          RootOptionsShape & {
+            scripts?: import('../cliCore/types').ScriptsTable;
+          }
+        >(raw, d, process.env.getDotenvCliOptions);
+        thisCommand.getDotenvCliOptions =
+          merged as unknown as GetDotenvCliOptions;
+        this._setOptionsBag(merged as unknown as GetDotenvCliOptions);
         // Avoid duplicate heavy work if a context is already present.
         if (!this.getCtx()) {
-          const serviceOptions = getDotenvCliOptions2Options(merged);
+          const serviceOptions = getDotenvCliOptions2Options(
+            merged as unknown as import('../GetDotenvOptions').RootOptionsShapeCompat,
+          );
           await this.resolveAndLoad(serviceOptions);
           try {
             const ctx = this.getCtx();
-            const helpCfg = toHelpConfig(merged, ctx?.pluginConfigs);
+            const helpCfg = toHelpConfig(
+              merged as unknown as Partial<GetDotenvCliOptions>,
+              ctx?.pluginConfigs,
+            );
             this.evaluateDynamicOptions(helpCfg);
           } catch {
             /* tolerate */
@@ -136,7 +151,7 @@ export class GetDotenvCli extends BaseGetDotenvCli {
             );
             const issues = validateEnvAgainstSources(dotenv, sources);
             if (Array.isArray(issues) && issues.length > 0) {
-              const logger = merged.logger;
+              const logger = (merged as unknown as GetDotenvCliOptions).logger;
               issues.forEach((m) => {
                 logger.error(m);
               });

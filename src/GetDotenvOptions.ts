@@ -217,6 +217,9 @@ export const getDotenvCliOptions2Options = ({
 
   // Preserve exactOptionalPropertyTypes: only include keys when defined.
   return {
+    // Ensure the required logger property is present. The base CLI defaults
+    // specify console as the logger; callers can override upstream if desired.
+    logger: console as Logger,
     ...(rest as Partial<GetDotenvOptions>),
     ...(pathsOut.length > 0 ? { paths: pathsOut } : {}),
     ...(parsedVars !== undefined ? { vars: parsedVars } : {}),
