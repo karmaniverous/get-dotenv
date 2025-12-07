@@ -25,7 +25,11 @@ export const buildParentAction =
     commandParts: string[] | undefined,
     thisCommand: Command,
   ): Promise<void> => {
-    const loggerLocal: Logger = opts.logger ?? console;
+    // Inherit logger from merged root options
+    const mergedForLogger = readMergedOptions(thisCommand) as {
+      logger: Logger;
+    };
+    const loggerLocal: Logger = mergedForLogger.logger;
 
     // Ensure context exists (host preSubcommand on root creates if missing).
     const dotenvEnv = (cli.getCtx()?.dotenv ?? {}) as Record<

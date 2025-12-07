@@ -8,26 +8,17 @@ vi.mock('../../services/batch/execShellCommandBatch', () => ({
   },
 }));
 
-import { GetDotenvCli } from '../../cliHost/GetDotenvCli';
+import { GetDotenvCli } from '../../cliHost';
 import { batchPlugin } from './index';
 describe('plugins/batch', () => {
-  const logger = {
-    info: vi.fn(),
-    log: vi.fn(),
-    error: vi.fn(),
-  };
-
   beforeEach(() => {
     execMock.mockClear();
-    logger.info.mockClear();
-    logger.log.mockClear();
-    logger.error.mockClear();
   });
 
   it('invokes list mode with globs and root path', async () => {
     const cli = new GetDotenvCli('test')
       .attachRootOptions()
-      .use(batchPlugin({ logger: logger as unknown as Console }))
+      .use(batchPlugin())
       .passOptions();
     await cli.parseAsync([
       'node',
@@ -55,7 +46,6 @@ describe('plugins/batch', () => {
       .attachRootOptions()
       .use(
         batchPlugin({
-          logger: logger as unknown as Console,
           scripts: { build: { cmd: 'npm run build', shell: '/bin/zsh' } },
           shell: false,
         }),
@@ -84,7 +74,7 @@ describe('plugins/batch', () => {
   it('propagates pkg-cwd flag', async () => {
     const cli = new GetDotenvCli('test')
       .attachRootOptions()
-      .use(batchPlugin({ logger: logger as unknown as Console }))
+      .use(batchPlugin())
       .passOptions();
     await cli.parseAsync([
       'node',
@@ -105,7 +95,7 @@ describe('plugins/batch', () => {
   it('propagates ignore-errors', async () => {
     const cli = new GetDotenvCli('test')
       .attachRootOptions()
-      .use(batchPlugin({ logger: logger as unknown as Console }))
+      .use(batchPlugin())
       .passOptions();
     await cli.parseAsync([
       'node',
@@ -127,7 +117,7 @@ describe('plugins/batch', () => {
   it('executes positional command without explicit subcommand', async () => {
     const cli = new GetDotenvCli('test')
       .attachRootOptions()
-      .use(batchPlugin({ logger: logger as unknown as Console }))
+      .use(batchPlugin())
       .passOptions();
     await cli.parseAsync(['node', 'test', 'batch', 'echo', 'OK']);
 

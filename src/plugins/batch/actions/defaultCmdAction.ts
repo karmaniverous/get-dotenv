@@ -29,7 +29,11 @@ export const buildDefaultCmdAction =
     _subOpts: unknown,
     _thisCommand: Command,
   ): Promise<void> => {
-    const loggerLocal: Logger = opts.logger ?? console;
+    // Inherit logger from the merged root options bag
+    const mergedForLogger = readMergedOptions(batchCmd) as {
+      logger: Logger;
+    };
+    const loggerLocal: Logger = mergedForLogger.logger;
     // Guard: when invoked without positional args (e.g., `batch --list`),
     // defer entirely to the parent action handler.
     const argsRaw = Array.isArray(commandParts)
@@ -62,6 +66,7 @@ export const buildDefaultCmdAction =
     const mergedBag = readMergedOptions(batchCmd) as {
       scripts?: Scripts;
       shell?: string | boolean;
+      logger: Logger;
     };
     const scripts = opts.scripts ?? cfg.scripts ?? mergedBag.scripts;
     const shell = opts.shell ?? cfg.shell ?? mergedBag.shell;

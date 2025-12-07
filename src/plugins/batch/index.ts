@@ -12,7 +12,6 @@ import { BatchConfigSchema, type BatchPluginOptions } from './types';
  * Mirrors the legacy batch subcommand behavior without altering the shipped CLI.
  * Options:
  * - scripts/shell: used to resolve command and shell behavior per script or global default.
- * - logger: defaults to console.
  */
 export const batchPlugin = (opts: BatchPluginOptions = {}) => {
   const plugin = definePlugin({

@@ -1,12 +1,10 @@
 import { z } from 'zod';
 
-import type { Logger } from '../../GetDotenvOptions';
 import type { Scripts } from '../../services/batch/resolve';
 
 export type BatchPluginOptions = {
   scripts?: Scripts;
   shell?: string | boolean;
-  logger?: Logger;
 };
 
 // Per-plugin config schema (optional fields; used as defaults).
