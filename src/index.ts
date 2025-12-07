@@ -3,7 +3,6 @@ import type { Command } from 'commander';
 export { defineScripts } from './cliCore/types';
 export { z } from 'zod';
 import { baseRootOptionDefaults } from './cliCore/defaults';
-import type { GetDotenvCliOptions } from './cliCore/GetDotenvCliOptions';
 import { resolveCliOptions } from './cliCore/resolveCliOptions';
 import type { RootOptionsShape, ScriptsTable } from './cliCore/types';
 import { GetDotenvCli } from './cliHost';

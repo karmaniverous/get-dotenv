@@ -210,30 +210,38 @@ export const computeContext = async <
         ? interpolateDeep(slice as Record<string, unknown>, envRef)
         : ({} as Record<string, unknown>);
 
-    // Enforced: plugins always carry a schema (strict empty by default).
-    const schema = p.configSchema!;
-    const toParse = interpolated;
-    const parsed = schema.safeParse(toParse);
-    if (!parsed.success) {
-      const err = parsed.error;
-
-      const msgs = err.issues
-        .map((i) => {
-          const path = Array.isArray(i.path) ? i.path.join('.') : '';
-          const msg =
-            typeof i.message === 'string' ? i.message : 'Invalid value';
-          return path ? `${path}: ${msg}` : msg;
-        })
-        .join('\n');
-      throw new Error(`Invalid config for plugin '${p.id}':\n${msgs}`);
+    // Validate against schema when present; otherwise store interpolated slice as-is.
+    const schema = p.configSchema;
+    if (schema) {
+      const parsed = schema.safeParse(interpolated);
+      if (!parsed.success) {
+        const err = parsed.error;
+        const msgs = err.issues
+          .map((i) => {
+            const path = Array.isArray(i.path) ? i.path.join('.') : '';
+            const msg =
+              typeof i.message === 'string' ? i.message : 'Invalid value';
+            return path ? `${path}: ${msg}` : msg;
+          })
+          .join('\n');
+        throw new Error(`Invalid config for plugin '${p.id}':\n${msgs}`);
+      }
+      // Store a readonly (shallow-frozen) value for runtime safety.
+      const frozen = Object.freeze(parsed.data);
+      _setPluginConfigForInstance(
+        p as unknown as GetDotenvCliPlugin,
+        frozen as unknown,
+      );
+      mergedPluginConfigsById[p.id] = frozen;
+    } else {
+      // Defensive fallback (shouldn't occur: definePlugin injects a strict empty schema).
+      const frozen = Object.freeze(interpolated);
+      _setPluginConfigForInstance(
+        p as unknown as GetDotenvCliPlugin,
+        frozen as unknown,
+      );
+      mergedPluginConfigsById[p.id] = frozen;
     }
-    // Store a readonly (shallow-frozen) value for runtime safety.
-    const frozen = Object.freeze(parsed.data);
-    _setPluginConfigForInstance(
-      p as unknown as GetDotenvCliPlugin,
-      frozen as unknown,
-    );
-    mergedPluginConfigsById[p.id] = frozen;
   }
 
   return {
