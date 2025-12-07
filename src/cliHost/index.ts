@@ -9,10 +9,7 @@ import type {
 } from '../cliCore/types';
 import { resolveGetDotenvConfigSources } from '../config/loader';
 import { validateEnvAgainstSources } from '../config/validate';
-import type {
-  GetDotenvOptions,
-  RootOptionsShapeCompat,
-} from '../GetDotenvOptions';
+import type { GetDotenvOptions } from '../GetDotenvOptions';
 import { getDotenvCliOptions2Options } from '../GetDotenvOptions';
 import { attachRootOptions as attachRootOptionsBuilder } from './attachRootOptions';
 import type { PluginWithInstanceHelpers as PluginWithInstanceHelpersType } from './definePlugin';
@@ -77,15 +74,13 @@ export class GetDotenvCli extends BaseGetDotenvCli {
         this._setOptionsBag(merged as unknown as GetDotenvCliOptions);
 
         // Build service options and compute context (always-on loader path).
-        const serviceOptions = getDotenvCliOptions2Options(
-          merged as unknown as RootOptionsShapeCompat,
-        );
+        const serviceOptions = getDotenvCliOptions2Options(merged);
         await this.resolveAndLoad(serviceOptions);
 
         // Refresh dynamic option descriptions using resolved config + plugin slices
         try {
           const ctx = this.getCtx();
-          const helpCfg = toHelpConfig(merged, ctx?.pluginConfigs ?? {});
+          const helpCfg = toHelpConfig(merged, ctx?.pluginConfigs);
           this.evaluateDynamicOptions(helpCfg);
         } catch {
           /* best-effort */
@@ -129,13 +124,11 @@ export class GetDotenvCli extends BaseGetDotenvCli {
         this._setOptionsBag(merged as unknown as GetDotenvCliOptions);
         // Avoid duplicate heavy work if a context is already present.
         if (!this.getCtx()) {
-          const serviceOptions = getDotenvCliOptions2Options(
-            merged as unknown as RootOptionsShapeCompat,
-          );
+          const serviceOptions = getDotenvCliOptions2Options(merged);
           await this.resolveAndLoad(serviceOptions);
           try {
             const ctx = this.getCtx();
-            const helpCfg = toHelpConfig(merged, ctx?.pluginConfigs ?? {});
+            const helpCfg = toHelpConfig(merged, ctx?.pluginConfigs);
             this.evaluateDynamicOptions(helpCfg);
           } catch {
             /* tolerate */

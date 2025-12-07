@@ -326,4 +326,10 @@ When updated: 2025-12-07T00:00:00Z
     cast-at-call-site patterns.
   - Updated call sites in cliHost/index.ts and index.ts.
   - computeContext: dropped redundant "as unknown as ZodObject" by asserting
-    plugin schema presence; removed unused ZodObject import.
+    plugin schema presence; removed unused ZodObject import.
+
+- Cast/coalesce cleanup: remove unnecessary casts and ?? {}
+  - cliHost/index: pass merged directly to getDotenvCliOptions2Options; drop
+    RootOptionsShapeCompat import; rely on toHelpConfig to default plugins
+    (remove “?? {}”).
+  - index: remove “?? {}” at help-time toHelpConfig call.
