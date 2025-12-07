@@ -9,6 +9,7 @@ import typescriptPlugin from '@rollup/plugin-typescript';
 import fs from 'fs-extra';
 import type { InputOptions, RollupOptions } from 'rollup';
 import dtsPlugin from 'rollup-plugin-dts';
+import copy from 'rollup-plugin-copy';
 // Avoid JSON import assertions; read and type package.json
 
 const outputPath = `dist`;
@@ -29,7 +30,18 @@ const tsPlugin = typescriptPlugin({
     'esm/**',
   ],
 });
-const commonPlugins = [commonjsPlugin(), jsonPlugin(), nodeResolve(), tsPlugin];
+const commonPlugins = [
+  commonjsPlugin(),
+  jsonPlugin(),
+  nodeResolve(),
+  tsPlugin,
+  // Copy templates verbatim into dist/templates (no compilation)
+  copy({
+    targets: [{ src: 'templates/**/*', dest: `${outputPath}/templates` }],
+    copyOnce: true,
+    verbose: true,
+  }),
+];
 
 // Map TS path aliases for Rollup bundling.
 // tsconfig.json defines "@/*" -> "*" (e.g., "@/src/..." -> "src/...").
@@ -151,7 +163,7 @@ const config: RollupOptions[] = [
     plugins: [
       aliasPlugin({ entries: commonAliases }),
       ...commonPlugins,
-      dtsPlugin(),
+      dtsPlugin({ tsconfig: './tsconfig.base.json' }),
     ],
     output: [
       {
@@ -168,7 +180,7 @@ const config: RollupOptions[] = [
     plugins: [
       aliasPlugin({ entries: commonAliases }),
       ...commonPlugins,
-      dtsPlugin(),
+      dtsPlugin({ tsconfig: './tsconfig.base.json' }),
     ],
     output: [
       { extend: true, file: `${outputPath}/cliHost.d.ts`, format: 'esm' },
@@ -181,7 +193,7 @@ const config: RollupOptions[] = [
     plugins: [
       aliasPlugin({ entries: commonAliases }),
       ...commonPlugins,
-      dtsPlugin(),
+      dtsPlugin({ tsconfig: './tsconfig.base.json' }),
     ],
     output: [
       { extend: true, file: `${outputPath}/plugins-batch.d.ts`, format: 'esm' },
@@ -194,7 +206,7 @@ const config: RollupOptions[] = [
     plugins: [
       aliasPlugin({ entries: commonAliases }),
       ...commonPlugins,
-      dtsPlugin(),
+      dtsPlugin({ tsconfig: './tsconfig.base.json' }),
     ],
     output: [
       { extend: true, file: `${outputPath}/plugins-aws.d.ts`, format: 'esm' },
@@ -208,7 +220,7 @@ const config: RollupOptions[] = [
     plugins: [
       aliasPlugin({ entries: commonAliases }),
       ...commonPlugins,
-      dtsPlugin(),
+      dtsPlugin({ tsconfig: './tsconfig.base.json' }),
     ],
     output: [
       { extend: true, file: `${outputPath}/plugins-init.d.ts`, format: 'esm' },
@@ -221,7 +233,7 @@ const config: RollupOptions[] = [
     plugins: [
       aliasPlugin({ entries: commonAliases }),
       ...commonPlugins,
-      dtsPlugin(),
+      dtsPlugin({ tsconfig: './tsconfig.base.json' }),
     ],
     output: [
       { extend: true, file: `${outputPath}/plugins-cmd.d.ts`, format: 'esm' },
@@ -234,7 +246,7 @@ const config: RollupOptions[] = [
     plugins: [
       aliasPlugin({ entries: commonAliases }),
       ...commonPlugins,
-      dtsPlugin(),
+      dtsPlugin({ tsconfig: './tsconfig.base.json' }),
     ],
     output: [
       { extend: true, file: `${outputPath}/plugins-demo.d.ts`, format: 'esm' },
@@ -247,7 +259,7 @@ const config: RollupOptions[] = [
     plugins: [
       aliasPlugin({ entries: commonAliases }),
       ...commonPlugins,
-      dtsPlugin(),
+      dtsPlugin({ tsconfig: './tsconfig.base.json' }),
     ],
     output: [
       { extend: true, file: `${outputPath}/config.d.ts`, format: 'esm' },
@@ -260,7 +272,7 @@ const config: RollupOptions[] = [
     plugins: [
       aliasPlugin({ entries: commonAliases }),
       ...commonPlugins,
-      dtsPlugin(),
+      dtsPlugin({ tsconfig: './tsconfig.base.json' }),
     ],
     output: [
       { extend: true, file: `${outputPath}/env-overlay.d.ts`, format: 'esm' },
@@ -274,7 +286,7 @@ const config: RollupOptions[] = [
     plugins: [
       aliasPlugin({ entries: commonAliases }),
       ...commonPlugins,
-      dtsPlugin(),
+      dtsPlugin({ tsconfig: './tsconfig.base.json' }),
     ],
     output: [
       { extend: true, file: `${outputPath}/plugins.d.ts`, format: 'esm' },

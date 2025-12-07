@@ -209,3 +209,17 @@ When updated: 2025-12-07T00:00:00Z
     eliminate unbound-method lint.
   - cmd alias: adapt hook forwarding to accept `unknown` and cast once inside
     the wrapper to Commander `Command` for maybeRunAlias, removing TS2345.
+
+- Build: exclude templates from TypeScript and copy to dist
+  - Added top-level `"exclude"` to tsconfig.base.json so templates/\*_ (and other
+    non-build dirs) are never included in the TypeScript program used by rollup
+    or rollup-plugin-dts. Prevents the “templates/config/ts/_.ts” warnings and
+    avoids compiling templates.
+  - Added rollup-plugin-copy to mirror `templates/` into `dist/templates` with
+    `copyOnce` to avoid repeated copies in the multi-output build.
+
+- Build: fix path alias resolution for rollup TypeScript steps
+  - Added `"@/*": ["*"]` to tsconfig.base.json so @rollup/plugin-typescript can
+    resolve `@/…` imports (the alias plugin alone doesn’t satisfy TS resolution).
+  - Pointed rollup-plugin-dts at `./tsconfig.base.json` to share the same paths
+    and excludes, eliminating stray type-bundling warnings.

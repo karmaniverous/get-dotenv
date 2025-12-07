@@ -3,6 +3,7 @@
     "allowSyntheticDefaultImports": true,
     "baseUrl": ".",
     "paths": {
+      "@/*": ["*"],
       "@karmaniverous/get-dotenv/cliHost": ["src/cliHost/index.ts"],
       "@karmaniverous/get-dotenv/plugins": ["src/plugins/index.ts"]
     },
@@ -22,5 +23,14 @@
     "target": "esnext",
     "types": ["node"],
     "verbatimModuleSyntax": true
-  }
+  },
+  "exclude": [
+    "templates/**",
+    "test/**",
+    ".stan/**",
+    "tools/**",
+    "dist/**",
+    "esm/**",
+    "node_modules/**"
+  ]
 }
