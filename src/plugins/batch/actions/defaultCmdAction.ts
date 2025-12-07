@@ -26,7 +26,7 @@ export const buildDefaultCmdAction =
   async (
     commandParts: string[] | undefined,
     _subOpts: unknown,
-    _thisCommand: Command,
+    thisCommand: Command,
   ): Promise<void> => {
     // Inherit logger from the merged root options bag
     const mergedForLogger = readMergedOptions(batchCmd) as {
@@ -47,15 +47,30 @@ export const buildDefaultCmdAction =
     const cfg = plugin.readConfig<BatchConfig>(cli);
     const dotenvEnv = cli.getCtx().dotenv;
 
-    // Resolve batch flags from the captured parent (batch) command.
-    const raw = batchCmd.opts();
-    const listFromParent = !!raw.list;
-    const ignoreErrors = !!raw.ignoreErrors;
-    const globs =
-      typeof raw.globs === 'string' ? raw.globs : (cfg.globs ?? '*');
-    const pkgCwd = raw.pkgCwd !== undefined ? !!raw.pkgCwd : !!cfg.pkgCwd;
+    // Resolve batch flags from the parent (batch) command.
+    type BatchFlags = {
+      list?: boolean;
+      ignoreErrors?: boolean;
+      globs?: string;
+      pkgCwd?: boolean;
+      rootPath?: string;
+      command?: string;
+    };
+    const g = (
+      (thisCommand as Command & { optsWithGlobals?: () => unknown })
+        .optsWithGlobals
+        ? (
+            thisCommand as Command & { optsWithGlobals: () => unknown }
+          ).optsWithGlobals()
+        : batchCmd.opts()
+    ) as BatchFlags;
+
+    const listFromParent = !!g.list;
+    const ignoreErrors = !!g.ignoreErrors;
+    const globs = typeof g.globs === 'string' ? g.globs : (cfg.globs ?? '*');
+    const pkgCwd = g.pkgCwd !== undefined ? !!g.pkgCwd : !!cfg.pkgCwd;
     const rootPath =
-      typeof raw.rootPath === 'string' ? raw.rootPath : (cfg.rootPath ?? './');
+      typeof g.rootPath === 'string' ? g.rootPath : (cfg.rootPath ?? './');
 
     // Resolve scripts/shell with precedence:
     // plugin opts → plugin config → merged root CLI options
@@ -69,8 +84,7 @@ export const buildDefaultCmdAction =
 
     // If no positional args were given, bridge to --command/--list paths here.
     if (args.length === 0) {
-      const commandOpt =
-        typeof raw.command === 'string' ? raw.command : undefined;
+      const commandOpt = typeof g.command === 'string' ? g.command : undefined;
       if (typeof commandOpt === 'string') {
         await execShellCommandBatch({
           command: resolveCommand(scripts, commandOpt),
@@ -85,7 +99,7 @@ export const buildDefaultCmdAction =
         });
         return;
       }
-      if (raw.list || localList) {
+      if (g.list || localList) {
         const bag = readMergedOptions(batchCmd);
         await execShellCommandBatch({
           globs,
@@ -111,7 +125,7 @@ export const buildDefaultCmdAction =
 
     // If a local list flag was supplied with positional tokens (and no --command),
     // treat tokens as additional globs and execute list mode.
-    if (localList && typeof raw.command !== 'string') {
+    if (localList && typeof g.command !== 'string') {
       const extraGlobs = args.map(String).join(' ').trim();
       const mergedGlobs = [globs, extraGlobs].filter(Boolean).join(' ');
       const bag = readMergedOptions(batchCmd);
@@ -129,7 +143,7 @@ export const buildDefaultCmdAction =
 
     // If parent list flag is set and positional tokens are present (and no --command),
     // treat tokens as additional globs for list-only mode.
-    if (listFromParent && args.length > 0 && typeof raw.command !== 'string') {
+    if (listFromParent && args.length > 0 && typeof g.command !== 'string') {
       const extra = args.map(String).join(' ').trim();
       const mergedGlobs = [globs, extra].filter(Boolean).join(' ');
       const bag = readMergedOptions(batchCmd);

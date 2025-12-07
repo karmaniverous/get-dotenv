@@ -12,7 +12,10 @@ describe('plugins/init', () => {
   it('scaffolds json config and CLI skeleton (force)', async () => {
     const dir = path.posix.join(TROOT, 'case1');
     await fs.remove(dir);
-    const cli = new GetDotenvCli('test').use(initPlugin());
+    const cli = new GetDotenvCli('test')
+      .attachRootOptions()
+      .use(initPlugin())
+      .passOptions();
     await cli.parseAsync([
       'node',
       'test',
@@ -55,7 +58,10 @@ describe('plugins/init', () => {
   it('idempotence with --yes (skip)', async () => {
     const dir = path.posix.join(TROOT, 'case2');
     await fs.remove(dir);
-    const cli = new GetDotenvCli('test').use(initPlugin());
+    const cli = new GetDotenvCli('test')
+      .attachRootOptions()
+      .use(initPlugin())
+      .passOptions();
     await cli.parseAsync([
       'node',
       'test',
@@ -83,7 +89,10 @@ describe('plugins/init', () => {
   it('scaffolds ts config with dynamic', async () => {
     const dir = path.posix.join(TROOT, 'case3');
     await fs.remove(dir);
-    const cli = new GetDotenvCli('test').use(initPlugin());
+    const cli = new GetDotenvCli('test')
+      .attachRootOptions()
+      .use(initPlugin())
+      .passOptions();
     await cli.parseAsync([
       'node',
       'test',
@@ -120,7 +129,10 @@ describe('plugins/init', () => {
     // Precreate with sentinel content
     await fs.writeFile(cfg, 'OLD', 'utf-8');
 
-    const cli = new GetDotenvCli('test').use(initPlugin());
+    const cli = new GetDotenvCli('test')
+      .attachRootOptions()
+      .use(initPlugin())
+      .passOptions();
     await cli.parseAsync([
       'node',
       'test',
@@ -146,7 +158,10 @@ describe('plugins/init', () => {
     const prev = process.env.CI;
     process.env.CI = 'true';
     try {
-      const cli = new GetDotenvCli('test').use(initPlugin());
+      const cli = new GetDotenvCli('test')
+        .attachRootOptions()
+        .use(initPlugin())
+        .passOptions();
       await cli.parseAsync([
         'node',
         'test',
@@ -161,5 +176,5 @@ describe('plugins/init', () => {
       if (prev === undefined) delete process.env.CI;
       else process.env.CI = prev;
     }
-  }, 15000);
+  });
 });

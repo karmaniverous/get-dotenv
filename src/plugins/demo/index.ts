@@ -88,7 +88,7 @@ export const demoPlugin = () =>
           'Run a small child process under the current dotenv (shell-off)',
         )
         .option('--print <key>', 'dotenv key to print', 'APP_SETTING')
-        .action(async (opts: { print?: string }) => {
+        .action(async (opts) => {
           const key =
             typeof opts.print === 'string' && opts.print.length > 0
               ? opts.print
@@ -122,36 +122,30 @@ export const demoPlugin = () =>
           'Resolve a command via scripts and execute it with the proper shell',
         )
         .argument('[command...]')
-        .action(
-          async (
-            commandParts: string[] | undefined,
-            _opts: unknown,
-            thisCommand: Command,
-          ) => {
-            // Access merged root options via helper
-            const bag = readMergedOptions(thisCommand);
+        .action(async (commandParts, _opts, thisCommand: Command) => {
+          // Access merged root options via helper
+          const bag = readMergedOptions(thisCommand);
 
-            const input = Array.isArray(commandParts)
-              ? commandParts.map(String).join(' ')
-              : '';
-            if (!input) {
-              logger.log(
-                '[demo] Please provide a command or script name, e.g. "echo OK" or "git-status".',
-              );
-              return;
-            }
+          const input = Array.isArray(commandParts)
+            ? commandParts.map(String).join(' ')
+            : '';
+          if (!input) {
+            logger.log(
+              '[demo] Please provide a command or script name, e.g. "echo OK" or "git-status".',
+            );
+            return;
+          }
 
-            const resolved = resolveCommand(bag.scripts, input);
-            const shell = resolveShell(bag.scripts, input, bag.shell);
+          const resolved = resolveCommand(bag.scripts, input);
+          const shell = resolveShell(bag.scripts, input, bag.shell);
 
-            // Compose child env (parent + ctx.dotenv). This mirrors cmd/batch behavior.
-            const ctx = cli.getCtx();
-            await runCommand(resolved, shell, {
-              env: buildSpawnEnv(process.env, ctx.dotenv),
-              stdio: 'inherit',
-            });
-          },
-        );
+          // Compose child env (parent + ctx.dotenv). This mirrors cmd/batch behavior.
+          const ctx = cli.getCtx();
+          await runCommand(resolved, shell, {
+            env: buildSpawnEnv(process.env, ctx.dotenv),
+            stdio: 'inherit',
+          });
+        });
     },
     /**
      * Optional: afterResolve can initialize per-plugin state using ctx.dotenv.

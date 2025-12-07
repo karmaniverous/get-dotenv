@@ -23,6 +23,14 @@ export const buildParentAction =
   ) =>
   async (
     commandParts: string[] | undefined,
+    opts: {
+      command?: string;
+      globs?: string;
+      list?: boolean;
+      ignoreErrors?: boolean;
+      pkgCwd?: boolean;
+      rootPath?: string;
+    },
     thisCommand: Command,
   ): Promise<void> => {
     // Inherit logger from merged root options
@@ -35,15 +43,17 @@ export const buildParentAction =
     const dotenvEnv = cli.getCtx().dotenv;
     const cfg = plugin.readConfig<BatchConfig>(cli);
 
-    const raw = thisCommand.opts();
     const commandOpt =
-      typeof raw.command === 'string' ? raw.command : undefined;
-    const ignoreErrors = !!raw.ignoreErrors;
-    let globs = typeof raw.globs === 'string' ? raw.globs : (cfg.globs ?? '*');
-    const list = !!raw.list;
-    const pkgCwd = raw.pkgCwd !== undefined ? !!raw.pkgCwd : !!cfg.pkgCwd;
+      typeof opts.command === 'string' ? opts.command : undefined;
+    const ignoreErrors = !!opts.ignoreErrors;
+    let globs =
+      typeof opts.globs === 'string' ? opts.globs : (cfg.globs ?? '*');
+    const list = !!opts.list;
+    const pkgCwd = opts.pkgCwd !== undefined ? !!opts.pkgCwd : !!cfg.pkgCwd;
     const rootPath =
-      typeof raw.rootPath === 'string' ? raw.rootPath : (cfg.rootPath ?? './');
+      typeof opts.rootPath === 'string'
+        ? opts.rootPath
+        : (cfg.rootPath ?? './');
 
     // Treat parent positional tokens as the command when no explicit 'cmd' is used.
     const argsParent = Array.isArray(commandParts) ? commandParts : [];

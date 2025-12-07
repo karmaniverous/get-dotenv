@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-deprecated */
 import { Option } from '@commander-js/extra-typings';
 
 import { dotenvExpandFromProcessEnv } from '@/src/dotenvExpand';

@@ -99,9 +99,13 @@ export const cmdPlugin = (options: CmdPluginOptions = {}) =>
             // also accept positional cmd args.
             if (aliasKey) {
               const pv = (
-                parent as CommandWithOptions<GetDotenvCliOptions>
-              ).opts();
-              const ov = (pv as unknown as Record<string, unknown>)[aliasKey];
+                parent as Command & { optsWithGlobals?: () => unknown }
+              ).optsWithGlobals
+                ? (
+                    parent as Command & { optsWithGlobals: () => unknown }
+                  ).optsWithGlobals()
+                : (parent as CommandWithOptions<GetDotenvCliOptions>).opts();
+              const ov = (pv as Record<string, unknown>)[aliasKey];
               if (ov !== undefined) {
                 logger.error(
                   `--${aliasKey} option conflicts with cmd subcommand.`,

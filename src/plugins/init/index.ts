@@ -41,130 +41,121 @@ export const initPlugin = () =>
         .option('--cli-name <string>', 'CLI name for skeleton and tokens')
         .option('--force', 'overwrite all existing files')
         .option('--yes', 'skip all collisions (no overwrite)')
-        .action(
-          async (
-            destArg: string | undefined,
-            _opts: unknown,
-            thisCommand: Command,
-          ) => {
-            // Read subcommand-local flags with a minimal typed shape.
-            const o = cmd.opts();
+        .action(async (destArg, opts, thisCommand: Command) => {
+          // Inherit logger from merged root options (base).
+          const bag = readMergedOptions(thisCommand);
+          const logger = bag.logger;
 
-            // Inherit logger from merged root options (base).
-            const bag = readMergedOptions(thisCommand) as { logger: Logger };
-            const logger = bag.logger;
+          const destRel =
+            typeof destArg === 'string' && destArg.length > 0 ? destArg : '.';
+          const cwd = process.cwd();
+          const destRoot = path.resolve(cwd, destRel);
 
-            const destRel =
-              typeof destArg === 'string' && destArg.length > 0 ? destArg : '.';
-            const cwd = process.cwd();
-            const destRoot = path.resolve(cwd, destRel);
+          const formatInput = opts.configFormat;
+          const formatRaw =
+            typeof formatInput === 'string'
+              ? formatInput.toLowerCase()
+              : 'json';
+          const format = (
+            ['json', 'yaml', 'js', 'ts'].includes(formatRaw)
+              ? formatRaw
+              : 'json'
+          ) as 'json' | 'yaml' | 'js' | 'ts';
+          const withLocal = !!opts.withLocal;
+          // dynamic flag reserved for future template variants; present for UX compatibility
+          void opts.dynamic;
 
-            const formatInput = o.configFormat;
-            const formatRaw =
-              typeof formatInput === 'string'
-                ? formatInput.toLowerCase()
-                : 'json';
-            const format = (
-              ['json', 'yaml', 'js', 'ts'].includes(formatRaw)
-                ? formatRaw
-                : 'json'
-            ) as 'json' | 'yaml' | 'js' | 'ts';
-            const withLocal = !!o.withLocal;
-            // dynamic flag reserved for future template variants; present for UX compatibility
-            void o.dynamic;
+          // CLI name default: --cli-name | basename(dest) | 'mycli'
+          const cliName =
+            (typeof opts.cliName === 'string' && opts.cliName.length > 0
+              ? opts.cliName
+              : path.basename(destRoot) || 'mycli') || 'mycli';
 
-            // CLI name default: --cli-name | basename(dest) | 'mycli'
-            const cliName =
-              (typeof o.cliName === 'string' && o.cliName.length > 0
-                ? o.cliName
-                : path.basename(destRoot) || 'mycli') || 'mycli';
+          // Precedence: --force > --yes > auto-detect(non-interactive => yes)
+          const force = !!opts.force;
+          const yes = !!opts.yes || (!force && isNonInteractive());
 
-            // Precedence: --force > --yes > auto-detect(non-interactive => yes)
-            const force = !!o.force;
-            const yes = !!o.yes || (!force && isNonInteractive());
+          // Build copy plan
+          const cfgCopies = planConfigCopies({ format, withLocal, destRoot });
+          const cliCopies = planCliCopies({ cliName, destRoot });
+          const copies: Array<{
+            src: string;
+            dest: string;
+            subs?: Record<string, string>;
+          }> = [...cfgCopies, ...cliCopies];
 
-            // Build copy plan
-            const cfgCopies = planConfigCopies({ format, withLocal, destRoot });
-            const cliCopies = planCliCopies({ cliName, destRoot });
-            const copies: Array<{
-              src: string;
-              dest: string;
-              subs?: Record<string, string>;
-            }> = [...cfgCopies, ...cliCopies];
+          // Interactive state
+          let globalDecision: CopyDecision | undefined;
+          const rl = createInterface({ input, output });
 
-            // Interactive state
-            let globalDecision: CopyDecision | undefined;
-            const rl = createInterface({ input, output });
+          try {
+            for (const item of copies) {
+              const exists = await fs.pathExists(item.dest);
+              if (!exists) {
+                const subs = item.subs ?? {};
+                await copyTextFile(item.src, item.dest, subs);
+                logger.log(`Created ${path.relative(cwd, item.dest)}`);
+                continue;
+              }
 
-            try {
-              for (const item of copies) {
-                const exists = await fs.pathExists(item.dest);
-                if (!exists) {
-                  const subs = item.subs ?? {};
-                  await copyTextFile(item.src, item.dest, subs);
-                  logger.log(`Created ${path.relative(cwd, item.dest)}`);
-                  continue;
-                }
+              // Collision
+              if (force) {
+                const subs = item.subs ?? {};
+                await copyTextFile(item.src, item.dest, subs);
+                logger.log(`Overwrote ${path.relative(cwd, item.dest)}`);
+                continue;
+              }
+              if (yes) {
+                logger.log(`Skipped ${path.relative(cwd, item.dest)}`);
+                continue;
+              }
 
-                // Collision
-                if (force) {
-                  const subs = item.subs ?? {};
-                  await copyTextFile(item.src, item.dest, subs);
-                  logger.log(`Overwrote ${path.relative(cwd, item.dest)}`);
-                  continue;
-                }
-                if (yes) {
-                  logger.log(`Skipped ${path.relative(cwd, item.dest)}`);
-                  continue;
-                }
-
-                let decision = globalDecision;
-                if (!decision) {
-                  const a = await promptDecision(item.dest, logger, rl);
-                  if (a === 'O') {
-                    globalDecision = 'overwrite';
-                    decision = 'overwrite';
-                  } else if (a === 'E') {
-                    globalDecision = 'example';
-                    decision = 'example';
-                  } else if (a === 'S') {
-                    globalDecision = 'skip';
-                    decision = 'skip';
-                  } else {
-                    decision =
-                      a === 'o' ? 'overwrite' : a === 'e' ? 'example' : 'skip';
-                  }
-                }
-
-                if (decision === 'overwrite') {
-                  const subs = item.subs ?? {};
-                  await copyTextFile(item.src, item.dest, subs);
-                  logger.log(`Overwrote ${path.relative(cwd, item.dest)}`);
-                } else if (decision === 'example') {
-                  const destEx = `${item.dest}.example`;
-                  const subs = item.subs ?? {};
-                  await copyTextFile(item.src, destEx, subs);
-                  logger.log(`Wrote example ${path.relative(cwd, destEx)}`);
+              let decision = globalDecision;
+              if (!decision) {
+                const a = await promptDecision(item.dest, logger, rl);
+                if (a === 'O') {
+                  globalDecision = 'overwrite';
+                  decision = 'overwrite';
+                } else if (a === 'E') {
+                  globalDecision = 'example';
+                  decision = 'example';
+                } else if (a === 'S') {
+                  globalDecision = 'skip';
+                  decision = 'skip';
                 } else {
-                  logger.log(`Skipped ${path.relative(cwd, item.dest)}`);
+                  decision =
+                    a === 'o' ? 'overwrite' : a === 'e' ? 'example' : 'skip';
                 }
               }
 
-              // Ensure .gitignore includes local config patterns.
-              const giPath = path.join(destRoot, '.gitignore');
-              const { created, changed } = await ensureLines(giPath, [
-                'getdotenv.config.local.*',
-                '*.local',
-              ]);
-              if (created) {
-                logger.log(`Created ${path.relative(cwd, giPath)}`);
-              } else if (changed) {
-                logger.log(`Updated ${path.relative(cwd, giPath)}`);
+              if (decision === 'overwrite') {
+                const subs = item.subs ?? {};
+                await copyTextFile(item.src, item.dest, subs);
+                logger.log(`Overwrote ${path.relative(cwd, item.dest)}`);
+              } else if (decision === 'example') {
+                const destEx = `${item.dest}.example`;
+                const subs = item.subs ?? {};
+                await copyTextFile(item.src, destEx, subs);
+                logger.log(`Wrote example ${path.relative(cwd, destEx)}`);
+              } else {
+                logger.log(`Skipped ${path.relative(cwd, item.dest)}`);
               }
-            } finally {
-              rl.close();
             }
-          },
-        );
+
+            // Ensure .gitignore includes local config patterns.
+            const giPath = path.join(destRoot, '.gitignore');
+            const { created, changed } = await ensureLines(giPath, [
+              'getdotenv.config.local.*',
+              '*.local',
+            ]);
+            if (created) {
+              logger.log(`Created ${path.relative(cwd, giPath)}`);
+            } else if (changed) {
+              logger.log(`Updated ${path.relative(cwd, giPath)}`);
+            }
+          } finally {
+            rl.close();
+          }
+        });
     },
   });

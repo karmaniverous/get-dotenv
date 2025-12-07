@@ -102,107 +102,97 @@ export const awsPlugin = () => {
         )
         // Accept any extra operands so Commander does not error when tokens appear after "--".
         .argument('[args...]')
-        .action(
-          async (
-            cmd, args
-            args: string[] | undefined,
-            opts: Record<string, unknown>,
-            thisCommand: Command,
-          ) => {
-            const pluginInst = plugin;
-            // Access merged root CLI options (installed by passOptions())
-            const bag = readMergedOptions(thisCommand);
-            const capture =
-              process.env.GETDOTENV_STDIO === 'pipe' || bag.capture;
-            const underTests =
-              process.env.GETDOTENV_TEST === '1' ||
-              typeof process.env.VITEST_WORKER_ID === 'string';
+        .action(async (args, opts, thisCommand: Command) => {
+          const pluginInst = plugin;
+          // Access merged root CLI options (installed by passOptions())
+          const bag = readMergedOptions(thisCommand);
+          const capture = process.env.GETDOTENV_STDIO === 'pipe' || bag.capture;
+          const underTests =
+            process.env.GETDOTENV_TEST === '1' ||
+            typeof process.env.VITEST_WORKER_ID === 'string';
 
-            // Build overlay cfg from subcommand flags layered over discovered config.
-            const ctx = cli.getCtx();
-            const cfgBase = pluginInst.readConfig(cli);
-            type AwsCliFlags = Partial<AwsPluginConfig>;
-            const o = opts as AwsCliFlags;
-            const overlay: Partial<AwsPluginConfig> = {};
-            // Map boolean toggles (respect explicit --no-*)
-            if (Object.prototype.hasOwnProperty.call(o, 'loginOnDemand'))
-              overlay.loginOnDemand = Boolean(o.loginOnDemand);
-            // Strings/enums
-            if (typeof o.profile === 'string') overlay.profile = o.profile;
-            if (typeof o.region === 'string') overlay.region = o.region;
-            if (typeof o.defaultRegion === 'string')
-              overlay.defaultRegion = o.defaultRegion;
-            if (typeof o.strategy === 'string')
-              overlay.strategy = o.strategy as AwsPluginConfig['strategy'];
-            // Advanced key overrides
-            if (typeof o.profileKey === 'string')
-              overlay.profileKey = o.profileKey;
-            if (typeof o.profileFallbackKey === 'string')
-              overlay.profileFallbackKey = o.profileFallbackKey;
-            if (typeof o.regionKey === 'string')
-              overlay.regionKey = o.regionKey;
+          // Build overlay cfg from subcommand flags layered over discovered config.
+          const ctx = cli.getCtx();
+          const cfgBase = pluginInst.readConfig(cli);
+          type AwsCliFlags = Partial<AwsPluginConfig>;
+          const o = opts as AwsCliFlags;
+          const overlay: Partial<AwsPluginConfig> = {};
+          // Map boolean toggles (respect explicit --no-*)
+          if (Object.prototype.hasOwnProperty.call(o, 'loginOnDemand'))
+            overlay.loginOnDemand = Boolean(o.loginOnDemand);
+          // Strings/enums
+          if (typeof o.profile === 'string') overlay.profile = o.profile;
+          if (typeof o.region === 'string') overlay.region = o.region;
+          if (typeof o.defaultRegion === 'string')
+            overlay.defaultRegion = o.defaultRegion;
+          if (typeof o.strategy === 'string')
+            overlay.strategy = o.strategy as AwsPluginConfig['strategy'];
+          // Advanced key overrides
+          if (typeof o.profileKey === 'string')
+            overlay.profileKey = o.profileKey;
+          if (typeof o.profileFallbackKey === 'string')
+            overlay.profileFallbackKey = o.profileFallbackKey;
+          if (typeof o.regionKey === 'string') overlay.regionKey = o.regionKey;
 
-            const cfg: AwsPluginConfig = {
-              ...cfgBase,
-              ...overlay,
-            };
+          const cfg: AwsPluginConfig = {
+            ...cfgBase,
+            ...overlay,
+          };
 
-            // Resolve current context with overrides
-            const out = await resolveAwsContext({
-              dotenv: ctx.dotenv,
-              cfg,
+          // Resolve current context with overrides
+          const out = await resolveAwsContext({
+            dotenv: ctx.dotenv,
+            cfg,
+          });
+
+          // Unconditional env writes (no per-plugin toggle)
+          if (out.region) {
+            process.env.AWS_REGION = out.region;
+            if (!process.env.AWS_DEFAULT_REGION)
+              process.env.AWS_DEFAULT_REGION = out.region;
+          }
+          if (out.credentials) {
+            process.env.AWS_ACCESS_KEY_ID = out.credentials.accessKeyId;
+            process.env.AWS_SECRET_ACCESS_KEY = out.credentials.secretAccessKey;
+            if (out.credentials.sessionToken !== undefined) {
+              process.env.AWS_SESSION_TOKEN = out.credentials.sessionToken;
+            }
+          }
+
+          // Always publish minimal non-sensitive metadata
+          ctx.plugins ??= {};
+          ctx.plugins['aws'] = {
+            ...(out.profile ? { profile: out.profile } : {}),
+            ...(out.region ? { region: out.region } : {}),
+          };
+
+          // Forward when positional args are present; otherwise session-only.
+          if (Array.isArray(args) && args.length > 0) {
+            const argv = ['aws', ...args];
+            const shellSetting = resolveShell(bag.scripts, 'aws', bag.shell);
+            const exit = await runCommand(argv, shellSetting, {
+              env: buildSpawnEnv(process.env, ctx.dotenv),
+              stdio: capture ? 'pipe' : 'inherit',
             });
-
-            // Unconditional env writes (no per-plugin toggle)
-            if (out.region) {
-              process.env.AWS_REGION = out.region;
-              if (!process.env.AWS_DEFAULT_REGION)
-                process.env.AWS_DEFAULT_REGION = out.region;
+            // Deterministic termination (suppressed under tests)
+            if (!underTests) {
+              process.exit(typeof exit === 'number' ? exit : 0);
             }
-            if (out.credentials) {
-              process.env.AWS_ACCESS_KEY_ID = out.credentials.accessKeyId;
-              process.env.AWS_SECRET_ACCESS_KEY =
-                out.credentials.secretAccessKey;
-              if (out.credentials.sessionToken !== undefined) {
-                process.env.AWS_SESSION_TOKEN = out.credentials.sessionToken;
-              }
-            }
-
-            // Always publish minimal non-sensitive metadata
-            ctx.plugins ??= {};
-            ctx.plugins['aws'] = {
-              ...(out.profile ? { profile: out.profile } : {}),
-              ...(out.region ? { region: out.region } : {}),
-            };
-
-            // Forward when positional args are present; otherwise session-only.
-            if (Array.isArray(args) && args.length > 0) {
-              const argv = ['aws', ...args];
-              const shellSetting = resolveShell(bag.scripts, 'aws', bag.shell);
-              const exit = await runCommand(argv, shellSetting, {
-                env: buildSpawnEnv(process.env, ctx.dotenv),
-                stdio: capture ? 'pipe' : 'inherit',
+            return;
+          } else {
+            // Session only: low-noise breadcrumb under debug
+            if (process.env.GETDOTENV_DEBUG) {
+              const log: Logger = console;
+              log.log('[aws] session established', {
+                profile: out.profile,
+                region: out.region,
+                hasCreds: Boolean(out.credentials),
               });
-              // Deterministic termination (suppressed under tests)
-              if (!underTests) {
-                process.exit(typeof exit === 'number' ? exit : 0);
-              }
-              return;
-            } else {
-              // Session only: low-noise breadcrumb under debug
-              if (process.env.GETDOTENV_DEBUG) {
-                const log: Logger = console;
-                log.log('[aws] session established', {
-                  profile: out.profile,
-                  region: out.region,
-                  hasCreds: Boolean(out.credentials),
-                });
-              }
-              if (!underTests) process.exit(0);
-              return;
             }
-          },
-        );
+            if (!underTests) process.exit(0);
+            return;
+          }
+        });
       void cmd;
     },
     async afterResolve(_cli, ctx) {
