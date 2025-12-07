@@ -18,10 +18,25 @@ const outputPath = `dist`;
 const tsPlugin = typescriptPlugin({
   tsconfig: './tsconfig.base.json',
   compilerOptions: { outDir: undefined },
+  // Limit compilation to library sources; exclude templates/tests/.stan/tools and outputs.
+  include: ['src/**/*.ts'],
+  exclude: [
+    'templates/**',
+    'test/**',
+    '.stan/**',
+    'tools/**',
+    'dist/**',
+    'esm/**',
+  ],
 });
 const commonPlugins = [commonjsPlugin(), jsonPlugin(), nodeResolve(), tsPlugin];
 
-const commonAliases: Alias[] = [];
+// Map TS path aliases for Rollup bundling.
+// tsconfig.json defines "@/*" -> "*" (e.g., "@/src/..." -> "src/...").
+// Tests (Vitest) use vite-tsconfig-paths; Rollup needs an explicit alias.
+const commonAliases: Alias[] = [
+  { find: /^@\//, replacement: '' }, // "@/foo/bar" -> "foo/bar"
+];
 type PkgJson = {
   dependencies?: Record<string, string>;
   peerDependencies?: Record<string, string>;
