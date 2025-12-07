@@ -21,6 +21,21 @@ When updated: 2025-12-07T00:00:00Z
 
 **CRITICAL: Append-only list. Add new completed items at the end. Prune old completed entries from the top. Do not edit existing entries.**
 
+- passOptions helper: typecheck/lint fixes
+  - Coerced service options to Partial<TOptions> for resolveAndLoad under
+    exactOptionalPropertyTypes; this is safe because TOptions extends
+    GetDotenvOptions and the service layer yields that shape.
+  - Removed a stray unbound method expression to satisfy ESLint
+    (no-unused-expressions, unbound-method) in passOptions.ts.
+
+- Helpers decomposition (small files)
+  - Added src/cliHost/passOptions.ts to install preSubcommand/preAction hooks;
+    GetDotenvCli.passOptions() now delegates to this helper to keep the class
+    lean and align with “one function per file” guidance.
+  - Kept attachRootOptions as a separate pure builder; the class method is a
+    thin delegate.
+  - Restored InferPluginConfig type export in the cliHost barrel to satisfy
+    src/index.ts and avoid downstream breaking changes.
 - Host refactor: unify GetDotenvCli and decompose helpers
   - Removed the thin subclass in cliHost/index.ts and moved attachRootOptions()
     and passOptions() onto the core GetDotenvCli class.

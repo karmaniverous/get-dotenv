@@ -18,11 +18,16 @@ import {
 } from '@/src/GetDotenvOptions';
 import { getDotenvOptionsSchemaResolved } from '@/src/schema/getDotenvOptions';
 
+// New: small helpers to keep the class lean
+import { attachRootOptions as attachRootOptionsBuilder } from './attachRootOptions';
+import { baseRootOptionDefaults } from './defaults';
 import {
   evaluateDynamicOptions as evalDyn,
   makeDynamicOption,
 } from './dynamicOptions';
 import { GROUP_TAG, renderOptionGroups } from './groups';
+import { installPassOptions } from './passOptions';
+import type { RootOptionsShape } from './types';
 
 export type ResolvedHelpConfig = Partial<GetDotenvCliOptions> & {
   plugins: Record<string, unknown>;
@@ -125,6 +130,26 @@ export class GetDotenvCli<TOptions extends GetDotenvOptions = GetDotenvOptions>
       if (this.getCtx()) return;
       await this.resolveAndLoad({ loadProcess: false } as Partial<TOptions>);
     });
+  }
+
+  /**
+   * Attach legacy/base root flags to this CLI instance.
+   * Delegates to the pure builder in attachRootOptions.ts.
+   */
+  attachRootOptions(defaults?: Partial<RootOptionsShape>): this {
+    const d = (defaults ?? baseRootOptionDefaults) as Partial<RootOptionsShape>;
+    // Delegate to the existing builder; keep method minimal.
+    attachRootOptionsBuilder(this as unknown as GetDotenvCli, d);
+    return this;
+  }
+
+  /**
+   * Persist merged root options, resolve context once, refresh dynamic help, and validate.
+   * Installs both preSubcommand and preAction hooks via a small helper module.
+   */
+  passOptions(defaults?: Partial<RootOptionsShape>): this {
+    installPassOptions(this as unknown as GetDotenvCli, defaults);
+    return this;
   }
 
   /**
@@ -403,31 +428,3 @@ export class GetDotenvCli<TOptions extends GetDotenvOptions = GetDotenvOptions>
     for (const p of this._plugins) await run(p);
   }
 }
-
-/**
- * Helper to retrieve the merged root options bag from any action handler
- * that only has access to thisCommand. Avoids structural casts.
- */
-export const readMergedOptions = (cmd: Command): GetDotenvCliOptions => {
-  // Climb to the true root
-  let root = cmd;
-  while (root.parent) root = root.parent;
-
-  // Assert we ended at our host
-  if (!(root instanceof GetDotenvCli)) {
-    throw new Error(
-      'readMergedOptions: root command is not a GetDotenvCli.' +
-        'Ensure your CLI is constructed with GetDotenvCli.',
-    );
-  }
-
-  // Require passOptions() to have persisted the bag
-  const bag = root.getOptions();
-  if (!bag || typeof bag !== 'object') {
-    throw new Error(
-      'readMergedOptions: merged options are unavailable. ' +
-        'Call .passOptions() on the host before parsing.',
-    );
-  }
-  return bag;
-};

@@ -8,3 +8,11 @@ export type { GetDotenvCliOptions } from './GetDotenvCliOptions';
 export { readMergedOptions } from './readMergedOptions';
 export type { ScriptsTable } from './types';
 export { z } from 'zod';
+// Preserve the conditional config-inference type exported from this module
+import type { GetDotenvOptions } from '@/src/GetDotenvOptions';
+
+import type { PluginWithInstanceHelpers as PluginWithInstanceHelpersType } from './definePlugin';
+export type InferPluginConfig<P> =
+  P extends PluginWithInstanceHelpersType<GetDotenvOptions, infer C>
+    ? Readonly<C>
+    : never;

@@ -44,7 +44,7 @@ export type {
 } from '@/src/cliHost';
 export type { InferPluginConfig } from '@/src/cliHost';
 export { definePlugin, GetDotenvCli } from '@/src/cliHost';
-export { readMergedOptions } from '@/src/cliHost/GetDotEnvCli';
+export { readMergedOptions } from '@/src/cliHost/readMergedOptions';
 
 /**
  * Create a get-dotenv CLI host with included plugins.

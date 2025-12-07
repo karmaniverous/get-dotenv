@@ -4,7 +4,7 @@ import type {
   definePlugin,
   GetDotenvCliPublic,
 } from '@/src/cliHost/definePlugin';
-import { readMergedOptions } from '@/src/cliHost/GetDotEnvCli';
+import { readMergedOptions } from '@/src/cliHost/readMergedOptions';
 import type { Logger } from '@/src/GetDotenvOptions';
 import type { BatchPluginOptions } from '@/src/plugins/batch/types';
 import type { BatchConfig } from '@/src/plugins/batch/types';

@@ -3,8 +3,8 @@ import { z } from 'zod';
 
 import { definePlugin } from '@/src/cliHost/definePlugin';
 import { runCommand } from '@/src/cliHost/exec';
-import { readMergedOptions } from '@/src/cliHost/GetDotEnvCli';
 import type { GetDotenvCliOptions } from '@/src/cliHost/GetDotenvCliOptions';
+import { readMergedOptions } from '@/src/cliHost/readMergedOptions';
 import { buildSpawnEnv } from '@/src/cliHost/spawnEnv';
 import type { CommandWithOptions } from '@/src/cliHost/types';
 import type { EntropyOptions } from '@/src/diagnostics/entropy';

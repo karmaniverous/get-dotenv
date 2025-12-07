@@ -2,7 +2,7 @@ import type { Command } from 'commander';
 
 import { definePlugin } from '@/src/cliHost/definePlugin';
 import { runCommand } from '@/src/cliHost/exec';
-import { readMergedOptions } from '@/src/cliHost/GetDotEnvCli';
+import { readMergedOptions } from '@/src/cliHost/readMergedOptions';
 import { buildSpawnEnv } from '@/src/cliHost/spawnEnv';
 import type { Logger } from '@/src/GetDotenvOptions';
 import { resolveShell } from '@/src/services/batch/resolve';
