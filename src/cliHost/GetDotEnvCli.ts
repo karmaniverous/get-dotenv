@@ -10,6 +10,7 @@ import type {
   GetDotenvCliPublic,
 } from '@/src/cliHost/definePlugin';
 import type { GetDotenvCliOptions } from '@/src/cliHost/GetDotenvCliOptions';
+// Added: helpers and types for root wiring and validation
 import type { ProcessEnv } from '@/src/GetDotenvOptions';
 import {
   type GetDotenvOptions,

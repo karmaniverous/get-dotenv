@@ -21,6 +21,16 @@ When updated: 2025-12-07T00:00:00Z
 
 **CRITICAL: Append-only list. Add new completed items at the end. Prune old completed entries from the top. Do not edit existing entries.**
 
+- Host refactor: unify GetDotenvCli and decompose helpers
+  - Removed the thin subclass in cliHost/index.ts and moved attachRootOptions()
+    and passOptions() onto the core GetDotenvCli class.
+  - Decomposed readMergedOptions into src/cliHost/readMergedOptions.ts (single
+    function) and re‑exported it to preserve existing import paths
+    (@/src/cliHost/GetDotEnvCli and the barrel).
+  - Simplified the cliHost barrel to re‑export the unified class and types only.
+  - Kept attachRootOptions/resolveCliOptions as pure helpers; the class
+    delegates to them to keep modules small and focused.
+
 - Batch logger wiring: preserve base logger through passOptions
   - Fixed host passOptions to merge provided defaults over baseRootOptionDefaults
     (instead of replacing them). This guarantees the base logger (console) is
