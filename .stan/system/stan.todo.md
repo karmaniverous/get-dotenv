@@ -63,3 +63,5 @@ When updated: 2025-12-07T00:00:00Z
   - index: remove intermediate 'unknown' in defaults cast.
   - cliHost/index: eliminate remaining double casts; keep only precise single casts
     and rely on helper defaults instead of manual fallbacks.
+- Tests: batch plugin specs now install passOptions (and attachRootOptions) on
+  the host to satisfy the stricter readMergedOptions invariant (no legacy fallback).
