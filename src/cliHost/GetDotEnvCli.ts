@@ -1,10 +1,6 @@
 import type { Option } from 'commander';
 import { Command } from 'commander';
-import fs from 'fs-extra';
-import { packageDirectory } from 'package-directory';
-import { fileURLToPath } from 'url';
 
-import { computeContext } from '@/src/cliHost/computeContext';
 import type {
   GetDotenvCliPlugin,
   GetDotenvCliPublic,
@@ -12,22 +8,25 @@ import type {
 import type { GetDotenvCliOptions } from '@/src/cliHost/GetDotenvCliOptions';
 // Added: helpers and types for root wiring and validation
 import type { ProcessEnv } from '@/src/GetDotenvOptions';
-import {
-  type GetDotenvOptions,
-  resolveGetDotenvOptions,
-} from '@/src/GetDotenvOptions';
-import { getDotenvOptionsSchemaResolved } from '@/src/schema/getDotenvOptions';
+import { type GetDotenvOptions } from '@/src/GetDotenvOptions';
 
 // New: small helpers to keep the class lean
 import { attachRootOptions as attachRootOptionsBuilder } from './attachRootOptions';
+import { buildHelpInformation } from './buildHelpInformation';
 import { baseRootOptionDefaults } from './defaults';
 import {
   evaluateDynamicOptions as evalDyn,
   makeDynamicOption,
 } from './dynamicOptions';
-import { GROUP_TAG, renderOptionGroups } from './groups';
+import { GROUP_TAG } from './groups';
+import { initializeInstance } from './initializeInstance';
 import { installPassOptions } from './passOptions';
+import { setupPluginTree } from './registerPlugin';
+import { resolveAndComputeContext } from './resolveAndComputeContext';
+import { runAfterResolveTree } from './runAfterResolve';
+import { tagAppOptionsAround } from './tagAppOptionsHelper';
 import type { RootOptionsShape } from './types';
+import { readPkgVersion } from './version';
 
 export type ResolvedHelpConfig = Partial<GetDotenvCliOptions> & {
   plugins: Record<string, unknown>;
@@ -83,53 +82,12 @@ export class GetDotenvCli<TOptions extends GetDotenvOptions = GetDotenvOptions>
 
   constructor(alias = 'getdotenv') {
     super(alias);
-    // Ensure subcommands that use passThroughOptions can be attached safely.
-    // Commander requires parent commands to enable positional options when a
-    // child uses passThroughOptions.
     this.enablePositionalOptions();
-
-    // Configure grouped help: show only base options in default "Options";
-    // we will insert App/Plugin sections before Commands in helpInformation().
-    this.configureHelp({
-      visibleOptions: (cmd: Command): Option[] => {
-        const all = cmd.options;
-        const isRoot = cmd.parent === null;
-        const list = isRoot
-          ? all.filter((opt) => {
-              const group = GROUP_TAG.get(opt);
-              return group === 'base';
-            })
-          : all.slice(); // subcommands: show all options (their own "Options:" block)
-        // Sort: short-aliased options first, then long-only; stable by flags.
-        const hasShort = (opt: Option) => {
-          const flags = opt.flags;
-          // Matches "-x," or starting "-x " before any long
-          return /(^|\s|,)-[A-Za-z]/.test(flags);
-        };
-        const byFlags = (opt: Option) => opt.flags;
-        list.sort((a, b) => {
-          const aS = hasShort(a) ? 1 : 0;
-          const bS = hasShort(b) ? 1 : 0;
-          return bS - aS || byFlags(a).localeCompare(byFlags(b));
-        });
-        return list;
-      },
-    });
-
-    this.addHelpText('beforeAll', () => {
-      const header = this[HELP_HEADER_SYMBOL];
-      return header && header.length > 0 ? `${header}\n\n` : '';
-    });
-
-    // Skeleton preSubcommand hook: produce a context if absent, without
-    // mutating process.env. The passOptions hook (when installed) will
-    // compute the final context using merged CLI options; keeping
-    // loadProcess=false here avoids leaking dotenv values into the parent
-    // process env before subcommands execute.
-    this.hook('preSubcommand', async () => {
-      if (this.getCtx()) return;
-      await this.resolveAndLoad({ loadProcess: false } as Partial<TOptions>);
-    });
+    // Delegate the heavy setup to a helper to keep the constructor lean.
+    initializeInstance(
+      this as unknown as GetDotenvCli,
+      () => this[HELP_HEADER_SYMBOL],
+    );
   }
 
   /**
@@ -165,15 +123,8 @@ export class GetDotenvCli<TOptions extends GetDotenvOptions = GetDotenvOptions>
     customOptions: Partial<TOptions> = {},
     opts?: { runAfterResolve?: boolean },
   ): Promise<GetDotenvCliCtx<TOptions>> {
-    // Resolve defaults, then validate strictly under the new host.
-    const optionsResolved = await resolveGetDotenvOptions(
-      customOptions as Partial<GetDotenvOptions>,
-    );
-    getDotenvOptionsSchemaResolved.parse(optionsResolved);
-
-    // Delegate the heavy lifting to the shared helper (guarded path supported).
-    const ctx = await computeContext<TOptions>(
-      optionsResolved as Partial<TOptions>,
+    const ctx = await resolveAndComputeContext<TOptions>(
+      customOptions,
       this._plugins,
       HOST_META_URL,
     );
@@ -290,17 +241,11 @@ export class GetDotenvCli<TOptions extends GetDotenvOptions = GetDotenvOptions>
    * Allows downstream apps to demarcate their root-level options.
    */
   tagAppOptions<T>(fn: (root: Command) => T): T {
-    const root = this as Command;
-    const originalAddOption = root.addOption.bind(root);
-    root.addOption = function patchedAdd(this: Command, opt: Option) {
-      (root as GetDotenvCli).setOptionGroup(opt, 'app');
-      return originalAddOption(opt);
-    };
-    try {
-      return fn(root);
-    } finally {
-      root.addOption = originalAddOption;
-    }
+    return tagAppOptionsAround(
+      this as Command,
+      this.setOptionGroup.bind(this),
+      fn,
+    );
   }
 
   /**
@@ -318,20 +263,7 @@ export class GetDotenvCli<TOptions extends GetDotenvOptions = GetDotenvOptions>
     const { name, description, version, importMetaUrl, helpHeader } = args;
     if (typeof name === 'string' && name.length > 0) this.name(name);
     if (typeof description === 'string') this.description(description);
-    let v = version;
-    if (!v && importMetaUrl) {
-      try {
-        const fromUrl = fileURLToPath(importMetaUrl);
-        const pkgDir = await packageDirectory({ cwd: fromUrl });
-        if (pkgDir) {
-          const txt = await fs.readFile(`${pkgDir}/package.json`, 'utf-8');
-          const pkg = JSON.parse(txt) as { version?: string };
-          if (pkg.version) v = pkg.version;
-        }
-      } catch {
-        // best-effort only
-      }
-    }
+    const v = version ?? (await readPkgVersion(importMetaUrl));
     if (v) this.version(v);
     // Help header:
     // - If caller provides helpHeader, use it.
@@ -350,34 +282,7 @@ export class GetDotenvCli<TOptions extends GetDotenvOptions = GetDotenvOptions>
    * hybrid ordering. Applies to root and any parent command.
    */
   override helpInformation(): string {
-    // Base help text first (includes beforeAll/after hooks).
-    const base = super.helpInformation();
-    const groups = renderOptionGroups(this);
-    const block = typeof groups === 'string' ? groups.trim() : '';
-    let out = base;
-    if (!block) {
-      // Ensure a trailing blank line even when no extra groups render.
-      if (!out.endsWith('\n\n'))
-        out = out.endsWith('\n') ? `${out}\n` : `${out}\n\n`;
-      return out;
-    }
-
-    // Insert just before "Commands:" when present.
-    const marker = '\nCommands:';
-    const idx = base.indexOf(marker);
-    if (idx >= 0) {
-      const toInsert = groups.startsWith('\n') ? groups : `\n${groups}`;
-      out = `${base.slice(0, idx)}${toInsert}${base.slice(idx)}`;
-    } else {
-      // Otherwise append.
-      const sep = base.endsWith('\n') || groups.startsWith('\n') ? '' : '\n';
-      out = `${base}${sep}${groups}`;
-    }
-    // Ensure a trailing blank line for prompt separation.
-    if (!out.endsWith('\n\n')) {
-      out = out.endsWith('\n') ? `${out}\n` : `${out}\n\n`;
-    }
-    return out;
+    return buildHelpInformation(super.helpInformation(), this);
   }
 
   /**
@@ -393,14 +298,7 @@ export class GetDotenvCli<TOptions extends GetDotenvOptions = GetDotenvOptions>
    */
   use(plugin: GetDotenvCliPlugin<TOptions>): this {
     this._plugins.push(plugin);
-    // Immediately run setup so subcommands exist before parsing.
-    const setupOne = (p: GetDotenvCliPlugin<TOptions>) => {
-      const maybe = p.setup(this);
-      // Best-effort: ignore async completion for registration-only setup.
-      void maybe;
-      for (const child of p.children) setupOne(child);
-    };
-    setupOne(plugin);
+    setupPluginTree(this, plugin);
     return this;
   }
 
@@ -421,10 +319,6 @@ export class GetDotenvCli<TOptions extends GetDotenvOptions = GetDotenvOptions>
   private async _runAfterResolve(
     ctx: GetDotenvCliCtx<TOptions>,
   ): Promise<void> {
-    const run = async (p: GetDotenvCliPlugin<TOptions>) => {
-      if (p.afterResolve) await p.afterResolve(this, ctx);
-      for (const child of p.children) await run(child);
-    };
-    for (const p of this._plugins) await run(p);
+    await runAfterResolveTree(this, this._plugins, ctx);
   }
 }

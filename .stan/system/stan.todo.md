@@ -67,7 +67,8 @@ When updated: 2025-12-07T00:00:00Z
 
 - Logger: strict contract + schema defaults; remove coalescing
   - Defined Logger as Pick<Console, 'log' | 'info' | 'error' | 'debug'> for a
-    concrete compile-time contract. Defaulted logger to console in the    programmatic schema so runtime presence is guaranteed. Switched host and
+    concrete compile-time contract. Defaulted logger to console in the
+    programmatic schema so runtime presence is guaranteed. Switched host and
     cmd plugin to use merged/validated logger directly (no “?? console”),
     emitting via logger.error/info/log/debug. Nested env JSON continues to omit
     logger as before.
@@ -105,10 +106,27 @@ When updated: 2025-12-07T00:00:00Z
 - Cast/fallback pass (continued):
   - index: remove intermediate 'unknown' in defaults cast.
   - cliHost/index: eliminate remaining double casts; keep only precise single casts
-    and rely on helper defaults instead of manual fallbacks.
+    and rely on helper defaults instead of manual fallbacks.
+
 - Tests: batch plugin specs now install passOptions (and attachRootOptions) on
   the host to satisfy the stricter readMergedOptions invariant (no legacy fallback).
 
 - Cmd plugin: added Zod config schema with optional `expand` flag and plumbed
   the value into the alias path. Alias expansion now honors merged CLI override
-  first, then plugin-config default; default behavior remains “expand”.
+  first, then plugin-config default; default behavior remains “expand”.
+
+- GetDotenvCli: extract larger method bodies to helpers
+  - Constructor setup moved to initializeInstance (help config, header hook,
+    lazy context resolver).
+  - Options resolution context computation extracted to resolveAndComputeContext.
+  - Version lookup factored to readPkgVersion; brand remains a thin delegate.
+  - Help composition moved to buildHelpInformation.
+  - tagAppOptions wrapper extracted to tagAppOptionsAround.
+  - Plugin setup recursion and afterResolve recursion extracted to
+    setupPluginTree and runAfterResolveTree, respectively.
+
+- Fixes after helper extraction
+  - GetDotenvCli now imports GROUP_TAG from ./groups to restore grouped help
+    tagging and resolve runtime ReferenceError/TS2304.
+  - tagAppOptions now delegates to tagAppOptionsAround to remove duplicate
+    monkey‑patch logic and clear lint for unused imports.
