@@ -175,8 +175,8 @@ export function definePlugin<TOptions extends GetDotenvOptions>(
     _cli: GetDotenvCliPublic<TOptions>,
   ): Readonly<TCfg> {
     // Config is stored per-plugin-instance by the host (WeakMap in computeContext).
-    const value = _getPluginConfigForInstance(
-      extended as unknown as GetDotenvCliPlugin,
+    const value = getPluginConfig<TOptions, TCfg>(
+      extended as unknown as GetDotenvCliPlugin<TOptions>,
     );
     if (value === undefined) {
       // Guard: host has not resolved config yet (incorrect lifecycle usage).
@@ -184,7 +184,7 @@ export function definePlugin<TOptions extends GetDotenvOptions>(
         'Plugin config not available. Ensure resolveAndLoad() has been called before readConfig().',
       );
     }
-    return value as Readonly<TCfg>;
+    return value;
   };
 
   // Plugin-bound dynamic option factory
@@ -203,9 +203,9 @@ export function definePlugin<TOptions extends GetDotenvOptions>(
       (cfg) => {
         // Prefer the validated slice stored per instance; fallback to help-bag
         // (by-id) so top-level `-h` can render effective defaults before resolve.
-        const fromStore = _getPluginConfigForInstance(
-          extended as unknown as GetDotenvCliPlugin,
-        ) as Readonly<TCfg> | undefined;
+        const fromStore = getPluginConfig<TOptions, TCfg>(
+          extended as unknown as GetDotenvCliPlugin<TOptions>,
+        );
         const id = (extended as { id?: string }).id;
         let fromBag: Readonly<TCfg> | undefined;
         if (!fromStore && id) {

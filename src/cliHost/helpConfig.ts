@@ -1,4 +1,5 @@
 import type { GetDotenvCliOptions } from '../cliCore/GetDotenvCliOptions';
+import type { RootOptionsShape } from '../cliCore/types';
 import type { ResolvedHelpConfig } from './GetDotenvCli';
 
 /**
@@ -6,8 +7,11 @@ import type { ResolvedHelpConfig } from './GetDotenvCli';
  * Centralizes construction and reduces inline casts at call sites.
  */
 export const toHelpConfig = (
-  merged: Partial<GetDotenvCliOptions>,
+  merged: Partial<GetDotenvCliOptions> | Partial<RootOptionsShape>,
   plugins: Record<string, unknown> | undefined,
 ): ResolvedHelpConfig => {
-  return { ...merged, plugins: plugins ?? {} };
+  return {
+    ...(merged as Partial<GetDotenvCliOptions>),
+    plugins: plugins ?? {},
+  };
 };
