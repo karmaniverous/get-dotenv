@@ -1,4 +1,4 @@
-import type { Command } from '@commander-js/extra-typings';
+import type { CommandUnknownOpts } from '@commander-js/extra-typings';
 
 export { defineScripts } from '@/src/cliHost/types';
 export { z } from 'zod';
@@ -97,9 +97,11 @@ export function createCli(opts: CreateCliOptions = {}): {
 
   // Apply to root and recursively to subcommands so all help paths are normalized.
   program.configureOutput(outputCfg);
-  const applyOutputRecursively = (cmd: Command) => {
+  const applyOutputRecursively = (cmd: CommandUnknownOpts) => {
     cmd.configureOutput(outputCfg);
-    for (const child of cmd.commands) applyOutputRecursively(child);
+    for (const child of cmd.commands) {
+      applyOutputRecursively(child);
+    }
   };
   applyOutputRecursively(program);
   // Install base root flags and included plugins; resolve context once per run.

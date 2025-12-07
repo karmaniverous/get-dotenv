@@ -29,6 +29,8 @@
  *   getdotenv --trace demo run --print ENV_SETTING
  */
 
+import type { CommandUnknownOpts } from '@commander-js/extra-typings';
+
 import { definePlugin } from '@/src/cliHost/definePlugin';
 import { runCommand } from '@/src/cliHost/exec';
 import { readMergedOptions } from '@/src/cliHost/readMergedOptions';
@@ -120,8 +122,8 @@ export const demoPlugin = () =>
           'Resolve a command via scripts and execute it with the proper shell',
         )
         .argument('[command...]')
-        .action(async (commandParts, _opts, thisCommand: Command) => {
-          const bag = readMergedOptions(thisCommand);
+        .action(async (commandParts, _opts, thisCommand) => {
+          const bag = readMergedOptions(thisCommand as CommandUnknownOpts);
 
           const input = Array.isArray(commandParts)
             ? commandParts.map(String).join(' ')

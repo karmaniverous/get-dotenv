@@ -21,6 +21,18 @@ When updated: 2025-12-07T00:00:00Z
 
 **CRITICAL: Append-only list. Add new completed items at the end. Prune old completed entries from the top. Do not edit existing entries.**
 
+- Typing cleanup: adopt CommandUnknownOpts across helpers/actions
+  - GetDotenvCli.tagAppOptions now accepts (root: CommandUnknownOpts) to align
+    with tagAppOptionsAround and avoid Commander tuple variance.
+  - tagAppOptionsAround retyped with precise typeof root.addOption to remove
+    unsafe assignments; no Command import required.
+  - index.ts: recursive configureOutput now uses CommandUnknownOpts, fixing
+    action signature variance.
+  - batch actions: removed explicit Command annotations; actions now accept
+    (thisCommand: CommandUnknownOpts). Dropped unused local list scan; only
+    parent --list is honored. Replaced double-negation (!!) with Boolean().
+  - cmd and demo plugins: action third param now CommandUnknownOpts with guarded
+    parent opt retrieval (optsWithGlobals/opts) to avoid generics mismatches.
 - Refactor: drop redundant inline casts for merged options; destructure
   - cmd plugin (index): destructured logger/debug/capture/scripts/shell/trace/redact/entropy flags;
     simplified capture computation and removed per‑property casts.

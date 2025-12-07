@@ -1,4 +1,5 @@
 import type { Option } from '@commander-js/extra-typings';
+import type { CommandUnknownOpts } from '@commander-js/extra-typings';
 import { Command } from '@commander-js/extra-typings';
 
 import type {
@@ -253,9 +254,9 @@ export class GetDotenvCli<TOptions extends GetDotenvOptions = GetDotenvOptions>
    * Tag options added during the provided callback as 'app' for grouped help.
    * Allows downstream apps to demarcate their root-level options.
    */
-  tagAppOptions<T>(fn: (root: Command) => T): T {
+  tagAppOptions<T>(fn: (root: CommandUnknownOpts) => T): T {
     return tagAppOptionsAround(
-      this as Command,
+      this as unknown as CommandUnknownOpts,
       this.setOptionGroup.bind(this),
       fn,
     );

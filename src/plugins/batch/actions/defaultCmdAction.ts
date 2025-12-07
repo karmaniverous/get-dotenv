@@ -1,3 +1,5 @@
+import type { CommandUnknownOpts } from '@commander-js/extra-typings';
+
 import type {
   definePlugin,
   GetDotenvCliPublic,
@@ -7,7 +9,6 @@ import type { Logger } from '@/src/GetDotenvOptions';
 import type { BatchPluginOptions } from '@/src/plugins/batch/types';
 import type { BatchConfig } from '@/src/plugins/batch/types';
 import { execShellCommandBatch } from '@/src/services/batch/execShellCommandBatch';
-import type { Scripts } from '@/src/services/batch/resolve';
 import { resolveCommand, resolveShell } from '@/src/services/batch/resolve';
 
 /**
@@ -18,10 +19,14 @@ export const buildDefaultCmdAction =
   (
     plugin: ReturnType<typeof definePlugin>,
     cli: GetDotenvCliPublic,
-    batchCmd: Command,
+    batchCmd: CommandUnknownOpts,
     pluginOpts: BatchPluginOptions,
   ) =>
-  async (commandParts, _subOpts, thisCommand): Promise<void> => {
+  async (
+    commandParts: unknown,
+    _subOpts: unknown,
+    thisCommand: CommandUnknownOpts,
+  ): Promise<void> => {
     // Inherit logger from the merged root options bag
     const mergedForLogger = readMergedOptions(batchCmd);
     const loggerLocal: Logger = mergedForLogger.logger;
@@ -45,19 +50,17 @@ export const buildDefaultCmdAction =
       rootPath?: string;
       command?: string;
     };
-    const g = (
-      (thisCommand as unknown as { optsWithGlobals?: () => unknown })
-        .optsWithGlobals
-        ? (
-            thisCommand as unknown as { optsWithGlobals: () => unknown }
-          ).optsWithGlobals()
-        : (batchCmd as unknown as { opts: () => unknown }).opts()
-    ) as BatchFlags;
+    const gSrc =
+      'optsWithGlobals' in thisCommand &&
+      typeof (thisCommand as { optsWithGlobals?: () => unknown })
+        .optsWithGlobals === 'function'
+        ? (thisCommand as { optsWithGlobals: () => unknown }).optsWithGlobals()
+        : ((batchCmd as unknown as { opts?: () => unknown }).opts?.() ?? {});
+    const g = gSrc as BatchFlags;
 
-    const listFromParent = !!g.list;
-    const ignoreErrors = !!g.ignoreErrors;
+    const ignoreErrors = Boolean(g.ignoreErrors);
     const globs = typeof g.globs === 'string' ? g.globs : (cfg.globs ?? '*');
-    const pkgCwd = g.pkgCwd !== undefined ? !!g.pkgCwd : !!cfg.pkgCwd;
+    const pkgCwd = g.pkgCwd !== undefined ? g.pkgCwd : Boolean(cfg.pkgCwd);
     const rootPath =
       typeof g.rootPath === 'string' ? g.rootPath : (cfg.rootPath ?? './');
 
@@ -85,8 +88,7 @@ export const buildDefaultCmdAction =
         });
         return;
       }
-      if (g.list || localList) {
-        const bag = readMergedOptions(batchCmd);
+      if (g.list) {
         await execShellCommandBatch({
           globs,
           ignoreErrors,
@@ -94,7 +96,7 @@ export const buildDefaultCmdAction =
           logger: loggerLocal,
           ...(pkgCwd ? { pkgCwd } : {}),
           rootPath,
-          shell: shell ?? bag.shell ?? false,
+          shell: shell ?? readMergedOptions(batchCmd).shell ?? false,
         });
         return;
       }

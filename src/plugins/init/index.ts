@@ -4,7 +4,6 @@
  */
 import { stdin as input, stdout as output } from 'node:process';
 
-import type { Command } from '@commander-js/extra-typings';
 // NOTE: pay attention to non-interactive detection and precedence
 // (--force > --yes > auto-detect). See README for details.
 import fs from 'fs-extra';

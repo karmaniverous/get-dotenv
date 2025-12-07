@@ -8,11 +8,13 @@ export function tagAppOptionsAround<T>(
   setOptionGroup: (opt: Option, group: string) => void,
   fn: (root: CommandUnknownOpts) => T,
 ): T {
-  const originalAddOption = root.addOption.bind(root);
-  root.addOption = function patchedAdd(this: Command, opt: Option) {
+  const originalAddOption: typeof root.addOption = root.addOption.bind(
+    root,
+  ) as unknown as typeof root.addOption;
+  root.addOption = ((opt: Option) => {
     setOptionGroup(opt, 'app');
     return originalAddOption(opt);
-  } as Command['addOption'];
+  }) as typeof root.addOption;
   try {
     return fn(root);
   } finally {

@@ -1,4 +1,5 @@
 import type { Command } from '@commander-js/extra-typings';
+import type { CommandUnknownOpts } from '@commander-js/extra-typings';
 import { z } from 'zod';
 
 import { definePlugin } from '@/src/cliHost/definePlugin';
@@ -69,7 +70,7 @@ export const cmdPlugin = (options: CmdPluginOptions = {}) =>
           async (
             commandParts: string[] | undefined,
             _opts: unknown,
-            thisCommand: CommandWithOptions<GetDotenvCliOptions>,
+            thisCommand: CommandUnknownOpts,
           ) => {
             // Commander passes positional tokens as the first action argument
             const args = Array.isArray(commandParts) ? commandParts : [];
@@ -95,16 +96,20 @@ export const cmdPlugin = (options: CmdPluginOptions = {}) =>
               entropyMinLength,
               entropyWhitelist,
             } = merged;
-            if (!parent) throw new Error('parent command not found'); // Conflict detection: if an alias option is present on parent, do not
+            if (!parent) throw new Error('parent command not found');
+            // Conflict detection: if an alias option is present on parent, do not
             // also accept positional cmd args.
             if (aliasKey) {
-              const pv = (
-                parent as Command & { optsWithGlobals?: () => unknown }
-              ).optsWithGlobals
-                ? (
-                    parent as Command & { optsWithGlobals: () => unknown }
-                  ).optsWithGlobals()
-                : (parent as CommandWithOptions<GetDotenvCliOptions>).opts();
+              const p = parent as CommandUnknownOpts & {
+                optsWithGlobals?: () => unknown;
+                opts?: () => unknown;
+              };
+              const pv =
+                typeof p.optsWithGlobals === 'function'
+                  ? p.optsWithGlobals()
+                  : typeof p.opts === 'function'
+                    ? p.opts()
+                    : {};
               const ov = (pv as Record<string, unknown>)[aliasKey];
               if (ov !== undefined) {
                 logger.error(

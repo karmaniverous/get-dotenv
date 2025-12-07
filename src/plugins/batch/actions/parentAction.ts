@@ -1,3 +1,5 @@
+import type { CommandUnknownOpts } from '@commander-js/extra-typings';
+
 import type {
   definePlugin,
   GetDotenvCliPublic,
@@ -7,7 +9,6 @@ import type { Logger } from '@/src/GetDotenvOptions';
 import type { BatchPluginOptions } from '@/src/plugins/batch/types';
 import type { BatchConfig } from '@/src/plugins/batch/types';
 import { execShellCommandBatch } from '@/src/services/batch/execShellCommandBatch';
-import type { Scripts } from '@/src/services/batch/resolve';
 import { resolveCommand, resolveShell } from '@/src/services/batch/resolve';
 
 /**
@@ -20,8 +21,8 @@ export const buildParentAction =
     pluginOpts: BatchPluginOptions,
   ) =>
   async (
-    commandParts,
-    _opts: {
+    commandParts: unknown,
+    opts: {
       command?: string;
       globs?: string;
       list?: boolean;
@@ -29,7 +30,7 @@ export const buildParentAction =
       pkgCwd?: boolean;
       rootPath?: string;
     },
-    thisCommand,
+    thisCommand: CommandUnknownOpts,
   ): Promise<void> => {
     // Inherit logger from merged root options
     const mergedForLogger = readMergedOptions(thisCommand);
@@ -41,11 +42,12 @@ export const buildParentAction =
 
     const commandOpt =
       typeof opts.command === 'string' ? opts.command : undefined;
-    const ignoreErrors = !!opts.ignoreErrors;
+    const ignoreErrors = Boolean(opts.ignoreErrors);
     let globs =
       typeof opts.globs === 'string' ? opts.globs : (cfg.globs ?? '*');
-    const list = !!opts.list;
-    const pkgCwd = opts.pkgCwd !== undefined ? !!opts.pkgCwd : !!cfg.pkgCwd;
+    const list = Boolean(opts.list);
+    const pkgCwd =
+      opts.pkgCwd !== undefined ? opts.pkgCwd : Boolean(cfg.pkgCwd);
     const rootPath =
       typeof opts.rootPath === 'string'
         ? opts.rootPath
