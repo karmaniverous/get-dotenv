@@ -1,11 +1,12 @@
 import type { Command } from 'commander';
 
-import { runCommand } from '../../cliCore/exec';
-import { buildSpawnEnv } from '../../cliCore/spawnEnv';
-import { definePlugin } from '../../cliHost/definePlugin';
-import { readMergedOptions } from '../../cliHost/GetDotenvCli';
-import type { Logger } from '../../GetDotenvOptions';
-import { resolveShell } from '../../services/batch/resolve';
+import { definePlugin } from '@/src/cliHost/definePlugin';
+import { runCommand } from '@/src/cliHost/exec';
+import { readMergedOptions } from '@/src/cliHost/GetDotenvCli';
+import { buildSpawnEnv } from '@/src/cliHost/spawnEnv';
+import type { Logger } from '@/src/GetDotenvOptions';
+import { resolveShell } from '@/src/services/batch/resolve';
+
 import { resolveAwsContext } from './service';
 import { type AwsPluginConfig, AwsPluginConfigSchema } from './types';
 

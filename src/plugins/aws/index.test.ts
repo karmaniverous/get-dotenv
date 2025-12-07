@@ -9,7 +9,7 @@ const runCommandMock =
       opts: { env?: Record<string, string>; stdio?: 'inherit' | 'pipe' },
     ) => Promise<number>
   >();
-vi.mock('../../cliCore/exec', () => ({
+vi.mock('../../cliHost/exec', () => ({
   runCommand: (
     cmd: string | string[],
     shell: string | boolean | URL,

@@ -3,7 +3,7 @@
  * Shared by the generator path and the batch plugin to avoid circular deps.
  */
 
-import type { ScriptsTable } from '../../cliCore/types';
+import type { ScriptsTable } from '@/src/cliHost/types';
 
 // Accept undefined as an explicit shell value to interoperate with
 // exactOptionalPropertyTypes in plugin-provided configs. Back-compat alias.

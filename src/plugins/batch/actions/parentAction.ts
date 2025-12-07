@@ -3,14 +3,14 @@ import type { Command } from 'commander';
 import type {
   definePlugin,
   GetDotenvCliPublic,
-} from '../../../cliHost/definePlugin';
-import { readMergedOptions } from '../../../cliHost/GetDotenvCli';
-import type { Logger } from '../../../GetDotenvOptions';
-import { execShellCommandBatch } from '../../../services/batch/execShellCommandBatch';
-import type { Scripts } from '../../../services/batch/resolve';
-import { resolveCommand, resolveShell } from '../../../services/batch/resolve';
-import type { BatchPluginOptions } from '../types';
-import type { BatchConfig } from '../types';
+} from '@/src/cliHost/definePlugin';
+import { readMergedOptions } from '@/src/cliHost/GetDotenvCli';
+import type { Logger } from '@/src/GetDotenvOptions';
+import type { BatchPluginOptions } from '@/src/plugins/batch/types';
+import type { BatchConfig } from '@/src/plugins/batch/types';
+import { execShellCommandBatch } from '@/src/services/batch/execShellCommandBatch';
+import type { Scripts } from '@/src/services/batch/resolve';
+import { resolveCommand, resolveShell } from '@/src/services/batch/resolve';
 
 /**
  * Build the parent "batch" action handler (no explicit subcommand).

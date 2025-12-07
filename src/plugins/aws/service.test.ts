@@ -19,7 +19,7 @@ const runCommandResultMock = vi.fn<
     stderr: string;
   }>
 >();
-vi.mock('../../cliCore/exec', () => ({
+vi.mock('../../cliHost/exec', () => ({
   runCommandResult: (
     cmd: string | string[],
     shell: string | boolean | URL,

@@ -1,5 +1,6 @@
-import { runCommandResult } from '../../cliCore/exec';
-import type { ProcessEnv } from '../../GetDotenvOptions';
+import { runCommandResult } from '@/src/cliHost/exec';
+import type { ProcessEnv } from '@/src/GetDotenvOptions';
+
 import type { AwsContext, AwsCredentials, AwsPluginConfig } from './types';
 
 const DEFAULT_TIMEOUT_MS = 15_000;

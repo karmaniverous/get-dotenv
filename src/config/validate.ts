@@ -1,5 +1,6 @@
 /** src/config/validate.ts */
-import type { ProcessEnv } from '../GetDotenvOptions';
+import type { ProcessEnv } from '@/src/GetDotenvOptions';
+
 import type { ResolvedConfigSources } from './loader';
 
 /**

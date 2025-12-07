@@ -1,4 +1,5 @@
-import { defaultsDeep } from '../util/defaultsDeep';
+import { defaultsDeep } from '@/src/util/defaultsDeep';
+
 import {
   resolveExclusion,
   resolveExclusionAll,

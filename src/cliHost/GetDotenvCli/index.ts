@@ -4,15 +4,19 @@ import fs from 'fs-extra';
 import { packageDirectory } from 'package-directory';
 import { fileURLToPath } from 'url';
 
-import type { GetDotenvCliOptions } from '../../cliCore/GetDotenvCliOptions';
-import type { ProcessEnv } from '../../GetDotenvOptions';
+import { computeContext } from '@/src/cliHost/computeContext';
+import type {
+  GetDotenvCliPlugin,
+  GetDotenvCliPublic,
+} from '@/src/cliHost/definePlugin';
+import type { GetDotenvCliOptions } from '@/src/cliHost/GetDotenvCliOptions';
+import type { ProcessEnv } from '@/src/GetDotenvOptions';
 import {
   type GetDotenvOptions,
   resolveGetDotenvOptions,
-} from '../../GetDotenvOptions';
-import { getDotenvOptionsSchemaResolved } from '../../schema/getDotenvOptions';
-import { computeContext } from '../computeContext';
-import type { GetDotenvCliPlugin, GetDotenvCliPublic } from '../definePlugin';
+} from '@/src/GetDotenvOptions';
+import { getDotenvOptionsSchemaResolved } from '@/src/schema/getDotenvOptions';
+
 import {
   evaluateDynamicOptions as evalDyn,
   makeDynamicOption,

@@ -1,6 +1,6 @@
-import { dotenvExpandAll } from '../dotenvExpand';
-import type { ProcessEnv } from '../GetDotenvOptions';
-import type { GetDotenvConfigResolved } from '../schema/getDotenvConfig';
+import { dotenvExpandAll } from '@/src/dotenvExpand';
+import type { ProcessEnv } from '@/src/GetDotenvOptions';
+import type { GetDotenvConfigResolved } from '@/src/schema/getDotenvConfig';
 
 export type OverlayConfigSources = {
   packaged?: GetDotenvConfigResolved;

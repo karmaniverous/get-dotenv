@@ -1,7 +1,8 @@
 /** src/plugins/batch/index.ts */
 import { Command } from 'commander';
 
-import { definePlugin } from '../../cliHost/definePlugin';
+import { definePlugin } from '@/src/cliHost/definePlugin';
+
 import { buildDefaultCmdAction } from './actions/defaultCmdAction';
 import { buildParentAction } from './actions/parentAction';
 import { BatchConfigSchema, type BatchPluginOptions } from './types';

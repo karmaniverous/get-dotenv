@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import type { Scripts } from '../../services/batch/resolve';
+import type { Scripts } from '@/src/services/batch/resolve';
 
 export type BatchPluginOptions = {
   scripts?: Scripts;

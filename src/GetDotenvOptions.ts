@@ -13,15 +13,15 @@ import { packageDirectory } from 'package-directory';
 import { join } from 'path';
 import type { z } from 'zod';
 
-import type { Scripts } from './cliCore/GetDotenvCliOptions';
+import type { Scripts } from '@/src/cliHost/GetDotenvCliOptions';
 import {
   baseGetDotenvCliOptions,
   type GetDotenvCliOptions,
-} from './cliCore/GetDotenvCliOptions';
-import type { RootOptionsShape } from './cliCore/types';
-import type { getDotenvOptionsSchemaResolved } from './schema/getDotenvOptions';
-import { defaultsDeep } from './util/defaultsDeep';
-import { omitUndefinedRecord } from './util/omitUndefined';
+} from '@/src/cliHost/GetDotenvCliOptions';
+import type { RootOptionsShape } from '@/src/cliHost/types';
+import type { getDotenvOptionsSchemaResolved } from '@/src/schema/getDotenvOptions';
+import { defaultsDeep } from '@/src/util/defaultsDeep';
+import { omitUndefinedRecord } from '@/src/util/omitUndefined';
 
 export const getDotenvOptionsFilename = 'getdotenv.config.json';
 

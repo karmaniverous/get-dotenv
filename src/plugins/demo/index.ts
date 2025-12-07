@@ -31,13 +31,12 @@
 
 import type { Command } from 'commander';
 
+import { definePlugin } from '@/src/cliHost/definePlugin';
+import { runCommand } from '@/src/cliHost/exec';
 import { readMergedOptions } from '@/src/cliHost/GetDotenvCli';
-
-import { runCommand } from '../../cliCore/exec';
-import { buildSpawnEnv } from '../../cliCore/spawnEnv';
-import { definePlugin } from '../../cliHost/definePlugin';
-import type { Logger } from '../../GetDotenvOptions';
-import { resolveCommand, resolveShell } from '../../services/batch/resolve';
+import { buildSpawnEnv } from '@/src/cliHost/spawnEnv';
+import type { Logger } from '@/src/GetDotenvOptions';
+import { resolveCommand, resolveShell } from '@/src/services/batch/resolve';
 
 export const demoPlugin = () =>
   definePlugin({

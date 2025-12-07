@@ -1,25 +1,25 @@
 import type { Command } from 'commander';
 
-export { defineScripts } from './cliCore/types';
+export { defineScripts } from '@/src/cliHost/types';
 export { z } from 'zod';
-import { baseRootOptionDefaults } from './cliCore/defaults';
-import { resolveCliOptions } from './cliCore/resolveCliOptions';
-import type { RootOptionsShape, ScriptsTable } from './cliCore/types';
-import { GetDotenvCli } from './cliHost';
-import { toHelpConfig } from './cliHost/helpConfig';
-import { awsPlugin } from './plugins/aws';
-import { batchPlugin } from './plugins/batch';
-import { cmdPlugin } from './plugins/cmd';
-import { demoPlugin } from './plugins/demo';
-import { initPlugin } from './plugins/init';
+import { GetDotenvCli } from '@/src/cliHost';
+import { baseRootOptionDefaults } from '@/src/cliHost/defaults';
+import { toHelpConfig } from '@/src/cliHost/helpConfig';
+import { resolveCliOptions } from '@/src/cliHost/resolveCliOptions';
+import type { RootOptionsShape, ScriptsTable } from '@/src/cliHost/types';
+import { awsPlugin } from '@/src/plugins/aws';
+import { batchPlugin } from '@/src/plugins/batch';
+import { cmdPlugin } from '@/src/plugins/cmd';
+import { demoPlugin } from '@/src/plugins/demo';
+import { initPlugin } from '@/src/plugins/init';
 
-export { buildSpawnEnv } from './cliCore/spawnEnv';
+export { buildSpawnEnv } from '@/src/cliHost/spawnEnv';
 export {
   dotenvExpand,
   dotenvExpandAll,
   dotenvExpandFromProcessEnv,
-} from './dotenvExpand';
-export { getDotenv } from './getDotenv';
+} from '@/src/dotenvExpand';
+export { getDotenv } from '@/src/getDotenv';
 export {
   defineDynamic,
   defineGetDotenvConfig,
@@ -31,9 +31,9 @@ export {
   type GetDotenvOptions,
   type InferGetDotenvVarsFromConfig,
   type ProcessEnv,
-} from './GetDotenvOptions';
-export type { DeepReadonly } from './types/deepReadonly';
-export { interpolateDeep } from './util/interpolateDeep';
+} from '@/src/GetDotenvOptions';
+export type { DeepReadonly } from '@/src/types/deepReadonly';
+export { interpolateDeep } from '@/src/util/interpolateDeep';
 // Flattened exports for plugin author ergonomics
 export type {
   GetDotenvCliOptions,
@@ -41,10 +41,10 @@ export type {
   GetDotenvCliPublic,
   PluginWithInstanceHelpers,
   ScriptsTable,
-} from './cliHost';
-export type { InferPluginConfig } from './cliHost';
-export { definePlugin, GetDotenvCli } from './cliHost';
-export { readMergedOptions } from './cliHost/GetDotenvCli';
+} from '@/src/cliHost';
+export type { InferPluginConfig } from '@/src/cliHost';
+export { definePlugin, GetDotenvCli } from '@/src/cliHost';
+export { readMergedOptions } from '@/src/cliHost/GetDotenvCli';
 
 /**
  * Create a get-dotenv CLI host with included plugins.

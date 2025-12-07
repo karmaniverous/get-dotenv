@@ -1,6 +1,7 @@
 import { execa, execaCommand } from 'execa';
 
-import { tokenize } from '../plugins/cmd/tokenize';
+import { tokenize } from '@/src/plugins/cmd/tokenize';
+
 const dbg = (...args: unknown[]) => {
   if (process.env.GETDOTENV_DEBUG) {
     // Use stderr to avoid interfering with stdout assertions

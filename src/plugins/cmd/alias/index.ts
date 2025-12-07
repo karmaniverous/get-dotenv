@@ -1,8 +1,9 @@
 import type { Command } from 'commander';
 
-import type { GetDotenvCliPublic } from '../../../cliHost';
-import type { PluginWithInstanceHelpers } from '../../../cliHost/definePlugin';
-import type { CmdPluginOptions } from '../index';
+import type { GetDotenvCliPublic } from '@/src/cliHost';
+import type { PluginWithInstanceHelpers } from '@/src/cliHost/definePlugin';
+import type { CmdPluginOptions } from '@/src/plugins/cmd/index';
+
 import { maybeRunAlias } from './maybeRunAlias';
 
 export const attachParentAlias = (

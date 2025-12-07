@@ -2,21 +2,22 @@
 import fs from 'fs-extra';
 import path from 'path';
 
-import { resolveGetDotenvConfigSources } from '../config/loader';
-import { overlayEnv } from '../env/overlay';
-import { getDotenv } from '../getDotenv';
-import type { ProcessEnv } from '../GetDotenvOptions';
+import { resolveGetDotenvConfigSources } from '@/src/config/loader';
+import { overlayEnv } from '@/src/env/overlay';
+import { getDotenv } from '@/src/getDotenv';
+import type { ProcessEnv } from '@/src/GetDotenvOptions';
 import {
   type GetDotenvDynamic,
   type GetDotenvOptions,
   type Logger,
   resolveGetDotenvOptions,
-} from '../GetDotenvOptions';
-import { getDotenvOptionsSchemaResolved } from '../schema/getDotenvOptions';
-import { defaultsDeep } from '../util/defaultsDeep';
-import { interpolateDeep } from '../util/interpolateDeep';
-import { loadModuleDefault } from '../util/loadModuleDefault';
-import { omitUndefined } from '../util/omitUndefined';
+} from '@/src/GetDotenvOptions';
+import { getDotenvOptionsSchemaResolved } from '@/src/schema/getDotenvOptions';
+import { defaultsDeep } from '@/src/util/defaultsDeep';
+import { interpolateDeep } from '@/src/util/interpolateDeep';
+import { loadModuleDefault } from '@/src/util/loadModuleDefault';
+import { omitUndefined } from '@/src/util/omitUndefined';
+
 import type { GetDotenvCliPlugin } from './definePlugin';
 import type { GetDotenvCliCtx } from './GetDotenvCli';
 
@@ -176,8 +177,7 @@ export const computeContext = async <
       { encoding: 'utf-8' },
     );
   }
-  const logger: Logger =
-    (validated as GetDotenvOptions).logger!;
+  const logger: Logger = (validated as GetDotenvOptions).logger!;
   if (validated.log) logger.log(dotenv);
   if (validated.loadProcess) Object.assign(process.env, dotenv);
 

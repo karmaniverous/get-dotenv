@@ -1,7 +1,7 @@
 /** src/types/infer.defaultsDeep.ts
  * Compile-only sample to assert defaultsDeep intersection inference.
  */
-import { defaultsDeep } from '../util/defaultsDeep';
+import { defaultsDeep } from '@/src/util/defaultsDeep';
 
 type A = {
   a?: number;

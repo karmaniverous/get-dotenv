@@ -1,24 +1,24 @@
 /* eslint-disable */
 import type { Command } from 'commander';
 
-import { runCommand } from '../../../cliCore/exec';
+import { runCommand } from '@/src/cliHost/exec';
 import {
   baseGetDotenvCliOptions,
   type GetDotenvCliOptions,
-} from '../../../cliCore/GetDotenvCliOptions';
-import { resolveCliOptions } from '../../../cliCore/resolveCliOptions';
-import { buildSpawnEnv } from '../../../cliCore/spawnEnv';
-import type { RootOptionsShapeCompat } from '../../../GetDotenvOptions';
-import { getDotenvCliOptions2Options } from '../../../GetDotenvOptions';
-import { dotenvExpandFromProcessEnv } from '../../../dotenvExpand';
-import type { EntropyOptions } from '../../../diagnostics/entropy';
-import { maybeWarnEntropy } from '../../../diagnostics/entropy';
-import type { RedactOptions } from '../../../diagnostics/redact';
-import { redactTriple } from '../../../diagnostics/redact';
-import { resolveCommand, resolveShell } from '../../../services/batch/resolve';
+} from '@/src/cliHost/GetDotenvCliOptions';
+import { resolveCliOptions } from '@/src/cliHost/resolveCliOptions';
+import { buildSpawnEnv } from '@/src/cliHost/spawnEnv';
+import type { RootOptionsShapeCompat } from '@/src/GetDotenvOptions';
+import { getDotenvCliOptions2Options } from '@/src/GetDotenvOptions';
+import { dotenvExpandFromProcessEnv } from '@/src/dotenvExpand';
+import type { EntropyOptions } from '@/src/diagnostics/entropy';
+import { maybeWarnEntropy } from '@/src/diagnostics/entropy';
+import type { RedactOptions } from '@/src/diagnostics/redact';
+import { redactTriple } from '@/src/diagnostics/redact';
+import { resolveCommand, resolveShell } from '@/src/services/batch/resolve';
 import { tokenize } from '../tokenize';
-import type { RootOptionsShape, ScriptsTable } from '../../../cliCore/types';
-import type { GetDotenvCliPublic } from '../../../cliHost/definePlugin';
+import type { RootOptionsShape, ScriptsTable } from '@/src/cliHost/types';
+import type { GetDotenvCliPublic } from '@/src/cliHost/definePlugin';
 
 const dbg = (...args: unknown[]) => {
   if (process.env.GETDOTENV_DEBUG) {

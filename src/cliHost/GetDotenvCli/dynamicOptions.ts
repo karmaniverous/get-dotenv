@@ -4,7 +4,7 @@
 import type { Command, Option } from 'commander';
 import { Option as CommanderOption } from 'commander';
 
-import type { GetDotenvCliOptions } from '../../cliCore/GetDotenvCliOptions';
+import type { GetDotenvCliOptions } from '@/src/cliHost/GetDotenvCliOptions';
 
 export type ResolvedHelpConfigLite = Partial<GetDotenvCliOptions> & {
   plugins: Record<string, unknown>;

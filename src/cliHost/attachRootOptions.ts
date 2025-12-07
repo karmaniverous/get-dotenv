@@ -1,9 +1,10 @@
 /* eslint-disable @typescript-eslint/no-deprecated */
 import { Option } from 'commander';
 
-import type { RootOptionsShape } from '../cliCore/types';
-import { dotenvExpandFromProcessEnv } from '../dotenvExpand';
+import { dotenvExpandFromProcessEnv } from '@/src/dotenvExpand';
+
 import type { GetDotenvCli } from './GetDotenvCli';
+import type { RootOptionsShape } from './types';
 
 /**
  * Attach root flags to a GetDotenvCli instance.

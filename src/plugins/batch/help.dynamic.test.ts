@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import { GetDotenvCli } from '../../cliHost';
+import { GetDotenvCli } from '@/src/cliHost';
+
 import { batchPlugin } from './index';
 
 describe('plugins/batch dynamic help', () => {

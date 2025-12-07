@@ -2,7 +2,7 @@ import { stdin as input, stdout as output } from 'node:process';
 
 import type { createInterface } from 'readline/promises';
 
-import type { Logger } from '../../GetDotenvOptions';
+import type { Logger } from '@/src/GetDotenvOptions';
 
 /**
  * Determine whether the current environment should be treated as non-interactive.

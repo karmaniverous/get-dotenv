@@ -1,8 +1,8 @@
 /** src/types/infer.defineDynamic.ts
  * Compile-only sample to assert Vars-aware defineDynamic inference.
  */
-import type { DynamicFn } from '../GetDotenvOptions';
-import { defineDynamic } from '../GetDotenvOptions';
+import type { DynamicFn } from '@/src/GetDotenvOptions';
+import { defineDynamic } from '@/src/GetDotenvOptions';
 
 type Vars = {
   APP?: string;

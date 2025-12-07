@@ -2,19 +2,19 @@ import fs from 'fs-extra';
 import { nanoid } from 'nanoid';
 import path from 'path';
 
-import type { EntropyOptions } from './diagnostics/entropy';
-import { maybeWarnEntropy } from './diagnostics/entropy';
-import type { RedactOptions } from './diagnostics/redact';
-import { redactObject } from './diagnostics/redact';
-import { dotenvExpandAll } from './dotenvExpand';
+import type { EntropyOptions } from '@/src/diagnostics/entropy';
+import { maybeWarnEntropy } from '@/src/diagnostics/entropy';
+import type { RedactOptions } from '@/src/diagnostics/redact';
+import { redactObject } from '@/src/diagnostics/redact';
+import { dotenvExpandAll } from '@/src/dotenvExpand';
 import {
   type GetDotenvDynamic,
   type GetDotenvOptions,
   type ProcessEnv,
   resolveGetDotenvOptions,
-} from './GetDotenvOptions';
-import { readDotenv } from './readDotenv';
-import { loadModuleDefault } from './util/loadModuleDefault';
+} from '@/src/GetDotenvOptions';
+import { readDotenv } from '@/src/readDotenv';
+import { loadModuleDefault } from '@/src/util/loadModuleDefault';
 
 /**
  * Asynchronously process dotenv files of the form `.env[.<ENV>][.<PRIVATE_TOKEN>]`

@@ -1,7 +1,7 @@
 import { parse } from 'dotenv';
 import fs from 'fs-extra';
 
-import { type ProcessEnv } from './GetDotenvOptions';
+import { type ProcessEnv } from '@/src/GetDotenvOptions';
 
 /**
  * Asynchronously read a dotenv file & parse it into an object.

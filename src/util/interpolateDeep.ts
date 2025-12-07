@@ -8,8 +8,8 @@
  * - Phase C option/config interpolation after composing ctx.dotenv.
  * - Per-plugin config slice interpolation before afterResolve.
  */
-import { dotenvExpand } from '../dotenvExpand';
-import type { ProcessEnv } from '../GetDotenvOptions';
+import { dotenvExpand } from '@/src/dotenvExpand';
+import type { ProcessEnv } from '@/src/GetDotenvOptions';
 
 /** @internal */
 const isPlainObject = (v: unknown): v is Record<string, unknown> =>

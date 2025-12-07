@@ -8,7 +8,8 @@ import {
   type GetDotenvConfigResolved,
   getDotenvConfigSchemaRaw,
   getDotenvConfigSchemaResolved,
-} from '../schema/getDotenvConfig';
+} from '@/src/schema/getDotenvConfig';
+
 // Discovery candidates (first match wins per scope/privacy).
 // Order preserves historical JSON/YAML precedence; JS/TS added afterwards.
 const PUBLIC_FILENAMES = [

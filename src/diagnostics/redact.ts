@@ -4,7 +4,7 @@
  * - Optional custom patterns (regex strings) may be provided.
  * - Never alters runtime env; only affects displayed values.
  */
-import type { ProcessEnv } from '../GetDotenvOptions';
+import type { ProcessEnv } from '@/src/GetDotenvOptions';
 
 export type RedactOptions = {
   redact?: boolean;

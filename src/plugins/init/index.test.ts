@@ -2,7 +2,8 @@ import fs from 'fs-extra';
 import path from 'path';
 import { describe, expect, it } from 'vitest';
 
-import { GetDotenvCli } from '../../cliHost/GetDotenvCli';
+import { GetDotenvCli } from '@/src/cliHost/GetDotenvCli';
+
 import { initPlugin } from './index';
 
 const TROOT = path.posix.join('.tsbuild', 'init-tests');

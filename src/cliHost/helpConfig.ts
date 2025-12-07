@@ -1,6 +1,6 @@
-import type { GetDotenvCliOptions } from '../cliCore/GetDotenvCliOptions';
-import type { RootOptionsShape } from '../cliCore/types';
 import type { ResolvedHelpConfig } from './GetDotenvCli';
+import type { GetDotenvCliOptions } from './GetDotenvCliOptions';
+import type { RootOptionsShape } from './types';
 
 /**
  * Build a help-time configuration bag for dynamic option descriptions.

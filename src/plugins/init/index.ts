@@ -10,8 +10,9 @@ import fs from 'fs-extra';
 import path from 'path';
 import { createInterface } from 'readline/promises';
 
-import { definePlugin } from '../../cliHost/definePlugin';
-import type { Logger } from '../../GetDotenvOptions';
+import { definePlugin } from '@/src/cliHost/definePlugin';
+import type { Logger } from '@/src/GetDotenvOptions';
+
 import { copyTextFile, ensureLines } from './io';
 import { planCliCopies, planConfigCopies } from './plan';
 import { isNonInteractive, promptDecision } from './prompts';

@@ -1,25 +1,26 @@
 export { z } from 'zod';
-import { baseRootOptionDefaults } from '../cliCore/defaults';
-import type { GetDotenvCliOptions } from '../cliCore/GetDotenvCliOptions';
-import { resolveCliOptions } from '../cliCore/resolveCliOptions';
-import type {
-  CommandWithOptions,
-  RootOptionsShape,
-  ScriptsTable,
-} from '../cliCore/types';
-import { resolveGetDotenvConfigSources } from '../config/loader';
-import { validateEnvAgainstSources } from '../config/validate';
+import { resolveGetDotenvConfigSources } from '@/src/config/loader';
+import { validateEnvAgainstSources } from '@/src/config/validate';
 import type {
   GetDotenvOptions,
   Logger,
   RootOptionsShapeCompat,
-} from '../GetDotenvOptions';
-import { getDotenvCliOptions2Options } from '../GetDotenvOptions';
-import { defaultsDeep } from '../util/defaultsDeep';
+} from '@/src/GetDotenvOptions';
+import { getDotenvCliOptions2Options } from '@/src/GetDotenvOptions';
+import { defaultsDeep } from '@/src/util/defaultsDeep';
+
 import { attachRootOptions as attachRootOptionsBuilder } from './attachRootOptions';
+import { baseRootOptionDefaults } from './defaults';
 import type { PluginWithInstanceHelpers as PluginWithInstanceHelpersType } from './definePlugin';
 import { GetDotenvCli as BaseGetDotenvCli } from './GetDotenvCli';
+import type { GetDotenvCliOptions } from './GetDotenvCliOptions';
 import { toHelpConfig } from './helpConfig';
+import { resolveCliOptions } from './resolveCliOptions';
+import type {
+  CommandWithOptions,
+  RootOptionsShape,
+  ScriptsTable,
+} from './types';
 
 export type { DefineSpec, GetDotenvCliPlugin } from './definePlugin';
 export type { GetDotenvCliPublic } from './definePlugin';
@@ -35,8 +36,8 @@ export type InferPluginConfig<P> =
 export { definePlugin } from './definePlugin';
 export type { GetDotenvCliCtx } from './GetDotenvCli';
 // Downstream-friendly type re-exports (single import path)
-export type { GetDotenvCliOptions } from '../cliCore/GetDotenvCliOptions';
-export type { ScriptsTable } from '../cliCore/types';
+export type { GetDotenvCliOptions } from './GetDotenvCliOptions';
+export type { ScriptsTable } from './types';
 
 /**
  * GetDotenvCli with root helpers as real class methods.

@@ -1,17 +1,18 @@
 import type { Command } from 'commander';
 import { z } from 'zod';
 
-import { runCommand } from '../../cliCore/exec';
-import type { GetDotenvCliOptions } from '../../cliCore/GetDotenvCliOptions';
-import { buildSpawnEnv } from '../../cliCore/spawnEnv';
-import type { CommandWithOptions } from '../../cliCore/types';
-import { definePlugin } from '../../cliHost/definePlugin';
-import { readMergedOptions } from '../../cliHost/GetDotenvCli';
-import type { EntropyOptions } from '../../diagnostics/entropy';
-import { maybeWarnEntropy } from '../../diagnostics/entropy';
-import type { RedactOptions } from '../../diagnostics/redact';
-import { redactTriple } from '../../diagnostics/redact';
-import { resolveCommand, resolveShell } from '../../services/batch/resolve';
+import { definePlugin } from '@/src/cliHost/definePlugin';
+import { runCommand } from '@/src/cliHost/exec';
+import { readMergedOptions } from '@/src/cliHost/GetDotenvCli';
+import type { GetDotenvCliOptions } from '@/src/cliHost/GetDotenvCliOptions';
+import { buildSpawnEnv } from '@/src/cliHost/spawnEnv';
+import type { CommandWithOptions } from '@/src/cliHost/types';
+import type { EntropyOptions } from '@/src/diagnostics/entropy';
+import { maybeWarnEntropy } from '@/src/diagnostics/entropy';
+import type { RedactOptions } from '@/src/diagnostics/redact';
+import { redactTriple } from '@/src/diagnostics/redact';
+import { resolveCommand, resolveShell } from '@/src/services/batch/resolve';
+
 import { attachParentAlias } from './alias';
 export type CmdPluginOptions = {
   /**
