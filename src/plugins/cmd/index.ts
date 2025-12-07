@@ -10,7 +10,6 @@ import type { EntropyOptions } from '../../diagnostics/entropy';
 import { maybeWarnEntropy } from '../../diagnostics/entropy';
 import type { RedactOptions } from '../../diagnostics/redact';
 import { redactTriple } from '../../diagnostics/redact';
-import type { Logger } from '../../GetDotenvOptions';
 import { resolveCommand, resolveShell } from '../../services/batch/resolve';
 import { attachParentAlias } from './alias';
 export type CmdPluginOptions = {
@@ -78,7 +77,7 @@ export const cmdPlugin = (options: CmdPluginOptions = {}) =>
               ).opts();
               const ov = (pv as unknown as Record<string, unknown>)[aliasKey];
               if (ov !== undefined) {
-                const logger = merged.logger!;
+                const logger = merged.logger;
                 logger.error(
                   `--${aliasKey} option conflicts with cmd subcommand.`,
                 );
@@ -86,7 +85,7 @@ export const cmdPlugin = (options: CmdPluginOptions = {}) =>
               }
             }
 
-            const logger = merged.logger!;
+            const logger = merged.logger;
             // Join positional args into the command string.
             const input = args.map(String).join(' ');
 

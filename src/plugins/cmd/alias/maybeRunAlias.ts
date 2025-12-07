@@ -10,10 +10,15 @@ import { resolveCliOptions } from '../../../cliCore/resolveCliOptions';
 import { buildSpawnEnv } from '../../../cliCore/spawnEnv';
 import type { RootOptionsShapeCompat } from '../../../GetDotenvOptions';
 import { getDotenvCliOptions2Options } from '../../../GetDotenvOptions';
+import { dotenvExpandFromProcessEnv } from '../../../dotenvExpand';
+import type { EntropyOptions } from '../../../diagnostics/entropy';
+import { maybeWarnEntropy } from '../../../diagnostics/entropy';
+import type { RedactOptions } from '../../../diagnostics/redact';
+import { redactTriple } from '../../../diagnostics/redact';
 import { resolveCommand, resolveShell } from '../../../services/batch/resolve';
 import { tokenize } from '../tokenize';
-import type { RootOptionsShape, ScriptsTable } from '@/src/cliCore/types';
-import type { GetDotenvCliPublic } from '@/src/cliHost/definePlugin';
+import type { RootOptionsShape, ScriptsTable } from '../../../cliCore/types';
+import type { GetDotenvCliPublic } from '../../../cliHost/definePlugin';
 
 const dbg = (...args: unknown[]) => {
   if (process.env.GETDOTENV_DEBUG) {
@@ -74,13 +79,7 @@ export async function maybeRunAlias(
     process.env.getDotenvCliOptions,
   );
   const mergedBag = merged as unknown as GetDotenvCliOptions;
-  const logger: {
-    log: (...a: unknown[]) => void;
-    error?: (...a: unknown[]) => void;
-  } = (mergedBag.logger ?? console) as {
-    log: (...a: unknown[]) => void;
-    error?: (...a: unknown[]) => void;
-  };
+  const logger = mergedBag.logger;
 
   const serviceOptions = getDotenvCliOptions2Options(
     mergedBag as unknown as RootOptionsShapeCompat,
@@ -117,7 +116,7 @@ export async function maybeRunAlias(
     input,
   );
   if ((mergedBag as { debug?: boolean }).debug) {
-    logger.log('\n*** command ***\n', `'${resolved}'`);
+    logger.debug('\n*** command ***\n', `'${resolved}'`);
   }
   // Round-trip CLI options for nested getdotenv invocations. Omit logger
   // (functions/circulars) and guard JSON serialization to avoid hard failures.

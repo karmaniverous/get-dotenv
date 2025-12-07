@@ -2,11 +2,7 @@ export { z } from 'zod';
 import { baseRootOptionDefaults } from '../cliCore/defaults';
 import type { GetDotenvCliOptions } from '../cliCore/GetDotenvCliOptions';
 import { resolveCliOptions } from '../cliCore/resolveCliOptions';
-import type {
-  CommandWithOptions,
-  RootOptionsShape,
-  ScriptsTable,
-} from '../cliCore/types';
+import type { CommandWithOptions, RootOptionsShape } from '../cliCore/types';
 import { resolveGetDotenvConfigSources } from '../config/loader';
 import { validateEnvAgainstSources } from '../config/validate';
 import type { GetDotenvOptions } from '../GetDotenvOptions';
@@ -93,7 +89,7 @@ export class GetDotenvCli extends BaseGetDotenvCli {
           const sources = await resolveGetDotenvConfigSources(import.meta.url);
           const issues = validateEnvAgainstSources(dotenv, sources);
           if (Array.isArray(issues) && issues.length > 0) {
-            const logger = merged.logger!;
+            const logger = merged.logger;
             issues.forEach((m) => {
               logger.error(m);
             });
@@ -140,7 +136,7 @@ export class GetDotenvCli extends BaseGetDotenvCli {
             );
             const issues = validateEnvAgainstSources(dotenv, sources);
             if (Array.isArray(issues) && issues.length > 0) {
-              const logger = merged.logger!;
+              const logger = merged.logger;
               issues.forEach((m) => {
                 logger.error(m);
               });

@@ -68,7 +68,7 @@ export type GetDotenvOptions = z.output<
   /**
    * Compile-time overlay: narrowed logger for DX (schema stores unknown).
    */
-  logger?: Logger;
+  logger: Logger;
   /**
    * Compile-time overlay: narrowed dynamic map for DX (schema stores unknown).
    */
