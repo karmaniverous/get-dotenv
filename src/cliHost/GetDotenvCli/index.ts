@@ -404,21 +404,25 @@ export class GetDotenvCli<TOptions extends GetDotenvOptions = GetDotenvOptions>
  * that only has access to thisCommand. Avoids structural casts.
  */
 export const readMergedOptions = (cmd: Command): GetDotenvCliOptions => {
-  // Ascend to the root command
-  let root: Command = cmd;
-  while ((root as unknown as { parent?: Command }).parent) {
-    root = (root as unknown as { parent?: Command }).parent as Command;
+  // Climb to the true root
+  let root = cmd;
+  while (root.parent) root = root.parent;
+
+  // Assert we ended at our host
+  if (!(root instanceof GetDotenvCli)) {
+    throw new Error(
+      'readMergedOptions: root command is not a GetDotenvCli.' +
+        'Ensure your CLI is constructed with GetDotenvCli.',
+    );
   }
-  const hostAny = root as unknown as { getOptions?: () => unknown };
-  // Prefer getOptions(); fallback to the legacy getDotenvCliOptions property.
-  if (typeof hostAny.getOptions === 'function') {
-    const maybe = hostAny.getOptions();
-    return maybe && typeof maybe === 'object'
-      ? (maybe as GetDotenvCliOptions)
-      : ({} as GetDotenvCliOptions);
+
+  // Require passOptions() to have persisted the bag
+  const bag = root.getOptions();
+  if (!bag || typeof bag !== 'object') {
+    throw new Error(
+      'readMergedOptions: merged options are unavailable. ' +
+        'Call .passOptions() on the host before parsing.',
+    );
   }
-  const bag =
-    (root as unknown as { getDotenvCliOptions?: unknown })
-      .getDotenvCliOptions ?? {};
-  return (typeof bag === 'object' ? bag : {}) as GetDotenvCliOptions;
+  return bag;
 };
