@@ -36,6 +36,13 @@ const stripOne = (s: string) => {
   return symmetric ? s.slice(1, -1) : s;
 };
 
+// Narrow unknown errors that may carry an exitCode (execa-like).
+const hasExitCode = (
+  e: unknown,
+): e is {
+  exitCode?: unknown;
+} => typeof e === 'object' && e !== null && 'exitCode' in e;
+
 export async function maybeRunAlias(
   cli: GetDotenvCliPublic,
   thisCommand: Command,
@@ -117,7 +124,7 @@ export async function maybeRunAlias(
         : true;
   const input = effectiveExpand && expanded !== undefined ? expanded : joined;
 
-  // Scripts: prefer well-formed records; tolerate absent/bad shapes
+  // Scripts: prefer well-formed records; tolerate absent
   const scripts = (mergedBag as { scripts?: ScriptsTable | undefined }).scripts;
 
   const resolved = resolveCommand(scripts, input);
@@ -171,12 +178,12 @@ export async function maybeRunAlias(
           : parent !== undefined
             ? 'parent'
             : 'unset';
-      const redFlag = redact;
-      const redPatternsArr = redactPatterns;
-      const redOpts: RedactOptions = {};
-      if (redFlag) redOpts.redact = true;
-      if (redFlag && Array.isArray(redPatternsArr))
-        redOpts.redactPatterns = redPatternsArr;
+      const redOpts: RedactOptions = redact
+        ? {
+            redact: true,
+            ...(Array.isArray(redactPatterns) ? { redactPatterns } : {}),
+          }
+        : {};
       const tripleBag: { parent?: string; dotenv?: string; final?: string } =
         {};
       if (parent !== undefined) tripleBag.parent = parent;
@@ -186,15 +193,12 @@ export async function maybeRunAlias(
       process.stderr.write(
         `[trace] key=${k} origin=${origin} parent=${triple.parent ?? ''} dotenv=${triple.dotenv ?? ''} final=${triple.final ?? ''}\n`,
       );
-      const entOpts: EntropyOptions = {};
-      // use destructured warnEntropy, entropyThreshold, entropyMinLength, entropyWhitelist
-      if (typeof warnEntropy === 'boolean') entOpts.warnEntropy = warnEntropy;
-      if (typeof entropyThreshold === 'number')
-        entOpts.entropyThreshold = entropyThreshold;
-      if (typeof entropyMinLength === 'number')
-        entOpts.entropyMinLength = entropyMinLength;
-      if (Array.isArray(entropyWhitelist))
-        entOpts.entropyWhitelist = entropyWhitelist;
+      const entOpts: EntropyOptions = {
+        ...(typeof warnEntropy === 'boolean' ? { warnEntropy } : {}),
+        ...(typeof entropyThreshold === 'number' ? { entropyThreshold } : {}),
+        ...(typeof entropyMinLength === 'number' ? { entropyMinLength } : {}),
+        ...(Array.isArray(entropyWhitelist) ? { entropyWhitelist } : {}),
+      };
       maybeWarnEntropy(k, final, origin, entOpts, (line) =>
         process.stderr.write(line + '\n'),
       );
@@ -230,10 +234,11 @@ export async function maybeRunAlias(
     });
     dbg('run:done', { exitCode });
   } catch (err) {
-    const code =
-      typeof (err as { exitCode?: unknown }).exitCode === 'number'
-        ? ((err as { exitCode?: number }).exitCode as number)
-        : 1;
+    // Extract a numeric exitCode when present; default to 1
+    let code = 1;
+    if (hasExitCode(err) && typeof err.exitCode === 'number') {
+      code = err.exitCode;
+    }
     dbg('run:error', { exitCode: code, error: String(err) });
     if (!underTests) {
       dbg('process.exit (error path)', { exitCode: code });

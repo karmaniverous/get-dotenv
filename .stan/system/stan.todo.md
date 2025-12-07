@@ -141,3 +141,7 @@ When updated: 2025-12-07T00:00:00Z
 - Cmd alias: type-safe scripts usage in maybeRunAlias
   - Removed unknown→Record casts; use ScriptsTable | undefined directly and pass
     to resolveCommand/resolveShell. No behavior change; safer typing.
+
+- Cmd alias: simplify entOpts and remove casts in catch
+  - Refactored EntropyOptions/RedactOptions construction to concise object
+    literals and introduced a type guard to extract exitCode without casts.
