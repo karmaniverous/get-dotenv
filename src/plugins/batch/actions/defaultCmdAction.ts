@@ -52,24 +52,21 @@ export const buildDefaultCmdAction =
 
     // Safely retrieve merged parent flags (prefer optsWithGlobals when present)
     let gSrc: unknown = {};
-    if (
-      'optsWithGlobals' in (thisCommand as object) &&
-      // Probe the presence of the method without creating an unbound reference
-      typeof (thisCommand as { optsWithGlobals?: unknown }).optsWithGlobals ===
-        'function'
-    ) {
-      gSrc = (
-        thisCommand as {
-          optsWithGlobals: (this: unknown) => unknown;
-        }
-      ).optsWithGlobals.call(thisCommand);
-    } else if (
-      'opts' in (batchCmd as object) &&
-      typeof (batchCmd as { opts?: unknown }).opts === 'function'
-    ) {
-      gSrc = (batchCmd as { opts: (this: unknown) => unknown }).opts.call(
-        batchCmd,
-      );
+    if ('optsWithGlobals' in (thisCommand as object)) {
+      // Retrieve method via Reflect to avoid unbound-method lint, then call
+      const owg = Reflect.get(thisCommand as object, 'optsWithGlobals') as
+        | ((this: unknown) => unknown)
+        | undefined;
+      if (typeof owg === 'function') {
+        gSrc = owg.call(thisCommand);
+      }
+    } else if ('opts' in (batchCmd as object)) {
+      const opts = Reflect.get(batchCmd as object, 'opts') as
+        | ((this: unknown) => unknown)
+        | undefined;
+      if (typeof opts === 'function') {
+        gSrc = opts.call(batchCmd);
+      }
     }
     const g = gSrc as BatchFlags;
 
@@ -105,10 +102,8 @@ export const buildDefaultCmdAction =
       }
       if (g.list) {
         // Resolve shell fallback without chained nullish checks (lint-friendly)
-        const listShell =
-          shell !== undefined
-            ? shell
-            : (readMergedOptions(batchCmd).shell ?? false);
+        const rootShell = readMergedOptions(batchCmd).shell;
+        const listShell = shell !== undefined ? shell : rootShell;
         await execShellCommandBatch({
           globs,
           ignoreErrors,

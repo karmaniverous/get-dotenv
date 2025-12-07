@@ -1,5 +1,4 @@
 import type { CommandUnknownOpts } from '@commander-js/extra-typings';
-import type { Command } from '@commander-js/extra-typings';
 
 import type { GetDotenvCliPublic } from '@/src/cliHost';
 import type { PluginWithInstanceHelpers } from '@/src/cliHost/definePlugin';
@@ -57,10 +56,10 @@ export const attachParentAlias = (
     await maybeRunAlias(cli, thisCommand, aliasKey, aliasState, expandDefault);
   };
 
-  cli.hook('preAction', async (thisCommand: Command) => {
+  cli.hook('preAction', async (thisCommand) => {
     await maybeRun(thisCommand as unknown as CommandUnknownOpts);
   });
-  cli.hook('preSubcommand', async (thisCommand: Command) => {
+  cli.hook('preSubcommand', async (thisCommand) => {
     await maybeRun(thisCommand as unknown as CommandUnknownOpts);
   });
 };

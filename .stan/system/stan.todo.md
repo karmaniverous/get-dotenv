@@ -186,4 +186,13 @@ When updated: 2025-12-07T00:00:00Z
 - Init plugin: inherit logger; remove logger option and unsafe opts cast
   - Dropped plugin-scoped logger in init; readMergedOptions supplies the base
     logger inside the action. Replaced Record<string, unknown> opts cast with a
-    typed local shape for flags. Updated tests to call initPlugin() without args.
+    typed local shape for flags. Updated tests to call initPlugin() without args.
+
+- Typecheck/lint: finalize alias hook and batch action fixes
+  - cmd alias: remove explicit Commander.Command annotation in hook callbacks
+    to let Commander infer the parameter type; continue passing the callback
+    argument to maybeRun with a safe cast to CommandUnknownOpts. Resolves the
+    remaining TS2345 without changing behavior.
+  - batch default action: drop unnecessary `?? false` on a non-nullable root
+    shell; use Reflect.get to retrieve methods and invoke with `.call(...)` to
+    avoid unbound-method lint.
