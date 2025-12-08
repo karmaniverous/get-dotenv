@@ -4,6 +4,7 @@
  */
 import { stdin as input, stdout as output } from 'node:process';
 
+import type { CommandUnknownOpts } from '@commander-js/extra-typings';
 // NOTE: pay attention to non-interactive detection and precedence
 // (--force > --yes > auto-detect). See README for details.
 import fs from 'fs-extra';
@@ -39,7 +40,7 @@ export const initPlugin = () =>
         .option('--cli-name <string>', 'CLI name for skeleton and tokens')
         .option('--force', 'overwrite all existing files')
         .option('--yes', 'skip all collisions (no overwrite)')
-        .action(async (destArg, opts, thisCommand) => {
+        .action(async (destArg, opts, thisCommand: CommandUnknownOpts) => {
           // Inherit logger from merged root options (base).
           const bag = readMergedOptions(thisCommand);
           const logger = bag.logger;

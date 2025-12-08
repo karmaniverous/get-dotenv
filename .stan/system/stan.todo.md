@@ -84,4 +84,10 @@ When updated: 2025-12-08T00:00:00Z
 - Remove dynamicOption helper from GetDotenvCli. It could not propagate
   Commander option inference (returned `this`) and recently lost its
   generic due to lint. Steer callers to `createDynamicOption(...); addOption(...)`
-  or `plugin.createPluginDynamicOption(...)` for fully typed options.
+  or `plugin.createPluginDynamicOption(...)` for fully typed options.
+
+- Plugins: refactor actions to rely on Commander inference for args/opts
+  and annotate only the third param as CommandUnknownOpts for helpers:
+  • aws: action(async (args, opts, thisCommand: CommandUnknownOpts) => …)
+  • init: action(async (destArg, opts, thisCommand: CommandUnknownOpts) => …)
+  • demo: align script action signature similarly; runtime unchanged.

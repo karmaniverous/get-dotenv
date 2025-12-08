@@ -1,6 +1,7 @@
 /**
  * Demo plugin (educational).
  *
+ *
  * Purpose
  * - Showcase how to build a plugin for the GetDotenv CLI host.
  * - Demonstrate:
@@ -122,29 +123,31 @@ export const demoPlugin = () =>
           'Resolve a command via scripts and execute it with the proper shell',
         )
         .argument('[command...]')
-        .action(async (commandParts, _opts, thisCommand) => {
-          const bag = readMergedOptions(thisCommand as CommandUnknownOpts);
+        .action(
+          async (commandParts, _opts, thisCommand: CommandUnknownOpts) => {
+            const bag = readMergedOptions(thisCommand);
 
-          const input = Array.isArray(commandParts)
-            ? commandParts.map(String).join(' ')
-            : '';
-          if (!input) {
-            logger.log(
-              '[demo] Please provide a command or script name, e.g. "echo OK" or "git-status".',
-            );
-            return;
-          }
+            const input = Array.isArray(commandParts)
+              ? commandParts.map(String).join(' ')
+              : '';
+            if (!input) {
+              logger.log(
+                '[demo] Please provide a command or script name, e.g. "echo OK" or "git-status".',
+              );
+              return;
+            }
 
-          const resolved = resolveCommand(bag.scripts, input);
-          const shell = resolveShell(bag.scripts, input, bag.shell);
+            const resolved = resolveCommand(bag.scripts, input);
+            const shell = resolveShell(bag.scripts, input, bag.shell);
 
-          // Compose child env (parent + ctx.dotenv). This mirrors cmd/batch behavior.
-          const ctx = cli.getCtx();
-          await runCommand(resolved, shell, {
-            env: buildSpawnEnv(process.env, ctx.dotenv),
-            stdio: 'inherit',
-          });
-        });
+            // Compose child env (parent + ctx.dotenv). This mirrors cmd/batch behavior.
+            const ctx = cli.getCtx();
+            await runCommand(resolved, shell, {
+              env: buildSpawnEnv(process.env, ctx.dotenv),
+              stdio: 'inherit',
+            });
+          },
+        );
     },
     /**
      * Optional: afterResolve can initialize per-plugin state using ctx.dotenv.
