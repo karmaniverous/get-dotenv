@@ -3,8 +3,8 @@ import { Command } from '@commander-js/extra-typings';
 
 import { definePlugin } from '@/src/cliHost/definePlugin';
 
-import { buildDefaultCmdAction } from './actions/defaultCmdAction';
-import { buildParentAction } from './actions/parentAction';
+import { attachDefaultCmdAction } from './actions/defaultCmdAction';
+import { attachParentAction } from './actions/parentAction';
 import { BatchConfigSchema, type BatchPluginOptions } from './types';
 
 /**
@@ -84,20 +84,22 @@ export const batchPlugin = (opts: BatchPluginOptions = {}) => {
           '-e, --ignore-errors',
           'ignore errors and continue with next path',
         )
-        .argument('[command...]')
-        .addCommand(
-          new Command()
-            .name('cmd')
-            .description(
-              'execute command, conflicts with --command option (default subcommand)',
-            )
-            .enablePositionalOptions()
-            .passThroughOptions()
-            .argument('[command...]')
-            .action(buildDefaultCmdAction(plugin, cli, batchCmd, opts)),
-          { isDefault: true },
+        .argument('[command...]');
+
+      // Default subcommand "cmd" with contextual typing for args/opts
+      const cmdSub = new Command()
+        .name('cmd')
+        .description(
+          'execute command, conflicts with --command option (default subcommand)',
         )
-        .action(buildParentAction(plugin, cli, opts));
+        .enablePositionalOptions()
+        .passThroughOptions()
+        .argument('[command...]');
+      attachDefaultCmdAction(plugin, cli, batchCmd, opts, cmdSub);
+      ns.addCommand(cmdSub, { isDefault: true });
+
+      // Parent action installed with contextual typing
+      attachParentAction(plugin, cli, opts, ns);
     },
   });
   return plugin;

@@ -1,4 +1,4 @@
-import type { CommandUnknownOpts } from '@commander-js/extra-typings';
+import type { Command, CommandUnknownOpts } from '@commander-js/extra-typings';
 
 import type {
   definePlugin,
@@ -12,21 +12,16 @@ import { execShellCommandBatch } from '@/src/services/batch/execShellCommandBatc
 import { resolveCommand, resolveShell } from '@/src/services/batch/resolve';
 
 /**
- * Build the default "cmd" subcommand action for the batch plugin.
- * Mirrors the original inline implementation with identical behavior.
+ * Attach the default "cmd" subcommand action with contextual typing.
  */
-export const buildDefaultCmdAction =
-  (
-    plugin: ReturnType<typeof definePlugin>,
-    cli: GetDotenvCliPublic,
-    batchCmd: CommandUnknownOpts,
-    pluginOpts: BatchPluginOptions,
-  ) =>
-  async (
-    commandParts: unknown,
-    _subOpts: unknown,
-    thisCommand: CommandUnknownOpts,
-  ): Promise<void> => {
+export const attachDefaultCmdAction = (
+  plugin: ReturnType<typeof definePlugin>,
+  cli: GetDotenvCliPublic,
+  batchCmd: CommandUnknownOpts,
+  pluginOpts: BatchPluginOptions,
+  cmd: Command,
+) => {
+  cmd.action(async (commandParts, _subOpts, thisCommand) => {
     // Inherit logger from the merged root options bag
     const mergedForLogger = readMergedOptions(batchCmd);
     const loggerLocal: Logger = mergedForLogger.logger;
@@ -41,7 +36,16 @@ export const buildDefaultCmdAction =
     const dotenvEnv = cli.getCtx().dotenv;
 
     // Resolve batch flags from the parent (batch) command.
-    type BatchFlags = {
+    const gSrc: unknown = (() => {
+      // Safely retrieve merged parent flags (prefer optsWithGlobals when present)
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore - accessed reflectively; contextual typing supplied by Commander
+      const maybe = (
+        thisCommand as unknown as { optsWithGlobals?: () => unknown }
+      ).optsWithGlobals;
+      return typeof maybe === 'function' ? maybe.call(thisCommand) : {};
+    })();
+    const g = gSrc as {
       list?: boolean;
       ignoreErrors?: boolean;
       globs?: string;
@@ -49,26 +53,6 @@ export const buildDefaultCmdAction =
       rootPath?: string;
       command?: string;
     };
-
-    // Safely retrieve merged parent flags (prefer optsWithGlobals when present)
-    let gSrc: unknown = {};
-    if ('optsWithGlobals' in (thisCommand as object)) {
-      // Retrieve method via Reflect to avoid unbound-method lint, then invoke
-      const owg = Reflect.get(thisCommand as object, 'optsWithGlobals') as
-        | ((this: unknown) => unknown)
-        | undefined;
-      if (typeof owg === 'function') {
-        gSrc = Reflect.apply(owg, thisCommand, []);
-      }
-    } else if ('opts' in (batchCmd as object)) {
-      const opts = Reflect.get(batchCmd as object, 'opts') as
-        | ((this: unknown) => unknown)
-        | undefined;
-      if (typeof opts === 'function') {
-        gSrc = Reflect.apply(opts, batchCmd, []);
-      }
-    }
-    const g = gSrc as BatchFlags;
 
     const ignoreErrors = Boolean(g.ignoreErrors);
     const globs =
@@ -180,4 +164,5 @@ export const buildDefaultCmdAction =
       rootPath,
       shell: shellSetting,
     });
-  };
+  });
+};
