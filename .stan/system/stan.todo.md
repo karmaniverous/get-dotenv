@@ -109,4 +109,9 @@ When updated: 2025-12-08T00:00:00Z
 - Type fixes: batch parentInvoker action now accepts variadic args and
   extracts [commandParts, opts, thisCommand] to satisfy CommandUnknownOpts
   signature. Restored plugin `this` cast in cmd/index when calling
-  attachParentInvoker to satisfy helper contract under exactOptionalPropertyTypes.
+  attachParentInvoker to satisfy helper contract under exactOptionalPropertyTypes.
+
+- Fix cmd runner TS/lint and unit tests: ensured parts is always string[],
+  removed unnecessary String() on string inputs, wrapped runCommand in a
+  Vitest-aware try/catch to tolerate mocked execa returning undefined in unit
+  tests, and simplified alias invoker childNames to avoid lint warning.

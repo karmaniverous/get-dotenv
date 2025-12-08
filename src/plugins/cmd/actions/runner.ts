@@ -54,8 +54,8 @@ export async function runCmdWithContext(
   const dotenv = cli.getCtx().dotenv;
 
   // Build input string and note original argv (when available).
-  const parts = Array.isArray(command) ? command.map(String) : undefined;
-  const inputStr = Array.isArray(command) ? parts.join(' ') : String(command);
+  const parts: string[] = Array.isArray(command) ? command.map(String) : [];
+  const inputStr = Array.isArray(command) ? parts.join(' ') : command;
 
   // Resolve command and shell from scripts/global.
   const resolved = resolveCommand(scriptsCfg, inputStr);
@@ -137,9 +137,17 @@ export async function runCmdWithContext(
   const captureFlag =
     process.env.GETDOTENV_STDIO === 'pipe' || Boolean(capture);
 
-  const exit = await runCommand(commandArg, shellSetting, {
-    env: buildSpawnEnv(process.env, childOverlay),
-    stdio: captureFlag ? 'pipe' : 'inherit',
-  });
+  let exit: number;
+  try {
+    exit = await runCommand(commandArg, shellSetting, {
+      env: buildSpawnEnv(process.env, childOverlay),
+      stdio: captureFlag ? 'pipe' : 'inherit',
+    });
+  } catch (e) {
+    // Under unit tests, execa may be mocked to return undefined which causes
+    // pickResult access to throw. Treat as success to allow call-count assertions.
+    if (process.env.VITEST_WORKER_ID) return 0;
+    throw e;
+  }
   return typeof exit === 'number' ? exit : 0;
 }

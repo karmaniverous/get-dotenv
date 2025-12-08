@@ -71,7 +71,7 @@ export const attachParentInvoker = (
     const cmd = thisCommand as CommandUnknownOpts & {
       opts?: () => Record<string, unknown>;
       rawArgs?: string[];
-      commands?: Array<{ name: () => string; aliases: () => string[] }>;
+      commands: Array<{ name: () => string; aliases: () => string[] }>;
     };
     const raw = typeof cmd.opts === 'function' ? cmd.opts() : {};
     const val = (raw as Record<string, unknown>)[aliasKey];
@@ -82,10 +82,7 @@ export const attachParentInvoker = (
           ? val.length > 0
           : false;
     if (!provided) return;
-    const childNames = (cmd.commands ?? []).flatMap((c) => [
-      c.name(),
-      ...c.aliases(),
-    ]);
+    const childNames = cmd.commands.flatMap((c) => [c.name(), ...c.aliases()]);
     const hasSub = (cmd.rawArgs ?? []).some((t) => childNames.includes(t));
     if (hasSub) return; // do not run alias when an explicit subcommand is present
 
