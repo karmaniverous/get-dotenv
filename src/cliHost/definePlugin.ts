@@ -104,9 +104,14 @@ export interface GetDotenvCliPlugin<
    * plugin's children should be installed. When omitted, children mount at
    * the same cli that was passed in.
    */
-  setup: (
+  // Overload A: no mount returned
+  setup(
     cli: GetDotenvCliPublic<TOptions, TArgs, TOpts, TGlobal>,
-  ) => void | unknown | Promise<void | unknown>;
+  ): void | Promise<void>;
+  // Overload B: a mount (command) is returned; children will install under it
+  setup(
+    cli: GetDotenvCliPublic<TOptions, TArgs, TOpts, TGlobal>,
+  ): GetDotenvCliPublic | Promise<GetDotenvCliPublic>;
 
   /**
    * After the dotenv context is resolved, initialize any clients/secrets

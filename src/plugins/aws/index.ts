@@ -11,11 +11,13 @@ import { resolveAwsContext } from './service';
 import { type AwsPluginConfig, AwsPluginConfigSchema } from './types';
 
 export const awsPlugin = () => {
+  // Create plugin first, then assign setup to avoid self-referential initializer issues.
   const plugin = definePlugin({
     id: 'aws',
-    // Host validates this slice when the loader path is active.
     configSchema: AwsPluginConfigSchema,
-    setup(cli) {
+    setup: (_cli) => undefined,
+  });
+  plugin.setup = (cli) => {
       // Subcommand: aws
       const cmd = cli
         .ns('aws')
@@ -194,7 +196,7 @@ export const awsPlugin = () => {
           }
         });
       return cmd;
-    },
+    };
     async afterResolve(_cli, ctx) {
       const log: Logger = console;
       const cfg = plugin.readConfig(_cli);

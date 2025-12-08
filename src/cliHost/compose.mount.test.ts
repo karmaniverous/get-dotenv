@@ -4,7 +4,7 @@ import { definePlugin } from './definePlugin';
 import { GetDotenvCli } from './GetDotEnvCli';
 
 describe('cliHost nested composition (mount propagation)', () => {
-  it('parent returns ns("parent"); child mounts under it', async () => {
+  it('parent returns ns("parent"); child mounts under it', () => {
     const parent = definePlugin({
       id: 'parent',
       setup(cli) {

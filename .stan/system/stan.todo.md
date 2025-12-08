@@ -144,4 +144,13 @@ When updated: 2025-12-08T00:00:00Z
   nesting and updated E2E to ensure "aws -h" lists "whoami".
   Kept public author DX cast‑free and contained recursive typing at
   the installer boundary. Docs facet remains disabled pending
-  stabilization.
+  stabilization.
+
+- Gate fixes for nested composition:
+  replaced setup return unions with overloads (no void-in-union,
+  no unknown unions), contained existential typing in the installer
+  (typed setup invocation + structural guard), moved installation
+  out of use() into install() to avoid floating promises, and
+  refactored aws plugin to assign setup after creation to avoid
+  self-referential initializer (TS7022). Fixed unit test to satisfy
+  require-await. All type/lint/test gates green.

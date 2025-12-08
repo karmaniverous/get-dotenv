@@ -320,7 +320,6 @@ export class GetDotenvCli<
    */
   use(plugin: GetDotenvCliPlugin<TOptions, TArgs, TOpts, TGlobal>): this {
     this._plugins.push(plugin);
-    setupPluginTree(this, plugin);
     return this;
   }
 
@@ -329,10 +328,15 @@ export class GetDotenvCli<
    * Runs only once per CLI instance.
    */
   async install(): Promise<void> {
-    // Setup is performed immediately in use(); here we only guard for afterResolve.
+    if (this._installed) return;
+    // Install parent → children with mount propagation (async-aware).
+    for (const p of this._plugins) {
+      await setupPluginTree(
+        this as unknown as GetDotenvCli,
+        p as unknown as GetDotenvCliPlugin<TOptions, TArgs, TOpts, TGlobal>,
+      );
+    }
     this._installed = true;
-    // Satisfy require-await without altering behavior.
-    await Promise.resolve();
   }
 
   /**
