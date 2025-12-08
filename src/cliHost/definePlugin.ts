@@ -31,7 +31,7 @@ import type { GetDotenvCliCtx, ResolvedHelpConfig } from './GetDotEnvCli';
  */
 export interface GetDotenvCliPublic<
   TOptions extends GetDotenvOptions = GetDotenvOptions,
-  TArgs extends any[] = [],
+  TArgs extends unknown[] = [],
   TOpts extends OptionValues = {},
   TGlobal extends OptionValues = {},
 > extends Command<TArgs, TOpts, TGlobal> {

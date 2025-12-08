@@ -72,4 +72,9 @@ When updated: 2025-12-08T00:00:00Z
 - Thread Commander generics through host interface and class:
   added defaulted Commander generics to GetDotenvCliPublic and
   GetDotenvCli, implemented typed ns<Usage>() with duplicate-name
-  guard, and kept createCommand() returning a proper GetDotenvCli.
+  guard, and kept createCommand() returning a proper GetDotenvCli.
+
+- Fix typecheck & lint after generics threading:
+  widened helper generics in registerPlugin/runAfterResolve to accept
+  any Commander generics on the host, and replaced any[] with
+  unknown[] to satisfy no-explicit-any.

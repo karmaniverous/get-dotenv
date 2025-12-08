@@ -64,7 +64,7 @@ const HELP_HEADER_SYMBOL = Symbol('GetDotenvCli.helpHeader');
  */
 export class GetDotenvCli<
     TOptions extends GetDotenvOptions = GetDotenvOptions,
-    TArgs extends any[] = [],
+    TArgs extends unknown[] = [],
     TOpts extends OptionValues = {},
     TGlobal extends OptionValues = {},
   >
