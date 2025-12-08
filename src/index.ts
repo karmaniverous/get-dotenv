@@ -8,6 +8,7 @@ import { toHelpConfig } from '@/src/cliHost/helpConfig';
 import { resolveCliOptions } from '@/src/cliHost/resolveCliOptions';
 import type { RootOptionsShape, ScriptsTable } from '@/src/cliHost/types';
 import { awsPlugin } from '@/src/plugins/aws';
+import { awsWhoamiPlugin } from '@/src/plugins/aws/whoami';
 import { batchPlugin } from '@/src/plugins/batch';
 import { cmdPlugin } from '@/src/plugins/cmd';
 import { demoPlugin } from '@/src/plugins/demo';
@@ -109,7 +110,7 @@ export function createCli(opts: CreateCliOptions = {}): {
     .attachRootOptions({ loadProcess: false })
     .use(cmdPlugin({ asDefault: true, optionAlias: '-c, --cmd <command...>' }))
     .use(batchPlugin())
-    .use(awsPlugin())
+    .use(awsPlugin().use(awsWhoamiPlugin()))
     .use(demoPlugin())
     .use(initPlugin())
     .passOptions({ loadProcess: false });
