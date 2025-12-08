@@ -135,3 +135,13 @@ When updated: 2025-12-08T00:00:00Z
   path "./execShellCommandBatch" (replacing outdated
   "../../services/batch/execShellCommandBatch"), preventing real
   process.exit and /bin/zsh spawn and allowing execMock assertions.
+
+- Nested composition implementation (mount propagation):
+  updated installer to await setup and propagate an optional mount
+  (structural type guard, existential typing kept internal). Adjusted
+  awsPlugin to return its ns('aws') so awsWhoami mounts under it.
+  Added unit test (compose.mount.test.ts) to assert parent→child
+  nesting and updated E2E to ensure "aws -h" lists "whoami".
+  Kept public author DX cast‑free and contained recursive typing at
+  the installer boundary. Docs facet remains disabled pending
+  stabilization.

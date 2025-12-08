@@ -44,6 +44,8 @@ describe('E2E help (subcommand and ordering)', () => {
     expect(stdout).toMatch(/Usage:\s+getdotenv aws/i);
     // No Commander "Global Options:" block (we do not show root flags here)
     expect(stdout.includes('Global Options:')).toBe(false);
+    // Nested composition: whoami should be listed under aws
+    expect(stdout).toMatch(/\bwhoami\b/i);
     // No self plugin group duplication
     expect(stdout.includes('Plugin options — aws')).toBe(false);
     // Must end with at least one blank line for prompt separation (CRLF-safe)

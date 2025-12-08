@@ -193,7 +193,7 @@ export const awsPlugin = () => {
             return;
           }
         });
-      void cmd;
+      return cmd;
     },
     async afterResolve(_cli, ctx) {
       const log: Logger = console;

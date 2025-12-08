@@ -1,6 +1,9 @@
 /** src/cliHost/definePlugin.ts
  * Plugin contracts for the GetDotenv CLI host.
  *
+ * Notes:
+ * - setup may optionally return a mount (a command namespace) where children should be installed.
+ *
  * This module exposes a structural public interface for the host that plugins
  * should use (GetDotenvCliPublic). Using a structural type at the seam avoids
  * nominal class identity issues (private fields) in downstream consumers.
@@ -96,10 +99,14 @@ export interface GetDotenvCliPlugin<
   /**
    * Setup phase: register commands and wiring on the provided CLI instance.
    * Runs parent → children (pre-order).
+   *
+   * Optional: return the "mount point" (a namespaced command) where this
+   * plugin's children should be installed. When omitted, children mount at
+   * the same cli that was passed in.
    */
   setup: (
     cli: GetDotenvCliPublic<TOptions, TArgs, TOpts, TGlobal>,
-  ) => void | Promise<void>;
+  ) => void | unknown | Promise<void | unknown>;
 
   /**
    * After the dotenv context is resolved, initialize any clients/secrets
