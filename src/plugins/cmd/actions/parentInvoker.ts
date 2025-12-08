@@ -1,13 +1,16 @@
 import type { CommandUnknownOpts } from '@commander-js/extra-typings';
-import type { Command } from '@commander-js/extra-typings';
 
-import type { GetDotenvCliPublic } from '@/src/cliHost';
+import type { GetDotenvCliPublic } from '@/src/cliHost/definePlugin';
 import type { PluginWithInstanceHelpers } from '@/src/cliHost/definePlugin';
 import type { CmdPluginOptions } from '@/src/plugins/cmd/index';
 
-import { maybeRunAlias } from './maybeRunAlias';
+import { maybeRunAlias } from '../alias/maybeRunAlias';
 
-export const attachParentAlias = (
+/**
+ * Install the parent-level invoker (alias) for the cmd plugin.
+ * Unifies naming with batch attachParentInvoker; behavior unchanged.
+ */
+export const attachParentInvoker = (
   cli: GetDotenvCliPublic,
   options: CmdPluginOptions,
   _cmd: CommandUnknownOpts,
@@ -56,7 +59,7 @@ export const attachParentAlias = (
     }
     await maybeRunAlias(
       cli,
-      thisCommand as Command,
+      thisCommand as Parameters<typeof maybeRunAlias>[1],
       aliasKey,
       aliasState,
       expandDefault,

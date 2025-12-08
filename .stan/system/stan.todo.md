@@ -97,3 +97,16 @@ When updated: 2025-12-08T00:00:00Z
   Command<[string[]], {}, {}> and annotated action parameters
   (commandParts: string[], opts: {}, thisCommand: CommandUnknownOpts),
   resolving typecheck errors (TS2345/TS7006).
+
+- Unify naming and helpers (big bang): introduced src/cliHost/invoke.ts
+  (composeNestedEnv, maybePreserveNodeEvalArgv); renamed batch
+  parentAction -> parentInvoker and forwarded getDotenvCliOptions in
+  all parent paths; extracted cmd default subcommand action to
+  actions/defaultCmdAction.ts; replaced cmd alias installer with
+  actions/parentInvoker.ts (behavior unchanged). Updated plugin
+  index modules to use unified names and avoided re-exports per plan.
+
+- Type fixes: batch parentInvoker action now accepts variadic args and
+  extracts [commandParts, opts, thisCommand] to satisfy CommandUnknownOpts
+  signature. Restored plugin `this` cast in cmd/index when calling
+  attachParentInvoker to satisfy helper contract under exactOptionalPropertyTypes.

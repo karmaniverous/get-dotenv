@@ -4,7 +4,7 @@ import { Command } from '@commander-js/extra-typings';
 import { definePlugin } from '@/src/cliHost/definePlugin';
 
 import { attachDefaultCmdAction } from './actions/defaultCmdAction';
-import { attachParentAction } from './actions/parentAction';
+import { attachParentInvoker } from './actions/parentInvoker';
 import { BatchConfigSchema, type BatchPluginOptions } from './types';
 
 /**
@@ -98,8 +98,8 @@ export const batchPlugin = (opts: BatchPluginOptions = {}) => {
       attachDefaultCmdAction(plugin, cli, batchCmd, opts, cmdSub);
       ns.addCommand(cmdSub, { isDefault: true });
 
-      // Parent action installed with contextual typing
-      attachParentAction(plugin, cli, opts, ns);
+      // Parent invoker (unified naming)
+      attachParentInvoker(plugin, cli, opts, ns);
     },
   });
   return plugin;
