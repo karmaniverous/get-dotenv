@@ -74,4 +74,9 @@ When updated: 2025-12-08T00:00:00Z
   action handlers; no runtime behavior changes identified.
 
 - Typing fix: propagate Usage through dynamic Option helpers so addOption
-  can infer flags and widen Opts. Updated makeDynamicOption(), host
+  can infer flags and widen Opts. Updated makeDynamicOption(), host
+
+- Lint: remove unnecessary generic from dynamicOption to satisfy
+  @typescript-eslint/no-unnecessary-type-parameters. Typed option
+  inference remains through createDynamicOption/Option<Usage> and
+  plugin.createPluginDynamicOption.

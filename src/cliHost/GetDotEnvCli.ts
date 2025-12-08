@@ -195,17 +195,15 @@ export class GetDotenvCli<
    * Chainable helper mirroring .option(), but with a dynamic description.
    * Equivalent to addOption(createDynamicOption(...)).
    */
-  dynamicOption<Usage extends string>(
-    flags: Usage,
+  dynamicOption(
+    flags: string,
     desc: (
       cfg: ResolvedHelpConfig & { plugins: Record<string, unknown> },
     ) => string,
     parser?: (value: string, previous?: unknown) => unknown,
     defaultValue?: unknown,
   ): this {
-    this.addOption(
-      this.createDynamicOption<Usage>(flags, desc, parser, defaultValue),
-    );
+    this.addOption(this.createDynamicOption(flags, desc, parser, defaultValue));
     return this;
   }
 
