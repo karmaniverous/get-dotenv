@@ -8,7 +8,12 @@
 /* eslint-disable tsdoc/syntax */
 
 // Optional per-plugin config validation (host validates when loader is enabled).
-import type { Command, Option } from '@commander-js/extra-typings';
+import type {
+  Command,
+  InferCommandArguments,
+  Option,
+  OptionValues,
+} from '@commander-js/extra-typings';
 import { z, type ZodObject } from 'zod';
 
 import type { GetDotenvOptions } from '@/src/GetDotenvOptions';
@@ -26,8 +31,22 @@ import type { GetDotenvCliCtx, ResolvedHelpConfig } from './GetDotEnvCli';
  */
 export interface GetDotenvCliPublic<
   TOptions extends GetDotenvOptions = GetDotenvOptions,
-> extends Command {
-  ns(name: string): Command;
+  TArgs extends any[] = [],
+  TOpts extends OptionValues = {},
+  TGlobal extends OptionValues = {},
+> extends Command<TArgs, TOpts, TGlobal> {
+  /**
+   * Create a namespaced child command with argument inference.
+   * Mirrors Commander generics so downstream chaining remains fully typed.
+   */
+  ns<Usage extends string>(
+    name: Usage,
+  ): GetDotenvCliPublic<
+    TOptions,
+    [...TArgs, ...InferCommandArguments<Usage>],
+    {},
+    TOpts & TGlobal
+  >;
   /** Return the current context; throws if not yet resolved. */
   getCtx(): GetDotenvCliCtx<TOptions>;
   /** Check whether a context has been resolved (non-throwing). */
@@ -104,6 +123,7 @@ export type PluginWithInstanceHelpers<
   TOptions extends GetDotenvOptions = GetDotenvOptions,
   TConfig = unknown,
 > = GetDotenvCliPlugin<TOptions> & {
+  // Instance-bound helpers preserve plugin identity and inject validated slices.
   // Default TCfg to the plugin’s TConfig to improve inference at call sites.
   readConfig<TCfg = TConfig>(cli: GetDotenvCliPublic<TOptions>): Readonly<TCfg>;
   createPluginDynamicOption<TCfg = TConfig>(

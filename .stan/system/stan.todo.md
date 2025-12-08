@@ -68,3 +68,8 @@ When updated: 2025-12-08T00:00:00Z
 ## Completed (recent)
 
 **CRITICAL: Append-only list. Add new completed items at the end. Prune old completed entries from the top. Do not edit existing entries.**
+
+- Thread Commander generics through host interface and class:
+  added defaulted Commander generics to GetDotenvCliPublic and
+  GetDotenvCli, implemented typed ns<Usage>() with duplicate-name
+  guard, and kept createCommand() returning a proper GetDotenvCli.

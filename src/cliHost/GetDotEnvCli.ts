@@ -1,5 +1,9 @@
 import type { Option } from '@commander-js/extra-typings';
-import type { CommandUnknownOpts } from '@commander-js/extra-typings';
+import type {
+  CommandUnknownOpts,
+  InferCommandArguments,
+  OptionValues,
+} from '@commander-js/extra-typings';
 import { Command } from '@commander-js/extra-typings';
 
 import type {
@@ -58,9 +62,14 @@ const HELP_HEADER_SYMBOL = Symbol('GetDotenvCli.helpHeader');
  * - Provide a namespacing helper (ns).
  * - Support composable plugins with parent → children install and afterResolve.
  */
-export class GetDotenvCli<TOptions extends GetDotenvOptions = GetDotenvOptions>
-  extends Command
-  implements GetDotenvCliPublic<TOptions>
+export class GetDotenvCli<
+    TOptions extends GetDotenvOptions = GetDotenvOptions,
+    TArgs extends any[] = [],
+    TOpts extends OptionValues = {},
+    TGlobal extends OptionValues = {},
+  >
+  extends Command<TArgs, TOpts, TGlobal>
+  implements GetDotenvCliPublic<TOptions, TArgs, TOpts, TGlobal>
 {
   /** Registered top-level plugins (composition happens via .use()) */
   private _plugins: GetDotenvCliPlugin<TOptions>[] = [];
@@ -76,8 +85,8 @@ export class GetDotenvCli<TOptions extends GetDotenvOptions = GetDotenvOptions>
    * Create a subcommand using the same subclass, preserving helpers like
    * dynamicOption on children.
    */
-  override createCommand(name?: string): Command {
-    // Explicitly construct a GetDotenvCli (drop subclass constructor semantics).
+  override createCommand(name?: string): GetDotenvCli<TOptions> {
+    // Explicitly construct a GetDotenvCli for children to preserve helpers.
     return new GetDotenvCli(name);
   }
 
@@ -240,14 +249,29 @@ export class GetDotenvCli<TOptions extends GetDotenvOptions = GetDotenvOptions>
     this[OPTS_SYMBOL] = bag;
   }
 
-  /** Convenience helper to create a namespaced subcommand. */
-  ns(name: string): Command {
+  /**
+   * Convenience helper to create a namespaced subcommand with argument inference.
+   * This mirrors Commander generics so downstream chaining stays fully typed.
+   */
+  ns<Usage extends string>(
+    name: Usage,
+  ): GetDotenvCliPublic<
+    TOptions,
+    [...TArgs, ...InferCommandArguments<Usage>],
+    {},
+    TOpts & TGlobal
+  > {
     // Guard against same-level duplicate command names for clearer diagnostics.
     const exists = this.commands.some((c) => c.name() === name);
     if (exists) {
       throw new Error(`Duplicate command name: ${name}`);
     }
-    return this.command(name);
+    return this.command(name) as unknown as GetDotenvCliPublic<
+      TOptions,
+      [...TArgs, ...InferCommandArguments<Usage>],
+      {},
+      TOpts & TGlobal
+    >;
   }
 
   /**
