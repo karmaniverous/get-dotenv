@@ -77,4 +77,10 @@ When updated: 2025-12-08T00:00:00Z
 - Fix typecheck & lint after generics threading:
   widened helper generics in registerPlugin/runAfterResolve to accept
   any Commander generics on the host, and replaced any[] with
-  unknown[] to satisfy no-explicit-any.
+  unknown[] to satisfy no-explicit-any.
+
+- Generalize plugin interface over Commander generics and thread through:
+  added TArgs/TOpts/TGlobal to GetDotenvCliPlugin and carried those
+  generics into host plugin list, use(), and helpers. Broadened
+  readConfig/createPluginDynamicOption host argument types to accept
+  unknown[]/OptionValues for ergonomic assignability.

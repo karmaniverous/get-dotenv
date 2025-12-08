@@ -15,13 +15,15 @@ export function setupPluginTree<
   TGlobal extends OptionValues = {},
 >(
   cli: GetDotenvCliPublic<TOptions, TArgs, TOpts, TGlobal>,
-  plugin: GetDotenvCliPlugin<TOptions>,
+  plugin: GetDotenvCliPlugin<TOptions, TArgs, TOpts, TGlobal>,
 ): void {
-  const setupOne = (p: GetDotenvCliPlugin<TOptions>) => {
+  const setupOne = (p: GetDotenvCliPlugin<TOptions, TArgs, TOpts, TGlobal>) => {
     const maybe = p.setup(cli);
     // Registration-only setup may be async; ignore completion.
     void maybe;
-    for (const child of p.children) setupOne(child);
+    for (const child of p.children) {
+      setupOne(child);
+    }
   };
   setupOne(plugin);
 }

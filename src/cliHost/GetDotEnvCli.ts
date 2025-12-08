@@ -72,7 +72,7 @@ export class GetDotenvCli<
   implements GetDotenvCliPublic<TOptions, TArgs, TOpts, TGlobal>
 {
   /** Registered top-level plugins (composition happens via .use()) */
-  private _plugins: GetDotenvCliPlugin<TOptions>[] = [];
+  private _plugins: GetDotenvCliPlugin<TOptions, TArgs, TOpts, TGlobal>[] = [];
   /** One-time installation guard */
   private _installed = false;
   /** Optional header line to prepend in help output */
@@ -334,7 +334,7 @@ export class GetDotenvCli<
    * Register a plugin for installation (parent level).
    * Installation occurs on first resolveAndLoad() (or explicit install()).
    */
-  use(plugin: GetDotenvCliPlugin<TOptions>): this {
+  use(plugin: GetDotenvCliPlugin<TOptions, TArgs, TOpts, TGlobal>): this {
     this._plugins.push(plugin);
     setupPluginTree(this, plugin);
     return this;

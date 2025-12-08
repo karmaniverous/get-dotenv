@@ -16,10 +16,12 @@ export async function runAfterResolveTree<
   TGlobal extends OptionValues = {},
 >(
   cli: GetDotenvCliPublic<TOptions, TArgs, TOpts, TGlobal>,
-  plugins: GetDotenvCliPlugin<TOptions>[],
+  plugins: GetDotenvCliPlugin<TOptions, TArgs, TOpts, TGlobal>[],
   ctx: GetDotenvCliCtx<TOptions>,
 ): Promise<void> {
-  const run = async (p: GetDotenvCliPlugin<TOptions>) => {
+  const run = async (
+    p: GetDotenvCliPlugin<TOptions, TArgs, TOpts, TGlobal>,
+  ) => {
     if (p.afterResolve) await p.afterResolve(cli, ctx);
     for (const child of p.children) await run(child);
   };

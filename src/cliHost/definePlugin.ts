@@ -82,20 +82,25 @@ export interface GetDotenvCliPublic<
 /** Public plugin contract used by the GetDotenv CLI host. */
 export interface GetDotenvCliPlugin<
   TOptions extends GetDotenvOptions = GetDotenvOptions,
+  TArgs extends unknown[] = [],
+  TOpts extends OptionValues = {},
+  TGlobal extends OptionValues = {},
 > {
   id?: string;
   /**
    * Setup phase: register commands and wiring on the provided CLI instance.
    * Runs parent → children (pre-order).
    */
-  setup: (cli: GetDotenvCliPublic<TOptions>) => void | Promise<void>;
+  setup: (
+    cli: GetDotenvCliPublic<TOptions, TArgs, TOpts, TGlobal>,
+  ) => void | Promise<void>;
   /**
    * After the dotenv context is resolved, initialize any clients/secrets
    * or attach per-plugin state under ctx.plugins (by convention).
    * Runs parent → children (pre-order).
    */
   afterResolve?: (
-    cli: GetDotenvCliPublic<TOptions>,
+    cli: GetDotenvCliPublic<TOptions, TArgs, TOpts, TGlobal>,
     ctx: GetDotenvCliCtx<TOptions>,
   ) => void | Promise<void>;
   /**
@@ -106,11 +111,13 @@ export interface GetDotenvCliPlugin<
   /**
    * Compositional children. Installed after the parent per pre-order.
    */
-  children: GetDotenvCliPlugin<TOptions>[];
+  children: GetDotenvCliPlugin<TOptions, TArgs, TOpts, TGlobal>[];
   /**
    * Compose a child plugin. Returns the parent to enable chaining.
    */
-  use: (child: GetDotenvCliPlugin<TOptions>) => GetDotenvCliPlugin<TOptions>;
+  use: (
+    child: GetDotenvCliPlugin<TOptions, TArgs, TOpts, TGlobal>,
+  ) => GetDotenvCliPlugin<TOptions, TArgs, TOpts, TGlobal>;
 }
 
 /**
@@ -122,12 +129,17 @@ export interface GetDotenvCliPlugin<
 export type PluginWithInstanceHelpers<
   TOptions extends GetDotenvOptions = GetDotenvOptions,
   TConfig = unknown,
-> = GetDotenvCliPlugin<TOptions> & {
+  TArgs extends unknown[] = [],
+  TOpts extends OptionValues = {},
+  TGlobal extends OptionValues = {},
+> = GetDotenvCliPlugin<TOptions, TArgs, TOpts, TGlobal> & {
   // Instance-bound helpers preserve plugin identity and inject validated slices.
   // Default TCfg to the plugin’s TConfig to improve inference at call sites.
-  readConfig<TCfg = TConfig>(cli: GetDotenvCliPublic<TOptions>): Readonly<TCfg>;
+  readConfig<TCfg = TConfig>(
+    cli: GetDotenvCliPublic<TOptions, unknown[], OptionValues, OptionValues>,
+  ): Readonly<TCfg>;
   createPluginDynamicOption<TCfg = TConfig>(
-    cli: GetDotenvCliPublic<TOptions>,
+    cli: GetDotenvCliPublic<TOptions, unknown[], OptionValues, OptionValues>,
     flags: string,
     desc: (
       cfg: ResolvedHelpConfig & { plugins: Record<string, unknown> },
@@ -142,10 +154,17 @@ export type PluginWithInstanceHelpers<
  * Public spec type for defining a plugin with optional children.
  * Exported to ensure TypeDoc links and navigation resolve correctly.
  */
-export type DefineSpec<TOptions extends GetDotenvOptions = GetDotenvOptions> =
-  Omit<GetDotenvCliPlugin<TOptions>, 'children' | 'use'> & {
-    children?: GetDotenvCliPlugin<TOptions>[];
-  };
+export type DefineSpec<
+  TOptions extends GetDotenvOptions = GetDotenvOptions,
+  TArgs extends unknown[] = [],
+  TOpts extends OptionValues = {},
+  TGlobal extends OptionValues = {},
+> = Omit<
+  GetDotenvCliPlugin<TOptions, TArgs, TOpts, TGlobal>,
+  'children' | 'use'
+> & {
+  children?: GetDotenvCliPlugin<TOptions, TArgs, TOpts, TGlobal>[];
+};
 
 /**
  * Define a GetDotenv CLI plugin with compositional helpers.
@@ -196,7 +215,7 @@ export function definePlugin<TOptions extends GetDotenvOptions>(
   const extended = base as PluginWithInstanceHelpers<TOptions>;
 
   extended.readConfig = function <TCfg = unknown>(
-    _cli: GetDotenvCliPublic<TOptions>,
+    _cli: GetDotenvCliPublic<TOptions, unknown[], OptionValues, OptionValues>,
   ): Readonly<TCfg> {
     // Config is stored per-plugin-instance by the host (WeakMap in computeContext).
     const value = getPluginConfig<TOptions, TCfg>(
@@ -213,7 +232,7 @@ export function definePlugin<TOptions extends GetDotenvOptions>(
 
   // Plugin-bound dynamic option factory
   extended.createPluginDynamicOption = function <TCfg = unknown>(
-    cli: GetDotenvCliPublic<TOptions>,
+    cli: GetDotenvCliPublic<TOptions, unknown[], OptionValues, OptionValues>,
     flags: string,
     desc: (
       cfg: ResolvedHelpConfig & { plugins: Record<string, unknown> },
