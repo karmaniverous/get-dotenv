@@ -28,6 +28,12 @@ export function installPassOptions<TOptions extends GetDotenvOptions>(
   program: GetDotenvCli<TOptions>,
   defaults?: Partial<RootOptionsShape>,
 ): GetDotenvCli<TOptions> {
+  // Ensure plugins are installed before Commander parses argv, so parent-level
+  // options (e.g., --cmd) and namespaced subcommands are available during
+  // option/command validation. Setup is synchronous for shipped plugins; if a
+  // plugin provides an async setup, install() awaits during resolveAndLoad().
+  // Here we fire-and-forget to register static surfaces early.
+  void program.install();
   // Merge provided defaults over the base root defaults so critical keys
   // (e.g., logger: console) are preserved unless explicitly overridden.
   const d = defaultsDeep<Partial<RootOptionsShape>>(

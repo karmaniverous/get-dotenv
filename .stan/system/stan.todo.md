@@ -153,4 +153,16 @@ When updated: 2025-12-08T00:00:00Z
   out of use() into install() to avoid floating promises, and
   refactored aws plugin to assign setup after creation to avoid
   self-referential initializer (TS7022). Fixed unit test to satisfy
-  require-await. All type/lint/test gates green.
+  require-await. All type/lint/test gates green.
+
+- Fix: assign aws plugin afterResolve on the plugin object (was a free
+  function), resolving parse/type errors blocking many tests.
+
+- Lifecycle: call install() from passOptions() to ensure parent-level
+  options (e.g., --cmd) and namespaced commands are registered before
+  Commander validates argv. This also makes compose.mount unit test
+  pass without parse(), as commands now exist after passOptions().
+
+- Lint: remove redundant union with unknown in registerPlugin installer
+  and flatten aws parent/child composition in src/index.ts to a const
+  before .use() to avoid confusing-void/unsafe-argument warnings.

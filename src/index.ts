@@ -67,6 +67,8 @@ export type CreateCliOptions = {
 export function createCli(opts: CreateCliOptions = {}): {
   run: (argv: string[]) => Promise<void>;
 } {
+  // Pre-compose aws parent/child to avoid nested call-site typing/lint issues
+  const awsParent = awsPlugin().use(awsWhoamiPlugin());
   const alias =
     typeof opts.alias === 'string' && opts.alias.length > 0
       ? opts.alias
@@ -110,7 +112,7 @@ export function createCli(opts: CreateCliOptions = {}): {
     .attachRootOptions({ loadProcess: false })
     .use(cmdPlugin({ asDefault: true, optionAlias: '-c, --cmd <command...>' }))
     .use(batchPlugin())
-    .use(awsPlugin().use(awsWhoamiPlugin()))
+    .use(awsParent)
     .use(demoPlugin())
     .use(initPlugin())
     .passOptions({ loadProcess: false });

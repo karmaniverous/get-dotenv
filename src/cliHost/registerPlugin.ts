@@ -44,9 +44,9 @@ export function setupPluginTree<
     currentCli: AnyCliPublic<TOptions>,
   ): Promise<void> => {
     // Call setup through an installer-local typed view to keep existential typing contained.
-    const out = (
-      p.setup as (cli: AnyCliPublic<TOptions>) => unknown | Promise<unknown>
-    )(currentCli);
+    const out = (p.setup as (cli: AnyCliPublic<TOptions>) => unknown)(
+      currentCli,
+    );
     const mount = isPromise(out) ? await out : out;
     const childCli = isCliPublic<TOptions>(mount) ? mount : currentCli;
     for (const child of p.children) {
