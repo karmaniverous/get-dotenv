@@ -2,9 +2,18 @@ import type { CommandUnknownOpts } from '@commander-js/extra-typings';
 
 import type { GetDotenvCliPublic } from '@/src/cliHost/definePlugin';
 import type { PluginWithInstanceHelpers } from '@/src/cliHost/definePlugin';
+import {
+  baseGetDotenvCliOptions,
+  type GetDotenvCliOptions,
+} from '@/src/cliHost/GetDotenvCliOptions';
+import { resolveCliOptions } from '@/src/cliHost/resolveCliOptions';
+import type { RootOptionsShape, ScriptsTable } from '@/src/cliHost/types';
+import { dotenvExpandFromProcessEnv } from '@/src/dotenvExpand';
+import type { RootOptionsShapeCompat } from '@/src/GetDotenvOptions';
+import { getDotenvCliOptions2Options } from '@/src/GetDotenvOptions';
 import type { CmdPluginOptions } from '@/src/plugins/cmd/index';
 
-import { maybeRunAlias } from '../alias/maybeRunAlias';
+import { runCmdWithContext } from './runner';
 
 /**
  * Install the parent-level invoker (alias) for the cmd plugin.
@@ -57,13 +66,68 @@ export const attachParentInvoker = (
     } catch {
       /* config may be unavailable before resolve; default handled downstream */
     }
-    await maybeRunAlias(
-      cli,
-      thisCommand as Parameters<typeof maybeRunAlias>[1],
-      aliasKey,
-      aliasState,
-      expandDefault,
+    // Inspect parent options and rawArgs to detect alias-only invocation.
+    if (aliasState.handled) return;
+    const cmd = thisCommand as CommandUnknownOpts & {
+      opts?: () => Record<string, unknown>;
+      rawArgs?: string[];
+      commands?: Array<{ name: () => string; aliases: () => string[] }>;
+    };
+    const raw = typeof cmd.opts === 'function' ? cmd.opts() : {};
+    const val = (raw as Record<string, unknown>)[aliasKey];
+    const provided =
+      typeof val === 'string'
+        ? val.length > 0
+        : Array.isArray(val)
+          ? val.length > 0
+          : false;
+    if (!provided) return;
+    const childNames = (cmd.commands ?? []).flatMap((c) => [
+      c.name(),
+      ...c.aliases(),
+    ]);
+    const hasSub = (cmd.rawArgs ?? []).some((t) => childNames.includes(t));
+    if (hasSub) return; // do not run alias when an explicit subcommand is present
+
+    aliasState.handled = true;
+
+    // Merge CLI options and resolve dotenv context for this invocation.
+    const { merged } = resolveCliOptions<
+      RootOptionsShape & { scripts?: ScriptsTable }
+    >(
+      raw,
+      baseGetDotenvCliOptions as Partial<RootOptionsShape>,
+      process.env.getDotenvCliOptions,
     );
+    const serviceOptions = getDotenvCliOptions2Options(
+      merged as unknown as RootOptionsShapeCompat,
+    );
+    await cli.resolveAndLoad(serviceOptions);
+
+    // Build input string and apply optional expansion (by config default).
+    const joined =
+      typeof val === 'string'
+        ? val
+        : Array.isArray(val)
+          ? (val as unknown[]).map(String).join(' ')
+          : '';
+    const effectiveExpand = expandDefault !== false;
+    const expanded = dotenvExpandFromProcessEnv(joined);
+    const input = effectiveExpand && expanded !== undefined ? expanded : joined;
+
+    // Hand off to shared runner and terminate (except under tests).
+    const exitCode = await runCmdWithContext(
+      cli,
+      merged as unknown as GetDotenvCliOptions,
+      input,
+      { origin: 'alias' },
+    );
+    const underTests =
+      process.env.GETDOTENV_TEST === '1' ||
+      typeof process.env.VITEST_WORKER_ID === 'string';
+    if (!underTests) {
+      process.exit(typeof exitCode === 'number' ? exitCode : 0);
+    }
   };
 
   cli.hook('preAction', async (thisCommand) => {
