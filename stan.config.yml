@@ -8,6 +8,8 @@ stan-core:
     - docs
     - package-lock.json
   imports:
+    extra-typings:
+      - node_modules/@commander-js/extra-typings/index.d.ts
     smoz:
       # - ../smoz/.stan/system/stan.requirements.md
       # - ../smoz/.stan/system/stan.todo.md

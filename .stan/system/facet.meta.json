@@ -1,112 +1,36 @@
 {
-  "configs": {
-    "exclude": [
-      "eslint.config.ts",
-      "vitest.config.ts",
-      "rollup.config.ts",
-      "typedoc.json",
-      "tsconfig.json",
-      "tsconfig.base.json",
-      "tsdoc.json",
-      "knip.json",
-      "lefthook.yml",
-      ".prettierrc.json",
-      ".prettierignore",
-      ".gitattributes",
-      ".gitignore",
-      ".nvmrc",
-      ".node-version",
-      ".npmrc",
-      "getdotenv.config.json"
-    ],
-    "include": ["eslint.config.ts"]
-  },
-  "vscode": { "exclude": [".vscode/**"], "include": [".vscode/settings.json"] },
-  "generator": { "exclude": ["src/generateGetDotenvCli/**"], "include": ["src/generateGetDotenvCli/index.ts", "src/generateGetDotenvCli/buildRootCommand.ts"] },
-  "tests": {
-    "exclude": [
-      "test/**",
-      "src/**/*.test.ts",
-      "src/e2e/**"
-    ],
-    "include": [
-      "src/dotenvExpand.more.test.ts"
-    ]
-  },
   "docs": {
-    "exclude": [
-      "guides/**",
-      "docs/**"
-    ],
-    "include": [
-      "guides/index.md"
-    ]
-  },
-  "templates": {
-    "exclude": [
-      "templates/**"
-    ],
-    "include": [
-      "templates/config/json/public/getdotenv.config.json",
-      "templates/cli/ts/index.ts"
-    ]
-  },
-  "tools": {
-    "exclude": [
-      "tools/**"
-    ],
-    "include": [
-      "tools/verify-package.js"
-    ]
+    "exclude": ["guides/**"],
+    "include": ["guides/index.md"]
   },
   "plugins-aws": {
-    "exclude": [
-      "src/plugins/aws/**"
-    ],
-    "include": [
-      "src/plugins/aws/types.ts"
-    ]
+    "exclude": ["src/plugins/aws/**"],
+    "include": ["src/plugins/aws/index.ts"]
   },
-  "plugins-init": {
-    "exclude": [
-      "src/plugins/init/**"
-    ],
-    "include": [
-      "src/plugins/init/constants.ts"
-    ]
-  },
-  "plugins-demo": {
-    "exclude": [
-      "src/plugins/demo/**"
-    ],
-    "include": [
-      "src/plugins/demo/index.ts"
-    ]
-  },
-  "plugins-batch-actions": {
-    "exclude": [
-      "src/plugins/batch/actions/**"
-    ],
-    "include": [
-      "src/plugins/batch/actions/parentAction.ts"
-    ]
+  "plugins-batch": {
+    "exclude": ["src/plugins/batch/**"],
+    "include": ["src/plugins/batch/index.ts"]
   },
   "plugins-cmd": {
-    "exclude": [
-      "src/plugins/cmd/**"
-    ],
-    "include": [
-      "src/plugins/cmd/tokenize.ts"
-    ]
+    "exclude": ["src/plugins/cmd/**"],
+    "include": ["src/plugins/cmd/index.ts"]
   },
-  "ci": {
-    "exclude": [
-      ".github/**",
-      ".lefthook/**",
-      "lefthook.yml"
-    ],
-    "include": [
-      ".github/workflows/sync.yml"
-    ]
+  "plugins-demo": {
+    "exclude": ["src/plugins/demo/**"],
+    "include": ["src/plugins/demo/index.ts"]
+  },
+  "plugins-init": {
+    "exclude": ["src/plugins/init/**"],
+    "include": ["src/plugins/init/index.ts"]
+  },
+  "templates": {
+    "exclude": ["templates/**"],
+    "include": ["templates/cli/ts/index.ts"]
+  },
+  "tests": {
+    "exclude": ["test/**", "src/**/*.test.ts", "src/e2e/**"]
+  },
+  "tools": {
+    "exclude": ["tools/**"]
   }
-}
+}
