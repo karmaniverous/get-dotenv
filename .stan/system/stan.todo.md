@@ -4,6 +4,21 @@ When updated: 2025-12-08T00:00:00Z
 
 ## Next up (near‑term, actionable)
 
+- Nested composition (mount propagation) — implement and validate
+  - Widen plugin setup return type:
+    - GetDotenvCliPlugin.setup: allow `void | GetDotenvCliPublic | Promise<…>`.
+    - definePlugin types follow (no behavior change for plugins returning void).
+  - Update plugin installer:
+    - registerPlugin: `const mount = await p.setup(cli); const childCli = mount && typeof mount === 'object' ? (mount as GetDotenvCliPublic) : cli;` then install children with childCli.
+    - Support async setup and pre‑order parent→children traversal as today.
+  - Adjust shipped plugin:
+    - awsPlugin: return its `cli.ns('aws')` mount from setup so `awsWhoamiPlugin` composes under it.
+  - Tests:
+    - Unit: parent returns `ns('parent')`; child returns/creates `ns('child')`; help shows child under parent.
+    - E2E: `getdotenv aws -h` lists `whoami`; `getdotenv aws whoami` works (no network; only help inspection).
+  - Docs (deferred until after stabilization):
+    - Add a short “Nested Composition” note to Authoring → Lifecycle describing the optional mount return. Keep the “docs” facet disabled for now and schedule the docs change after the implementation is stable.
+
 - Decompose long module: src/cliHost/definePlugin.ts
   - Split into: contracts (public types), instance helpers, and dynamic option
     helpers. Add paired tests for each smaller module.

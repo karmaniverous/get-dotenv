@@ -104,6 +104,32 @@ Load environment variables from a configurable cascade of dotenv files and/or ex
 
 - Use “-c, --cmd <command...>” provided by the cmd plugin as the parent-level option alias. The shipped CLI does not include a root “-c, --command” flag.
 
+#### Nested plugin composition (mount propagation)
+
+Goal: allow a parent plugin to compose children under its own namespace automatically without hardcoded lookups or brittle naming. Parent.setup may optionally return the “mount point” (a GetDotenvCliPublic) where children should be installed; if nothing is returned, children install at the same cli passed to setup (current behavior).
+
+Contract:
+
+- setup return type: void | GetDotenvCliPublic | Promise<…>. Returning a command (e.g., `cli.ns('aws')`) declares that children of this plugin should be mounted under that command. Returning void preserves current behavior (children mount at the provided cli).
+- register/install behavior: after running `const mount = await p.setup(cli)`, determine childCli as `typeof mount === 'object' && mount ? (mount as GetDotenvCliPublic) : cli` and pass childCli to each child’s setup.
+- Async setup is supported and awaited before installing children.
+
+Type surface:
+
+- GetDotenvCliPlugin.setup is widened to return `void | GetDotenvCliPublic | Promise<…>`.
+- definePlugin follows suit (no behavior change for plugins that return nothing).
+
+Behavioral expectations:
+
+- A parent plugin that claims a namespace (e.g., `const ns = cli.ns('aws')`) returns that namespace from setup to mount children under it. Example: `awsPlugin().use(awsWhoamiPlugin())` produces `getdotenv aws whoami`.
+- Deeper trees compose naturally: each level may return its child mount; when omitted, children attach to the level’s incoming cli.
+- No name‑based lookups or search heuristics; the mount is a real command object which preserves Commander inference for downstream chaining.
+
+Tests and docs:
+
+- Unit: a fake parent returns `ns('parent')`; a child adds `ns('child')`; parent help lists the child under parent. E2E: `getdotenv aws -h` lists `whoami`.
+- Authoring docs: add a short “Nested Composition” note to Lifecycle explaining the optional mount return and child attachment behavior (schedule after implementation; keep the docs facet disabled for now).
+
 #### Command alias on parent (cmd)
 
 The CLI MUST support two equivalent ways to execute a command:
