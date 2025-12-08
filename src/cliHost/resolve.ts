@@ -5,10 +5,6 @@
 
 import type { ScriptsTable } from '@/src/cliHost/types';
 
-// Accept undefined as an explicit shell value to interoperate with
-// exactOptionalPropertyTypes in plugin-provided configs. Back-compat alias.
-export type Scripts = ScriptsTable;
-
 /**
  * Resolve a command string from the {@link Scripts} table.
  * A script may be expressed as a string or an object with a `cmd` property.

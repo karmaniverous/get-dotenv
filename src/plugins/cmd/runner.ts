@@ -12,14 +12,14 @@ import {
   composeNestedEnv,
   maybePreserveNodeEvalArgv,
 } from '@/src/cliHost/invoke';
+import { resolveCommand, resolveShell } from '@/src/cliHost/resolve';
 import { buildSpawnEnv } from '@/src/cliHost/spawnEnv';
 import type { EntropyOptions } from '@/src/diagnostics/entropy';
 import { maybeWarnEntropy } from '@/src/diagnostics/entropy';
 import type { RedactOptions } from '@/src/diagnostics/redact';
 import { redactTriple } from '@/src/diagnostics/redact';
-import { resolveCommand, resolveShell } from '@/src/services/batch/resolve';
 
-import { tokenize } from '../tokenize';
+import { tokenize } from './tokenize';
 
 /** Strip one symmetric outer quote layer */
 const stripOne = (s: string) => {

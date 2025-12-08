@@ -5,11 +5,12 @@ import type {
   GetDotenvCliPublic,
 } from '@/src/cliHost/definePlugin';
 import { readMergedOptions } from '@/src/cliHost/readMergedOptions';
+import { resolveCommand, resolveShell } from '@/src/cliHost/resolve';
 import type { Logger } from '@/src/GetDotenvOptions';
-import type { BatchPluginOptions } from '@/src/plugins/batch/types';
-import type { BatchConfig } from '@/src/plugins/batch/types';
-import { execShellCommandBatch } from '@/src/services/batch/execShellCommandBatch';
-import { resolveCommand, resolveShell } from '@/src/services/batch/resolve';
+
+import { execShellCommandBatch } from './execShellCommandBatch';
+import type { BatchPluginOptions } from './types';
+import type { BatchConfig } from './types';
 
 export const attachParentInvoker = (
   plugin: ReturnType<typeof definePlugin>,

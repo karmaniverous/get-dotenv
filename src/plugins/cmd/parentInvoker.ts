@@ -11,9 +11,9 @@ import type { RootOptionsShape, ScriptsTable } from '@/src/cliHost/types';
 import { dotenvExpandFromProcessEnv } from '@/src/dotenvExpand';
 import type { RootOptionsShapeCompat } from '@/src/GetDotenvOptions';
 import { getDotenvCliOptions2Options } from '@/src/GetDotenvOptions';
-import type { CmdPluginOptions } from '@/src/plugins/cmd/index';
 
 import { runCmdWithContext } from './runner';
+import type { CmdPluginOptions } from './types';
 
 /**
  * Install the parent-level invoker (alias) for the cmd plugin.

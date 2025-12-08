@@ -1,9 +1,9 @@
 import { z } from 'zod';
 
-import type { Scripts } from '@/src/services/batch/resolve';
+import type { ScriptsTable } from '@/src/cliHost/types';
 
 export type BatchPluginOptions = {
-  scripts?: Scripts;
+  scripts?: ScriptsTable;
   shell?: string | boolean;
 };
 

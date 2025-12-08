@@ -1,33 +1,11 @@
 import type { Command } from '@commander-js/extra-typings';
 import type { CommandUnknownOpts } from '@commander-js/extra-typings';
-import { z } from 'zod';
 
 import { definePlugin } from '@/src/cliHost/definePlugin';
 
-import { attachDefaultCmdAction } from './actions/defaultCmdAction';
-import { attachParentInvoker } from './actions/parentInvoker';
-
-export type CmdPluginOptions = {
-  /**
-   * When true, register as the default subcommand at the root.
-   */
-  asDefault?: boolean;
-  /**
-   * Optional alias option attached to the parent command to invoke the cmd
-   * behavior without specifying the subcommand explicitly.
-   */
-  optionAlias?:
-    | string
-    | { flags: string; description?: string; expand?: boolean };
-};
-
-// Plugin config (Zod): currently a single optional flag to control alias expansion default.
-export const CmdConfigSchema = z
-  .object({
-    expand: z.boolean().optional(),
-  })
-  .strict();
-export type CmdConfig = z.infer<typeof CmdConfigSchema>;
+import { attachDefaultCmdAction } from './defaultCmdAction';
+import { attachParentInvoker } from './parentInvoker';
+import { CmdConfigSchema, type CmdPluginOptions } from './types';
 
 /** Cmd plugin: executes a command using the current getdotenv CLI context. */
 export const cmdPlugin = (options: CmdPluginOptions = {}) =>

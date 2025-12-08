@@ -3,9 +3,9 @@ import type { CommandUnknownOpts } from '@commander-js/extra-typings';
 import { definePlugin } from '@/src/cliHost/definePlugin';
 import { runCommand } from '@/src/cliHost/exec';
 import { readMergedOptions } from '@/src/cliHost/readMergedOptions';
+import { resolveShell } from '@/src/cliHost/resolve';
 import { buildSpawnEnv } from '@/src/cliHost/spawnEnv';
 import type { Logger } from '@/src/GetDotenvOptions';
-import { resolveShell } from '@/src/services/batch/resolve';
 
 import { resolveAwsContext } from './service';
 import { type AwsPluginConfig, AwsPluginConfigSchema } from './types';
