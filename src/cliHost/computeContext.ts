@@ -1,5 +1,6 @@
 /* eslint-disable */
 import fs from 'fs-extra';
+import type { OptionValues } from '@commander-js/extra-typings';
 import path from 'path';
 
 import { resolveGetDotenvConfigSources } from '@/src/config/loader';
@@ -29,7 +30,7 @@ import type { GetDotenvCliCtx } from './GetDotEnvCli';
  * plugin instance.
  */
 const PLUGIN_CONFIG_STORE: WeakMap<
-  GetDotenvCliPlugin<any>,
+  GetDotenvCliPlugin<any, unknown[], OptionValues, OptionValues>,
   unknown
 > = new WeakMap();
 
@@ -39,20 +40,33 @@ const PLUGIN_CONFIG_STORE: WeakMap<
  * defaulting to GetDotenvOptions under exactOptionalPropertyTypes.
  */
 export const setPluginConfig = <TOptions extends GetDotenvOptions, TCfg>(
-  plugin: GetDotenvCliPlugin<TOptions>,
+  plugin: GetDotenvCliPlugin<
+    TOptions,
+    unknown[],
+    OptionValues,
+    OptionValues
+  >,
   cfg: Readonly<TCfg>,
 ): void => {
-  PLUGIN_CONFIG_STORE.set(plugin as unknown as GetDotenvCliPlugin<any>, cfg);
+  PLUGIN_CONFIG_STORE.set(
+    plugin as unknown as GetDotenvCliPlugin<any, unknown[], OptionValues, OptionValues>,
+    cfg,
+  );
 };
 
 /**
  * Retrieve the validated/interpolated config slice for a plugin instance.
  */
 export const getPluginConfig = <TOptions extends GetDotenvOptions, TCfg>(
-  plugin: GetDotenvCliPlugin<TOptions>,
+  plugin: GetDotenvCliPlugin<
+    TOptions,
+    unknown[],
+    OptionValues,
+    OptionValues
+  >,
 ): Readonly<TCfg> | undefined => {
   return PLUGIN_CONFIG_STORE.get(
-    plugin as unknown as GetDotenvCliPlugin<any>,
+    plugin as unknown as GetDotenvCliPlugin<any, unknown[], OptionValues, OptionValues>,
   ) as Readonly<TCfg> | undefined;
 };
 
@@ -68,9 +82,12 @@ export const getPluginConfig = <TOptions extends GetDotenvOptions, TCfg>(
  */
 export const computeContext = async <
   TOptions extends GetDotenvOptions = GetDotenvOptions,
+  TArgs extends unknown[] = [],
+  TOpts extends OptionValues = {},
+  TGlobal extends OptionValues = {},
 >(
   customOptions: Partial<TOptions>,
-  plugins: GetDotenvCliPlugin<TOptions>[],
+  plugins: GetDotenvCliPlugin<TOptions, TArgs, TOpts, TGlobal>[],
   hostMetaUrl: string,
 ): Promise<GetDotenvCliCtx<TOptions>> => {
   const optionsResolved = await resolveGetDotenvOptions(customOptions);

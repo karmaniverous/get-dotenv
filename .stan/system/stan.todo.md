@@ -83,4 +83,9 @@ When updated: 2025-12-08T00:00:00Z
   added TArgs/TOpts/TGlobal to GetDotenvCliPlugin and carried those
   generics into host plugin list, use(), and helpers. Broadened
   readConfig/createPluginDynamicOption host argument types to accept
-  unknown[]/OptionValues for ergonomic assignability.
+  unknown[]/OptionValues for ergonomic assignability.
+
+- Generalize compute/resolve helpers over Commander generics so the
+  host can pass its plugin list without narrowing: updated
+  computeContext and resolveAndComputeContext to accept plugins with
+  Commander argument/option/global generics.
