@@ -19,19 +19,20 @@ export const DYN_DESC = new WeakMap<
 /**
  * Create an Option with a dynamic description callback stored in DYN_DESC.
  */
-export function makeDynamicOption(
-  flags: string,
+export function makeDynamicOption<Usage extends string>(
+  flags: Usage,
   desc: (cfg: ResolvedHelpConfigLite) => string,
   parser?: (value: string, previous?: unknown) => unknown,
   defaultValue?: unknown,
-): Option {
+): Option<Usage> {
   const opt = new CommanderOption(flags, '');
   DYN_DESC.set(opt, desc);
   if (parser) {
     opt.argParser((value, previous) => parser(value, previous));
   }
   if (defaultValue !== undefined) opt.default(defaultValue);
-  return opt;
+  // Commander.Option is structurally compatible; help-time wiring is stored in DYN_DESC.
+  return opt as unknown as Option<Usage>;
 }
 
 /**

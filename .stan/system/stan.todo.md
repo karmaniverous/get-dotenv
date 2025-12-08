@@ -4,6 +4,10 @@ When updated: 2025-12-08T00:00:00Z
 
 ## Next up (near‑term, actionable)
 
+- Decompose long module: src/cliHost/definePlugin.ts
+  - Split into: contracts (public types), instance helpers, and dynamic option
+    helpers. Add paired tests for each smaller module.
+
 - Docs and templates
   - Update Authoring guides to reflect typed ns() and Commander‑generic
     inference (no casts needed in plugin actions).
@@ -68,3 +72,6 @@ When updated: 2025-12-08T00:00:00Z
   cmd intentionally uses createCommand('cmd') to preserve desired help
   formatting and output behavior. No residual casts were required in
   action handlers; no runtime behavior changes identified.
+
+- Typing fix: propagate Usage through dynamic Option helpers so addOption
+  can infer flags and widen Opts. Updated makeDynamicOption(), host

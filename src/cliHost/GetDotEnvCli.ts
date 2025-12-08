@@ -157,32 +157,32 @@ export class GetDotenvCli<
    * added via addOption().
    */
   // Base overload (parser/default optional; preferred match for 2-arg calls)
-  createDynamicOption(
-    flags: string,
+  createDynamicOption<Usage extends string>(
+    flags: Usage,
     desc: (
       cfg: ResolvedHelpConfig & { plugins: Record<string, unknown> },
     ) => string,
     parser?: (value: string, previous?: unknown) => unknown,
     defaultValue?: unknown,
-  ): Option;
+  ): Option<Usage>;
   // Overload: typed parser & default for value inference
-  createDynamicOption<TValue = unknown>(
-    flags: string,
+  createDynamicOption<Usage extends string, TValue = unknown>(
+    flags: Usage,
     desc: (
       cfg: ResolvedHelpConfig & { plugins: Record<string, unknown> },
     ) => string,
     parser: (value: string, previous?: TValue) => TValue,
     defaultValue?: TValue,
-  ): Option;
+  ): Option<Usage>;
   // Implementation
-  createDynamicOption(
-    flags: string,
+  createDynamicOption<Usage extends string>(
+    flags: Usage,
     desc: (
       cfg: ResolvedHelpConfig & { plugins: Record<string, unknown> },
     ) => string,
     parser?: (value: string, previous?: unknown) => unknown,
     defaultValue?: unknown,
-  ): Option {
+  ): Option<Usage> {
     return makeDynamicOption(
       flags,
       (c) => desc(c as ResolvedHelpConfig),
@@ -195,15 +195,17 @@ export class GetDotenvCli<
    * Chainable helper mirroring .option(), but with a dynamic description.
    * Equivalent to addOption(createDynamicOption(...)).
    */
-  dynamicOption(
-    flags: string,
+  dynamicOption<Usage extends string>(
+    flags: Usage,
     desc: (
       cfg: ResolvedHelpConfig & { plugins: Record<string, unknown> },
     ) => string,
     parser?: (value: string, previous?: unknown) => unknown,
     defaultValue?: unknown,
   ): this {
-    this.addOption(this.createDynamicOption(flags, desc, parser, defaultValue));
+    this.addOption(
+      this.createDynamicOption<Usage>(flags, desc, parser, defaultValue),
+    );
     return this;
   }
 

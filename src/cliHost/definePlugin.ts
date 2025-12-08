@@ -65,23 +65,23 @@ export interface GetDotenvCliPublic<
    * Create a dynamic option whose description is computed at help time
    * from the resolved configuration.
    */
-  createDynamicOption(
-    flags: string,
+  createDynamicOption<Usage extends string>(
+    flags: Usage,
     desc: (
       cfg: ResolvedHelpConfig & { plugins: Record<string, unknown> },
     ) => string,
     parser?: (value: string, previous?: unknown) => unknown,
     defaultValue?: unknown,
-  ): Option;
+  ): Option<Usage>;
   // Overload: typed parser & default for value inference
-  createDynamicOption<TValue = unknown>(
-    flags: string,
+  createDynamicOption<Usage extends string, TValue = unknown>(
+    flags: Usage,
     desc: (
       cfg: ResolvedHelpConfig & { plugins: Record<string, unknown> },
     ) => string,
     parser: (value: string, previous?: TValue) => TValue,
     defaultValue?: TValue,
-  ): Option;
+  ): Option<Usage>;
 }
 
 /** Public plugin contract used by the GetDotenv CLI host. */
@@ -149,16 +149,16 @@ export type PluginWithInstanceHelpers<
     cli: GetDotenvCliPublic<TOptions, unknown[], OptionValues, OptionValues>,
   ): Readonly<TCfg>;
 
-  createPluginDynamicOption<TCfg = TConfig>(
+  createPluginDynamicOption<TCfg = TConfig, Usage extends string = string>(
     cli: GetDotenvCliPublic<TOptions, unknown[], OptionValues, OptionValues>,
-    flags: string,
+    flags: Usage,
     desc: (
       cfg: ResolvedHelpConfig & { plugins: Record<string, unknown> },
       pluginCfg: Readonly<TCfg>,
     ) => string,
     parser?: (value: string, previous?: unknown) => unknown,
     defaultValue?: unknown,
-  ): Option;
+  ): Option<Usage>;
 };
 
 /**
@@ -256,17 +256,20 @@ export function definePlugin<TOptions extends GetDotenvOptions>(
   };
 
   // Plugin-bound dynamic option factory
-  extended.createPluginDynamicOption = function <TCfg = unknown>(
+  extended.createPluginDynamicOption = function <
+    TCfg = unknown,
+    Usage extends string = string,
+  >(
     cli: GetDotenvCliPublic<TOptions, unknown[], OptionValues, OptionValues>,
-    flags: string,
+    flags: Usage,
     desc: (
       cfg: ResolvedHelpConfig & { plugins: Record<string, unknown> },
       pluginCfg: Readonly<TCfg>,
     ) => string,
     parser?: (value: string, previous?: unknown) => unknown,
     defaultValue?: unknown,
-  ): Option {
-    return cli.createDynamicOption(
+  ): Option<Usage> {
+    return cli.createDynamicOption<Usage>(
       flags,
       (cfg) => {
         // Prefer the validated slice stored per instance; fallback to help-bag
