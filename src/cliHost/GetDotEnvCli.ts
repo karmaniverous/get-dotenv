@@ -192,22 +192,6 @@ export class GetDotenvCli<
   }
 
   /**
-   * Chainable helper mirroring .option(), but with a dynamic description.
-   * Equivalent to addOption(createDynamicOption(...)).
-   */
-  dynamicOption(
-    flags: string,
-    desc: (
-      cfg: ResolvedHelpConfig & { plugins: Record<string, unknown> },
-    ) => string,
-    parser?: (value: string, previous?: unknown) => unknown,
-    defaultValue?: unknown,
-  ): this {
-    this.addOption(this.createDynamicOption(flags, desc, parser, defaultValue));
-    return this;
-  }
-
-  /**
    * Evaluate dynamic descriptions for this command and all descendants using
    * the provided resolved configuration. Mutates the Option.description in
    * place so Commander help renders updated text.

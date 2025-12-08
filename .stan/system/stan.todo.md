@@ -80,3 +80,8 @@ When updated: 2025-12-08T00:00:00Z
   @typescript-eslint/no-unnecessary-type-parameters. Typed option
   inference remains through createDynamicOption/Option<Usage> and
   plugin.createPluginDynamicOption.
+
+- Remove dynamicOption helper from GetDotenvCli. It could not propagate
+  Commander option inference (returned `this`) and recently lost its
+  generic due to lint. Steer callers to `createDynamicOption(...); addOption(...)`
+  or `plugin.createPluginDynamicOption(...)` for fully typed options.
