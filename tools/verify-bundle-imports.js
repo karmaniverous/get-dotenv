@@ -3,7 +3,8 @@
  * Verify dist bundles keep Commander external (tree-shaken) and do not inline it.
  *
  * Checks representative ESM/CJS outputs for explicit import/require of 'commander'
- * and fails when the files are missing or do not reference commander externally.
+ * or '@commander-js/extra-typings' and fails when the files are missing or do not
+ * reference Commander externally.
  *
  * Intended coverage:
  *  - dist/index.mjs / dist/index.cjs
@@ -11,7 +12,10 @@
  *
  * Notes:
  * - Rollup externalizes dependencies; this check guards against regressions where
- *   commander might be bundled or dead-import removed in a way that changes surface.
+ *   Commander might be bundled or dead-import removed in a way that changes surface.
+ * - This repo now imports Commander from '@commander-js/extra-typings' at runtime.
+ *   Treat that as the primary external reference, with 'commander' kept for
+ *   backward compatibility.
  * - This is a heuristic: we assert the presence of external imports, not the absence
  *   of every possible inlining form. Good enough to catch common config mistakes.
  */
@@ -25,10 +29,21 @@ const targets = [
   { file: 'cliHost.mjs', type: 'esm' },
 ];
 
-const hasCommanderImport = (txt) =>
-  /from\s+['"]commander['"]/.test(txt) ||
-  /import\s+['"]commander['"]/.test(txt);
-const hasCommanderRequire = (txt) => /require\(['"]commander['"]\)/.test(txt);
+// Accept either @commander-js/extra-typings (preferred) or commander (legacy)
+const hasCommanderImport = (txt) => {
+  const esmExtra =
+    /from\s+['"]@commander-js\/extra-typings['"]/.test(txt) ||
+    /import\s+['"]@commander-js\/extra-typings['"]/.test(txt);
+  const esmPlain =
+    /from\s+['"]commander['"]/.test(txt) ||
+    /import\s+['"]commander['"]/.test(txt);
+  return esmExtra || esmPlain;
+};
+const hasCommanderRequire = (txt) => {
+  const cjsExtra = /require\(['"]@commander-js\/extra-typings['"]\)/.test(txt);
+  const cjsPlain = /require\(['"]commander['"]\)/.test(txt);
+  return cjsExtra || cjsPlain;
+};
 
 const err = (msg) => {
   // Keep errors concise and deterministic; exit non-zero.
@@ -69,7 +84,9 @@ const main = async () => {
     results.push({
       file: t.file,
       ok: good,
-      reason: good ? undefined : 'no external commander reference',
+      reason: good
+        ? undefined
+        : 'no external commander (@commander-js/extra-typings) reference',
     });
   }
 
@@ -81,7 +98,10 @@ const main = async () => {
     err(`One or more bundles failed sanity checks:\n${lines}`);
   }
   const lines = results
-    .map((r) => `- ${r.file}: external commander reference`)
+    .map(
+      (r) =>
+        `- ${r.file}: external commander (@commander-js/extra-typings) reference`,
+    )
     .join('\n');
   ok(lines);
 };

@@ -243,3 +243,9 @@ When updated: 2025-12-07T00:00:00Z
     resolve `@/…` imports (the alias plugin alone doesn’t satisfy TS resolution).
   - Pointed rollup-plugin-dts at `./tsconfig.base.json` to share the same paths
     and excludes, eliminating stray type-bundling warnings.
+
+- CI: update verify-bundle for @commander-js/extra-typings
+  - Revised tools/verify-bundle-imports.js to treat
+    '@commander-js/extra-typings' as the canonical external Commander
+    reference (with 'commander' accepted for back-compat). Prevents false
+    failures after migrating imports.
