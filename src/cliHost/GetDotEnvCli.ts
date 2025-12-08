@@ -133,7 +133,7 @@ export class GetDotenvCli<
     customOptions: Partial<TOptions> = {},
     opts?: { runAfterResolve?: boolean },
   ): Promise<GetDotenvCliCtx<TOptions>> {
-    const ctx = await resolveAndComputeContext<TOptions>(
+    const ctx = await resolveAndComputeContext<TOptions, TArgs, TOpts, TGlobal>(
       customOptions,
       this._plugins,
       HOST_META_URL,

@@ -47,15 +47,20 @@ export interface GetDotenvCliPublic<
     {},
     TOpts & TGlobal
   >;
+
   /** Return the current context; throws if not yet resolved. */
   getCtx(): GetDotenvCliCtx<TOptions>;
+
   /** Check whether a context has been resolved (non-throwing). */
   hasCtx(): boolean;
+
   resolveAndLoad(
     customOptions?: Partial<TOptions>,
     opts?: { runAfterResolve?: boolean },
   ): Promise<GetDotenvCliCtx<TOptions>>;
+
   setOptionGroup(opt: Option, group: string): void;
+
   /**
    * Create a dynamic option whose description is computed at help time
    * from the resolved configuration.
@@ -87,6 +92,7 @@ export interface GetDotenvCliPlugin<
   TGlobal extends OptionValues = {},
 > {
   id?: string;
+
   /**
    * Setup phase: register commands and wiring on the provided CLI instance.
    * Runs parent → children (pre-order).
@@ -94,6 +100,7 @@ export interface GetDotenvCliPlugin<
   setup: (
     cli: GetDotenvCliPublic<TOptions, TArgs, TOpts, TGlobal>,
   ) => void | Promise<void>;
+
   /**
    * After the dotenv context is resolved, initialize any clients/secrets
    * or attach per-plugin state under ctx.plugins (by convention).
@@ -103,15 +110,18 @@ export interface GetDotenvCliPlugin<
     cli: GetDotenvCliPublic<TOptions, TArgs, TOpts, TGlobal>,
     ctx: GetDotenvCliCtx<TOptions>,
   ) => void | Promise<void>;
+
   /**
    * Zod schema for this plugin's config slice (from config.plugins[id]).
    * Enforced object-like (ZodObject) to simplify code paths and inference.
    */
   configSchema?: ZodObject;
+
   /**
    * Compositional children. Installed after the parent per pre-order.
    */
   children: GetDotenvCliPlugin<TOptions, TArgs, TOpts, TGlobal>[];
+
   /**
    * Compose a child plugin. Returns the parent to enable chaining.
    */
@@ -138,6 +148,7 @@ export type PluginWithInstanceHelpers<
   readConfig<TCfg = TConfig>(
     cli: GetDotenvCliPublic<TOptions, unknown[], OptionValues, OptionValues>,
   ): Readonly<TCfg>;
+
   createPluginDynamicOption<TCfg = TConfig>(
     cli: GetDotenvCliPublic<TOptions, unknown[], OptionValues, OptionValues>,
     flags: string,
@@ -181,14 +192,17 @@ export function definePlugin<
 >(
   spec: Omit<DefineSpec<TOptions>, 'configSchema'> & { configSchema: Schema },
 ): PluginWithInstanceHelpers<TOptions, z.output<Schema>>;
+
 // Overload B (no schema provided): config type is {}
 export function definePlugin<TOptions extends GetDotenvOptions>(
   spec: DefineSpec<TOptions>,
 ): PluginWithInstanceHelpers<TOptions, {}>;
+
 export function definePlugin<TOptions extends GetDotenvOptions>(
   spec: DefineSpec<TOptions> & { configSchema?: ZodObject },
 ): PluginWithInstanceHelpers<TOptions> {
   const { children = [], ...rest } = spec;
+
   // Default to a strict empty-object schema so “no-config” plugins fail fast
   // on unknown keys and provide a concrete {} at runtime.
   const effectiveSchema =
@@ -218,8 +232,19 @@ export function definePlugin<TOptions extends GetDotenvOptions>(
     _cli: GetDotenvCliPublic<TOptions, unknown[], OptionValues, OptionValues>,
   ): Readonly<TCfg> {
     // Config is stored per-plugin-instance by the host (WeakMap in computeContext).
-    const value = getPluginConfig<TOptions, TCfg>(
-      extended as unknown as GetDotenvCliPlugin<TOptions>,
+    const value = getPluginConfig<
+      TOptions,
+      TCfg,
+      unknown[],
+      OptionValues,
+      OptionValues
+    >(
+      extended as unknown as GetDotenvCliPlugin<
+        TOptions,
+        unknown[],
+        OptionValues,
+        OptionValues
+      >,
     );
     if (value === undefined) {
       // Guard: host has not resolved config yet (incorrect lifecycle usage).
@@ -246,8 +271,19 @@ export function definePlugin<TOptions extends GetDotenvOptions>(
       (cfg) => {
         // Prefer the validated slice stored per instance; fallback to help-bag
         // (by-id) so top-level `-h` can render effective defaults before resolve.
-        const fromStore = getPluginConfig<TOptions, TCfg>(
-          extended as unknown as GetDotenvCliPlugin<TOptions>,
+        const fromStore = getPluginConfig<
+          TOptions,
+          TCfg,
+          unknown[],
+          OptionValues,
+          OptionValues
+        >(
+          extended as unknown as GetDotenvCliPlugin<
+            TOptions,
+            unknown[],
+            OptionValues,
+            OptionValues
+          >,
         );
         const id = (extended as { id?: string }).id;
         let fromBag: Readonly<TCfg> | undefined;

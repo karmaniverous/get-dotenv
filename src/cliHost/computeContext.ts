@@ -39,17 +39,23 @@ const PLUGIN_CONFIG_STORE: WeakMap<
  * Generic on both the host options type and the plugin config type to avoid
  * defaulting to GetDotenvOptions under exactOptionalPropertyTypes.
  */
-export const setPluginConfig = <TOptions extends GetDotenvOptions, TCfg>(
-  plugin: GetDotenvCliPlugin<
-    TOptions,
-    unknown[],
-    OptionValues,
-    OptionValues
-  >,
+export const setPluginConfig = <
+  TOptions extends GetDotenvOptions,
+  TCfg,
+  TArgs extends unknown[] = [],
+  TOpts extends OptionValues = {},
+  TGlobal extends OptionValues = {},
+>(
+  plugin: GetDotenvCliPlugin<TOptions, TArgs, TOpts, TGlobal>,
   cfg: Readonly<TCfg>,
 ): void => {
   PLUGIN_CONFIG_STORE.set(
-    plugin as unknown as GetDotenvCliPlugin<any, unknown[], OptionValues, OptionValues>,
+    plugin as unknown as GetDotenvCliPlugin<
+      any,
+      unknown[],
+      OptionValues,
+      OptionValues
+    >,
     cfg,
   );
 };
@@ -57,16 +63,22 @@ export const setPluginConfig = <TOptions extends GetDotenvOptions, TCfg>(
 /**
  * Retrieve the validated/interpolated config slice for a plugin instance.
  */
-export const getPluginConfig = <TOptions extends GetDotenvOptions, TCfg>(
-  plugin: GetDotenvCliPlugin<
-    TOptions,
-    unknown[],
-    OptionValues,
-    OptionValues
-  >,
+export const getPluginConfig = <
+  TOptions extends GetDotenvOptions,
+  TCfg,
+  TArgs extends unknown[] = [],
+  TOpts extends OptionValues = {},
+  TGlobal extends OptionValues = {},
+>(
+  plugin: GetDotenvCliPlugin<TOptions, TArgs, TOpts, TGlobal>,
 ): Readonly<TCfg> | undefined => {
   return PLUGIN_CONFIG_STORE.get(
-    plugin as unknown as GetDotenvCliPlugin<any, unknown[], OptionValues, OptionValues>,
+    plugin as unknown as GetDotenvCliPlugin<
+      any,
+      unknown[],
+      OptionValues,
+      OptionValues
+    >,
   ) as Readonly<TCfg> | undefined;
 };
 
