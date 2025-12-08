@@ -15,11 +15,11 @@ export const attachParentAction = (
   plugin: ReturnType<typeof definePlugin>,
   cli: GetDotenvCliPublic,
   pluginOpts: BatchPluginOptions,
-  parent: Command,
+  parent: Command<[string[]]>,
 ) => {
   parent.action(
     async (
-      commandParts,
+      commandParts: string[],
       opts: {
         command?: string;
         globs?: string;
@@ -52,9 +52,7 @@ export const attachParentAction = (
           : (cfg.rootPath ?? './');
 
       // Treat parent positional tokens as the command when no explicit 'cmd' is used.
-      const argsParent = Array.isArray(commandParts)
-        ? (commandParts as string[])
-        : [];
+      const argsParent = commandParts.map(String);
       if (argsParent.length > 0 && !list) {
         const input = argsParent.map(String).join(' ');
         const bag = readMergedOptions(thisCommand);
@@ -82,7 +80,7 @@ export const attachParentAction = (
       }
       // List-only (parent flag): merge extra positional tokens into globs when no --command is present.
       if (list && !commandOpt) {
-        const extra = argsParent.map(String).join(' ').trim();
+        const extra = argsParent.join(' ').trim();
         if (extra.length > 0) globs = [globs, extra].filter(Boolean).join(' ');
 
         const bag = readMergedOptions(thisCommand);

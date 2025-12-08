@@ -90,4 +90,10 @@ When updated: 2025-12-08T00:00:00Z
   and annotate only the third param as CommandUnknownOpts for helpers:
   • aws: action(async (args, opts, thisCommand: CommandUnknownOpts) => …)
   • init: action(async (destArg, opts, thisCommand: CommandUnknownOpts) => …)
-  • demo: align script action signature similarly; runtime unchanged.
+  • demo: align script action signature similarly; runtime unchanged.
+
+- Type fix: batch plugin actions aligned with Commander generics. Updated
+  attachDefaultCmdAction and attachParentAction to accept
+  Command<[string[]], {}, {}> and annotated action parameters
+  (commandParts: string[], opts: {}, thisCommand: CommandUnknownOpts),
+  resolving typecheck errors (TS2345/TS7006).
