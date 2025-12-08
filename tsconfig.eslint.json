@@ -1,0 +1,17 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "noEmit": true
+  },
+  "include": ["src/**/*.ts", "templates/**/*.ts"],
+  "exclude": [
+    "node_modules/**",
+    "dist/**",
+    "esm/**",
+    ".stan/**",
+    "tools/**",
+    "**/.rollup.cache/**",
+    "**/.tsbuild/**",
+    "test/**"
+  ]
+}

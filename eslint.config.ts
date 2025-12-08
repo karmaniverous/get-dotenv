@@ -85,7 +85,11 @@ export default [
       parser: tseslint.parser,
       parserOptions: {
         // Be explicit so the CLI loads type info from the root project.
-        project: ['./tsconfig.json'], // typed linting
+        // Provide both the main project (source/tests) and a dedicated ESLint
+        // project that includes templates/**/*.ts. This allows typed linting
+        // for template files without bringing them into the build program.
+        project: ['./tsconfig.json', './tsconfig.eslint.json'], // typed linting
+        // Root for project paths above
         tsconfigRootDir,
       },
     },

@@ -231,6 +231,13 @@ When updated: 2025-12-07T00:00:00Z
   - Added rollup-plugin-copy to mirror `templates/` into `dist/templates` with
     `copyOnce` to avoid repeated copies in the multi-output build.
 
+- Lint: enable typed ESLint for template TS files
+  - Added tsconfig.eslint.json that includes both `src/**/*.ts` and
+    `templates/**/*.ts`, with `noEmit` to keep this config lint-only.
+  - Updated eslint.config.ts to set typescript-eslint parserOptions.project
+    to an array: `['./tsconfig.json', './tsconfig.eslint.json']`. This lets
+    ESLint type-check templates while the build configs continue to exclude
+    them.
 - Build: fix path alias resolution for rollup TypeScript steps
   - Added `"@/*": ["*"]` to tsconfig.base.json so @rollup/plugin-typescript can
     resolve `@/…` imports (the alias plugin alone doesn’t satisfy TS resolution).

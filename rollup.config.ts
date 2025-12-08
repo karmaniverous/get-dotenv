@@ -8,8 +8,8 @@ import { nodeResolve } from '@rollup/plugin-node-resolve';
 import typescriptPlugin from '@rollup/plugin-typescript';
 import fs from 'fs-extra';
 import type { InputOptions, RollupOptions } from 'rollup';
-import dtsPlugin from 'rollup-plugin-dts';
 import copy from 'rollup-plugin-copy';
+import dtsPlugin from 'rollup-plugin-dts';
 // Avoid JSON import assertions; read and type package.json
 
 const outputPath = `dist`;
