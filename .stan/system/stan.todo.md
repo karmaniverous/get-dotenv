@@ -4,11 +4,6 @@ When updated: 2025-12-08T00:00:00Z
 
 ## Next up (near‑term, actionable)
 
-- Built‑in plugins audit (aws, batch, cmd, init, demo)
-  - Confirm typed cli.ns('id') is used where appropriate (cmd intentionally
-    uses createCommand for help formatting; document rationale).
-  - Remove any residual casts on opts/action parameters if inference suffices.
-
 - Docs and templates
   - Update Authoring guides to reflect typed ns() and Commander‑generic
     inference (no casts needed in plugin actions).
@@ -54,7 +49,8 @@ When updated: 2025-12-08T00:00:00Z
 - Generalize compute/resolve helpers over Commander generics so the
   host can pass its plugin list without narrowing: updated
   computeContext and resolveAndComputeContext to accept plugins with
-  Commander argument/option/global generics.
+  Commander argument/option/global generics.
+
 - Helper audit (read‑only helpers & hooks):
   ensured CommandUnknownOpts is used only in read‑only traversal helpers
   (no Commander chaining), and hook wrappers delegate without erasing
@@ -65,4 +61,10 @@ When updated: 2025-12-08T00:00:00Z
 
 - Tooling: verify‑bundle import check targets
   '@commander-js/extra-typings' as the canonical external Commander
-  reference; kept in sync with bundling strategy.
+  reference; kept in sync with bundling strategy.
+
+- Built‑in plugins audit (aws, batch, cmd, init, demo):
+  confirmed typed cli.ns('id') usage across aws, batch, init, and demo;
+  cmd intentionally uses createCommand('cmd') to preserve desired help
+  formatting and output behavior. No residual casts were required in
+  action handlers; no runtime behavior changes identified.
