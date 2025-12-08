@@ -114,4 +114,9 @@ When updated: 2025-12-08T00:00:00Z
 - Fix cmd runner TS/lint and unit tests: ensured parts is always string[],
   removed unnecessary String() on string inputs, wrapped runCommand in a
   Vitest-aware try/catch to tolerate mocked execa returning undefined in unit
-  tests, and simplified alias invoker childNames to avoid lint warning.
+  tests, and simplified alias invoker childNames to avoid lint warning.
+
+- Tests: fix batch plugin unit tests by mocking the correct module
+  path "./execShellCommandBatch" (replacing outdated
+  "../../services/batch/execShellCommandBatch"), preventing real
+  process.exit and /bin/zsh spawn and allowing execMock assertions.

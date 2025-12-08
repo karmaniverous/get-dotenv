@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 // Mock the batch executor to capture inputs
 const execMock = vi.fn<(arg: Record<string, unknown>) => void>();
-vi.mock('../../services/batch/execShellCommandBatch', () => ({
+vi.mock('./execShellCommandBatch', () => ({
   execShellCommandBatch: (arg: Record<string, unknown>) => {
     execMock(arg);
   },
