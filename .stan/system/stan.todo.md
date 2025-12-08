@@ -210,6 +210,19 @@ When updated: 2025-12-07T00:00:00Z
   - cmd alias: adapt hook forwarding to accept `unknown` and cast once inside
     the wrapper to Commander `Command` for maybeRunAlias, removing TS2345.
 
+- Build: resolve residual rollup TypeScript warning from templates
+  - Constrained the TypeScript program used by rollup to `src/**` by adding
+    `"include": ["src/**/*.ts"]` in tsconfig.base.json so files under
+    `templates/**` are never part of rollup’s diagnostics set.
+  - Added a `paths` mapping for `"@karmaniverous/get-dotenv"` → `src/index.ts`
+    to keep the local template import resolvable in editor/typecheck contexts
+    without affecting runtime bundling.
+- Build: silence config-plugin TypeScript warning
+  - The “loaded rollup.config.ts with warnings” line came from the config
+    plugin that compiles rollup.config.ts using tsconfig.json. That program was
+    still scanning templates/** and reporting unresolved imports in template TS
+    files. Updated tsconfig.json "exclude" to omit templates/** (and other
+    non-build dirs), removing the stray warning.
 - Build: exclude templates from TypeScript and copy to dist
   - Added top-level `"exclude"` to tsconfig.base.json so templates/\*_ (and other
     non-build dirs) are never included in the TypeScript program used by rollup

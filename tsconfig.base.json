@@ -3,6 +3,7 @@
     "allowSyntheticDefaultImports": true,
     "baseUrl": ".",
     "paths": {
+      "@karmaniverous/get-dotenv": ["src/index.ts"],
       "@/*": ["*"],
       "@karmaniverous/get-dotenv/cliHost": ["src/cliHost/index.ts"],
       "@karmaniverous/get-dotenv/plugins": ["src/plugins/index.ts"]
@@ -24,6 +25,7 @@
     "types": ["node"],
     "verbatimModuleSyntax": true
   },
+  "include": ["src/**/*.ts"],
   "exclude": [
     "templates/**",
     "test/**",
