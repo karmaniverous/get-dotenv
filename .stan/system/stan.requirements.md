@@ -1,6 +1,6 @@
 # Project Requirements — get-dotenv
 
-When updated: 2025-12-05T00:00:00Z
+When updated: 2025-12-08T00:00:00Z
 
 ## Overview
 
@@ -30,6 +30,7 @@ Load environment variables from a configurable cascade of dotenv files and/or ex
 ## Compatibility policy
 
 - The plugin-first shipped CLI is the only CLI surface. It may evolve under semantic versioning; breaking changes require a major bump.
+- Note: The Commander generics refactor (see Strong typing and generics → J) is intentionally allowed to introduce breaking type changes in favor of significantly better downstream inference. Plan a major bump as needed.
 
 ## Supported Node/Runtime
 
@@ -43,6 +44,7 @@ Load environment variables from a configurable cascade of dotenv files and/or ex
 - TypeScript: strict; ESM module; exactOptionalPropertyTypes on
 - Lint: ESLint v9 (flat config), Prettier formatting
 - Test: Vitest with V8 coverage
+- Commander typings: prefer and import from '@commander-js/extra-typings' across runtime and types. Treat the vendored .stan/imports/extra-typings/index.d.ts as the canonical reference for inference when reasoning in this repo.
 
 ## Core behaviors (must be preserved)
 
@@ -412,6 +414,100 @@ Goal: allow programmatic callers to opt into a more precise env type while keepi
   - Callers that pass a type argument get a precise env shape for their code (e.g., shared with HTTP handlers).
   - No runtime behavior change; typing is opt-in only.
 
+### J) Commander generics end-to-end & typed ns() (extra‑typings)
+
+Goal: thread Commander’s generics `Command<Args, Opts, GlobalOpts>` end‑to‑end to preserve inference through `.command()`, `.argument()`, `.option()`/`.addOption()`, and `.action()`; eliminate erasure to bare `Command`/`CommandUnknownOpts`. Prefer `@commander-js/extra-typings`.
+
+- Public host interface (breaking: replaces non‑generic extension):
+
+  ```ts
+  import type {
+    Command,
+    InferCommandArguments,
+    OptionValues,
+  } from '@commander-js/extra-typings';
+
+  export interface GetDotenvCliPublic<
+    TOptions extends GetDotenvOptions = GetDotenvOptions,
+    TArgs extends any[] = [],
+    TOpts extends OptionValues = {},
+    TGlobal extends OptionValues = {},
+  > extends Command<TArgs, TOpts, TGlobal> {
+    ns<Usage extends string>(
+      name: Usage,
+    ): GetDotenvCliPublic<
+      TOptions,
+      [...TArgs, ...InferCommandArguments<Usage>],
+      {},
+      TOpts & TGlobal
+    >;
+
+    // existing members (getCtx/hasCtx/resolveAndLoad/etc.) unchanged, with “this” carrying generics
+  }
+  ```
+
+- Host class (breaking: mirrors generics and preserves subclass identity):
+
+  ```ts
+  export class GetDotenvCli<
+      TOptions extends GetDotenvOptions = GetDotenvOptions,
+      TArgs extends any[] = [],
+      TOpts extends OptionValues = {},
+      TGlobal extends OptionValues = {},
+    >
+    extends Command<TArgs, TOpts, TGlobal>
+    implements GetDotenvCliPublic<TOptions, TArgs, TOpts, TGlobal>
+  {
+    override createCommand(name?: string): GetDotenvCli<TOptions> {
+      return new GetDotenvCli<TOptions>(name);
+    }
+
+    ns<Usage extends string>(
+      name: Usage,
+    ): GetDotenvCliPublic<
+      TOptions,
+      [...TArgs, ...InferCommandArguments<Usage>],
+      {},
+      TOpts & TGlobal
+    > {
+      const exists = this.commands.some((c) => c.name() === name);
+      if (exists) throw new Error(`Duplicate command name: ${name}`);
+      return this.command(name) as unknown as GetDotenvCliPublic<
+        TOptions,
+        [...TArgs, ...InferCommandArguments<Usage>],
+        {},
+        TOpts & TGlobal
+      >;
+    }
+  }
+  ```
+
+- Plugins and helpers:
+  - `definePlugin` and `PluginWithInstanceHelpers` gain Commander generics parameters (defaulted) so plugin setup/afterResolve can act on a fully generic host without writing type parameters at call sites.
+  - Keep `CommandUnknownOpts` only in helpers that read opts or traverse but do not further chain Commander methods (e.g., `readMergedOptions`, alias executor, batch actions). Do not call `.command()`, `.argument()`, `.option()`, or `.action()` on values typed as `CommandUnknownOpts`.
+  - `ns()` is a typed alias over `.command()` and returns the preserved generics, so `.argument()`/`.option()` chaining and `.action()` handler inference work without casts.
+
+- End‑user ergonomics:
+  - Plugin authors continue writing:
+    ```ts
+    cli
+      .ns('aws')
+      .description('...')
+      .addOption(/* ... */)
+      .argument('[arg]')
+      .action((...inferred) => {
+        /* no casts */
+      });
+    ```
+  - No explicit `Args/Opts/Global` type parameters are required at call sites; extra‑typings drives inference.
+
+- Extra‑typings source of truth:
+  - Treat `.stan/imports/extra-typings/index.d.ts` as canonical for local reasoning about Commander’s generics, especially `InferCommandArguments`, `OptionValues`, and `Command<Args, Opts, Global>`.
+  - Tooling and verify-bundle checks accept '@commander-js/extra-typings' as the primary external Commander reference (with 'commander' allowed for legacy).
+
+- Breaking change note:
+  - Replace prior non‑generic `GetDotenvCliPublic extends Command` and `ns(name: string): Command` signatures. Backward-compat is not a constraint for this refactor; plan a major version bump.
+
 ## Architecture: Services-first (Ports & Adapters)
 
 Adopt a services-first architecture with clear ports (interfaces) and thin adapters:
@@ -459,19 +555,17 @@ Regression and coverage
 - Dynamic help storage
   - The CLI host stores dynamic option description callbacks in a host-owned WeakMap keyed by Commander.Option. Do not mutate Option via symbol properties.
   - The CLI host stores option grouping metadata (for help rendering) in a host-owned WeakMap keyed by Option. Expose `setOptionGroup(opt, group)`.
+
 - Command creation semantics and uniqueness guard
   - The host’s `createCommand(name?)` must construct child commands via `new GetDotenvCli(name)` explicitly. Do not rely on subclass constructor semantics.
   - Same-level duplicate command names are disallowed and must throw a clear error early (before parse).
+
 - Public interface and generics
-  - The host class implements the structural public interface `GetDotenvCliPublic<TOptions>`.
-  - The plugin contract is generic on TOptions: `GetDotenvCliPlugin<TOptions>` so setup/afterResolve receive correctly typed ctx/cli when plugins depend on option typing.
-  - `definePlugin()` returns a plugin that preserves type identity and is represented by the alias `PluginWithInstanceHelpers<TOptions, TConfig>`.
-  - `PluginWithInstanceHelpers<TOptions, TConfig>` is the canonical plugin helper type and includes:
-    - `readConfig(cli): TConfig | undefined` — instance-bound accessor for this plugin’s validated, interpolated config slice.
-    - `createPluginDynamicOption(flags, (bag, cfg: TConfig|undefined) => string)` — plugin-bound dynamic option helper that injects the plugin’s TConfig into help callbacks.
-  - `definePlugin<TOptions, TConfig>` returns a `PluginWithInstanceHelpers<TOptions, TConfig>` and enforces that:
-    - Instance helpers are required on the returned plugin type (no generics at call-site for config access).
-    - The public plugin contract remains structurally compatible for ad-hoc/test plugins that do not use config.
+  - The host class implements the structural public interface `GetDotenvCliPublic<TOptions, TArgs, TOpts, TGlobal>` extending `Command<TArgs, TOpts, TGlobal>` from extra‑typings.
+  - The plugin contract is generic on TOptions and Commander generics: `GetDotenvCliPlugin<TOptions, TArgs, TOpts, TGlobal>` so setup/afterResolve receive correctly typed ctx/cli when plugins depend on option typing.
+  - `definePlugin()` returns a plugin that preserves type identity and is represented by the alias `PluginWithInstanceHelpers<TOptions, TConfig>` (Commander generics defaulted to empty/{} for ergonomics).
+  - `PluginWithInstanceHelpers<TOptions, TConfig>` is exported so downstream code can declare plugin variables with the precise config type and rely on Commander inference in setup.
+
 - Help evaluation typing
   - ResolvedHelpConfig is `Partial<GetDotenvCliOptions> & { plugins: Record<string, unknown> }` so callbacks can read shell/log/loadProcess/exclude\*/warnEntropy without casts at root or parent commands.
   - Dynamic help must be evaluated against:
@@ -481,6 +575,7 @@ Regression and coverage
 
 - Commander usage
   - Use Commander’s public typed properties (options, commands, parent, flags, description). Avoid “unknown” casts.
+  - Avoid erasing generics to `Command` or `CommandUnknownOpts` for any object on which further Commander chaining occurs.
 
 ## Environment normalization for subprocesses
 
