@@ -100,6 +100,7 @@ export const batchPlugin = (opts: BatchPluginOptions = {}) => {
 
       // Parent invoker (unified naming)
       attachParentInvoker(plugin, cli, opts, ns);
+      return undefined;
     },
   });
   return plugin;

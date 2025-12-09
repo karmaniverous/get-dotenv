@@ -194,4 +194,7 @@ When updated: 2025-12-08T00:00:00Z
 - Typecheck fix: accept Commander generics in plugin setup return type
   (Command<unknown[], OptionValues, OptionValues>) and add explicit
   `return undefined` in setup functions that do not return a mount
-  (demo, cmd, init, batch, aws/whoami, unit test). No runtime changes.
+  (demo, cmd, init, batch, aws/whoami, unit test). No runtime changes.
+
+- Typecheck fix (final): add explicit `return undefined` in the batch plugin
+  setup function to satisfy the widened setup return union. No runtime changes.
