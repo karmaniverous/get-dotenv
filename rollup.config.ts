@@ -116,14 +116,6 @@ const config: RollupOptions[] = [
       { extend: true, file: `${outputPath}/plugins-cmd.mjs`, format: 'esm' },
     ],
   },
-  // plugins/demo subpath
-  {
-    ...commonInputOptions,
-    input: 'src/plugins/demo/index.ts',
-    output: [
-      { extend: true, file: `${outputPath}/plugins-demo.mjs`, format: 'esm' },
-    ],
-  },
   // plugins/init subpath
   {
     ...commonInputOptions,
@@ -237,19 +229,6 @@ const config: RollupOptions[] = [
     ],
     output: [
       { extend: true, file: `${outputPath}/plugins-cmd.d.ts`, format: 'esm' },
-    ],
-  },
-  // Types: plugins-demo
-  {
-    ...commonInputOptions,
-    input: 'src/plugins/demo/index.ts',
-    plugins: [
-      aliasPlugin({ entries: commonAliases }),
-      ...commonPlugins,
-      dtsPlugin({ tsconfig: './tsconfig.base.json' }),
-    ],
-    output: [
-      { extend: true, file: `${outputPath}/plugins-demo.d.ts`, format: 'esm' },
     ],
   },
   // Types: config

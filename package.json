@@ -115,12 +115,6 @@
         "default": "./dist/plugins-cmd.mjs"
       }
     },
-    "./plugins/demo": {
-      "import": {
-        "types": "./dist/plugins-demo.d.ts",
-        "default": "./dist/plugins-demo.mjs"
-      }
-    },
     "./config": {
       "import": {
         "types": "./dist/config.d.ts",

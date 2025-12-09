@@ -11,7 +11,6 @@ import { awsPlugin } from '@/src/plugins/aws';
 import { awsWhoamiPlugin } from '@/src/plugins/aws/whoami';
 import { batchPlugin } from '@/src/plugins/batch';
 import { cmdPlugin } from '@/src/plugins/cmd';
-import { demoPlugin } from '@/src/plugins/demo';
 import { initPlugin } from '@/src/plugins/init';
 
 export { buildSpawnEnv } from '@/src/cliHost/spawnEnv';
@@ -112,7 +111,6 @@ export function createCli(opts: CreateCliOptions = {}): {
     .use(cmdPlugin({ asDefault: true, optionAlias: '-c, --cmd <command...>' }))
     .use(batchPlugin())
     .use(awsPlugin().use(awsWhoamiPlugin()))
-    .use(demoPlugin())
     .use(initPlugin())
     .passOptions({ loadProcess: false })
     // Root no-op action: ensure preAction hook runs for root-only flows

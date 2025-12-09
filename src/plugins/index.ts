@@ -5,5 +5,4 @@ export { awsPlugin } from './aws';
 export { awsWhoamiPlugin } from './aws/whoami';
 export { batchPlugin } from './batch';
 export { cmdPlugin } from './cmd';
-export { demoPlugin } from './demo';
 export { initPlugin } from './init';
