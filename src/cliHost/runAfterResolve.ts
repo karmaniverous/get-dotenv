@@ -7,7 +7,7 @@ import type { GetDotenvOptions } from '@/src/GetDotenvOptions';
 
 import type { GetDotenvCliPublic } from './definePlugin';
 import type { GetDotenvCliPlugin } from './definePlugin';
-import type { GetDotenvCliCtx } from './GetDotEnvCli';
+import type { GetDotenvCliCtx } from './GetDotenvCli';
 
 export async function runAfterResolveTree<
   TOptions extends GetDotenvOptions = GetDotenvOptions,

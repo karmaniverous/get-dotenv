@@ -1,27 +1,39 @@
 {
+  "cliHost": {
+    "exclude": [
+      "src/cliHost/**",
+      "src/e2e/**",
+      "src/interop/**",
+      "src/schema/**"
+    ],
+    "include": ["src/cliHost/index.ts"]
+  },
   "docs": {
     "exclude": ["guides/**"],
     "include": ["guides/index.md"]
   },
-  "plugins-aws": {
-    "exclude": ["src/plugins/aws/**"],
-    "include": ["src/plugins/aws/index.ts"]
+  "dotenv": {
+    "exclude": [
+      "src/config/**",
+      "src/diagnostics/**",
+      "src/e2e/**",
+      "src/env/**",
+      "src/schema/**",
+      "src/types/**"
+    ],
+    "include": ["src/config/index.ts"]
   },
-  "plugins-batch": {
-    "exclude": ["src/plugins/batch/**"],
-    "include": ["src/plugins/batch/index.ts"]
-  },
-  "plugins-cmd": {
-    "exclude": ["src/plugins/cmd/**"],
-    "include": ["src/plugins/cmd/index.ts"]
-  },
-  "plugins-demo": {
-    "exclude": ["src/plugins/demo/**"],
-    "include": ["src/plugins/demo/index.ts"]
-  },
-  "plugins-init": {
-    "exclude": ["src/plugins/init/**"],
-    "include": ["src/plugins/init/index.ts"]
+  "plugins": {
+    "exclude": ["src/plugins/**"],
+    "include": [
+      "src/plugins/index.ts",
+      "src/plugins/aws/index.ts",
+      "src/plugins/batch/index.ts",
+      "src/plugins/cmd/index.ts",
+      "src/plugins/demo/index.ts",
+      "src/plugins/init/index.ts",
+      "src/plugins/aws/whoami.ts"
+    ]
   },
   "templates": {
     "exclude": ["templates/**"],

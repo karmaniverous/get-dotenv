@@ -250,17 +250,16 @@ export async function maybeRunAlias(
     }
     return;
   }
-  if (!Number.isNaN(exitCode)) {
-    dbg('process.exit', { exitCode });
-    process.exit(exitCode);
-  }
   if (!underTests) {
-    dbg('process.exit (fallback: non-numeric exitCode)', { exitCode: 0 });
-    process.exit(0);
+    if (!Number.isNaN(exitCode)) {
+      dbg('process.exit', { exitCode });
+      process.exit(exitCode);
+    } else {
+      dbg('process.exit (fallback: non-numeric exitCode)', { exitCode: 0 });
+      process.exit(0);
+    }
   } else {
-    dbg('process.exit (fallback suppressed for tests: non-numeric exitCode)', {
-      exitCode: 0,
-    });
+    dbg('process.exit suppressed for tests (success path)', { exitCode });
   }
   if (forceExit) {
     setImmediate(() => process.exit(Number.isNaN(exitCode) ? 0 : exitCode));

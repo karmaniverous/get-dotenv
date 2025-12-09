@@ -4,7 +4,7 @@
  */
 import type { CommandUnknownOpts } from '@commander-js/extra-typings';
 
-import { GetDotenvCli } from './GetDotEnvCli';
+import { GetDotenvCli } from './GetDotenvCli';
 import type { GetDotenvCliOptions } from './GetDotenvCliOptions';
 
 export const readMergedOptions = (

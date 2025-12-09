@@ -5,7 +5,7 @@ import type { OptionValues } from '@commander-js/extra-typings';
 
 import { computeContext } from '@/src/cliHost/computeContext';
 import type { GetDotenvCliPlugin } from '@/src/cliHost/definePlugin';
-import type { GetDotenvCliCtx } from '@/src/cliHost/GetDotEnvCli';
+import type { GetDotenvCliCtx } from '@/src/cliHost/GetDotenvCli';
 import {
   type GetDotenvOptions,
   resolveGetDotenvOptions,

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import type { ResolvedHelpConfig } from './GetDotEnvCli';
+import type { ResolvedHelpConfig } from './GetDotenvCli';
 import { GetDotenvCli } from './index';
 
 describe('GetDotenvCli root dynamic help', () => {

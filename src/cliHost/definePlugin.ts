@@ -25,7 +25,7 @@ import { z, type ZodObject } from 'zod';
 import type { GetDotenvOptions } from '@/src/GetDotenvOptions';
 
 import { getPluginConfig } from './computeContext';
-import type { GetDotenvCliCtx, ResolvedHelpConfig } from './GetDotEnvCli';
+import type { GetDotenvCliCtx, ResolvedHelpConfig } from './GetDotenvCli';
 
 /**
  * Structural public interface for the host exposed to plugins.

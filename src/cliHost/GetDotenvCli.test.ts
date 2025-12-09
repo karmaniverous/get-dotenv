@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import { definePlugin } from './definePlugin';
-import { GetDotenvCli } from './GetDotEnvCli';
+import { GetDotenvCli } from './GetDotenvCli';
 
 describe('GetDotenvCli host (skeleton)', () => {
   beforeEach(() => {

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { definePlugin } from './definePlugin';
-import { GetDotenvCli } from './GetDotEnvCli';
+import { GetDotenvCli } from './GetDotenvCli';
 
 describe('cliHost nested composition (mount propagation)', () => {
   it('parent returns ns("parent"); child mounts under it', () => {
