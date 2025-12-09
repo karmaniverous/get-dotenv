@@ -72,7 +72,11 @@ export class GetDotenvCli<
   implements GetDotenvCliPublic<TOptions, TArgs, TOpts, TGlobal>
 {
   /** Registered top-level plugins (composition happens via .use()) */
-  private _plugins: GetDotenvCliPlugin<TOptions, TArgs, TOpts, TGlobal>[] = [];
+  private _plugins: Array<{
+    plugin: GetDotenvCliPlugin<TOptions, TArgs, TOpts, TGlobal>;
+    override?: { ns?: string };
+  }> = [];
+
   /** One-time installation guard */
   private _installed = false;
   /** In-flight installation promise to guard against concurrent installs */
@@ -320,8 +324,11 @@ export class GetDotenvCli<
    * Register a plugin for installation (parent level).
    * Installation occurs on first resolveAndLoad() (or explicit install()).
    */
-  use(plugin: GetDotenvCliPlugin<TOptions, TArgs, TOpts, TGlobal>): this {
-    this._plugins.push(plugin);
+  use(
+    plugin: GetDotenvCliPlugin<TOptions, TArgs, TOpts, TGlobal>,
+    override?: { ns?: string },
+  ): this {
+    this._plugins.push({ plugin, override });
     return this;
   }
 
@@ -338,8 +345,9 @@ export class GetDotenvCli<
       return;
     }
     this._installing = (async () => {
-      // Install parent → children with mount propagation (async-aware).
-      for (const p of this._plugins) {
+      // Install parent → children with host-created mounts (async-aware).
+      for (const entry of this._plugins) {
+        const p = entry.plugin;
         await setupPluginTree<TOptions, TArgs, TOpts, TGlobal>(
           this as unknown as GetDotenvCliPublic<
             TOptions,

@@ -16,19 +16,19 @@ import { BatchConfigSchema, type BatchPluginOptions } from './types';
  */
 export const batchPlugin = (opts: BatchPluginOptions = {}) => {
   const plugin = definePlugin({
+    ns: 'batch',
     id: 'batch',
     // Host validates this when config-loader is enabled; plugins may also
     // re-validate at action time as a safety belt.
     configSchema: BatchConfigSchema,
     setup(cli) {
-      const ns = cli.ns('batch');
-      const batchCmd = ns; // capture the parent "batch" command for default-subcommand context
-      const pluginId = 'batch';
-      const GROUP = `plugin:${pluginId}`;
+      const batchCmd = cli; // mount provided by host
+      const GROUP = `plugin:${cli.name()}`;
 
-      ns.description(
-        'Batch command execution across multiple working directories.',
-      )
+      batchCmd
+        .description(
+          'Batch command execution across multiple working directories.',
+        )
         .enablePositionalOptions()
         .passThroughOptions()
         // Dynamic help: show effective defaults from the merged/interpolated plugin config slice.
@@ -96,10 +96,10 @@ export const batchPlugin = (opts: BatchPluginOptions = {}) => {
         .passThroughOptions()
         .argument('[command...]');
       attachDefaultCmdAction(plugin, cli, batchCmd, opts, cmdSub);
-      ns.addCommand(cmdSub, { isDefault: true });
+      batchCmd.addCommand(cmdSub, { isDefault: true });
 
       // Parent invoker (unified naming)
-      attachParentInvoker(plugin, cli, opts, ns);
+      attachParentInvoker(plugin, cli, opts, batchCmd);
       return undefined;
     },
   });

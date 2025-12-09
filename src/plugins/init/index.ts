@@ -22,10 +22,10 @@ type CopyDecision = 'overwrite' | 'example' | 'skip';
 
 export const initPlugin = () =>
   definePlugin({
+    ns: 'init',
     id: 'init',
     setup(cli) {
       cli
-        .ns('init')
         .description(
           'Scaffold getdotenv config files and a host-based CLI skeleton.',
         )

@@ -4,10 +4,10 @@ import { definePlugin } from '@/src/cliHost';
 
 export const awsWhoamiPlugin = () =>
   definePlugin({
+    ns: 'whoami',
     id: 'aws-whoami',
     setup(cli) {
       cli
-        .ns('whoami')
         .description('Print AWS caller identity (uses parent aws session)')
         .action(async () => {
           // The AWS SDK default providers will read credentials from process.env,

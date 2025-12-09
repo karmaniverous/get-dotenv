@@ -41,14 +41,13 @@ import type { Logger } from '@/src/GetDotenvOptions';
 
 export const demoPlugin = () =>
   definePlugin({
+    ns: 'demo',
     id: 'demo',
     setup(cli) {
       const logger: Logger = console;
-      const ns = cli
-        .ns('demo')
-        .description(
-          'Educational demo of host/plugin features (context, child exec, scripts/shell)',
-        );
+      const ns = cli.description(
+        'Educational demo of host/plugin features (context, child exec, scripts/shell)',
+      );
 
       /**
        * demo ctx

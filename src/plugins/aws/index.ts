@@ -13,14 +13,14 @@ import { type AwsPluginConfig, AwsPluginConfigSchema } from './types';
 export const awsPlugin = () => {
   // Create plugin first, then assign setup to avoid self-referential initializer issues.
   const plugin = definePlugin({
+    ns: 'aws',
     id: 'aws',
     configSchema: AwsPluginConfigSchema,
     setup: (_cli) => undefined,
   });
   plugin.setup = (cli) => {
-    // Subcommand: aws
+    // Mount: aws (provided)
     const cmd = cli
-      .ns('aws')
       .description(
         'Establish an AWS session and optionally forward to the AWS CLI',
       )
@@ -194,7 +194,7 @@ export const awsPlugin = () => {
           return;
         }
       });
-    return cmd;
+    return undefined;
   };
   // Assign afterResolve on the plugin object (not a free function)
   plugin.afterResolve = async (_cli, ctx) => {

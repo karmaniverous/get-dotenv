@@ -27,8 +27,18 @@ const isCliPublic = <TOptions extends GetDotenvOptions>(
   );
 };
 
-const isPromise = (x: unknown): x is Promise<unknown> =>
-  typeof x === 'object' && x !== null && 'then' in x;
+/**
+ * Determine the effective namespace for a child plugin (override > default).
+ */
+const effectiveNs = <TOptions extends GetDotenvOptions>(child: {
+  plugin: GetDotenvCliPlugin<TOptions, unknown[], OptionValues, OptionValues>;
+  override?: { ns?: string };
+}) => {
+  const o = child.override;
+  return (
+    o && typeof o.ns === 'string' && o.ns.length > 0 ? o.ns : child.plugin.ns
+  ).trim();
+};
 
 export function setupPluginTree<
   TOptions extends GetDotenvOptions,
@@ -39,20 +49,53 @@ export function setupPluginTree<
   cli: GetDotenvCliPublic<TOptions, TArgs, TOpts, TGlobal>,
   plugin: GetDotenvCliPlugin<TOptions, TArgs, TOpts, TGlobal>,
 ): Promise<void> {
-  const setupOne = async (
-    p: GetDotenvCliPlugin<TOptions, TArgs, TOpts, TGlobal>,
-    currentCli: AnyCliPublic<TOptions>,
-  ): Promise<void> => {
-    // Call setup through an installer-local typed view to keep existential typing contained.
-    const out = (p.setup as (cli: AnyCliPublic<TOptions>) => unknown)(
-      currentCli,
-    );
-    const mount = isPromise(out) ? await out : out;
-    const childCli = isCliPublic<TOptions>(mount) ? mount : currentCli;
-    for (const child of p.children) {
-      await setupOne(child, childCli);
+  const installChildren = async (
+    parentCli: AnyCliPublic<TOptions>,
+    parent: GetDotenvCliPlugin<TOptions, TArgs, TOpts, TGlobal>,
+  ) => {
+    // Enforce sibling uniqueness under this parent.
+    const names = new Set<string>();
+    for (const entry of parent.children) {
+      const ns = effectiveNs(entry);
+      if (names.has(ns)) {
+        const under = parentCli.name ? parentCli.name() : '';
+        throw new Error(
+          `Duplicate namespace '${ns}' under '${under || 'root'}'. Override via .use(plugin, { ns: '...' }).`,
+        );
+      }
+      names.add(ns);
+    }
+    // Install in order
+    for (const entry of parent.children) {
+      const ns = effectiveNs(entry);
+      const mount = parentCli.ns(ns);
+      await entry.plugin.setup(
+        mount as unknown as GetDotenvCliPublic<
+          TOptions,
+          unknown[],
+          OptionValues,
+          OptionValues
+        >,
+      );
+      await installChildren(
+        mount as unknown as AnyCliPublic<TOptions>,
+        entry.plugin,
+      );
     }
   };
-  // Kick off install and return the Promise (callers may ignore).
-  return setupOne(plugin, cli as unknown as AnyCliPublic<TOptions>);
+
+  // Create mount for current plugin under cli, run setup, then children.
+  // For the root entry, cli is the host/root and plugin mounts under it.
+  const mount = cli.ns(plugin.ns);
+  return (async () => {
+    await plugin.setup(
+      mount as unknown as GetDotenvCliPublic<
+        TOptions,
+        unknown[],
+        OptionValues,
+        OptionValues
+      >,
+    );
+    await installChildren(mount as unknown as AnyCliPublic<TOptions>, plugin);
+  })();
 }

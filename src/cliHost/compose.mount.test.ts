@@ -6,16 +6,18 @@ import { GetDotenvCli } from './GetDotEnvCli';
 describe('cliHost nested composition (mount propagation)', () => {
   it('parent returns ns("parent"); child mounts under it', () => {
     const parent = definePlugin({
+      ns: 'parent',
       id: 'parent',
       setup(cli) {
-        const ns = cli.ns('parent').description('parent ns');
-        return ns;
+        cli.description('parent ns');
+        return undefined;
       },
     });
     const child = definePlugin({
+      ns: 'child',
       id: 'child',
       setup(cli) {
-        cli.ns('child').description('child ns');
+        cli.description('child ns');
         return undefined;
       },
     });

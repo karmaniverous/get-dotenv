@@ -10,6 +10,7 @@ import { CmdConfigSchema, type CmdPluginOptions } from './types';
 /** Cmd plugin: executes a command using the current getdotenv CLI context. */
 export const cmdPlugin = (options: CmdPluginOptions = {}) =>
   definePlugin({
+    ns: 'cmd',
     id: 'cmd',
     configSchema: CmdConfigSchema,
     setup(cli) {
@@ -25,26 +26,24 @@ export const cmdPlugin = (options: CmdPluginOptions = {}) =>
       };
       const aliasKey = aliasSpec ? deriveKey(aliasSpec.flags) : undefined;
 
-      // Create subcommand and attach default action (unified naming).
-      const cmd = cli
-        .createCommand('cmd')
-        .description(
-          'Execute command according to the --shell option, conflicts with --command option (default subcommand)',
-        )
-        .argument('[command...]') as unknown as Command<[string[]]>;
+      // Mount is the command ('cmd'); attach default action.
+      cli.description(
+        'Execute command according to the --shell option, conflicts with --command option (default subcommand)',
+      );
+      const cmd = cli as unknown as Command<[string[]]>;
       attachDefaultCmdAction(cli, cmd, aliasKey);
 
-      if (options.asDefault) cli.addCommand(cmd, { isDefault: true });
-      else cli.addCommand(cmd);
-
       // Parent-attached option alias (optional, unified naming).
-      if (aliasSpec !== undefined)
+      if (aliasSpec !== undefined) {
+        const parent = (cli.parent ?? cli) as unknown as CommandUnknownOpts &
+          GetDotenvCliPublic;
         attachParentInvoker(
           cli,
           options,
           cmd as unknown as CommandUnknownOpts,
           this as unknown as ReturnType<typeof definePlugin>,
         );
+      }
       return undefined;
     },
   });

@@ -1,8 +1,12 @@
 /** src/cliHost/definePlugin.ts
- * Plugin contracts for the GetDotenv CLI host.
+ * Plugin contracts for the GetDotenv CLI host (host-created mounts model).
  *
- * Notes:
- * - setup may optionally return a mount (a command namespace) where children should be installed.
+ * Key points:
+ * - Every plugin declares a required namespace `ns` (string). The host creates
+ *   the mount using parent.ns(effectiveNs) and passes that mount to setup.
+ * - setup returns void | Promise<void> (no return-the-mount).
+ * - Composition is via .use(child, { ns?: string }) with optional namespace
+ *   override at composition time. The installer enforces sibling uniqueness.
  *
  * This module exposes a structural public interface for the host that plugins
  * should use (GetDotenvCliPublic). Using a structural type at the seam avoids
@@ -10,7 +14,6 @@
  */
 /* eslint-disable tsdoc/syntax */
 
-// Optional per-plugin config validation (host validates when loader is enabled).
 import type {
   Command,
   InferCommandArguments,
@@ -76,7 +79,6 @@ export interface GetDotenvCliPublic<
     parser?: (value: string, previous?: unknown) => unknown,
     defaultValue?: unknown,
   ): Option<Usage>;
-  // Overload: typed parser & default for value inference
   createDynamicOption<Usage extends string, TValue = unknown>(
     flags: Usage,
     desc: (
@@ -94,27 +96,26 @@ export interface GetDotenvCliPlugin<
   TOpts extends OptionValues = {},
   TGlobal extends OptionValues = {},
 > {
+  /**
+   * Namespace (required): the command name where this plugin is mounted.
+   * The host creates this mount and passes it into setup.
+   */
+  ns: string;
+
+  /**
+   * Optional identifier retained for backwards-compatible diagnostics/help
+   * fallback during top-level help rendering. Not used as a public config key.
+   */
   id?: string;
 
   /**
-   * Setup phase: register commands and wiring on the provided CLI instance.
-   * Runs parent → children (pre-order).
-   *
-   * Optional: return the "mount point" (a namespaced command) where this
-   * plugin's children should be installed. When omitted, children mount at the
-   * same cli that was passed in.
+   * Setup phase: register commands and wiring on the provided mount.
+   * Runs parent → children (pre-order). Return nothing (void).
    */
   setup: (
     cli: GetDotenvCliPublic<TOptions, TArgs, TOpts, TGlobal>,
-  ) =>
-    | GetDotenvCliPublic
-    | Command<unknown[], OptionValues, OptionValues>
-    | Promise<
-        | GetDotenvCliPublic
-        | Command<unknown[], OptionValues, OptionValues>
-        | undefined
-      >
-    | undefined;
+  ) => void | Promise<void>;
+
   /**
    * After the dotenv context is resolved, initialize any clients/secrets
    * or attach per-plugin state under ctx.plugins (by convention).
@@ -126,21 +127,26 @@ export interface GetDotenvCliPlugin<
   ) => void | Promise<void>;
 
   /**
-   * Zod schema for this plugin's config slice (from config.plugins[id]).
-   * Enforced object-like (ZodObject) to simplify code paths and inference.
+   * Zod schema for this plugin's config slice (from config.plugins[…]).
    */
   configSchema?: ZodObject;
 
   /**
-   * Compositional children. Installed after the parent per pre-order.
+   * Compositional children, with optional per-child overrides (e.g., ns).
+   * Installed after the parent per pre-order.
    */
-  children: GetDotenvCliPlugin<TOptions, TArgs, TOpts, TGlobal>[];
+  children: Array<{
+    plugin: GetDotenvCliPlugin<TOptions, TArgs, TOpts, TGlobal>;
+    override?: { ns?: string };
+  }>;
 
   /**
-   * Compose a child plugin. Returns the parent to enable chaining.
+   * Compose a child plugin with optional override (ns). Returns the parent
+   * to enable chaining.
    */
   use: (
     child: GetDotenvCliPlugin<TOptions, TArgs, TOpts, TGlobal>,
+    override?: { ns?: string },
   ) => GetDotenvCliPlugin<TOptions, TArgs, TOpts, TGlobal>;
 }
 
@@ -158,7 +164,6 @@ export type PluginWithInstanceHelpers<
   TGlobal extends OptionValues = {},
 > = GetDotenvCliPlugin<TOptions, TArgs, TOpts, TGlobal> & {
   // Instance-bound helpers preserve plugin identity and inject validated slices.
-  // Default TCfg to the plugin’s TConfig to improve inference at call sites.
   readConfig<TCfg = TConfig>(
     cli: GetDotenvCliPublic<TOptions, unknown[], OptionValues, OptionValues>,
   ): Readonly<TCfg>;
@@ -176,8 +181,7 @@ export type PluginWithInstanceHelpers<
 };
 
 /**
- * Public spec type for defining a plugin with optional children.
- * Exported to ensure TypeDoc links and navigation resolve correctly.
+ * Public spec type for defining a plugin with compositional helpers.
  */
 export type DefineSpec<
   TOptions extends GetDotenvOptions = GetDotenvOptions,
@@ -186,20 +190,25 @@ export type DefineSpec<
   TGlobal extends OptionValues = {},
 > = Omit<
   GetDotenvCliPlugin<TOptions, TArgs, TOpts, TGlobal>,
-  'children' | 'use'
+  'children' | 'use' | 'setup'
 > & {
-  children?: GetDotenvCliPlugin<TOptions, TArgs, TOpts, TGlobal>[];
+  /**
+   * Required namespace and setup function. The host creates the mount and
+   * passes it into setup; return void | Promise<void>.
+   */
+  ns: string;
+  setup: (
+    cli: GetDotenvCliPublic<TOptions, TArgs, TOpts, TGlobal>,
+  ) => void | Promise<void>;
 };
 
 /**
  * Define a GetDotenv CLI plugin with compositional helpers.
  *
  * @example
- * const parent = definePlugin({ id: 'p', setup(cli) { /* omitted *\/ } })
- *   .use(childA)
- *   .use(childB);
+ * const p = definePlugin({ ns: 'aws', setup(cli) { /* wire subcommands *\/ } })
+ *   .use(child, { ns: 'whoami' });
  */
-// Overload A (Zod-first): infer TConfig from provided ZodObject schema
 export function definePlugin<
   TOptions extends GetDotenvOptions,
   Schema extends ZodObject,
@@ -207,7 +216,6 @@ export function definePlugin<
   spec: Omit<DefineSpec<TOptions>, 'configSchema'> & { configSchema: Schema },
 ): PluginWithInstanceHelpers<TOptions, z.output<Schema>>;
 
-// Overload B (no schema provided): config type is {}
 export function definePlugin<TOptions extends GetDotenvOptions>(
   spec: DefineSpec<TOptions>,
 ): PluginWithInstanceHelpers<TOptions, {}>;
@@ -216,10 +224,8 @@ export function definePlugin<TOptions extends GetDotenvOptions>(
 export function definePlugin<TOptions extends GetDotenvOptions>(
   spec: DefineSpec<TOptions> & { configSchema?: ZodObject },
 ): PluginWithInstanceHelpers<TOptions> {
-  const { children = [], ...rest } = spec;
+  const { ...rest } = spec;
 
-  // Default to a strict empty-object schema so “no-config” plugins fail fast
-  // on unknown keys and provide a concrete {} at runtime.
   const effectiveSchema =
     (
       spec as {
@@ -227,26 +233,21 @@ export function definePlugin<TOptions extends GetDotenvOptions>(
       }
     ).configSchema ?? z.object({}).strict();
 
-  // Build base plugin first, then extend with instance-bound helpers.
   const base: GetDotenvCliPlugin<TOptions> = {
     ...rest,
-    // Always carry a schema (strict empty by default) to simplify host logic
-    // and improve inference/ergonomics for plugin authors.
     configSchema: effectiveSchema,
-    children: [...children],
-    use(child) {
-      this.children.push(child);
+    children: [],
+    use(child, override) {
+      this.children.push({ plugin: child, override });
       return this;
     },
   };
 
-  // Attach instance-bound helpers on the returned plugin object.
   const extended = base as PluginWithInstanceHelpers<TOptions>;
 
   extended.readConfig = function <TCfg = unknown>(
     _cli: GetDotenvCliPublic<TOptions, unknown[], OptionValues, OptionValues>,
   ): Readonly<TCfg> {
-    // Config is stored per-plugin-instance by the host (WeakMap in computeContext).
     const value = getPluginConfig<
       TOptions,
       TCfg,
@@ -262,7 +263,6 @@ export function definePlugin<TOptions extends GetDotenvOptions>(
       >,
     );
     if (value === undefined) {
-      // Guard: host has not resolved config yet (incorrect lifecycle usage).
       throw new Error(
         'Plugin config not available. Ensure resolveAndLoad() has been called before readConfig().',
       );
@@ -270,7 +270,6 @@ export function definePlugin<TOptions extends GetDotenvOptions>(
     return value;
   };
 
-  // Plugin-bound dynamic option factory
   extended.createPluginDynamicOption = function <
     TCfg = unknown,
     Usage extends string = string,
@@ -287,8 +286,6 @@ export function definePlugin<TOptions extends GetDotenvOptions>(
     return cli.createDynamicOption<Usage>(
       flags,
       (c) => {
-        // Prefer the validated slice stored per instance; fallback to help-bag
-        // (by-id) so top-level `-h` can render effective defaults before resolve.
         const fromStore = getPluginConfig<
           TOptions,
           TCfg,
@@ -315,10 +312,6 @@ export function definePlugin<TOptions extends GetDotenvOptions>(
             fromBag = maybe as unknown as Readonly<TCfg>;
           }
         }
-        // Always provide a concrete object to dynamic callbacks:
-        // - With a schema: computeContext stores the parsed object.
-        // - Without a schema: computeContext stores {}.
-        // - Help-time fallback: coalesce to {} when only a by-id bag exists.
         const cfgVal = (fromStore ?? fromBag ?? {}) as Readonly<TCfg>;
         return desc(
           c as ResolvedHelpConfig & { plugins: Record<string, unknown> },
