@@ -104,31 +104,96 @@ Load environment variables from a configurable cascade of dotenv files and/or ex
 
 - Use “-c, --cmd <command...>” provided by the cmd plugin as the parent-level option alias. The shipped CLI does not include a root “-c, --command” flag.
 
-#### Nested plugin composition (mount propagation)
+#### Plugin mount creation and namespaces (host‑created; ns required)
 
-Goal: allow a parent plugin to compose children under its own namespace automatically without hardcoded lookups or brittle naming. Parent.setup may optionally return the “mount point” (a GetDotenvCliPublic) where children should be installed; if nothing is returned, children install at the same cli passed to setup (current behavior).
+Goal: deterministic composition, collision‑free sibling mounts, and consumer control over displayed names.
 
-Contract:
+Required model
 
-- setup return type: void | GetDotenvCliPublic | Promise<…>. Returning a command (e.g., `cli.ns('aws')`) declares that children of this plugin should be mounted under that command. Returning void preserves current behavior (children mount at the provided cli).
-- register/install behavior: after running `const mount = await p.setup(cli)`, determine childCli as `typeof mount === 'object' && mount ? (mount as GetDotenvCliPublic) : cli` and pass childCli to each child’s setup.
-- Async setup is supported and awaited before installing children.
+- Every plugin declares a default namespace ns: string (non‑empty). This is the command name used when the plugin is mounted.
+- The consumer MAY override the namespace at composition time:
+  - `program.use(plugin, { ns: 'deploy-api' })`
+  - `parent.use(child, { ns: 'whoami2' })`
+- Sibling uniqueness is enforced at install time. If two siblings resolve to the same final segment under the same parent, the host throws a clear error, for example:
+  - `Duplicate namespace 'deploy' under 'tools'. Override via .use(plugin, { ns: '...' }).`
 
-Type surface:
+Where mounts are created
 
-- GetDotenvCliPlugin.setup is widened to return `void | GetDotenvCliPublic | Promise<…>`.
-- definePlugin follows suit (no behavior change for plugins that return nothing).
+- The host always creates the mount: `const mount = parent.ns(effectiveNs)` and then calls `setup(mount)`.
+- Plugin setup does not return the mount and returns `Promise<void> | void` only.
+- This hard‑pivot guarantees the consumer’s override is honored and simplifies collision handling.
 
-Behavioral expectations:
+Breaking API changes (acceptable)
 
-- A parent plugin that claims a namespace (e.g., `const ns = cli.ns('aws')`) returns that namespace from setup to mount children under it. Example: `awsPlugin().use(awsWhoamiPlugin())` produces `getdotenv aws whoami`.
-- Deeper trees compose naturally: each level may return its child mount; when omitted, children attach to the level’s incoming cli.
-- No name‑based lookups or search heuristics; the mount is a real command object which preserves Commander inference for downstream chaining.
+- definePlugin requires ns (string) in the spec for every plugin.
+- Plugin setup return type becomes `void | Promise<void>`; plugins that previously returned a mount must be updated to use the provided mount parameter and return nothing.
+- The authoring surface no longer supports “return a mount from setup” as a way to guide attachment.
 
-Tests and docs:
+id becomes purely internal
 
-- Unit: a fake parent returns `ns('parent')`; a child adds `ns('child')`; parent help lists the child under parent. E2E: `getdotenv aws -h` lists `whoami`.
-- Authoring docs: add a short “Nested Composition” note to Lifecycle explaining the optional mount return and child attachment behavior (schedule after implementation; keep the docs facet disabled for now).
+- The public concept of id is removed. Internally, the host uses a unique Symbol per plugin instance (e.g., for WeakMap stores).
+- Public config/help keys are based on the realized mount path, not id.
+
+Config/help keyed by realized path
+
+- Config mapping: `config.plugins['aws']` or `config.plugins['aws/whoami']` refers to the mount path (root alias excluded).
+- Overriding a namespace (or nesting) changes the config/help key to match the CLI surface the user sees.
+- Trade‑off: renaming the mount path breaks the config key by design. This is intentional and aligns with composition as the source of truth.
+
+Help grouping policy
+
+- Use leaf‑only names in grouped help headings (e.g., “Plugin options — whoami”). The realized path is used internally for lookup, but not displayed.
+
+Consumer override API
+
+- Minimal and future‑proof:
+  - `.use(plugin, { ns: '...' })`
+  - The override object may be extended later (e.g., `groupLabel`) without breaking the API.
+
+Edge cases
+
+- Plugins that attach only parent‑level options (no subcommand) still receive a mount for grouping/config (e.g., `cmd`) and may attach options to `mount.parent` for parent aliases. This avoids conflicts while keeping grouping clear.
+
+#### Namespace collision and override examples
+
+- Sibling collision (error):
+  - Composition:
+    ```
+    program
+      .use(deployPlugin())    // ns: "deploy"
+      .use(deployPlugin());   // ns: "deploy"
+    ```
+  - Error at install:
+    ```
+    Duplicate namespace 'deploy' under 'getdotenv'. Override via .use(plugin, { ns: '...' }).
+    ```
+- Consumer override to disambiguate:
+  - Composition:
+    ```
+    program
+      .use(deployPlugin(), { ns: 'deploy-api' })
+      .use(deployPlugin(), { ns: 'deploy-web' });
+    ```
+  - Help grouping (leaf only):
+    ```
+    Plugin options — deploy-api
+    Plugin options — deploy-web
+    ```
+- Path‑keyed config
+  - Given composition:
+    ```
+    program
+      .use(awsPlugin(), { ns: 'aws' })
+      .use(awsWhoamiPlugin(), { ns: 'whoami' });
+    ```
+  - Config keys:
+    ```
+    plugins:
+      aws:
+        # parent config
+      aws/whoami:
+        # child config
+    ```
 
 #### Command alias on parent (cmd)
 
@@ -570,7 +635,7 @@ Regression and coverage
 
 ## Diagnostics and safety (presentation only)
 
-- Redaction: `--redact` masks secret-like keys (default patterns include SECRET, TOKEN, KEY, PASSWORD) in `-l/--log` and `--trace` outputs; allow custom patterns via `--redact-pattern`.
+- Redaction: `--redact` masks secret-like keys (default patterns include SECRET, TOKEN, KEY, PASSWORD) in `-l/--log` and `--trace` outputs; allow custom patterns.
 - Entropy warnings (default on):
   - Once-per-key messages when printable strings of length ≥ 16 exceed bits/char threshold (default 3.8).
   - Surfaces: `--trace` and `-l/--log`.
@@ -581,6 +646,16 @@ Regression and coverage
 - Dynamic help storage
   - The CLI host stores dynamic option description callbacks in a host-owned WeakMap keyed by Commander.Option. Do not mutate Option via symbol properties.
   - The CLI host stores option grouping metadata (for help rendering) in a host-owned WeakMap keyed by Option. Expose `setOptionGroup(opt, group)`.
+- Grouping policy (leaf‑only)
+  - Plugin group headings render leaf‑only names (e.g., “Plugin options — whoami”). The full realized path is used internally for lookup and config keys but is not displayed in group headings.
+  - In the rare event of ambiguous leafs under the same parent, the installer’s sibling‑uniqueness guard prevents ambiguous groupings by requiring a namespace override.
+- Namespace model
+  - definePlugin requires `ns: string` for every plugin.
+  - The host creates mounts (parent.ns(effectiveNs)) and passes the mount into `setup(mount)`; `setup` returns `void | Promise<void>`.
+  - The `.use()` composer supports an override object: `.use(plugin, { ns: '...' })`.
+  - Sibling namespace collisions under a parent are detected and reported with a clear error that suggests an override.
+- Identity and config keys
+  - Plugin `id` is internal-only (Symbol). Public keys are the realized mount path segments (e.g., `aws/whoami`).
 
 - Command creation semantics and uniqueness guard
   - The host’s `createCommand(name?)` must construct child commands via `new GetDotenvCli(name)` explicitly. Do not rely on subclass constructor semantics.
@@ -672,6 +747,16 @@ Validation:
   - There is no `useConfigLoader` or similar flag in the public options surface; any previous no-op compatibility flag is removed.
   - Programmatic callers use the same semantics as the host: options are resolved via `resolveGetDotenvOptions`, validated against the Zod schema, then overlaid by config and dynamic values.
 
+Per‑plugin config keyed by realized path
+
+- The `plugins` map in JSON/YAML/JS/TS config is keyed by the realized mount path of plugins (root alias excluded). Examples:
+  - `plugins.aws` — parent plugin mounted at `aws`
+  - `plugins['aws/whoami']` — child plugin mounted under `aws`
+- Renaming a namespace via `.use(plugin, { ns: '...' })` changes the corresponding config key. This ensures config follows the CLI surface area the consumer assembles.
+- Author guidance:
+  - Stabilize namespaces in compositions to avoid churn in config keys over time.
+  - Use leaf‑only names in help displays; rely on the realized path for config keys and internal lookups.
+
 ## Scripts table (optional, config or root options)
 
 - Define scripts in config: `plugins.<id>.scripts` or root `scripts`.
@@ -696,6 +781,9 @@ Validation:
 - Removed from public API:
   - `readPluginConfig<T>(cli, id: string)`
   - Public `ctx.pluginConfigs` access
+  - Mount return from plugin `setup()` (host now creates mounts; setup returns void).
+- Composition override API (additive)
+  - `.use(plugin, { ns: '...' })` — minimal override shape to rename the mounted command segment during composition. The override only affects the realized path, not the plugin’s internal identity.
 
 ## Prioritized roadmap (requirements)
 
