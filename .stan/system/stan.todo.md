@@ -238,4 +238,21 @@ When updated: 2025-12-08T00:00:00Z
 
 - Installer generics: simplify to existential Commander generics
   (unknown[]/OptionValues) and remove `any` in `registerPlugin`, fixing TS2345
-  and lint no‑explicit‑any reports.
+  and lint no‑explicit‑any reports.
+
+- Cmd default subcommand: declare `[command...]` positional to accept payload
+  tokens, resolving “too many arguments for 'cmd'” failures across E2E.
+
+- Installer synchronous mounts: create mounts and run setup synchronously when
+  possible, and only await Promises when returned. This eliminates the race
+  window in compose.mount tests so children are visible immediately after
+  passOptions().
+
+- Cross-instance context/options: make getCtx/hasCtx/getOptions climb to the
+  root instance when local storage is unset so plugin actions called on
+  subcommand mounts can access the root context/options. Fixes aws subcommand
+  “Dotenv context unavailable” in unit tests.
+
+- Host install caller generics: update setupPluginTree invocation to the
+  simplified single type parameter signature and existential Commander generics
+  to satisfy TS2558 after refactor.

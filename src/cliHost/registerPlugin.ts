@@ -30,57 +30,54 @@ const effectiveNs = <TOptions extends GetDotenvOptions>(child: {
   ).trim();
 };
 
+const isPromise = (v: unknown): v is Promise<unknown> =>
+  !!v && typeof (v as { then?: unknown }).then === 'function';
+
+function runInstall<TOptions extends GetDotenvOptions>(
+  parentCli: AnyCliPublic<TOptions>,
+  plugin: GetDotenvCliPlugin<TOptions, unknown[], OptionValues, OptionValues>,
+): void | Promise<void> {
+  // Create mount and run setup
+  const mount = parentCli.ns(plugin.ns);
+  const setupRet = plugin.setup(
+    mount as unknown as GetDotenvCliPublic<
+      TOptions,
+      unknown[],
+      OptionValues,
+      OptionValues
+    >,
+  );
+  const pending: Promise<void>[] = [];
+  if (isPromise(setupRet)) pending.push(setupRet.then(() => undefined));
+
+  // Enforce sibling uniqueness before creating children
+  const names = new Set<string>();
+  for (const entry of plugin.children) {
+    const ns = effectiveNs(entry);
+    if (names.has(ns)) {
+      const under = mount.name();
+      throw new Error(
+        `Duplicate namespace '${ns}' under '${under || 'root'}'. Override via .use(plugin, { ns: '...' }).`,
+      );
+    }
+    names.add(ns);
+  }
+  // Install children (pre-order), synchronously when possible
+  for (const entry of plugin.children) {
+    const childRet = runInstall(
+      mount as unknown as AnyCliPublic<TOptions>,
+      entry.plugin,
+    );
+    if (isPromise(childRet)) pending.push(childRet);
+  }
+  if (pending.length > 0) return Promise.all(pending).then(() => undefined);
+  return;
+}
+
 export function setupPluginTree<TOptions extends GetDotenvOptions>(
   cli: GetDotenvCliPublic<TOptions, unknown[], OptionValues, OptionValues>,
   plugin: GetDotenvCliPlugin<TOptions, unknown[], OptionValues, OptionValues>,
 ): Promise<void> {
-  const installChildren = async (
-    parentCli: AnyCliPublic<TOptions>,
-    parent: GetDotenvCliPlugin<TOptions, unknown[], OptionValues, OptionValues>,
-  ) => {
-    // Enforce sibling uniqueness under this parent.
-    const names = new Set<string>();
-    for (const entry of parent.children) {
-      const ns = effectiveNs(entry);
-      if (names.has(ns)) {
-        const under = parentCli.name();
-        throw new Error(
-          `Duplicate namespace '${ns}' under '${under || 'root'}'. Override via .use(plugin, { ns: '...' }).`,
-        );
-      }
-      names.add(ns);
-    }
-    // Install in order
-    for (const entry of parent.children) {
-      const ns = effectiveNs(entry);
-      const mount = parentCli.ns(ns);
-      await entry.plugin.setup(
-        mount as unknown as GetDotenvCliPublic<
-          TOptions,
-          unknown[],
-          OptionValues,
-          OptionValues
-        >,
-      );
-      await installChildren(
-        mount as unknown as AnyCliPublic<TOptions>,
-        entry.plugin,
-      );
-    }
-  };
-
-  // Create mount for current plugin under cli, run setup, then children.
-  // For the root entry, cli is the host/root and plugin mounts under it.
-  const mount = cli.ns(plugin.ns);
-  return (async () => {
-    await plugin.setup(
-      mount as unknown as GetDotenvCliPublic<
-        TOptions,
-        unknown[],
-        OptionValues,
-        OptionValues
-      >,
-    );
-    await installChildren(mount as unknown as AnyCliPublic<TOptions>, plugin);
-  })();
+  const ret = runInstall(cli as AnyCliPublic<TOptions>, plugin);
+  return isPromise(ret) ? ret : Promise.resolve();
 }

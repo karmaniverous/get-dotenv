@@ -208,11 +208,27 @@ export class GetDotenvCli<
     evalDyn(this, resolved);
   }
 
+  /** Internal: climb to the true root (host) command. */
+  private _root(): GetDotenvCli {
+    let node: unknown = this as unknown as CommandUnknownOpts;
+
+    while ((node as CommandUnknownOpts).parent) {
+      node = (node as CommandUnknownOpts).parent as unknown;
+    }
+    return node as GetDotenvCli;
+  }
+
   /**
    * Retrieve the current invocation context (if any).
    */
   getCtx(): GetDotenvCliCtx<TOptions> {
-    const ctx = this[CTX_SYMBOL];
+    let ctx = this[CTX_SYMBOL];
+    if (!ctx) {
+      const root = this._root();
+      ctx = (root as unknown as { [k: symbol]: unknown })[CTX_SYMBOL] as
+        | GetDotenvCliCtx<TOptions>
+        | undefined;
+    }
     if (!ctx) {
       throw new Error(
         'Dotenv context unavailable. Ensure resolveAndLoad() has been called or the host is wired with passOptions() before invoking commands.',
@@ -225,7 +241,9 @@ export class GetDotenvCli<
    * Check whether a context has been resolved (non-throwing guard).
    */
   hasCtx(): boolean {
-    return this[CTX_SYMBOL] !== undefined;
+    if (this[CTX_SYMBOL] !== undefined) return true;
+    const root = this._root() as unknown as { [k: symbol]: unknown };
+    return root[CTX_SYMBOL] !== undefined;
   }
 
   /**
@@ -233,7 +251,11 @@ export class GetDotenvCli<
    * Downstream-safe: no generics required.
    */
   getOptions(): GetDotenvCliOptions | undefined {
-    return this[OPTS_SYMBOL];
+    if (this[OPTS_SYMBOL]) return this[OPTS_SYMBOL];
+    const root = this._root() as unknown as { [k: symbol]: unknown };
+    const bag = root[OPTS_SYMBOL] as GetDotenvCliOptions | undefined;
+    if (bag) return bag;
+    return undefined;
   }
 
   /** Internal: set the merged root options bag for this run. */
@@ -350,14 +372,19 @@ export class GetDotenvCli<
       // Install parent → children with host-created mounts (async-aware).
       for (const entry of this._plugins) {
         const p = entry.plugin;
-        await setupPluginTree<TOptions, TArgs, TOpts, TGlobal>(
+        await setupPluginTree<TOptions>(
           this as unknown as GetDotenvCliPublic<
             TOptions,
-            TArgs,
-            TOpts,
-            TGlobal
+            unknown[],
+            OptionValues,
+            OptionValues
           >,
-          p as unknown as GetDotenvCliPlugin<TOptions, TArgs, TOpts, TGlobal>,
+          p as unknown as GetDotenvCliPlugin<
+            TOptions,
+            unknown[],
+            OptionValues,
+            OptionValues
+          >,
         );
       }
       this._installed = true;
