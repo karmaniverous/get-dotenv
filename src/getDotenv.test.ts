@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 
 import { getDotenv } from './getDotenv';
 
-describe('getDotEnv', function () {
+describe('getDotenv', function () {
   beforeEach(function () {
     delete process.env.APP_SETTING;
     delete process.env.APP_SECRET;
