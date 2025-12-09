@@ -156,5 +156,6 @@ export const initPlugin = () =>
             rl.close();
           }
         });
+      return undefined;
     },
   });

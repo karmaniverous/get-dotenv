@@ -108,8 +108,12 @@ export interface GetDotenvCliPlugin<
     cli: GetDotenvCliPublic<TOptions, TArgs, TOpts, TGlobal>,
   ) =>
     | GetDotenvCliPublic
-    | Command
-    | Promise<GetDotenvCliPublic | Command | undefined>
+    | Command<unknown[], OptionValues, OptionValues>
+    | Promise<
+        | GetDotenvCliPublic
+        | Command<unknown[], OptionValues, OptionValues>
+        | undefined
+      >
     | undefined;
   /**
    * After the dotenv context is resolved, initialize any clients/secrets

@@ -16,5 +16,6 @@ export const awsWhoamiPlugin = () =>
           const result = await client.send(new GetCallerIdentityCommand());
           console.log(JSON.stringify(result, null, 2));
         });
+      return undefined;
     },
   });

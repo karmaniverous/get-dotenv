@@ -148,6 +148,7 @@ export const demoPlugin = () =>
             });
           },
         );
+      return undefined;
     },
     /**
      * Optional: afterResolve can initialize per-plugin state using ctx.dotenv.

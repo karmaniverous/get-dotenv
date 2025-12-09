@@ -16,6 +16,7 @@ describe('cliHost nested composition (mount propagation)', () => {
       id: 'child',
       setup(cli) {
         cli.ns('child').description('child ns');
+        return undefined;
       },
     });
     parent.use(child);

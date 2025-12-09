@@ -45,5 +45,6 @@ export const cmdPlugin = (options: CmdPluginOptions = {}) =>
           cmd as unknown as CommandUnknownOpts,
           this as unknown as ReturnType<typeof definePlugin>,
         );
+      return undefined;
     },
   });
