@@ -8,7 +8,6 @@ import { CmdConfigSchema, type CmdPluginOptions } from './types';
 export const cmdPlugin = (options: CmdPluginOptions = {}) => {
   const plugin = definePlugin({
     ns: 'cmd',
-    id: 'cmd',
     configSchema: CmdConfigSchema,
     setup(cli) {
       const aliasSpec =

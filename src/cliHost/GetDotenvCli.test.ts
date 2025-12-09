@@ -62,7 +62,6 @@ describe('GetDotenvCli host (skeleton)', () => {
     const order: string[] = [];
     const child = definePlugin({
       ns: 'child',
-      id: 'child',
       setup: () => undefined,
       afterResolve: () => {
         order.push('child');
@@ -71,7 +70,6 @@ describe('GetDotenvCli host (skeleton)', () => {
 
     const parent = definePlugin({
       ns: 'parent',
-      id: 'parent',
       setup: () => undefined,
       afterResolve: () => {
         order.push('parent');

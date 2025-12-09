@@ -86,7 +86,8 @@ export const getPluginConfig = <
  * Compute the dotenv context for the host (uses the config loader/overlay path).
  * - Resolves and validates options strictly (host-only).
  * - Applies file cascade, overlays, dynamics, and optional effects.
- * - Merges and validates per-plugin config slices (when provided).
+ * - Merges and validates per-plugin config slices (when provided), keyed by
+ *   realized mount path (ns chain).
  *
  * @param customOptions - Partial options from the current invocation.
  * @param plugins - Installed plugins (for config validation).
@@ -108,22 +109,19 @@ export const computeContext = async <
   const validated = getDotenvOptionsSchemaResolved.parse(
     optionsResolved,
   ) as GetDotenvOptions;
-  // Always-on loader path
-  // 1) Base from files only (no dynamic, no programmatic vars)
-  // Sanitize to avoid passing properties explicitly set to undefined.
+
+  // Build a pure base without side effects or logging (no dynamics, no programmatic vars).
   const cleanedValidated: Partial<GetDotenvOptions> = omitUndefined(validated);
 
   const base = await getDotenv({
     ...cleanedValidated,
-    // Build a pure base without side effects or logging.
     excludeDynamic: true,
     vars: {},
     log: false,
     loadProcess: false,
-    // Intentionally omit outputPath for the base pass; including a key with
-    // undefined would violate exactOptionalPropertyTypes on the Partial target.
   });
-  // 2) Discover config sources and overlay
+
+  // Discover config sources and overlay with progressive expansion per slice.
   const sources = await resolveGetDotenvConfigSources(hostMetaUrl);
   const dotenvOverlaid = overlayEnv({
     base,
@@ -131,7 +129,8 @@ export const computeContext = async <
     configs: sources,
     ...(validated.vars ? { programmaticVars: validated.vars } : {}),
   });
-  // Helper to apply a dynamic map progressively.
+
+  // Apply dynamics in order (programmatic -> packaged -> project/public -> project/local -> file dynamicPath)
   const applyDynamic = (
     target: Record<string, string | undefined>,
     dynamic: GetDotenvDynamic | undefined,
@@ -152,32 +151,28 @@ export const computeContext = async <
     }
   };
 
-  // 3) Apply dynamics in order
-  const dotenv = { ...dotenvOverlaid };
+  const dotenv: Record<string, string | undefined> = { ...dotenvOverlaid };
+
   applyDynamic(
     dotenv,
     (validated as { dynamic?: GetDotenvDynamic }).dynamic,
     validated.env ?? validated.defaultEnv,
   );
-  applyDynamic(
-    dotenv,
-    (sources.packaged?.dynamic ?? undefined) as GetDotenvDynamic | undefined,
-    validated.env ?? validated.defaultEnv,
-  );
-  applyDynamic(
-    dotenv,
-    (sources.project?.public?.dynamic ?? undefined) as
-      | GetDotenvDynamic
-      | undefined,
-    validated.env ?? validated.defaultEnv,
-  );
-  applyDynamic(
-    dotenv,
-    (sources.project?.local?.dynamic ?? undefined) as
-      | GetDotenvDynamic
-      | undefined,
-    validated.env ?? validated.defaultEnv,
-  );
+
+  // Packaged/project dynamics
+  const packagedDyn = (sources.packaged?.dynamic ?? undefined) as
+    | GetDotenvDynamic
+    | undefined;
+  const publicDyn = (sources.project?.public?.dynamic ?? undefined) as
+    | GetDotenvDynamic
+    | undefined;
+  const localDyn = (sources.project?.local?.dynamic ?? undefined) as
+    | GetDotenvDynamic
+    | undefined;
+
+  applyDynamic(dotenv, packagedDyn, validated.env ?? validated.defaultEnv);
+  applyDynamic(dotenv, publicDyn, validated.env ?? validated.defaultEnv);
+  applyDynamic(dotenv, localDyn, validated.env ?? validated.defaultEnv);
 
   // file dynamicPath (lowest)
   if (validated.dynamicPath) {
@@ -193,7 +188,7 @@ export const computeContext = async <
     }
   }
 
-  // 4) Output/log/process merge
+  // Effects:
   if (validated.outputPath) {
     await fs.writeFile(
       validated.outputPath,
@@ -210,7 +205,7 @@ export const computeContext = async <
   if (validated.log) logger.log(dotenv);
   if (validated.loadProcess) Object.assign(process.env, dotenv);
 
-  // 5) Merge and validate per-plugin config (packaged < project.public < project.local)
+  // Merge and validate per-plugin config keyed by realized path (ns chain).
   const packagedPlugins =
     (sources.packaged &&
       (
@@ -235,53 +230,69 @@ export const computeContext = async <
         }
       ).plugins) ??
     {};
-  // The by-id map is retained only for backwards-compat rendering paths
-  // (root help dynamic evaluation). Instance-bound access is the source
-  // of truth going forward and is populated below.
-  const mergedPluginConfigsById = defaultsDeep<Record<string, unknown>>(
-    {},
-    packagedPlugins,
-    publicPlugins,
-    localPlugins,
-  );
-  for (const p of plugins) {
-    if (!p.id) continue;
-    const slice = mergedPluginConfigsById[p.id];
-    // Build interpolation reference once per plugin:
-    const envRef: Record<string, string | undefined> = {
-      ...dotenv,
-      ...process.env,
-    };
+
+  type Entry = {
+    plugin: GetDotenvCliPlugin<TOptions, TArgs, TOpts, TGlobal>;
+    path: string;
+  };
+  const entries: Entry[] = [];
+  const collect = (
+    ps: GetDotenvCliPlugin<TOptions, TArgs, TOpts, TGlobal>[],
+    prefix: string | undefined,
+  ) => {
+    for (const p of ps) {
+      const here = prefix && prefix.length > 0 ? `${prefix}/${p.ns}` : p.ns;
+      entries.push({ plugin: p, path: here });
+      if (Array.isArray(p.children) && p.children.length > 0) {
+        collect(
+          p.children.map((c) => c.plugin),
+          here,
+        );
+      }
+    }
+  };
+  collect(plugins, undefined);
+
+  const mergedPluginConfigsByPath: Record<string, unknown> = {};
+  const envRef: Record<string, string | undefined> = {
+    ...dotenv,
+    ...process.env,
+  };
+  for (const e of entries) {
+    const pathKey = e.path;
+    const mergedRaw = defaultsDeep<Record<string, unknown>>(
+      {},
+      (packagedPlugins[pathKey] as Record<string, unknown> | undefined) ?? {},
+      (publicPlugins[pathKey] as Record<string, unknown> | undefined) ?? {},
+      (localPlugins[pathKey] as Record<string, unknown> | undefined) ?? {},
+    );
     const interpolated =
-      slice && typeof slice === 'object'
-        ? interpolateDeep(slice as Record<string, unknown>, envRef)
+      mergedRaw && typeof mergedRaw === 'object'
+        ? interpolateDeep(mergedRaw, envRef)
         : ({} as Record<string, unknown>);
 
-    // Validate against schema when present; otherwise store interpolated slice as-is.
-    const schema = p.configSchema;
+    const schema = e.plugin.configSchema;
     if (schema) {
       const parsed = schema.safeParse(interpolated);
       if (!parsed.success) {
         const err = parsed.error;
         const msgs = err.issues
           .map((i) => {
-            const path = Array.isArray(i.path) ? i.path.join('.') : '';
+            const pth = Array.isArray(i.path) ? i.path.join('.') : '';
             const msg =
               typeof i.message === 'string' ? i.message : 'Invalid value';
-            return path ? `${path}: ${msg}` : msg;
+            return pth ? `${pth}: ${msg}` : msg;
           })
           .join('\n');
-        throw new Error(`Invalid config for plugin '${p.id}':\n${msgs}`);
+        throw new Error(`Invalid config for plugin at '${pathKey}':\n${msgs}`);
       }
-      // Store a readonly (shallow-frozen) value for runtime safety.
       const frozen = Object.freeze(parsed.data);
-      setPluginConfig(p, frozen);
-      mergedPluginConfigsById[p.id] = frozen;
+      setPluginConfig(e.plugin, frozen);
+      mergedPluginConfigsByPath[pathKey] = frozen;
     } else {
-      // Defensive fallback (shouldn't occur: definePlugin injects a strict empty schema).
       const frozen = Object.freeze(interpolated);
-      setPluginConfig(p, frozen);
-      mergedPluginConfigsById[p.id] = frozen;
+      setPluginConfig(e.plugin, frozen);
+      mergedPluginConfigsByPath[pathKey] = frozen;
     }
   }
 
@@ -289,8 +300,6 @@ export const computeContext = async <
     optionsResolved: validated as TOptions,
     dotenv,
     plugins: {},
-    // Retained for legacy root help dynamic evaluation only. Instance-bound
-    // access is used by plugins themselves and tests/docs moving forward.
-    pluginConfigs: mergedPluginConfigsById,
+    pluginConfigs: mergedPluginConfigsByPath,
   };
 };

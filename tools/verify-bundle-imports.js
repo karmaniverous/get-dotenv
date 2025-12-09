@@ -29,21 +29,12 @@ const targets = [
   { file: 'cliHost.mjs', type: 'esm' },
 ];
 
-// Accept either @commander-js/extra-typings (preferred) or commander (legacy)
-const hasCommanderImport = (txt) => {
-  const esmExtra =
-    /from\s+['"]@commander-js\/extra-typings['"]/.test(txt) ||
-    /import\s+['"]@commander-js\/extra-typings['"]/.test(txt);
-  const esmPlain =
-    /from\s+['"]commander['"]/.test(txt) ||
-    /import\s+['"]commander['"]/.test(txt);
-  return esmExtra || esmPlain;
-};
-const hasCommanderRequire = (txt) => {
-  const cjsExtra = /require\(['"]@commander-js\/extra-typings['"]\)/.test(txt);
-  const cjsPlain = /require\(['"]commander['"]\)/.test(txt);
-  return cjsExtra || cjsPlain;
-};
+// Require @commander-js/extra-typings (primary external)
+const hasCommanderImport = (txt) =>
+  /from\s+['"]@commander-js\/extra-typings['"]/.test(txt) ||
+  /import\s+['"]@commander-js\/extra-typings['"]/.test(txt);
+const hasCommanderRequire = (txt) =>
+  /require\(['"]@commander-js\/extra-typings['"]\)/.test(txt);
 
 const err = (msg) => {
   // Keep errors concise and deterministic; exit non-zero.
@@ -86,7 +77,7 @@ const main = async () => {
       ok: good,
       reason: good
         ? undefined
-        : 'no external commander (@commander-js/extra-typings) reference',
+        : 'no external @commander-js/extra-typings reference',
     });
   }
 

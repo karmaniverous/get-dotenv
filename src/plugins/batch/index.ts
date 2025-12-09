@@ -17,7 +17,6 @@ import { BatchConfigSchema, type BatchPluginOptions } from './types';
 export const batchPlugin = (opts: BatchPluginOptions = {}) => {
   const plugin = definePlugin({
     ns: 'batch',
-    id: 'batch',
     // Host validates this when config-loader is enabled; plugins may also
     // re-validate at action time as a safety belt.
     configSchema: BatchConfigSchema,
@@ -103,5 +102,6 @@ export const batchPlugin = (opts: BatchPluginOptions = {}) => {
       return undefined;
     },
   });
+
   return plugin;
 };

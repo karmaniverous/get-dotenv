@@ -7,10 +7,6 @@
  * - setup returns void | Promise<void> (no return-the-mount).
  * - Composition is via .use(child, \{ ns?: string \}) with optional namespace
  *   override at composition time. The installer enforces sibling uniqueness.
- *
- * This module exposes a structural public interface for the host that plugins
- * should use (GetDotenvCliPublic). Using a structural type at the seam avoids
- * nominal class identity issues (private fields) in downstream consumers.
  */
 /* eslint-disable tsdoc/syntax */
 
@@ -96,17 +92,8 @@ export interface GetDotenvCliPlugin<
   TOpts extends OptionValues = {},
   TGlobal extends OptionValues = {},
 > {
-  /**
-   * Namespace (required): the command name where this plugin is mounted.
-   * The host creates this mount and passes it into setup.
-   */
+  /** Namespace (required): the command name where this plugin is mounted. */
   ns: string;
-
-  /**
-   * Optional identifier retained for backwards-compatible diagnostics/help
-   * fallback during top-level help rendering. Not used as a public config key.
-   */
-  id?: string;
 
   /**
    * Setup phase: register commands and wiring on the provided mount.
@@ -126,9 +113,7 @@ export interface GetDotenvCliPlugin<
     ctx: GetDotenvCliCtx<TOptions>,
   ) => void | Promise<void>;
 
-  /**
-   * Zod schema for this plugin's config slice (from config.plugins[…]).
-   */
+  /** Zod schema for this plugin's config slice (from config.plugins[…]). */
   configSchema?: ZodObject;
 
   /**
@@ -283,6 +268,17 @@ export function definePlugin<TOptions extends GetDotenvOptions>(
     parser?: (value: string, previous?: unknown) => unknown,
     defaultValue?: unknown,
   ): Option<Usage> {
+    // Derive realized path strictly from the provided mount (leaf-up).
+    const realizedPath = (() => {
+      const parts: string[] = [];
+      let node = cli as unknown as Command;
+      while (node.parent) {
+        parts.push(node.name());
+        node = node.parent as Command;
+      }
+      return parts.reverse().join('/');
+    })();
+
     return cli.createDynamicOption<Usage>(
       flags,
       (c) => {
@@ -300,19 +296,21 @@ export function definePlugin<TOptions extends GetDotenvOptions>(
             OptionValues
           >,
         );
-        const id = (extended as { id?: string }).id;
-        let fromBag: Readonly<TCfg> | undefined;
-        if (!fromStore && id) {
-          const maybe = (
+
+        let cfgVal: Readonly<TCfg> = fromStore ?? ({} as Readonly<TCfg>);
+
+        // Strict fallback only by realized path for help-time synthetic usage.
+        if (!fromStore && realizedPath.length > 0) {
+          const bag = (
             c as ResolvedHelpConfig & {
               plugins: Record<string, unknown>;
             }
-          ).plugins[id];
+          ).plugins;
+          const maybe = bag[realizedPath];
           if (maybe && typeof maybe === 'object') {
-            fromBag = maybe as unknown as Readonly<TCfg>;
+            cfgVal = maybe as Readonly<TCfg>;
           }
         }
-        const cfgVal = (fromStore ?? fromBag ?? {}) as Readonly<TCfg>;
         return desc(
           c as ResolvedHelpConfig & { plugins: Record<string, unknown> },
           cfgVal,

@@ -7,7 +7,6 @@ describe('cliHost nested composition (mount propagation)', () => {
   it('parent returns ns("parent"); child mounts under it', () => {
     const parent = definePlugin({
       ns: 'parent',
-      id: 'parent',
       setup(cli) {
         cli.description('parent ns');
         return undefined;
@@ -15,7 +14,6 @@ describe('cliHost nested composition (mount propagation)', () => {
     });
     const child = definePlugin({
       ns: 'child',
-      id: 'child',
       setup(cli) {
         cli.description('child ns');
         return undefined;

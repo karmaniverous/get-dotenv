@@ -5,7 +5,6 @@ import { definePlugin } from '@/src/cliHost';
 export const awsWhoamiPlugin = () =>
   definePlugin({
     ns: 'whoami',
-    id: 'aws-whoami',
     setup(cli) {
       cli
         .description('Print AWS caller identity (uses parent aws session)')
