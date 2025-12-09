@@ -169,4 +169,17 @@ When updated: 2025-12-08T00:00:00Z
 
 - Help routing: await program.install() at the beginning of createCli().run()
   so subcommands/aliases are registered before inspecting argv for “-h” routing
-  (fixes E2E subcommand help assertions for “batch -h” and “aws -h”). 
+  (fixes E2E subcommand help assertions for “batch -h” and “aws -h”). 
+
+- Fix: eliminate duplicate subcommand registration by guarding concurrent
+  plugin installation. Added a private `_installing?: Promise<void>` to the
+  host and reworked `install()` to await an in‑flight install rather than
+  re‑running setup. This preserves early install from `passOptions()` and
+  avoids races with `createCli().run()`; resolves “cannot add command 'cmd'”
+  failures across interop and E2E help/CLI tests.
+
+- Typing: simplify plugin `setup` return type to a single union
+  `void | GetDotenvCliPublic | Promise<...>` so object‑literal functions that
+  return a mount satisfy the contract without overloads. This fixes TS2769
+  errors in unit tests and shipped plugins (aws/batch/cmd/init/demo) and keeps
+  the nested composition API intact.

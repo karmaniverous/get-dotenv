@@ -75,6 +75,8 @@ export class GetDotenvCli<
   private _plugins: GetDotenvCliPlugin<TOptions, TArgs, TOpts, TGlobal>[] = [];
   /** One-time installation guard */
   private _installed = false;
+  /** In-flight installation promise to guard against concurrent installs */
+  private _installing?: Promise<void>;
   /** Optional header line to prepend in help output */
   private [HELP_HEADER_SYMBOL]: string | undefined;
   /** Context/options stored under symbols (typed) */
@@ -329,14 +331,27 @@ export class GetDotenvCli<
    */
   async install(): Promise<void> {
     if (this._installed) return;
-    // Install parent → children with mount propagation (async-aware).
-    for (const p of this._plugins) {
-      await setupPluginTree(
-        this as unknown as GetDotenvCli,
-        p as unknown as GetDotenvCliPlugin<TOptions, TArgs, TOpts, TGlobal>,
-      );
+    // If an install is already in progress (e.g., passOptions fired then run()
+    // also calls install), await the in-flight Promise to avoid duplicate wiring.
+    if (this._installing) {
+      await this._installing;
+      return;
     }
-    this._installed = true;
+    this._installing = (async () => {
+      // Install parent → children with mount propagation (async-aware).
+      for (const p of this._plugins) {
+        await setupPluginTree(
+          this as unknown as GetDotenvCli,
+          p as unknown as GetDotenvCliPlugin<TOptions, TArgs, TOpts, TGlobal>,
+        );
+      }
+      this._installed = true;
+    })();
+    try {
+      await this._installing;
+    } finally {
+      this._installing = undefined;
+    }
   }
 
   /**

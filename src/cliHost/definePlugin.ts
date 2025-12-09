@@ -101,17 +101,12 @@ export interface GetDotenvCliPlugin<
    * Runs parent → children (pre-order).
    *
    * Optional: return the "mount point" (a namespaced command) where this
-   * plugin's children should be installed. When omitted, children mount at
-   * the same cli that was passed in.
+   * plugin's children should be installed. When omitted, children mount at the
+   * same cli that was passed in.
    */
-  // Overload A: no mount returned
-  setup(
+  setup: (
     cli: GetDotenvCliPublic<TOptions, TArgs, TOpts, TGlobal>,
-  ): void | Promise<void>;
-  // Overload B: a mount (command) is returned; children will install under it
-  setup(
-    cli: GetDotenvCliPublic<TOptions, TArgs, TOpts, TGlobal>,
-  ): GetDotenvCliPublic | Promise<GetDotenvCliPublic>;
+  ) => void | GetDotenvCliPublic | Promise<void | GetDotenvCliPublic>;
 
   /**
    * After the dotenv context is resolved, initialize any clients/secrets
@@ -210,6 +205,7 @@ export function definePlugin<TOptions extends GetDotenvOptions>(
   spec: DefineSpec<TOptions>,
 ): PluginWithInstanceHelpers<TOptions, {}>;
 
+// Implementation
 export function definePlugin<TOptions extends GetDotenvOptions>(
   spec: DefineSpec<TOptions> & { configSchema?: ZodObject },
 ): PluginWithInstanceHelpers<TOptions> {
@@ -283,7 +279,7 @@ export function definePlugin<TOptions extends GetDotenvOptions>(
   ): Option<Usage> {
     return cli.createDynamicOption<Usage>(
       flags,
-      (cfg) => {
+      (c) => {
         // Prefer the validated slice stored per instance; fallback to help-bag
         // (by-id) so top-level `-h` can render effective defaults before resolve.
         const fromStore = getPluginConfig<
@@ -303,7 +299,11 @@ export function definePlugin<TOptions extends GetDotenvOptions>(
         const id = (extended as { id?: string }).id;
         let fromBag: Readonly<TCfg> | undefined;
         if (!fromStore && id) {
-          const maybe = cfg.plugins[id];
+          const maybe = (
+            c as ResolvedHelpConfig & {
+              plugins: Record<string, unknown>;
+            }
+          ).plugins[id];
           if (maybe && typeof maybe === 'object') {
             fromBag = maybe as unknown as Readonly<TCfg>;
           }
@@ -313,7 +313,10 @@ export function definePlugin<TOptions extends GetDotenvOptions>(
         // - Without a schema: computeContext stores {}.
         // - Help-time fallback: coalesce to {} when only a by-id bag exists.
         const cfgVal = (fromStore ?? fromBag ?? {}) as Readonly<TCfg>;
-        return desc(cfg, cfgVal);
+        return desc(
+          c as ResolvedHelpConfig & { plugins: Record<string, unknown> },
+          cfgVal,
+        );
       },
       parser,
       defaultValue,
