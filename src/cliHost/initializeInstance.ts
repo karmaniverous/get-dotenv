@@ -63,6 +63,13 @@ export function initializeInstance(
       throw err as Error;
     });
   }
+  // Ensure the root has a no-op action so preAction hooks installed by
+  // passOptions() fire for root-only invocations (no subcommand).
+  // Subcommands still take precedence and will not hit this action.
+  // This keeps root-side effects (e.g., --log) working in direct hosts/tests.
+  cli.action(() => {
+    /* no-op */
+  });
   // PreSubcommand hook: compute a context if absent, without mutating process.env.
   // The passOptions() helper, when installed, resolves the final context.
   cli.hook('preSubcommand', async () => {

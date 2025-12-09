@@ -74,6 +74,12 @@ When updated: 2025-12-08T00:00:00Z
 
 **CRITICAL: Append-only list. Add new completed items at the end. Prune old completed entries from the top. Do not edit existing entries.**
 
+- Root no-op action to trigger hooks
+  - Added a no-op root action in createCli() and initializeInstance() so
+    passOptions preAction hooks run for root-only flows (e.g., -l) and alias
+    (--cmd ...) before Commander prints help.
+- Move aws debug to stderr to avoid stdout pollution breaking E2E assertions.
+
 - Diagnostics: add GETDOTENV_DEBUG breadcrumbs
   - createCli.run: log argv, help routing decisions, and parse start
   - passOptions hooks: log rawArgs and picked merged flags (preSubcommand/preAction)

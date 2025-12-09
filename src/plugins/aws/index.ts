@@ -5,7 +5,6 @@ import { runCommand } from '@/src/cliHost/exec';
 import { readMergedOptions } from '@/src/cliHost/readMergedOptions';
 import { resolveShell } from '@/src/cliHost/resolve';
 import { buildSpawnEnv } from '@/src/cliHost/spawnEnv';
-import type { Logger } from '@/src/GetDotenvOptions';
 
 import { resolveAwsContext } from './service';
 import { type AwsPluginConfig, AwsPluginConfigSchema } from './types';
@@ -183,12 +182,16 @@ export const awsPlugin = () => {
         } else {
           // Session only: low-noise breadcrumb under debug
           if (process.env.GETDOTENV_DEBUG) {
-            const log: Logger = console;
-            log.log('[aws] session established', {
-              profile: out.profile,
-              region: out.region,
-              hasCreds: Boolean(out.credentials),
-            });
+            try {
+              const msg = JSON.stringify({
+                profile: out.profile,
+                region: out.region,
+                hasCreds: Boolean(out.credentials),
+              });
+              process.stderr.write(`[aws] session established ${msg}\n`);
+            } catch {
+              /* ignore */
+            }
           }
           if (!underTests) process.exit(0);
           return;
@@ -198,7 +201,6 @@ export const awsPlugin = () => {
   };
   // Assign afterResolve on the plugin object (not a free function)
   plugin.afterResolve = async (_cli, ctx) => {
-    const log: Logger = console;
     const cfg = plugin.readConfig(_cli);
 
     const out = await resolveAwsContext({
@@ -229,11 +231,16 @@ export const awsPlugin = () => {
     };
     // Optional: low-noise breadcrumb for diagnostics
     if (process.env.GETDOTENV_DEBUG) {
-      log.log('[aws] afterResolve', {
-        profile,
-        region,
-        hasCreds: Boolean(credentials),
-      });
+      try {
+        const msg = JSON.stringify({
+          profile,
+          region,
+          hasCreds: Boolean(credentials),
+        });
+        process.stderr.write(`[aws] afterResolve ${msg}\n`);
+      } catch {
+        /* ignore */
+      }
     }
   };
   return plugin;

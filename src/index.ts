@@ -114,7 +114,13 @@ export function createCli(opts: CreateCliOptions = {}): {
     .use(awsPlugin().use(awsWhoamiPlugin()))
     .use(demoPlugin())
     .use(initPlugin())
-    .passOptions({ loadProcess: false });
+    .passOptions({ loadProcess: false })
+    // Root no-op action: ensure preAction hook runs for root-only flows
+    // (e.g., getdotenv -l) and alias (--cmd ...) before Commander decides
+    // there is "nothing to do". Subcommands still take precedence.
+    .action(() => {
+      /* no-op */
+    });
 
   // Tests-only: avoid process.exit during help/version flows under Vitest.
   const underTests =

@@ -6,7 +6,6 @@ import type {
 } from '@/src/cliHost/definePlugin';
 import { readMergedOptions } from '@/src/cliHost/readMergedOptions';
 import { resolveCommand, resolveShell } from '@/src/cliHost/resolve';
-import type { Logger } from '@/src/GetDotenvOptions';
 
 import { execShellCommandBatch } from './execShellCommandBatch';
 import type { BatchPluginOptions } from './types';
@@ -40,9 +39,9 @@ export const attachParentInvoker = (
       pkgCwd?: boolean;
       rootPath?: string;
     };
-    // Inherit logger from merged root options
-    const mergedForLogger = readMergedOptions(thisCommand);
-    const loggerLocal: Logger = mergedForLogger.logger;
+    // Read merged root options once and reuse across all code paths.
+    const merged = readMergedOptions(thisCommand);
+    const logger = merged.logger;
 
     // Ensure context exists (host preSubcommand on root creates if missing).
     const dotenvEnv = cli.getCtx().dotenv;
@@ -66,15 +65,14 @@ export const attachParentInvoker = (
       Array.isArray(args[0]) ? (args[0] as unknown[]) : []
     ).map(String);
 
-    // Root-merged bag for nested forwarding
-    const mergedBag = readMergedOptions(thisCommand);
+    // Root-merged bag for nested forwarding (single read above).
+    const mergedBag = merged;
 
     if (argsParent.length > 0 && !list) {
       const input = argsParent.join(' ');
-      const bag = readMergedOptions(thisCommand);
       const scriptsAll =
-        pluginOpts.scripts ?? cfg.scripts ?? bag.scripts ?? undefined;
-      const shellAll = pluginOpts.shell ?? cfg.shell ?? bag.shell;
+        pluginOpts.scripts ?? cfg.scripts ?? merged.scripts ?? undefined;
+      const shellAll = pluginOpts.shell ?? cfg.shell ?? merged.shell;
 
       const resolved = resolveCommand(scriptsAll, input);
       const shellSetting = resolveShell(scriptsAll, input, shellAll);
@@ -87,7 +85,7 @@ export const attachParentInvoker = (
         globs,
         ignoreErrors,
         list: false,
-        logger: loggerLocal,
+        logger,
         ...(pkgCwd ? { pkgCwd } : {}),
         rootPath,
         shell: shellSetting,
@@ -99,15 +97,14 @@ export const attachParentInvoker = (
     if (list && !commandOpt) {
       const extra = argsParent.join(' ').trim();
       if (extra.length > 0) globs = [globs, extra].filter(Boolean).join(' ');
-
-      const bag = readMergedOptions(thisCommand);
-      const shellMerged = pluginOpts.shell ?? cfg.shell ?? bag.shell ?? false;
+      const shellMerged =
+        pluginOpts.shell ?? cfg.shell ?? merged.shell ?? false;
 
       await execShellCommandBatch({
         globs,
         ignoreErrors,
         list: true,
-        logger: loggerLocal,
+        logger,
         ...(pkgCwd ? { pkgCwd } : {}),
         rootPath,
         shell: shellMerged,
@@ -117,14 +114,13 @@ export const attachParentInvoker = (
     }
 
     if (!commandOpt && !list) {
-      loggerLocal.error(`No command provided. Use --command or --list.`);
+      logger.error(`No command provided. Use --command or --list.`);
       process.exit(0);
     }
     if (typeof commandOpt === 'string') {
-      const bag = readMergedOptions(thisCommand);
       const scriptsOpt =
-        pluginOpts.scripts ?? cfg.scripts ?? bag.scripts ?? undefined;
-      const shellOpt = pluginOpts.shell ?? cfg.shell ?? bag.shell;
+        pluginOpts.scripts ?? cfg.scripts ?? merged.scripts ?? undefined;
+      const shellOpt = pluginOpts.shell ?? cfg.shell ?? merged.shell;
 
       await execShellCommandBatch({
         command: resolveCommand(scriptsOpt, commandOpt),
@@ -132,7 +128,7 @@ export const attachParentInvoker = (
         globs,
         ignoreErrors,
         list,
-        logger: loggerLocal,
+        logger,
         ...(pkgCwd ? { pkgCwd } : {}),
         rootPath,
         shell: resolveShell(scriptsOpt, commandOpt, shellOpt),
@@ -142,14 +138,13 @@ export const attachParentInvoker = (
     }
 
     // list only (explicit --list without --command)
-    const bag = readMergedOptions(thisCommand);
-    const shellOnly = pluginOpts.shell ?? cfg.shell ?? bag.shell ?? false;
+    const shellOnly = pluginOpts.shell ?? cfg.shell ?? merged.shell ?? false;
 
     await execShellCommandBatch({
       globs,
       ignoreErrors,
       list: true,
-      logger: loggerLocal,
+      logger,
       ...(pkgCwd ? { pkgCwd } : {}),
       rootPath,
       shell: shellOnly,
