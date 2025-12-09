@@ -199,3 +199,14 @@ When updated: 2025-12-09T00:00:00Z
   - Slimmed src/cliHost/definePlugin.ts to a thin re-export wrapper.
   - Added unit tests: src/cliHost/definePlugin/helpers.test.ts covering sibling
     uniqueness and dynamic option injection (help-time).
+
+- Templates and scripts consistency
+  - Updated template hello plugin to use ns (not id) and preserved dynamic help and
+    instance-bound config access for parity with shipped plugins.
+  - Rewired the template CLI skeleton to mirror createCli wiring (normalized help
+    output, root options, passOptions, minimal branding) while only installing the
+    hello template plugin.
+  - Fixed smoke script to route command payloads via the cmd subcommand for steps 1–3.
+  - Resolved Rollup multi-chunk error by enabling inlineDynamicImports on all ESM outputs.
+  - Removed legacy "demo" plugin expectations from verify-package and verify-tarball,
+    and limited verify-bundle import checks to cliHost.mjs.

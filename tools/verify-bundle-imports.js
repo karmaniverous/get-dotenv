@@ -2,20 +2,18 @@
 /**
  * Verify dist bundles keep Commander external (tree-shaken) and do not inline it.
  *
- * Checks representative ESM/CJS outputs for explicit import/require of 'commander'
- * or '@commander-js/extra-typings' and fails when the files are missing or do not
+ * Checks representative ESM outputs for explicit import of
+ * '@commander-js/extra-typings' and fails when the file is missing or does not
  * reference Commander externally.
  *
  * Intended coverage:
- *  - dist/index.mjs / dist/index.cjs
- *  - dist/cliHost.mjs / dist/cliHost.cjs
+ *  - dist/cliHost.mjs
  *
  * Notes:
  * - Rollup externalizes dependencies; this check guards against regressions where
  *   Commander might be bundled or dead-import removed in a way that changes surface.
- * - This repo now imports Commander from '@commander-js/extra-typings' at runtime.
- *   Treat that as the primary external reference, with 'commander' kept for
- *   backward compatibility.
+ * - This repo imports Commander from '@commander-js/extra-typings' at runtime.
+ *   Treat that as the primary external reference.
  * - This is a heuristic: we assert the presence of external imports, not the absence
  *   of every possible inlining form. Good enough to catch common config mistakes.
  */
@@ -24,10 +22,8 @@ import path from 'node:path';
 import process from 'node:process';
 
 const DIST = 'dist';
-const targets = [
-  { file: 'index.mjs', type: 'esm' },
-  { file: 'cliHost.mjs', type: 'esm' },
-];
+// Limit the check to the CLI host bundle, which must import Commander.
+const targets = [{ file: 'cliHost.mjs', type: 'esm' }];
 
 // Require @commander-js/extra-typings (primary external)
 const hasCommanderImport = (txt) =>

@@ -79,6 +79,7 @@ const config: RollupOptions[] = [
         extend: true,
         file: `${outputPath}/index.mjs`,
         format: 'esm',
+        inlineDynamicImports: true,
       },
     ],
   },
@@ -88,7 +89,12 @@ const config: RollupOptions[] = [
     ...commonInputOptions,
     input: 'src/cliHost/index.ts',
     output: [
-      { extend: true, file: `${outputPath}/cliHost.mjs`, format: 'esm' },
+      {
+        extend: true,
+        file: `${outputPath}/cliHost.mjs`,
+        format: 'esm',
+        inlineDynamicImports: true,
+      },
     ],
   },
   // plugins/batch subpath
@@ -96,7 +102,12 @@ const config: RollupOptions[] = [
     ...commonInputOptions,
     input: 'src/plugins/batch/index.ts',
     output: [
-      { extend: true, file: `${outputPath}/plugins-batch.mjs`, format: 'esm' },
+      {
+        extend: true,
+        file: `${outputPath}/plugins-batch.mjs`,
+        format: 'esm',
+        inlineDynamicImports: true,
+      },
     ],
   },
   // plugins/aws subpath
@@ -104,7 +115,12 @@ const config: RollupOptions[] = [
     ...commonInputOptions,
     input: 'src/plugins/aws/index.ts',
     output: [
-      { extend: true, file: `${outputPath}/plugins-aws.mjs`, format: 'esm' },
+      {
+        extend: true,
+        file: `${outputPath}/plugins-aws.mjs`,
+        format: 'esm',
+        inlineDynamicImports: true,
+      },
     ],
   },
 
@@ -113,7 +129,12 @@ const config: RollupOptions[] = [
     ...commonInputOptions,
     input: 'src/plugins/cmd/index.ts',
     output: [
-      { extend: true, file: `${outputPath}/plugins-cmd.mjs`, format: 'esm' },
+      {
+        extend: true,
+        file: `${outputPath}/plugins-cmd.mjs`,
+        format: 'esm',
+        inlineDynamicImports: true,
+      },
     ],
   },
   // plugins/init subpath
@@ -121,7 +142,12 @@ const config: RollupOptions[] = [
     ...commonInputOptions,
     input: 'src/plugins/init/index.ts',
     output: [
-      { extend: true, file: `${outputPath}/plugins-init.mjs`, format: 'esm' },
+      {
+        extend: true,
+        file: `${outputPath}/plugins-init.mjs`,
+        format: 'esm',
+        inlineDynamicImports: true,
+      },
     ],
   },
 
@@ -130,7 +156,12 @@ const config: RollupOptions[] = [
     ...commonInputOptions,
     input: 'src/plugins/index.ts',
     output: [
-      { extend: true, file: `${outputPath}/plugins.mjs`, format: 'esm' },
+      {
+        extend: true,
+        file: `${outputPath}/plugins.mjs`,
+        format: 'esm',
+        inlineDynamicImports: true,
+      },
     ],
   },
 
@@ -138,14 +169,26 @@ const config: RollupOptions[] = [
   {
     ...commonInputOptions,
     input: 'src/config/index.ts',
-    output: [{ extend: true, file: `${outputPath}/config.mjs`, format: 'esm' }],
+    output: [
+      {
+        extend: true,
+        file: `${outputPath}/config.mjs`,
+        format: 'esm',
+        inlineDynamicImports: true,
+      },
+    ],
   },
   // env overlay subpath
   {
     ...commonInputOptions,
     input: 'src/env/overlay.ts',
     output: [
-      { extend: true, file: `${outputPath}/env-overlay.mjs`, format: 'esm' },
+      {
+        extend: true,
+        file: `${outputPath}/env-overlay.mjs`,
+        format: 'esm',
+        inlineDynamicImports: true,
+      },
     ],
   },
 
@@ -281,6 +324,7 @@ const config: RollupOptions[] = [
         extend: true,
         file: `${outputPath}/${c}.cli.mjs`,
         format: 'esm',
+        inlineDynamicImports: true,
       },
     ],
   })),

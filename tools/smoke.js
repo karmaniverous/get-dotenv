@@ -110,6 +110,7 @@ const main = async () => {
       'secret',
       '-r',
       // default subcommand (positional)
+      'cmd',
       'node',
       '-e',
       codeJson,
@@ -127,6 +128,7 @@ const main = async () => {
       '.testenv',
       '--dynamic-path',
       './test/full/.testenv.js',
+      'cmd',
       'node',
       '-e',
       'console.log(process.env.DYNAMIC_DOUBLE ?? "")',
@@ -150,6 +152,7 @@ const main = async () => {
       'secret',
       '-o',
       out,
+      'cmd',
       'node',
       '-e',
       '0',

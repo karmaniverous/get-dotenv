@@ -8,7 +8,7 @@ const HelloConfigSchema = z.object({
 
 export const helloPlugin = () => {
   const plugin = definePlugin({
-    id: 'hello',
+    ns: 'hello',
     configSchema: HelloConfigSchema,
     setup(cli) {
       cli

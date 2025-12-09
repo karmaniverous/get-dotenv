@@ -6,7 +6,7 @@
 import type { ScriptsTable } from '@/src/cliHost/types';
 
 /**
- * Resolve a command string from the {@link Scripts} table.
+ * Resolve a command string from the {@link ScriptsTable} table.
  * A script may be expressed as a string or an object with a `cmd` property.
  *
  * @param scripts - Optional scripts table.

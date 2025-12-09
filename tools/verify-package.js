@@ -27,7 +27,6 @@ const main = async () => {
     './plugins/batch',
     './plugins/init',
     './plugins/cmd',
-    './plugins/demo',
     './config',
     './env/overlay',
   ];
@@ -49,7 +48,6 @@ const main = async () => {
       'plugins-batch.mjs',
       'plugins-init.mjs',
       'plugins-cmd.mjs',
-      'plugins-demo.mjs',
       'config.mjs',
       'env-overlay.mjs',
     ];
