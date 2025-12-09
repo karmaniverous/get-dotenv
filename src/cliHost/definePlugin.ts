@@ -106,8 +106,11 @@ export interface GetDotenvCliPlugin<
    */
   setup: (
     cli: GetDotenvCliPublic<TOptions, TArgs, TOpts, TGlobal>,
-  ) => void | GetDotenvCliPublic | Promise<void | GetDotenvCliPublic>;
-
+  ) =>
+    | GetDotenvCliPublic
+    | Command
+    | Promise<GetDotenvCliPublic | Command | undefined>
+    | undefined;
   /**
    * After the dotenv context is resolved, initialize any clients/secrets
    * or attach per-plugin state under ctx.plugins (by convention).

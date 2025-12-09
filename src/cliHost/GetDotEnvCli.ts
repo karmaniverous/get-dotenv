@@ -340,8 +340,13 @@ export class GetDotenvCli<
     this._installing = (async () => {
       // Install parent → children with mount propagation (async-aware).
       for (const p of this._plugins) {
-        await setupPluginTree(
-          this as unknown as GetDotenvCli,
+        await setupPluginTree<TOptions, TArgs, TOpts, TGlobal>(
+          this as unknown as GetDotenvCliPublic<
+            TOptions,
+            TArgs,
+            TOpts,
+            TGlobal
+          >,
           p as unknown as GetDotenvCliPlugin<TOptions, TArgs, TOpts, TGlobal>,
         );
       }
@@ -350,7 +355,8 @@ export class GetDotenvCli<
     try {
       await this._installing;
     } finally {
-      this._installing = undefined;
+      // leave _installing set to a resolved Promise; subsequent calls will
+      // return early due to _installed === true
     }
   }
 
