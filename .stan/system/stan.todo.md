@@ -165,4 +165,8 @@ When updated: 2025-12-08T00:00:00Z
 
 - Lint: remove redundant union with unknown in registerPlugin installer
   and flatten aws parent/child composition in src/index.ts to a const
-  before .use() to avoid confusing-void/unsafe-argument warnings.
+  before .use() to avoid confusing-void/unsafe-argument warnings.
+
+- Help routing: await program.install() at the beginning of createCli().run()
+  so subcommands/aliases are registered before inspecting argv for “-h” routing
+  (fixes E2E subcommand help assertions for “batch -h” and “aws -h”). 

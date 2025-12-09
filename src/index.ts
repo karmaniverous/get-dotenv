@@ -142,6 +142,9 @@ export function createCli(opts: CreateCliOptions = {}): {
 
   return {
     async run(argv: string[]) {
+      // Ensure plugin commands/options are installed before inspecting argv for
+      // help-time routing (subcommand vs root help).
+      await program.install();
       // Help handling:
       // - Short-circuit ONLY for true top-level -h/--help (no subcommand before flag).
       // - If a subcommand token appears before -h/--help, defer to Commander
