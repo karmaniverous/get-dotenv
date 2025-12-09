@@ -120,6 +120,18 @@ export function createCli(opts: CreateCliOptions = {}): {
   const underTests =
     process.env.GETDOTENV_TEST === '1' ||
     typeof process.env.VITEST_WORKER_ID === 'string';
+  const dbg = (...args: unknown[]) => {
+    if (process.env.GETDOTENV_DEBUG) {
+      try {
+        const line = args
+          .map((a) => (typeof a === 'string' ? a : JSON.stringify(a)))
+          .join(' ');
+        process.stderr.write(`[getdotenv:run] ${line}\n`);
+      } catch {
+        /* ignore */
+      }
+    }
+  };
   if (underTests) {
     program.exitOverride((err: unknown) => {
       const code = (err as { code?: string } | undefined)?.code;
@@ -143,6 +155,7 @@ export function createCli(opts: CreateCliOptions = {}): {
     async run(argv: string[]) {
       // Ensure plugin commands/options are installed before inspecting argv for
       // help-time routing (subcommand vs root help).
+      dbg('argv', argv);
       await program.install();
       // Help handling:
       // - Short-circuit ONLY for true top-level -h/--help (no subcommand before flag).
@@ -156,6 +169,7 @@ export function createCli(opts: CreateCliOptions = {}): {
           subs.add(c.name());
           for (const a of c.aliases()) subs.add(a);
         }
+        dbg('helpIdx', helpIdx, 'knownSubs', Array.from(subs.values()));
         const hasSubBeforeHelp = argv
           .slice(0, helpIdx)
           .some((tok) => subs.has(tok));
@@ -169,6 +183,7 @@ export function createCli(opts: CreateCliOptions = {}): {
               ? { helpHeader: opts.branding }
               : {}),
           });
+          dbg('top-level -h, render root help');
           // Resolve context once without side effects for help rendering.
           const ctx = await program.resolveAndLoad(
             {
@@ -188,6 +203,7 @@ export function createCli(opts: CreateCliOptions = {}): {
             process.env.GETDOTENV_STDIO === 'pipe' ||
             process.env.GETDOTENV_STDOUT === 'pipe';
           if (!(underTests && !piping)) {
+            dbg('outputHelp()');
             program.outputHelp();
           }
           return;
@@ -195,6 +211,7 @@ export function createCli(opts: CreateCliOptions = {}): {
         // Subcommand token exists before -h: fall through to normal parsing,
         // letting Commander print that subcommand's help.
       }
+      dbg('parseAsync start');
       await program.brand({
         name: alias,
         importMetaUrl: import.meta.url,

@@ -25,6 +25,18 @@ export const attachParentInvoker = (
   _cmd: CommandUnknownOpts,
   plugin: PluginWithInstanceHelpers,
 ) => {
+  const dbg = (...args: unknown[]) => {
+    if (process.env.GETDOTENV_DEBUG) {
+      try {
+        const line = args
+          .map((a) => (typeof a === 'string' ? a : JSON.stringify(a)))
+          .join(' ');
+        process.stderr.write(`[getdotenv:alias] ${line}\n`);
+      } catch {
+        /* ignore */
+      }
+    }
+  };
   const aliasSpec =
     typeof options.optionAlias === 'string'
       ? { flags: options.optionAlias, description: undefined, expand: true }
@@ -62,6 +74,7 @@ export const attachParentInvoker = (
   // Ensure we only execute once even if both hooks fire in a single parse.
   const aliasState = { handled: false };
   const maybeRun = async (thisCommand: unknown) => {
+    dbg('maybeRun:start');
     // Read plugin config expand default; fall back to undefined (handled in maybeRunAlias)
     let expandDefault: boolean | undefined = undefined;
     try {
@@ -77,6 +90,7 @@ export const attachParentInvoker = (
       rawArgs?: string[];
       commands: Array<{ name: () => string; aliases: () => string[] }>;
     };
+    dbg('maybeRun:rawArgs', cmd.rawArgs ?? []);
     const raw = typeof cmd.opts === 'function' ? cmd.opts() : {};
     const val = (raw as Record<string, unknown>)[aliasKey];
     const provided =
@@ -85,9 +99,12 @@ export const attachParentInvoker = (
         : Array.isArray(val)
           ? val.length > 0
           : false;
+    dbg('maybeRun:aliasKey', aliasKey, 'provided', provided, 'value', val);
     if (!provided) return;
     const childNames = cmd.commands.flatMap((c) => [c.name(), ...c.aliases()]);
+    dbg('maybeRun:childNames', childNames);
     const hasSub = (cmd.rawArgs ?? []).some((t) => childNames.includes(t));
+    dbg('maybeRun:hasSub', hasSub);
     if (hasSub) return; // do not run alias when an explicit subcommand is present
 
     aliasState.handled = true;

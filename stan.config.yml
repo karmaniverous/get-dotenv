@@ -18,7 +18,7 @@ stan-cli:
   scripts:
     typecheck: npm run typecheck
     lint: npm run lint:fix
-    test: npm run test -- --no-color
+    test: cross-env GETDOTENV_DEBUG=1 npm run test -- --no-color
     build:
       script: cross-env NO_COLOR=1 npm run build
       warnPattern: loaded rollup\\.config\\.ts with warnings

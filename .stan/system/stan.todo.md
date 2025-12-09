@@ -8,10 +8,6 @@ When updated: 2025-12-08T00:00:00Z
   - Case: `getdotenv --paths ./test/full -e test --dotenv-token .testenv -l` prints root help and exits 1. Capture diagnostics by rerunning the single test with `GETDOTENV_DEBUG=1` to confirm parse path and hooks invoked.
   - Verify alias child run path in E2E (`--cmd 'node -e …'`) is wired and exits 0. If help is printed, inspect preAction/preSubcommand hooks and root/alias option detection in cmd parent invoker.
 
-- Investigate root help being printed for non-help invocations:
-  - Reproduce and fix E2E "logs env vars" failure where `-l` yields `commander.help` exit path. Ensure resolveAndLoad + log=true paths complete without invoking help.
-  - Re-validate alias E2E termination after exit gating change to ensure the alias path still exits 0. Capture additional diagnostics as needed.
-
 - Namespace & host‑created mounts — implement and validate (breaking by design)
   - DefineSpec and typing
     - Require `ns: string` in definePlugin spec for every plugin (non‑empty).
@@ -78,6 +74,10 @@ When updated: 2025-12-08T00:00:00Z
 
 **CRITICAL: Append-only list. Add new completed items at the end. Prune old completed entries from the top. Do not edit existing entries.**
 
+- Diagnostics: add GETDOTENV_DEBUG breadcrumbs
+  - createCli.run: log argv, help routing decisions, and parse start
+  - passOptions hooks: log rawArgs and picked merged flags (preSubcommand/preAction)
+  - cmd parent invoker: log rawArgs, child names, aliasKey/value, and decision flags (provided/hasSub)
 - Requirements updated: adopt host‑created mounts with required plugin
   namespaces, enforce sibling uniqueness with override guidance, make id
   internal‑only (Symbol), key config/help by realized path, and render leaf‑only

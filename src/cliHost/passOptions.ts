@@ -24,6 +24,37 @@ import type {
   ScriptsTable,
 } from './types';
 
+const dbg = (...args: unknown[]) => {
+  if (process.env.GETDOTENV_DEBUG) {
+    try {
+      const line = args
+        .map((a) => (typeof a === 'string' ? a : JSON.stringify(a)))
+        .join(' ');
+      process.stderr.write(`[getdotenv:passOptions] ${line}\n`);
+    } catch {
+      // best-effort only
+    }
+  }
+};
+const pickView = (obj: Record<string, unknown>) => {
+  const keys = [
+    'env',
+    'dotenvToken',
+    'privateToken',
+    'shell',
+    'log',
+    'capture',
+    'debug',
+    'strict',
+    'paths',
+    'scripts',
+    'expand',
+  ];
+  const out: Record<string, unknown> = {};
+  for (const k of keys) if (k in obj) out[k] = obj[k];
+  return out;
+};
+
 export function installPassOptions<TOptions extends GetDotenvOptions>(
   program: GetDotenvCli<TOptions>,
   defaults?: Partial<RootOptionsShape>,
@@ -44,10 +75,17 @@ export function installPassOptions<TOptions extends GetDotenvOptions>(
   program.hook(
     'preSubcommand',
     async (thisCommand: CommandWithOptions<GetDotenvCliOptions>) => {
+      const rawArgs =
+        (thisCommand as unknown as { rawArgs?: string[] }).rawArgs ?? [];
+      dbg('preSubcommand:rawArgs', rawArgs);
       const raw = thisCommand.opts();
       const { merged } = resolveCliOptions<
         RootOptionsShape & { scripts?: ScriptsTable }
       >(raw, d, process.env.getDotenvCliOptions);
+      dbg(
+        'preSubcommand:merged',
+        pickView(merged as unknown as Record<string, unknown>),
+      );
 
       // Persist merged options (for nested behavior and ergonomic access).
       thisCommand.getDotenvCliOptions =
@@ -60,6 +98,7 @@ export function installPassOptions<TOptions extends GetDotenvOptions>(
       const serviceOptions = getDotenvCliOptions2Options(
         merged as unknown as RootOptionsShapeCompat,
       ) as unknown as Partial<TOptions>;
+      dbg('preSubcommand:resolveAndLoad');
       await program.resolveAndLoad(serviceOptions);
 
       // Refresh dynamic option descriptions using resolved config + plugin slices.
@@ -94,10 +133,18 @@ export function installPassOptions<TOptions extends GetDotenvOptions>(
   program.hook(
     'preAction',
     async (thisCommand: CommandWithOptions<GetDotenvCliOptions>) => {
+      const rawArgs =
+        (thisCommand as unknown as { rawArgs?: string[] }).rawArgs ?? [];
+      dbg('preAction:rawArgs', rawArgs);
       const raw = thisCommand.opts();
       const { merged } = resolveCliOptions<
         RootOptionsShape & { scripts?: ScriptsTable }
       >(raw, d, process.env.getDotenvCliOptions);
+      dbg(
+        'preAction:merged',
+        pickView(merged as unknown as Record<string, unknown>),
+      );
+
       thisCommand.getDotenvCliOptions =
         merged as unknown as GetDotenvCliOptions;
       (program as unknown as GetDotenvCli)._setOptionsBag(
@@ -108,6 +155,7 @@ export function installPassOptions<TOptions extends GetDotenvOptions>(
         const serviceOptions = getDotenvCliOptions2Options(
           merged as unknown as RootOptionsShapeCompat,
         ) as unknown as Partial<TOptions>;
+        dbg('preAction:resolveAndLoad');
         await program.resolveAndLoad(serviceOptions);
         try {
           const ctx = program.getCtx();
