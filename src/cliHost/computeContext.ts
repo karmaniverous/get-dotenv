@@ -1,5 +1,4 @@
 /* eslint-disable */
-import fs from 'fs-extra';
 import type { OptionValues } from '@commander-js/extra-typings';
 import path from 'path';
 
@@ -16,8 +15,10 @@ import {
 import { getDotenvOptionsSchemaResolved } from '@/src/schema/getDotenvOptions';
 import { defaultsDeep } from '@/src/util/defaultsDeep';
 import { interpolateDeep } from '@/src/util/interpolateDeep';
-import { loadModuleDefault } from '@/src/util/loadModuleDefault';
 import { omitUndefined } from '@/src/util/omitUndefined';
+import { applyDynamicMap, loadAndApplyDynamic } from '@/src/env/dynamic';
+import { writeDotenvFile } from '@/src/util/dotenvFile';
+import { flattenPluginTreeByPath } from '@/src/cliHost/paths';
 
 import type { GetDotenvCliPlugin } from './definePlugin';
 import type { GetDotenvCliCtx } from './GetDotenvCli';
@@ -170,36 +171,24 @@ export const computeContext = async <
     | GetDotenvDynamic
     | undefined;
 
-  applyDynamic(dotenv, packagedDyn, validated.env ?? validated.defaultEnv);
-  applyDynamic(dotenv, publicDyn, validated.env ?? validated.defaultEnv);
-  applyDynamic(dotenv, localDyn, validated.env ?? validated.defaultEnv);
+  applyDynamicMap(dotenv, packagedDyn, validated.env ?? validated.defaultEnv);
+  applyDynamicMap(dotenv, publicDyn, validated.env ?? validated.defaultEnv);
+  applyDynamicMap(dotenv, localDyn, validated.env ?? validated.defaultEnv);
 
   // file dynamicPath (lowest)
   if (validated.dynamicPath) {
     const absDynamicPath = path.resolve(validated.dynamicPath);
-    try {
-      const dyn = await loadModuleDefault<GetDotenvDynamic>(
-        absDynamicPath,
-        'getdotenv-dynamic-host',
-      );
-      applyDynamic(dotenv, dyn, validated.env ?? validated.defaultEnv);
-    } catch {
-      throw new Error(`Unable to load dynamic from ${validated.dynamicPath}`);
-    }
+    await loadAndApplyDynamic(
+      dotenv,
+      absDynamicPath,
+      validated.env ?? validated.defaultEnv,
+      'getdotenv-dynamic-host',
+    );
   }
 
   // Effects:
   if (validated.outputPath) {
-    await fs.writeFile(
-      validated.outputPath,
-      Object.keys(dotenv).reduce((contents, key) => {
-        const value = dotenv[key] ?? '';
-        return `${contents}${key}=${
-          value.includes('\n') ? `"${value}"` : value
-        }\n`;
-      }, ''),
-      { encoding: 'utf-8' },
-    );
+    await writeDotenvFile(validated.outputPath, dotenv);
   }
   const logger: Logger = (validated as GetDotenvOptions).logger!;
   if (validated.log) logger.log(dotenv);
@@ -235,23 +224,7 @@ export const computeContext = async <
     plugin: GetDotenvCliPlugin<TOptions, TArgs, TOpts, TGlobal>;
     path: string;
   };
-  const entries: Entry[] = [];
-  const collect = (
-    ps: GetDotenvCliPlugin<TOptions, TArgs, TOpts, TGlobal>[],
-    prefix: string | undefined,
-  ) => {
-    for (const p of ps) {
-      const here = prefix && prefix.length > 0 ? `${prefix}/${p.ns}` : p.ns;
-      entries.push({ plugin: p, path: here });
-      if (Array.isArray(p.children) && p.children.length > 0) {
-        collect(
-          p.children.map((c) => c.plugin),
-          here,
-        );
-      }
-    }
-  };
-  collect(plugins, undefined);
+  const entries: Entry[] = flattenPluginTreeByPath(plugins);
 
   const mergedPluginConfigsByPath: Record<string, unknown> = {};
   const envRef: Record<string, string | undefined> = {

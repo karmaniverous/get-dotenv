@@ -3,6 +3,7 @@ import { packageDirectory } from 'package-directory';
 import path from 'path';
 
 import { runCommand } from '@/src/cliHost/exec';
+import { composeNestedEnv } from '@/src/cliHost/invoke';
 import { buildSpawnEnv } from '@/src/cliHost/spawnEnv';
 import type { Logger } from '@/src/GetDotenvOptions';
 
@@ -143,20 +144,11 @@ export const execShellCommandBatch = async ({
         (typeof command === 'string' && command.length > 0) ||
         (Array.isArray(command) && command.length > 0);
       if (hasCmd) {
-        // Compose child env overlay from dotenv (drop undefined) and merged options
-        const overlay: Record<string, string> = {};
-        if (dotenvEnv) {
-          for (const [k, v] of Object.entries(dotenvEnv)) {
-            if (typeof v === 'string') overlay[k] = v;
-          }
-        }
-        if (getDotenvCliOptions !== undefined) {
-          try {
-            overlay.getDotenvCliOptions = JSON.stringify(getDotenvCliOptions);
-          } catch {
-            // best-effort: omit if serialization fails
-          }
-        }
+        // Compose child env overlay (dotenv + nested bag)
+        const overlay = composeNestedEnv(
+          getDotenvCliOptions ?? {},
+          dotenvEnv ?? {},
+        );
 
         await runCommand(command, shell, {
           cwd: path,

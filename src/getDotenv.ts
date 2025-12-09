@@ -1,4 +1,3 @@
-import fs from 'fs-extra';
 import { nanoid } from 'nanoid';
 import path from 'path';
 
@@ -7,6 +6,7 @@ import { maybeWarnEntropy } from '@/src/diagnostics/entropy';
 import type { RedactOptions } from '@/src/diagnostics/redact';
 import { redactObject } from '@/src/diagnostics/redact';
 import { dotenvExpandAll } from '@/src/dotenvExpand';
+import { applyDynamicMap, loadAndApplyDynamic } from '@/src/env/dynamic';
 import {
   type GetDotenvDynamic,
   type GetDotenvOptions,
@@ -14,7 +14,7 @@ import {
   resolveGetDotenvOptions,
 } from '@/src/GetDotenvOptions';
 import { readDotenv } from '@/src/readDotenv';
-import { loadModuleDefault } from '@/src/util/loadModuleDefault';
+import { writeDotenvFile } from '@/src/util/dotenvFile';
 
 /**
  * Asynchronously process dotenv files of the form `.env[.<ENV>][.<PRIVATE_TOKEN>]`
@@ -153,30 +153,16 @@ export async function getDotenv(
       dynamic = options.dynamic;
     } else if (dynamicPath) {
       const absDynamicPath = path.resolve(dynamicPath);
-      if (await fs.exists(absDynamicPath)) {
-        try {
-          dynamic = await loadModuleDefault<GetDotenvDynamic>(
-            absDynamicPath,
-            'getdotenv-dynamic',
-          );
-        } catch {
-          // Preserve legacy error text for compatibility with tests/docs.
-          throw new Error(
-            `Unable to load dynamic TypeScript file: ${absDynamicPath}. ` +
-              `Install 'esbuild' (devDependency) to enable TypeScript dynamic modules.`,
-          );
-        }
-      }
+      await loadAndApplyDynamic(
+        dotenv,
+        absDynamicPath,
+        env ?? defaultEnv,
+        'getdotenv-dynamic',
+      );
     }
     if (dynamic) {
       try {
-        for (const key in dynamic)
-          Object.assign(dotenv, {
-            [key]:
-              typeof dynamic[key] === 'function'
-                ? dynamic[key](dotenv, env ?? defaultEnv)
-                : dynamic[key],
-          });
+        applyDynamicMap(dotenv, dynamic, env ?? defaultEnv);
       } catch {
         throw new Error(`Unable to evaluate dynamic variables.`);
       }
@@ -189,16 +175,7 @@ export async function getDotenv(
     if (!outputPathResolved) throw new Error('Output path not found.');
     const { [outputKey]: _omitted, ...dotenvForOutput } = dotenv;
 
-    await fs.writeFile(
-      outputPathResolved,
-      Object.keys(dotenvForOutput).reduce((contents, key) => {
-        const value = dotenvForOutput[key] ?? '';
-        return `${contents}${key}=${
-          value.includes('\n') ? `"${value}"` : value
-        }\n`;
-      }, ''),
-      { encoding: 'utf-8' },
-    );
+    await writeDotenvFile(outputPathResolved, dotenvForOutput);
 
     resultDotenv = dotenvForOutput;
   }

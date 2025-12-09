@@ -173,3 +173,18 @@ When updated: 2025-12-09T00:00:00Z
   installed under-tests exitOverride in initializeInstance so unit tests using
   the host directly do not trigger process.exit on Commander help/version
   flows. This addresses alias unit test exits.
+
+- DRY Batch 1: centralized dynamic/trace/dotenv writer and AWS context.
+  - Added: src/env/dynamic.ts (applyDynamicMap/loadAndApplyDynamic).
+  - Added: src/util/dotenvFile.ts (writeDotenvFile).
+  - Added: src/diagnostics/trace.ts (traceChildEnv).
+  - Added: src/cliHost/paths.ts (flattenPluginTreeByPath/realizedPathForMount).
+  - Added: src/plugins/aws/common.ts (applyAwsContext).
+  - Updated: getDotenv.ts and cliHost/computeContext.ts to use new helpers.
+  - Updated: cmd/runner.ts to use traceChildEnv; batch exec to use composeNestedEnv.
+  - Updated: aws/index.ts to applyAwsContext in action/afterResolve.
+  - Updated: cliHost/invoke.ts to export stripOne; removed unused maybeRunAlias.ts.
+
+- Amendment: Batch 1 follow-up — fix typecheck and lint issues.
+  - Adjust cmd/runner trace args for exactOptionalPropertyTypes.
+  - Fix AWS debug breadcrumb to reference out.\*; TSDoc escapes; remove unused import.

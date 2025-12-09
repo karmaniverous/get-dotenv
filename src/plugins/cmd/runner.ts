@@ -1,7 +1,7 @@
 /** src/plugins/cmd/actions/runner.ts
  * Unified runner for cmd subcommand and parent alias.
  * - Resolves command via scripts
- * - Emits --trace diagnostics (with redaction and entropy warnings)
+ * - Emits --trace diagnostics (centralized helper with redaction/entropy)
  * - Preserves Node -e argv under shell-off
  * - Normalizes child env and honors capture
  */
@@ -11,24 +11,13 @@ import type { GetDotenvCliOptions } from '@/src/cliHost/GetDotenvCliOptions';
 import {
   composeNestedEnv,
   maybePreserveNodeEvalArgv,
+  stripOne,
 } from '@/src/cliHost/invoke';
 import { resolveCommand, resolveShell } from '@/src/cliHost/resolve';
 import { buildSpawnEnv } from '@/src/cliHost/spawnEnv';
-import type { EntropyOptions } from '@/src/diagnostics/entropy';
-import { maybeWarnEntropy } from '@/src/diagnostics/entropy';
-import type { RedactOptions } from '@/src/diagnostics/redact';
-import { redactTriple } from '@/src/diagnostics/redact';
+import { traceChildEnv } from '@/src/diagnostics/trace';
 
 import { tokenize } from './tokenize';
-
-/** Strip one symmetric outer quote layer */
-const stripOne = (s: string) => {
-  if (s.length < 2) return s;
-  const a = s.charAt(0);
-  const b = s.charAt(s.length - 1);
-  const symmetric = (a === '"' && b === '"') || (a === "'" && b === "'");
-  return symmetric ? s.slice(1, -1) : s;
-};
 
 export async function runCmdWithContext(
   cli: GetDotenvCliPublic,
@@ -65,53 +54,24 @@ export async function runCmdWithContext(
   // Diagnostics: --trace [keys...]
   const traceOpt = trace;
   if (traceOpt) {
-    const parentKeys = Object.keys(process.env);
-    const dotenvKeys = Object.keys(dotenv);
-    const allKeys = Array.from(new Set([...parentKeys, ...dotenvKeys])).sort();
-    const keys = Array.isArray(traceOpt) ? traceOpt : allKeys;
-    const childEnvPreview: Record<string, string | undefined> = {
-      ...process.env,
-      ...dotenv,
-    };
-    for (const k of keys) {
-      const parentVal = process.env[k];
-      const dot = dotenv[k];
-      const final = childEnvPreview[k];
-      const origin =
-        dot !== undefined
-          ? 'dotenv'
-          : parentVal !== undefined
-            ? 'parent'
-            : 'unset';
-      // Redaction for display
-      const redOpts: RedactOptions = {};
-      if (redact) {
-        redOpts.redact = true;
-        if (Array.isArray(redactPatterns))
-          redOpts.redactPatterns = redactPatterns;
-      }
-      const tripleBag: { parent?: string; dotenv?: string; final?: string } =
-        {};
-      if (parentVal !== undefined) tripleBag.parent = parentVal;
-      if (dot !== undefined) tripleBag.dotenv = dot;
-      if (final !== undefined) tripleBag.final = final;
-      const triple = redactTriple(k, tripleBag, redOpts);
-      process.stderr.write(
-        `[trace] key=${k} origin=${origin} parent=${triple.parent ?? ''} dotenv=${triple.dotenv ?? ''} final=${triple.final ?? ''}\n`,
-      );
-      // Entropy warning (once-per-key)
-      const entOpts: EntropyOptions = {};
-      if (typeof warnEntropy === 'boolean') entOpts.warnEntropy = warnEntropy;
-      if (typeof entropyThreshold === 'number')
-        entOpts.entropyThreshold = entropyThreshold;
-      if (typeof entropyMinLength === 'number')
-        entOpts.entropyMinLength = entropyMinLength;
-      if (Array.isArray(entropyWhitelist))
-        entOpts.entropyWhitelist = entropyWhitelist;
-      maybeWarnEntropy(k, final, origin, entOpts, (line) =>
-        process.stderr.write(line + '\n'),
-      );
-    }
+    traceChildEnv({
+      parentEnv: process.env,
+      dotenv,
+      ...(Array.isArray(traceOpt) ? { keys: traceOpt } : {}),
+      ...(redact ? { redact: true } : {}),
+      ...(redact && Array.isArray(redactPatterns) ? { redactPatterns } : {}),
+      ...(typeof warnEntropy === 'boolean' ? { warnEntropy } : {}),
+      ...(typeof entropyThreshold === 'number' ? { entropyThreshold } : {}),
+      ...(typeof entropyMinLength === 'number' ? { entropyMinLength } : {}),
+      ...(Array.isArray(entropyWhitelist) ? { entropyWhitelist } : {}),
+      write: (line) => {
+        try {
+          process.stderr.write(line + '\n');
+        } catch {
+          /* ignore */
+        }
+      },
+    } as const);
   }
 
   // Preserve Node -e argv under shell-off when the script did not remap input.

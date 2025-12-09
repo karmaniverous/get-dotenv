@@ -6,6 +6,7 @@ import { readMergedOptions } from '@/src/cliHost/readMergedOptions';
 import { resolveShell } from '@/src/cliHost/resolve';
 import { buildSpawnEnv } from '@/src/cliHost/spawnEnv';
 
+import { applyAwsContext } from './common';
 import { resolveAwsContext } from './service';
 import { type AwsPluginConfig, AwsPluginConfigSchema } from './types';
 
@@ -142,26 +143,8 @@ export const awsPlugin = () => {
             cfg,
           });
 
-          // Unconditional env writes (no per-plugin toggle)
-          if (out.region) {
-            process.env.AWS_REGION = out.region;
-            if (!process.env.AWS_DEFAULT_REGION)
-              process.env.AWS_DEFAULT_REGION = out.region;
-          }
-          if (out.credentials) {
-            process.env.AWS_ACCESS_KEY_ID = out.credentials.accessKeyId;
-            process.env.AWS_SECRET_ACCESS_KEY = out.credentials.secretAccessKey;
-            if (out.credentials.sessionToken !== undefined) {
-              process.env.AWS_SESSION_TOKEN = out.credentials.sessionToken;
-            }
-          }
-
-          // Always publish minimal non-sensitive metadata
-          ctx.plugins ??= {};
-          ctx.plugins['aws'] = {
-            ...(out.profile ? { profile: out.profile } : {}),
-            ...(out.region ? { region: out.region } : {}),
-          };
+          // Publish env/context
+          applyAwsContext(out, ctx, true);
 
           // Forward when positional args are present; otherwise session-only.
           if (Array.isArray(args) && args.length > 0) {
@@ -203,35 +186,14 @@ export const awsPlugin = () => {
         dotenv: ctx.dotenv,
         cfg,
       });
-      const { profile, region, credentials } = out;
-
-      // Unconditional env writes in host path
-      if (region) {
-        process.env.AWS_REGION = region;
-        if (!process.env.AWS_DEFAULT_REGION)
-          process.env.AWS_DEFAULT_REGION = region;
-      }
-      if (credentials) {
-        process.env.AWS_ACCESS_KEY_ID = credentials.accessKeyId;
-        process.env.AWS_SECRET_ACCESS_KEY = credentials.secretAccessKey;
-        if (credentials.sessionToken !== undefined) {
-          process.env.AWS_SESSION_TOKEN = credentials.sessionToken;
-        }
-      }
-
-      // Always publish minimal non-sensitive metadata
-      ctx.plugins ??= {};
-      ctx.plugins['aws'] = {
-        ...(profile ? { profile } : {}),
-        ...(region ? { region } : {}),
-      };
+      applyAwsContext(out, ctx, true);
       // Optional: low-noise breadcrumb for diagnostics
       if (process.env.GETDOTENV_DEBUG) {
         try {
           const msg = JSON.stringify({
-            profile,
-            region,
-            hasCreds: Boolean(credentials),
+            profile: out.profile,
+            region: out.region,
+            hasCreds: Boolean(out.credentials),
           });
           process.stderr.write(`[aws] afterResolve ${msg}\n`);
         } catch {
