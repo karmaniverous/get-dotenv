@@ -1,6 +1,6 @@
 import { GetCallerIdentityCommand, STSClient } from '@aws-sdk/client-sts';
 
-import { definePlugin } from '@/src/cliHost';
+import { definePlugin } from '@/src/cliHost/definePlugin';
 
 export const awsWhoamiPlugin = () =>
   definePlugin({

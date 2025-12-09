@@ -1,6 +1,10 @@
-export type { DefineSpec, GetDotenvCliPlugin } from './definePlugin';
-export type { GetDotenvCliPublic } from './definePlugin';
-export type { PluginWithInstanceHelpers } from './definePlugin';
+export type {
+  DefineSpec,
+  GetDotenvCliPlugin,
+  GetDotenvCliPublic,
+  InferPluginConfig,
+  PluginWithInstanceHelpers,
+} from './contracts';
 export { definePlugin } from './definePlugin';
 export type { GetDotenvCliCtx } from './GetDotenvCli';
 export { GetDotenvCli } from './GetDotenvCli';
@@ -8,11 +12,3 @@ export type { GetDotenvCliOptions } from './GetDotenvCliOptions';
 export { readMergedOptions } from './readMergedOptions';
 export type { ScriptsTable } from './types';
 export { z } from 'zod';
-// Preserve the conditional config-inference type exported from this module
-import type { GetDotenvOptions } from '@/src/GetDotenvOptions';
-
-import type { PluginWithInstanceHelpers as PluginWithInstanceHelpersType } from './definePlugin';
-export type InferPluginConfig<P> =
-  P extends PluginWithInstanceHelpersType<GetDotenvOptions, infer C>
-    ? Readonly<C>
-    : never;

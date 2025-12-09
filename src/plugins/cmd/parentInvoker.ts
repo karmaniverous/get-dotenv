@@ -1,7 +1,9 @@
 import type { CommandUnknownOpts } from '@commander-js/extra-typings';
 
-import type { GetDotenvCliPublic } from '@/src/cliHost/definePlugin';
-import type { PluginWithInstanceHelpers } from '@/src/cliHost/definePlugin';
+import type {
+  GetDotenvCliPublic,
+  PluginWithInstanceHelpers,
+} from '@/src/cliHost/contracts';
 import {
   baseGetDotenvCliOptions,
   type GetDotenvCliOptions,

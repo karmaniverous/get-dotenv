@@ -3,14 +3,15 @@
  */
 import type { OptionValues } from '@commander-js/extra-typings';
 
-import { computeContext } from '@/src/cliHost/computeContext';
-import type { GetDotenvCliPlugin } from '@/src/cliHost/definePlugin';
-import type { GetDotenvCliCtx } from '@/src/cliHost/GetDotenvCli';
 import {
   type GetDotenvOptions,
   resolveGetDotenvOptions,
 } from '@/src/GetDotenvOptions';
 import { getDotenvOptionsSchemaResolved } from '@/src/schema/getDotenvOptions';
+
+import { computeContext } from './computeContext';
+import type { GetDotenvCliPlugin } from './contracts';
+import type { GetDotenvCliCtx } from './GetDotenvCli';
 
 export async function resolveAndComputeContext<
   TOptions extends GetDotenvOptions,

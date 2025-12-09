@@ -5,8 +5,7 @@ import type { OptionValues } from '@commander-js/extra-typings';
 
 import type { GetDotenvOptions } from '@/src/GetDotenvOptions';
 
-import type { GetDotenvCliPublic } from './definePlugin';
-import type { GetDotenvCliPlugin } from './definePlugin';
+import type { GetDotenvCliPlugin, GetDotenvCliPublic } from './contracts';
 
 // Existential CLI public alias for installer-only use. Keeps recursive Commander
 // generics contained and avoids leaking specific Args/Opts/Global types.

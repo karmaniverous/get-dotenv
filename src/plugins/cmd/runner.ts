@@ -5,7 +5,7 @@
  * - Preserves Node -e argv under shell-off
  * - Normalizes child env and honors capture
  */
-import type { GetDotenvCliPublic } from '@/src/cliHost/definePlugin';
+import type { GetDotenvCliPublic } from '@/src/cliHost/contracts';
 import { runCommand } from '@/src/cliHost/exec';
 import type { GetDotenvCliOptions } from '@/src/cliHost/GetDotenvCliOptions';
 import {

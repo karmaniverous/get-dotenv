@@ -4,10 +4,6 @@ When updated: 2025-12-09T00:00:00Z
 
 ## Next up (near‑term, actionable)
 
-- Decompose long module: src/cliHost/definePlugin.ts
-  - Split into: contracts (public types), instance helpers, and dynamic option
-    helpers. Add paired tests for each smaller module.
-
 - Docs and templates
   - Update Authoring guides to reflect required ns, host‑created mounts,
     and override API. Keep Commander generics guidance (no casts needed in actions).
@@ -190,8 +186,16 @@ When updated: 2025-12-09T00:00:00Z
   - Fix AWS debug breadcrumb to reference out.\*; TSDoc escapes; remove unused import.
 
 - DRY Batch 2: exec normalization.
-  - Added private _execNormalized() in cliHost/exec.ts to centralize plain/shell
+  - Added private \_execNormalized() in cliHost/exec.ts to centralize plain/shell
     and capture/inherit flows; refactored runCommand and runCommandResult to use it.
 
 - Amendment: exec normalization follow-up — exactOptionalPropertyTypes-safe opts.
-  - Build opts for _execNormalized conditionally to omit undefined keys.
+  - Build opts for \_execNormalized conditionally to omit undefined keys.
+
+- DRY split: definePlugin decomposition
+  - Created src/cliHost/definePlugin/contracts.ts (types only).
+  - Created src/cliHost/definePlugin/helpers.ts with definePlugin(), readConfig,
+    and createPluginDynamicOption. Enforced sibling-name uniqueness at composition.
+  - Slimmed src/cliHost/definePlugin.ts to a thin re-export wrapper.
+  - Added unit tests: src/cliHost/definePlugin/helpers.test.ts covering sibling
+    uniqueness and dynamic option injection (help-time).

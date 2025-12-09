@@ -3,10 +3,9 @@
  */
 import type { OptionValues } from '@commander-js/extra-typings';
 
-import type { GetDotenvCliPublic } from '@/src/cliHost/definePlugin';
 import type { GetDotenvOptions } from '@/src/GetDotenvOptions';
 
-import type { GetDotenvCliPlugin } from './definePlugin';
+import type { GetDotenvCliPlugin, GetDotenvCliPublic } from './contracts';
 
 /** Compute realized path for a mounted command (leaf-up to root, excluding root alias). */
 export function realizedPathForMount(

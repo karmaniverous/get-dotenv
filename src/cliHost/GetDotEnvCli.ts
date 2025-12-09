@@ -6,11 +6,6 @@ import type {
 } from '@commander-js/extra-typings';
 import { Command } from '@commander-js/extra-typings';
 
-import type {
-  GetDotenvCliPlugin,
-  GetDotenvCliPublic,
-} from '@/src/cliHost/definePlugin';
-import type { GetDotenvCliOptions } from '@/src/cliHost/GetDotenvCliOptions';
 // Added: helpers and types for root wiring and validation
 import type { ProcessEnv } from '@/src/GetDotenvOptions';
 import { type GetDotenvOptions } from '@/src/GetDotenvOptions';
@@ -18,11 +13,13 @@ import { type GetDotenvOptions } from '@/src/GetDotenvOptions';
 // New: small helpers to keep the class lean
 import { attachRootOptions as attachRootOptionsBuilder } from './attachRootOptions';
 import { buildHelpInformation } from './buildHelpInformation';
+import type { GetDotenvCliPlugin, GetDotenvCliPublic } from './contracts';
 import { baseRootOptionDefaults } from './defaults';
 import {
   evaluateDynamicOptions as evalDyn,
   makeDynamicOption,
 } from './dynamicOptions';
+import type { GetDotenvCliOptions } from './GetDotenvCliOptions';
 import { GROUP_TAG } from './groups';
 import { initializeInstance } from './initializeInstance';
 import { installPassOptions } from './passOptions';

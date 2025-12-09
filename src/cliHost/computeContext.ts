@@ -20,7 +20,7 @@ import { applyDynamicMap, loadAndApplyDynamic } from '@/src/env/dynamic';
 import { writeDotenvFile } from '@/src/util/dotenvFile';
 import { flattenPluginTreeByPath } from '@/src/cliHost/paths';
 
-import type { GetDotenvCliPlugin } from './definePlugin';
+import type { GetDotenvCliPlugin } from './contracts';
 import type { GetDotenvCliCtx } from './GetDotenvCli';
 
 /**
