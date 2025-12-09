@@ -61,6 +61,7 @@ describe('GetDotenvCli host (skeleton)', () => {
   it('runs plugin afterResolve in parent → children order', async () => {
     const order: string[] = [];
     const child = definePlugin({
+      ns: 'child',
       id: 'child',
       setup: () => undefined,
       afterResolve: () => {
@@ -69,6 +70,7 @@ describe('GetDotenvCli host (skeleton)', () => {
     });
 
     const parent = definePlugin({
+      ns: 'parent',
       id: 'parent',
       setup: () => undefined,
       afterResolve: () => {

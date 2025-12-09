@@ -5,7 +5,7 @@
  * - Every plugin declares a required namespace `ns` (string). The host creates
  *   the mount using parent.ns(effectiveNs) and passes that mount to setup.
  * - setup returns void | Promise<void> (no return-the-mount).
- * - Composition is via .use(child, { ns?: string }) with optional namespace
+ * - Composition is via .use(child, \{ ns?: string \}) with optional namespace
  *   override at composition time. The installer enforces sibling uniqueness.
  *
  * This module exposes a structural public interface for the host that plugins
@@ -137,7 +137,7 @@ export interface GetDotenvCliPlugin<
    */
   children: Array<{
     plugin: GetDotenvCliPlugin<TOptions, TArgs, TOpts, TGlobal>;
-    override?: { ns?: string };
+    override: { ns?: string } | undefined;
   }>;
 
   /**

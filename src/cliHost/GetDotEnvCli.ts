@@ -74,7 +74,8 @@ export class GetDotenvCli<
   /** Registered top-level plugins (composition happens via .use()) */
   private _plugins: Array<{
     plugin: GetDotenvCliPlugin<TOptions, TArgs, TOpts, TGlobal>;
-    override?: { ns?: string };
+    // exactOptionalPropertyTypes-friendly: non-optional, may be undefined
+    override: { ns?: string } | undefined;
   }> = [];
 
   /** One-time installation guard */
@@ -141,7 +142,8 @@ export class GetDotenvCli<
   ): Promise<GetDotenvCliCtx<TOptions>> {
     const ctx = await resolveAndComputeContext<TOptions, TArgs, TOpts, TGlobal>(
       customOptions,
-      this._plugins,
+      // Pass only plugin instances to the resolver (not entries with overrides)
+      this._plugins.map((e) => e.plugin),
       HOST_META_URL,
     );
 
@@ -374,6 +376,11 @@ export class GetDotenvCli<
   private async _runAfterResolve(
     ctx: GetDotenvCliCtx<TOptions>,
   ): Promise<void> {
-    await runAfterResolveTree(this, this._plugins, ctx);
+    // Run afterResolve only over the plugin list
+    await runAfterResolveTree(
+      this,
+      this._plugins.map((e) => e.plugin),
+      ctx,
+    );
   }
 }

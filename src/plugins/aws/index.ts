@@ -20,7 +20,7 @@ export const awsPlugin = () => {
   });
   plugin.setup = (cli) => {
     // Mount: aws (provided)
-    const cmd = cli
+    cli
       .description(
         'Establish an AWS session and optionally forward to the AWS CLI',
       )

@@ -17,23 +17,13 @@ type AnyCliPublic<TOptions extends GetDotenvOptions> = GetDotenvCliPublic<
   OptionValues
 >;
 
-const isCliPublic = <TOptions extends GetDotenvOptions>(
-  v: unknown,
-): v is AnyCliPublic<TOptions> => {
-  if (!v || typeof v !== 'object') return false;
-  const o = v as Record<string, unknown>;
-  return (
-    typeof o['command'] === 'function' && typeof o['addCommand'] === 'function'
-  );
-};
-
 /**
- * Determine the effective namespace for a child plugin (override > default).
+ * Determine the effective namespace for a child plugin (override \> default).
  */
 const effectiveNs = <TOptions extends GetDotenvOptions>(child: {
-  plugin: GetDotenvCliPlugin<TOptions, unknown[], OptionValues, OptionValues>;
-  override?: { ns?: string };
-}) => {
+  plugin: GetDotenvCliPlugin<TOptions, any, any, any>;
+  override: { ns?: string } | undefined;
+}): string => {
   const o = child.override;
   return (
     o && typeof o.ns === 'string' && o.ns.length > 0 ? o.ns : child.plugin.ns
@@ -58,7 +48,7 @@ export function setupPluginTree<
     for (const entry of parent.children) {
       const ns = effectiveNs(entry);
       if (names.has(ns)) {
-        const under = parentCli.name ? parentCli.name() : '';
+        const under = parentCli.name();
         throw new Error(
           `Duplicate namespace '${ns}' under '${under || 'root'}'. Override via .use(plugin, { ns: '...' }).`,
         );

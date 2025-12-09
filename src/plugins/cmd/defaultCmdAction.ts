@@ -1,4 +1,4 @@
-import type { Command, CommandUnknownOpts } from '@commander-js/extra-typings';
+import type { CommandUnknownOpts } from '@commander-js/extra-typings';
 
 import type { GetDotenvCliPublic } from '@/src/cliHost/definePlugin';
 import { readMergedOptions } from '@/src/cliHost/readMergedOptions';
@@ -11,7 +11,7 @@ import { runCmdWithContext } from './runner';
  */
 export const attachDefaultCmdAction = (
   cli: GetDotenvCliPublic,
-  cmd: Command<[string[]]>,
+  cmd: CommandUnknownOpts,
   aliasKey?: string,
 ) => {
   cmd
