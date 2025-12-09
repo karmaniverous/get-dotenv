@@ -4,6 +4,14 @@ When updated: 2025-12-08T00:00:00Z
 
 ## Next up (near‑term, actionable)
 
+- Diagnose E2E help/exit in root flows:
+  - Case: `getdotenv --paths ./test/full -e test --dotenv-token .testenv -l` prints root help and exits 1. Capture diagnostics by rerunning the single test with `GETDOTENV_DEBUG=1` to confirm parse path and hooks invoked.
+  - Verify alias child run path in E2E (`--cmd 'node -e …'`) is wired and exits 0. If help is printed, inspect preAction/preSubcommand hooks and root/alias option detection in cmd parent invoker.
+
+- Investigate root help being printed for non-help invocations:
+  - Reproduce and fix E2E "logs env vars" failure where `-l` yields `commander.help` exit path. Ensure resolveAndLoad + log=true paths complete without invoking help.
+  - Re-validate alias E2E termination after exit gating change to ensure the alias path still exits 0. Capture additional diagnostics as needed.
+
 - Namespace & host‑created mounts — implement and validate (breaking by design)
   - DefineSpec and typing
     - Require `ns: string` in definePlugin spec for every plugin (non‑empty).
@@ -101,85 +109,13 @@ When updated: 2025-12-08T00:00:00Z
   (no Commander chaining), and hook wrappers delegate without erasing
   generics.
 
-- Local verification: re‑ran typecheck, lint, and test suites; all
-  green including E2E flows (help, alias termination, CLI core).
-
-- Tooling: verify‑bundle import check targets
-  '@commander-js/extra-typings' as the canonical external Commander
-  reference; kept in sync with bundling strategy.
-
-- Built‑in plugins audit (aws, batch, cmd, init, demo):
-  confirmed typed cli.ns('id') usage across aws, batch, init, and demo;
-  cmd intentionally uses createCommand('cmd') to preserve desired help
-  formatting and output behavior. No residual casts were required in
-  action handlers; no runtime behavior changes identified.
-
-- Typing fix: propagate Usage through dynamic Option helpers so addOption
-  can infer flags and widen Opts. Updated makeDynamicOption(), host
-
-- Lint: remove unnecessary generic from dynamicOption to satisfy
-  @typescript-eslint/no-unnecessary-type-parameters. Typed option
-  inference remains through createDynamicOption/Option<Usage> and
-  plugin.createPluginDynamicOption.
-
-- Remove dynamicOption helper from GetDotenvCli. It could not propagate
-  Commander option inference (returned `this`) and recently lost its
-  generic due to lint. Steer callers to `createDynamicOption(...); addOption(...)`
-  or `plugin.createPluginDynamicOption(...)` for fully typed options.
-
-- Plugins: refactor actions to rely on Commander inference for args/opts
-  and annotate only the third param as CommandUnknownOpts for helpers:
-  • aws: action(async (args, opts, thisCommand: CommandUnknownOpts) => …)
-  • init: action(async (destArg, opts, thisCommand: CommandUnknownOpts) => …)
-  • demo: align script action signature similarly; runtime unchanged.
-
-- Type fix: batch plugin actions aligned with Commander generics. Updated
-  attachDefaultCmdAction and attachParentAction to accept
-  Command<[string[]], {}, {}> and annotated action parameters
-  (commandParts: string[], opts: {}, thisCommand: CommandUnknownOpts),
-  resolving typecheck errors (TS2345/TS7006).
-
-- Unify naming and helpers (big bang): introduced src/cliHost/invoke.ts
-  (composeNestedEnv, maybePreserveNodeEvalArgv); renamed batch
-  parentAction -> parentInvoker and forwarded getDotenvCliOptions in
-  all parent paths; extracted cmd default subcommand action to
-  actions/defaultCmdAction.ts; replaced cmd alias installer with
-  actions/parentInvoker.ts (behavior unchanged). Updated plugin
-  index modules to use unified names and avoided re-exports per plan.
-
-- Type fixes: batch parentInvoker action now accepts variadic args and
-  extracts [commandParts, opts, thisCommand] to satisfy CommandUnknownOpts
-  signature. Restored plugin `this` cast in cmd/index when calling
-  attachParentInvoker to satisfy helper contract under exactOptionalPropertyTypes.
-
-- Fix cmd runner TS/lint and unit tests: ensured parts is always string[],
-  removed unnecessary String() on string inputs, wrapped runCommand in a
-  Vitest-aware try/catch to tolerate mocked execa returning undefined in unit
-  tests, and simplified alias invoker childNames to avoid lint warning.
-
-- Tests: fix batch plugin unit tests by mocking the correct module
-  path "./execShellCommandBatch" (replacing outdated
-  "../../services/batch/execShellCommandBatch"), preventing real
-  process.exit and /bin/zsh spawn and allowing execMock assertions.
-
-- Nested composition implementation (mount propagation):
-  updated installer to await setup and propagate an optional mount
-  (structural type guard, existential typing kept internal). Adjusted
-  awsPlugin to return its ns('aws') so awsWhoami mounts under it.
-  Added unit test (compose.mount.test.ts) to assert parent→child
-  nesting and updated E2E to ensure "aws -h" lists "whoami".
-  Kept public author DX cast‑free and contained recursive typing at
-  the installer boundary. Docs facet remains disabled pending
-  stabilization.
-
-- Gate fixes for nested composition:
-  replaced setup return unions with overloads (no void-in-union,
-  no unknown unions), contained existential typing in the installer
-  (typed setup invocation + structural guard), moved installation
-  out of use() into install() to avoid floating promises, and
-  refactored aws plugin to assign setup after creation to avoid
-  self-referential initializer (TS7022). Fixed unit test to satisfy
-  require-await. All type/lint/test gates green.
+- Before propose any code changes, enumerate all source files and flag any file whose length exceeds 300 lines.
+- This rule applies equally to newly generated code:
+  - Do not propose or emit a new module that exceeds ~300 lines. Instead, return to design and propose a split plan (modules, responsibilities, tests) before generating code.
+- Present a list of long files (path and approximate LOC). For each file, do one of:
+  - Propose how to break it into smaller, testable modules (short rationale and outline), or
+  - Document a clear decision to leave it long (with justification tied to requirements).
+- Do not refactor automatically. Wait for user confirmation on which files to split before emitting patches.
 
 - Fix: assign aws plugin afterResolve on the plugin object (was a free
   function), resolving parse/type errors blocking many tests.
@@ -255,4 +191,19 @@ When updated: 2025-12-08T00:00:00Z
 
 - Host install caller generics: update setupPluginTree invocation to the
   simplified single type parameter signature and existential Commander generics
-  to satisfy TS2558 after refactor.
+  to satisfy TS2558 after refactor.
+
+- Windows case-sensitivity fix for GetDotenvCli imports:
+  unified all imports/re-exports from './GetDotEnvCli' to './GetDotenvCli'
+  across cliHost modules and tests to resolve TS1261 in typecheck on Windows.
+
+- Alias unit tests termination guard:
+  updated cmd alias executor (maybeRunAlias) to suppress process.exit() when
+  running under tests (GETDOTENV_TEST or VITEST_WORKER_ID present), preventing
+  unexpected process termination during unit tests while retaining termination
+  behavior for E2E/real runs.
+
+- Tests-only exitOverride when constructing GetDotenvCli directly:
+  installed under-tests exitOverride in initializeInstance so unit tests using
+  the host directly do not trigger process.exit on Commander help/version
+  flows. This addresses alias unit test exits.

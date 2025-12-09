@@ -1,6 +1,7 @@
 /** src/cliHost/initializeInstance.ts
  * Helper to initialize a GetDotenvCli instance with help configuration,
  * header injection, and a lazy preSubcommand context resolver.
+ * Also installs tests-only exitOverride to suppress process.exit on help/version.
  */
 import type { Command, Option } from '@commander-js/extra-typings';
 
@@ -44,6 +45,24 @@ export function initializeInstance(
     return header && header.length > 0 ? `${header}\n\n` : '';
   });
 
+  // Tests-only: suppress process.exit during help/version flows under Vitest.
+  // Unit tests often construct GetDotenvCli directly (bypassing createCli),
+  // so install a local exitOverride when a test environment is detected.
+  const underTests =
+    process.env.GETDOTENV_TEST === '1' ||
+    typeof process.env.VITEST_WORKER_ID === 'string';
+  if (underTests) {
+    cli.exitOverride((err: unknown) => {
+      const code = (err as { code?: string } | undefined)?.code;
+      if (
+        code === 'commander.helpDisplayed' ||
+        code === 'commander.version' ||
+        code === 'commander.help'
+      )
+        return;
+      throw err as Error;
+    });
+  }
   // PreSubcommand hook: compute a context if absent, without mutating process.env.
   // The passOptions() helper, when installed, resolves the final context.
   cli.hook('preSubcommand', async () => {
