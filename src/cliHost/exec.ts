@@ -54,6 +54,86 @@ const sanitizeEnv = (
 };
 
 /**
+ * Core executor that normalizes shell/plain forms and capture/inherit modes.
+ * Returns captured buffers; callers may stream stdout when desired.
+ */
+async function _execNormalized(
+  command: string | readonly string[],
+  shell: string | boolean | URL,
+  opts: {
+    cwd?: string | URL;
+    env?: NodeJS.ProcessEnv;
+    stdio?: 'inherit' | 'pipe';
+    timeoutMs?: number;
+  } = {},
+): Promise<{ exitCode: number; stdout: string; stderr: string }> {
+  const envSan = sanitizeEnv(opts.env);
+  const timeoutBits =
+    typeof opts.timeoutMs === 'number'
+      ? { timeout: opts.timeoutMs, killSignal: 'SIGKILL' as const }
+      : {};
+  const stdio = opts.stdio ?? 'pipe';
+
+  if (shell === false) {
+    let file: string | undefined;
+    let args: string[] = [];
+    if (typeof command === 'string') {
+      const tokens = tokenize(command);
+      file = tokens[0];
+      args = tokens.slice(1);
+    } else {
+      file = command[0];
+      args = command.slice(1).map(stripOuterQuotes);
+    }
+    if (!file) return { exitCode: 0, stdout: '', stderr: '' };
+
+    dbg('exec (plain)', { file, args, stdio });
+    try {
+      const ok = pickResult(
+        (await execa(file, args, {
+          ...(opts.cwd !== undefined ? { cwd: opts.cwd } : {}),
+          ...(envSan !== undefined ? { env: envSan } : {}),
+          stdio,
+          ...timeoutBits,
+        })) as unknown,
+      );
+      dbg('exit (plain)', { exitCode: ok.exitCode });
+      return ok;
+    } catch (e: unknown) {
+      const out = pickResult(e);
+      dbg('exit:error (plain)', { exitCode: out.exitCode });
+      return out;
+    }
+  }
+
+  // Shell path (string|true|URL): execaCommand handles shell resolution.
+  const commandStr: string =
+    typeof command === 'string' ? command : command.join(' ');
+  dbg('exec (shell)', {
+    command: commandStr,
+    shell: typeof shell === 'string' ? shell : 'custom',
+    stdio,
+  });
+  try {
+    const ok = pickResult(
+      (await execaCommand(commandStr, {
+        shell,
+        ...(opts.cwd !== undefined ? { cwd: opts.cwd } : {}),
+        ...(envSan !== undefined ? { env: envSan } : {}),
+        stdio,
+        ...timeoutBits,
+      })) as unknown,
+    );
+    dbg('exit (shell)', { exitCode: ok.exitCode });
+    return ok;
+  } catch (e: unknown) {
+    const out = pickResult(e);
+    dbg('exit:error (shell)', { exitCode: out.exitCode });
+    return out;
+  }
+}
+
+/**
  * Execute a command and capture stdout/stderr (buffered).
  * - Preserves plain vs shell behavior and argv/string normalization.
  * - Never re-emits stdout/stderr to parent; returns captured buffers.
@@ -86,67 +166,7 @@ export async function runCommandResult(
     timeoutMs?: number;
   } = {},
 ): Promise<{ exitCode: number; stdout: string; stderr: string }> {
-  const envSan = sanitizeEnv(opts.env);
-
-  if (shell === false) {
-    let file: string | undefined;
-    let args: string[] = [];
-    if (typeof command === 'string') {
-      const tokens = tokenize(command);
-      file = tokens[0];
-      args = tokens.slice(1);
-    } else {
-      file = command[0];
-      args = command.slice(1).map(stripOuterQuotes);
-    }
-    if (!file) return { exitCode: 0, stdout: '', stderr: '' };
-
-    dbg('exec:capture (plain)', { file, args });
-    try {
-      const ok = pickResult(
-        (await execa(file, args, {
-          ...(opts.cwd !== undefined ? { cwd: opts.cwd } : {}),
-          ...(envSan !== undefined ? { env: envSan } : {}),
-          stdio: 'pipe',
-          ...(opts.timeoutMs !== undefined
-            ? { timeout: opts.timeoutMs, killSignal: 'SIGKILL' }
-            : {}),
-        })) as unknown,
-      );
-      dbg('exit:capture (plain)', { exitCode: ok.exitCode });
-      return ok;
-    } catch (e: unknown) {
-      const out = pickResult(e);
-      dbg('exit:capture:error (plain)', { exitCode: out.exitCode });
-      return out;
-    }
-  } else {
-    const commandStr: string =
-      typeof command === 'string' ? command : command.join(' ');
-    dbg('exec:capture (shell)', {
-      command: commandStr,
-      shell: typeof shell === 'string' ? shell : 'custom',
-    });
-    try {
-      const ok = pickResult(
-        (await execaCommand(commandStr, {
-          shell,
-          ...(opts.cwd !== undefined ? { cwd: opts.cwd } : {}),
-          ...(envSan !== undefined ? { env: envSan } : {}),
-          stdio: 'pipe',
-          ...(opts.timeoutMs !== undefined
-            ? { timeout: opts.timeoutMs, killSignal: 'SIGKILL' }
-            : {}),
-        })) as unknown,
-      );
-      dbg('exit:capture (shell)', { exitCode: ok.exitCode });
-      return ok;
-    } catch (e: unknown) {
-      const out = pickResult(e);
-      dbg('exit:capture:error (shell)', { exitCode: out.exitCode });
-      return out;
-    }
-  }
+  return _execNormalized(command, shell, { ...opts, stdio: 'pipe' });
 }
 
 export function runCommand(
@@ -176,80 +196,13 @@ export async function runCommand(
     stdio?: 'inherit' | 'pipe';
   },
 ): Promise<number> {
-  if (shell === false) {
-    let file: string | undefined;
-    let args: string[] = [];
-    if (typeof command === 'string') {
-      const tokens = tokenize(command);
-      file = tokens[0];
-      args = tokens.slice(1);
-    } else {
-      file = command[0];
-      args = command.slice(1).map(stripOuterQuotes);
-    }
-    if (!file) return 0;
-    dbg('exec (plain)', { file, args, stdio: opts.stdio });
-    // Build options without injecting undefined properties (exactOptionalPropertyTypes).
-    const envSan = sanitizeEnv(opts.env);
-    const plainOpts: {
-      cwd?: string | URL;
-      env?: Readonly<Partial<Record<string, string>>>;
-      stdio?: 'inherit' | 'pipe';
-    } = {};
-    if (opts.cwd !== undefined) plainOpts.cwd = opts.cwd;
-    if (envSan !== undefined) plainOpts.env = envSan;
-    if (opts.stdio !== undefined) plainOpts.stdio = opts.stdio;
-
-    const ok = pickResult(
-      (await execa(
-        file,
-        args,
-        plainOpts as {
-          cwd?: string | URL;
-          env?: Readonly<Partial<Record<string, string>>>;
-          stdio?: 'inherit' | 'pipe';
-        },
-      )) as unknown,
-    );
-    if (opts.stdio === 'pipe' && ok.stdout) {
-      process.stdout.write(ok.stdout + (ok.stdout.endsWith('\n') ? '' : '\n'));
-    }
-    dbg('exit (plain)', { exitCode: ok.exitCode });
-    return typeof ok.exitCode === 'number' ? ok.exitCode : Number.NaN;
-  } else {
-    const commandStr: string =
-      typeof command === 'string' ? command : command.join(' ');
-    dbg('exec (shell)', {
-      shell: typeof shell === 'string' ? shell : 'custom',
-      stdio: opts.stdio,
-      command: commandStr,
-    });
-    const envSan = sanitizeEnv(opts.env);
-    const shellOpts: {
-      cwd?: string | URL;
-      shell: string | boolean | URL;
-      env?: Readonly<Partial<Record<string, string>>>;
-      stdio?: 'inherit' | 'pipe';
-    } = { shell };
-    if (opts.cwd !== undefined) shellOpts.cwd = opts.cwd;
-    if (envSan !== undefined) shellOpts.env = envSan;
-    if (opts.stdio !== undefined) shellOpts.stdio = opts.stdio;
-
-    const ok = pickResult(
-      (await execaCommand(
-        commandStr,
-        shellOpts as {
-          cwd?: string | URL;
-          shell: string | boolean | URL;
-          env?: Readonly<Partial<Record<string, string>>>;
-          stdio?: 'inherit' | 'pipe';
-        },
-      )) as unknown,
-    );
-    if (opts.stdio === 'pipe' && ok.stdout) {
-      process.stdout.write(ok.stdout + (ok.stdout.endsWith('\n') ? '' : '\n'));
-    }
-    dbg('exit (shell)', { exitCode: ok.exitCode });
-    return typeof ok.exitCode === 'number' ? ok.exitCode : Number.NaN;
+  const ok = await _execNormalized(command, shell, {
+    cwd: opts.cwd,
+    env: opts.env,
+    stdio: opts.stdio,
+  });
+  if (opts.stdio === 'pipe' && ok.stdout) {
+    process.stdout.write(ok.stdout + (ok.stdout.endsWith('\n') ? '' : '\n'));
   }
+  return typeof ok.exitCode === 'number' ? ok.exitCode : Number.NaN;
 }

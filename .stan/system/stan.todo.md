@@ -188,3 +188,7 @@ When updated: 2025-12-09T00:00:00Z
 - Amendment: Batch 1 follow-up — fix typecheck and lint issues.
   - Adjust cmd/runner trace args for exactOptionalPropertyTypes.
   - Fix AWS debug breadcrumb to reference out.\*; TSDoc escapes; remove unused import.
+
+- DRY Batch 2: exec normalization.
+  - Added private _execNormalized() in cliHost/exec.ts to centralize plain/shell
+    and capture/inherit flows; refactored runCommand and runCommandResult to use it.
