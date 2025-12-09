@@ -21,7 +21,7 @@ type AnyCliPublic<TOptions extends GetDotenvOptions> = GetDotenvCliPublic<
  * Determine the effective namespace for a child plugin (override \> default).
  */
 const effectiveNs = <TOptions extends GetDotenvOptions>(child: {
-  plugin: GetDotenvCliPlugin<TOptions, any, any, any>;
+  plugin: GetDotenvCliPlugin<TOptions, unknown[], OptionValues, OptionValues>;
   override: { ns?: string } | undefined;
 }): string => {
   const o = child.override;
@@ -30,18 +30,13 @@ const effectiveNs = <TOptions extends GetDotenvOptions>(child: {
   ).trim();
 };
 
-export function setupPluginTree<
-  TOptions extends GetDotenvOptions,
-  TArgs extends unknown[] = [],
-  TOpts extends OptionValues = {},
-  TGlobal extends OptionValues = {},
->(
-  cli: GetDotenvCliPublic<TOptions, TArgs, TOpts, TGlobal>,
-  plugin: GetDotenvCliPlugin<TOptions, TArgs, TOpts, TGlobal>,
+export function setupPluginTree<TOptions extends GetDotenvOptions>(
+  cli: GetDotenvCliPublic<TOptions, unknown[], OptionValues, OptionValues>,
+  plugin: GetDotenvCliPlugin<TOptions, unknown[], OptionValues, OptionValues>,
 ): Promise<void> {
   const installChildren = async (
     parentCli: AnyCliPublic<TOptions>,
-    parent: GetDotenvCliPlugin<TOptions, TArgs, TOpts, TGlobal>,
+    parent: GetDotenvCliPlugin<TOptions, unknown[], OptionValues, OptionValues>,
   ) => {
     // Enforce sibling uniqueness under this parent.
     const names = new Set<string>();

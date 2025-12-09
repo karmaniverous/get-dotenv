@@ -224,3 +224,18 @@ When updated: 2025-12-08T00:00:00Z
 
 - Typecheck fix (final): add explicit `return undefined` in the batch plugin
   setup function to satisfy the widened setup return union. No runtime changes.
+
+- Fix afterResolve traversal: iterate child plugin entries correctly
+  (`for (const child of p.children) await run(child.plugin)`), resolving
+  runtime TypeError “p.children is not iterable” and associated E2E failures.
+
+- Attach cmd alias to parent: register the `--cmd` option and hooks on the
+  parent (root) command so the alias is recognized at the root, fixing
+  “unknown option --cmd” and restoring root help grouping (“Plugin options — cmd”).
+
+- Default cmd action signature: switch to a rest‑args handler compatible with
+  extra‑typings; derive `thisCommand` and positional argv safely.
+
+- Installer generics: simplify to existential Commander generics
+  (unknown[]/OptionValues) and remove `any` in `registerPlugin`, fixing TS2345
+  and lint no‑explicit‑any reports.

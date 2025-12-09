@@ -23,7 +23,7 @@ export async function runAfterResolveTree<
     p: GetDotenvCliPlugin<TOptions, TArgs, TOpts, TGlobal>,
   ) => {
     if (p.afterResolve) await p.afterResolve(cli, ctx);
-    for (const child of p.children) await run(child);
+    for (const child of p.children) await run(child.plugin);
   };
   for (const p of plugins) await run(p);
 }

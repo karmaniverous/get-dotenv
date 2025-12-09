@@ -17,9 +17,13 @@ export const attachDefaultCmdAction = (
   cmd
     .enablePositionalOptions()
     .passThroughOptions()
-    .action(async (commandParts, _opts, thisCommand) => {
-      // Commander passes positional tokens as the first action argument
-      const args = Array.isArray(commandParts) ? commandParts : [];
+    .action(async function (...allArgs: unknown[]) {
+      // Commander passes: [...positionals, options, thisCommand]
+      const thisCommand = allArgs[allArgs.length - 1] as CommandUnknownOpts;
+      const commandParts = allArgs[0];
+      const args = Array.isArray(commandParts)
+        ? (commandParts as unknown[]).map(String)
+        : [];
       // No-op when invoked as the default command with no args.
       if (args.length === 0) return;
 

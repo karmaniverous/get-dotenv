@@ -32,6 +32,7 @@ export const attachParentInvoker = (
   if (!aliasSpec) return;
 
   const deriveKey = (flags: string) => {
+    // install alias option
     if (process.env.GETDOTENV_DEBUG) {
       console.error('[getdotenv:alias] install alias option', flags);
     }
@@ -42,16 +43,19 @@ export const attachParentInvoker = (
   };
   const aliasKey = deriveKey(aliasSpec.flags);
 
-  // Expose the option on the parent.
+  // Expose the option on the parent (root) command.
+  const parentCmd =
+    (cli.parent as unknown as GetDotenvCliPublic | null) ??
+    (cli as unknown as GetDotenvCliPublic);
   const desc =
     aliasSpec.description ??
     'alias of cmd subcommand; provide command tokens (variadic)';
-  cli.option(aliasSpec.flags, desc);
+  parentCmd.option(aliasSpec.flags, desc);
   // Tag the just-added parent option for grouped help rendering at the root.
-  const optsArr = cli.options;
+  const optsArr = parentCmd.options;
   if (optsArr.length > 0) {
     const last = optsArr[optsArr.length - 1];
-    if (last) cli.setOptionGroup(last, 'plugin:cmd');
+    if (last) parentCmd.setOptionGroup(last, 'plugin:cmd');
   }
 
   // Shared alias executor for either preAction or preSubcommand hooks.
@@ -127,10 +131,10 @@ export const attachParentInvoker = (
     }
   };
 
-  cli.hook('preAction', async (thisCommand) => {
+  parentCmd.hook('preAction', async (thisCommand) => {
     await maybeRun(thisCommand);
   });
-  cli.hook('preSubcommand', async (thisCommand) => {
+  parentCmd.hook('preSubcommand', async (thisCommand) => {
     await maybeRun(thisCommand);
   });
 };
