@@ -1,47 +1,8 @@
 # Development Plan
 
-When updated: 2025-12-08T00:00:00Z
+When updated: 2025-12-09T00:00:00Z
 
 ## Next up (near‑term, actionable)
-
-- Diagnose E2E help/exit in root flows:
-  - Case: `getdotenv --paths ./test/full -e test --dotenv-token .testenv -l` prints root help and exits 1. Capture diagnostics by rerunning the single test with `GETDOTENV_DEBUG=1` to confirm parse path and hooks invoked.
-  - Verify alias child run path in E2E (`--cmd 'node -e …'`) is wired and exits 0. If help is printed, inspect preAction/preSubcommand hooks and root/alias option detection in cmd parent invoker.
-
-- Namespace & host‑created mounts — implement and validate (breaking by design)
-  - DefineSpec and typing
-    - Require `ns: string` in definePlugin spec for every plugin (non‑empty).
-    - Remove `children?` from the author spec (keep `.use(child)` as the single composition API).
-    - Update `GetDotenvCliPlugin.setup` to return `void | Promise<void>` (no more return‑the‑mount).
-  - Installer (registerPlugin)
-    - Always create the mount: `const mount = parent.ns(effectiveNs)`.
-    - Pass the created `mount` to `setup(mount)`. Await async setup before installing children.
-    - Accept consumer overrides supplied via `.use(child, { ns: '...' })`.
-    - Enforce sibling uniqueness per parent; on conflict throw:
-      `Duplicate namespace '<ns>' under '<parent>'. Override via .use(plugin, { ns: '...' }).`
-  - Composition override API
-    - Extend `.use(child)` to `.use(child, { ns?: string })`.
-    - Store/propagate overrides for effectiveNs resolution.
-  - Identity and config/help keys
-    - Replace public `id` with internal Symbol identity (WeakMap storage).
-    - Key config/help by realized path (e.g., `aws/whoami`) and drop id‑based grouping.
-  - Help grouping
-    - Render leaf‑only headings for plugin groups (e.g., “Plugin options — whoami”).
-    - Keep full path internal for config/help lookups; no path display in headings.
-  - Shipped plugins
-    - Add `ns` to each shipped plugin (aws, batch, cmd, init, demo).
-    - Update setups to rely on provided `mount`; remove any return of a mount.
-    - Preserve parent‑level alias behavior for `cmd` via `mount.parent`.
-  - Tests
-    - Unit: sibling collision throws with the suggested override message.
-    - Unit: `.use(child, { ns })` overrides the leaf and composes config/help keys accordingly.
-    - E2E: `getdotenv aws -h` lists `whoami` (leaf only in group heading).
-  - Docs (Authoring & Config)
-    - Authoring → Lifecycle: ns required; host‑created mounts; `.use(child, { ns })`; children param removed from define spec.
-    - Config/Help: config.plugins keys are realized paths; renaming changes keys; help grouping is leaf‑only.
-  - Semver/migration
-    - Call out breaking changes (setup return, ns required, id removed publicly).
-    - Migration notes for shipped plugins and deprecation of id‑based config/help.
 
 - Decompose long module: src/cliHost/definePlugin.ts
   - Split into: contracts (public types), instance helpers, and dynamic option
@@ -60,8 +21,7 @@ When updated: 2025-12-08T00:00:00Z
   - Keep verify-bundle assertions targeting '@commander-js/extra-typings'.
 
 - Semver and migration
-  - Bump major version due to breaking type signature changes (no runtime
-    changes).
+  - Bump major version due to breaking type signature changes (no runtime changes).
   - Add migration notes: typed ns(), removal of any lingering non‑generic
     host usages, and guidance to rely on inference in plugin actions.
   - Include the namespace/mount pivot and path‑keyed config/help in the notes.
