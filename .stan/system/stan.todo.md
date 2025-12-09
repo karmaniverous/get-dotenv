@@ -191,4 +191,7 @@ When updated: 2025-12-09T00:00:00Z
 
 - DRY Batch 2: exec normalization.
   - Added private _execNormalized() in cliHost/exec.ts to centralize plain/shell
-    and capture/inherit flows; refactored runCommand and runCommandResult to use it.
+    and capture/inherit flows; refactored runCommand and runCommandResult to use it.
+
+- Amendment: exec normalization follow-up — exactOptionalPropertyTypes-safe opts.
+  - Build opts for _execNormalized conditionally to omit undefined keys.

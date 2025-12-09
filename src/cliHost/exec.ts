@@ -166,7 +166,24 @@ export async function runCommandResult(
     timeoutMs?: number;
   } = {},
 ): Promise<{ exitCode: number; stdout: string; stderr: string }> {
-  return _execNormalized(command, shell, { ...opts, stdio: 'pipe' });
+  // Build opts without injecting undefined (exactOptionalPropertyTypes-safe)
+  const coreOpts: {
+    stdio: 'pipe';
+    cwd?: string | URL;
+    env?: NodeJS.ProcessEnv;
+    timeoutMs?: number;
+  } = { stdio: 'pipe' };
+  if (opts.cwd !== undefined) {
+    coreOpts.cwd = opts.cwd;
+  }
+  if (opts.env !== undefined) {
+    coreOpts.env = opts.env;
+  }
+  if (opts.timeoutMs !== undefined) {
+    coreOpts.timeoutMs = opts.timeoutMs;
+  }
+
+  return _execNormalized(command, shell, coreOpts);
 }
 
 export function runCommand(
@@ -196,11 +213,20 @@ export async function runCommand(
     stdio?: 'inherit' | 'pipe';
   },
 ): Promise<number> {
-  const ok = await _execNormalized(command, shell, {
-    cwd: opts.cwd,
-    env: opts.env,
-    stdio: opts.stdio,
-  });
+  // Build opts without injecting undefined (exactOptionalPropertyTypes-safe)
+  const callOpts: {
+    cwd?: string | URL;
+    env?: NodeJS.ProcessEnv;
+    stdio?: 'inherit' | 'pipe';
+  } = {};
+  if (opts.cwd !== undefined) {
+    callOpts.cwd = opts.cwd;
+  }
+  if (opts.env !== undefined) {
+    callOpts.env = opts.env;
+  }
+  if (opts.stdio !== undefined) callOpts.stdio = opts.stdio;
+  const ok = await _execNormalized(command, shell, callOpts);
   if (opts.stdio === 'pipe' && ok.stdout) {
     process.stdout.write(ok.stdout + (ok.stdout.endsWith('\n') ? '' : '\n'));
   }
