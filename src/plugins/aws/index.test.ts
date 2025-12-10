@@ -42,7 +42,7 @@ describe('plugins/aws subcommand', () => {
     expect(process.env.AWS_REGION).toBe('us-east-1');
     // DEFAULT_REGION is also set when previously unset
     expect(process.env.AWS_DEFAULT_REGION).toBe('us-east-1');
-  }, 15000);
+  });
 
   it('forwards args after "--" to AWS CLI with env injection and capture honored', async () => {
     process.env.GETDOTENV_STDIO = 'pipe'; // force capture

@@ -36,5 +36,5 @@ describe('getDotenv dynamic.ts auto-compile', () => {
     expect(vars.TS_DYNAMIC).toBe('deep_app_setting-ts');
 
     await fs.remove(dynTs);
-  }, 15000);
+  });
 });

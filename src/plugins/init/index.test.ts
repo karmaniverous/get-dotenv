@@ -53,7 +53,7 @@ describe('plugins/init', () => {
     // validate token substitution coverage across skeleton files
     const helloTxt = await fs.readFile(hello, 'utf-8');
     expect(helloTxt).toMatch(/Say hello with current dotenv context/i);
-  }, 15000);
+  });
 
   it('idempotence with --yes (skip)', async () => {
     const dir = path.posix.join(TROOT, 'case2');
@@ -84,7 +84,7 @@ describe('plugins/init', () => {
     ]);
     const after = await fs.readFile(cfg, 'utf-8');
     expect(after).toBe('CHANGED');
-  }, 15000);
+  });
 
   it('scaffolds ts config with dynamic', async () => {
     const dir = path.posix.join(TROOT, 'case3');
@@ -128,7 +128,7 @@ describe('plugins/init', () => {
     await expect(fs.readFile(hello, 'utf-8')).resolves.toMatch(
       /Say hello with current dotenv context/i,
     );
-  }, 15000);
+  });
   it('forces overwrite in non-interactive/CI scenarios (force precedence)', async () => {
     const dir = path.posix.join(TROOT, 'case4');
     await fs.remove(dir);
@@ -152,7 +152,7 @@ describe('plugins/init', () => {
     ]);
     const after = await fs.readFile(cfg, 'utf-8');
     expect(after).not.toBe('OLD'); // overwritten
-  }, 15000);
+  });
 
   it('auto-skips in CI-like environments when no flags are provided', async () => {
     const dir = path.posix.join(TROOT, 'case5');

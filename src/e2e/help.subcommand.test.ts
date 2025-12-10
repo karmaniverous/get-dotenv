@@ -32,7 +32,7 @@ describe('E2E help (subcommand and ordering)', () => {
     // Must end with at least one blank line for prompt separation (CRLF-safe)
     // Tolerant to chunked writes and trailing spaces.
     expect(endsWithBlankLine(stdout)).toBe(true);
-  }, 30000);
+  });
 
   it('aws -h prints aws help without global options and no self plugin group', async () => {
     const { stdout, exitCode } = await execa(nodeBin, CLI('aws', '-h'), {
@@ -51,7 +51,7 @@ describe('E2E help (subcommand and ordering)', () => {
     // Must end with at least one blank line for prompt separation (CRLF-safe)
     // Tolerant to chunked writes and trailing spaces.
     expect(endsWithBlankLine(stdout)).toBe(true);
-  }, 30000);
+  });
 
   it('cmd -h prints cmd help', async () => {
     const { stdout, exitCode } = await execa(nodeBin, CLI('cmd', '-h'), {
@@ -63,7 +63,7 @@ describe('E2E help (subcommand and ordering)', () => {
     // Must end with at least one blank line for prompt separation (CRLF-safe)
     // Tolerant to chunked writes and trailing spaces.
     expect(endsWithBlankLine(stdout)).toBe(true);
-  }, 30000);
+  });
 
   it('root -h shows plugin options before commands (hybrid ordering)', async () => {
     const { stdout, exitCode } = await execa(nodeBin, CLI('-h'), {
@@ -89,5 +89,5 @@ describe('E2E help (subcommand and ordering)', () => {
     // Must end with at least one blank line for prompt separation (CRLF-safe)
     // Tolerant to chunked writes and trailing spaces.
     expect(endsWithBlankLine(stdout)).toBe(true);
-  }, 30000);
+  });
 });

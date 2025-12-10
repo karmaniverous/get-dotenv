@@ -38,7 +38,7 @@ describe('getDotenv dynamic.ts fallback/error paths', () => {
     await fs.remove(dynTs);
     vi.unmock('esbuild');
     vi.resetModules();
-  }, 15000);
+  });
 
   it('throws a clear error when both esbuild and typescript are unavailable', async () => {
     // Force esbuild "successfully mocked" but unusable (skip to TS fallback).
@@ -73,5 +73,5 @@ describe('getDotenv dynamic.ts fallback/error paths', () => {
     await fs.remove(dynTs);
     vi.unmock('esbuild');
     vi.resetModules();
-  }, 15000);
+  });
 });

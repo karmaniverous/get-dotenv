@@ -29,7 +29,7 @@ describe('E2E CLI (core options and plugins)', () => {
     expect(exitCode).toBe(0);
     // Commander prints the version string (e.g., "5.2.6")
     expect(/^\d+\.\d+\.\d+/.test(stdout.trim())).toBe(true);
-  }, 30000);
+  });
 
   it('runs a default shell command (no --shell-off) and echoes OK', async () => {
     const { stdout, exitCode } = await execa(
@@ -41,14 +41,14 @@ describe('E2E CLI (core options and plugins)', () => {
     );
     expect(exitCode).toBe(0);
     expect(stdout.trim()).toContain('OK');
-  }, 30000);
+  });
   it('displays cli help', async () => {
     const { stdout, exitCode } = await execa(nodeBin, CLI('-h'), {
       env: { ...process.env, GETDOTENV_STDIO: 'pipe' },
     });
     expect(exitCode).toBe(0);
     expect(stdout.trim()).toContain('Usage: getdotenv [options] [command]');
-  }, 20000);
+  });
 
   it('logs env vars', async () => {
     const { stdout, exitCode } = await execa(
@@ -68,7 +68,7 @@ describe('E2E CLI (core options and plugins)', () => {
     expect(stdout.trim()).toContain(
       "{ APP_SETTING: 'deep_app_setting', ENV_SETTING: 'deep_test_setting' }",
     );
-  }, 20000);
+  });
 
   it('loads env from paths and prints via subprocess (ENV_SETTING)', async () => {
     const { stdout, exitCode } = await execa(
@@ -92,7 +92,7 @@ describe('E2E CLI (core options and plugins)', () => {
     );
     expect(exitCode).toBe(0);
     expect(stdout.trim()).toBe('deep_test_setting');
-  }, 20000);
+  });
 
   it('injects vars (-v) and prints them in subprocess', async () => {
     const { stdout, exitCode } = await execa(
@@ -110,7 +110,7 @@ describe('E2E CLI (core options and plugins)', () => {
     );
     expect(exitCode).toBe(0);
     expect(stdout.trim()).toBe('bar');
-  }, 20000);
+  });
 
   it('writes output file (-o) with merged variables', async () => {
     const out = path.posix.join(TROOT, 'cli.core.out.env');
@@ -147,7 +147,7 @@ describe('E2E CLI (core options and plugins)', () => {
     expect(parsed.ENV_SETTING).toBe('deep_test_setting');
     expect(parsed.ENV_SECRET).toBe('deep_test_secret');
     await fs.remove(out);
-  }, 20000);
+  });
 
   it('excludes private when -r/--exclude-private is set', async () => {
     const { stdout, exitCode } = await execa(
@@ -173,7 +173,7 @@ describe('E2E CLI (core options and plugins)', () => {
     expect(exitCode).toBe(0);
     // When excluded, secret should be blank.
     expect(stdout.trim()).toBe('');
-  }, 20000);
+  });
   it('executes positional cmd subcommand with --shell-off', async () => {
     const { stdout, exitCode } = await execa(
       nodeBin,
@@ -182,7 +182,7 @@ describe('E2E CLI (core options and plugins)', () => {
     );
     expect(exitCode).toBe(0);
     expect(stdout.trim()).toBe('OK');
-  }, 20000);
+  });
 
   it('batch list (-l) prints working directories', async () => {
     const { stdout, exitCode } = await execa(
@@ -193,7 +193,7 @@ describe('E2E CLI (core options and plugins)', () => {
     // Do not assert absolute paths (platform variance); look for folder names.
     expect(stdout).toMatch(/test[\\/]+full/i);
     expect(stdout).toMatch(/test[\\/]+partial/i);
-  }, 20000);
+  });
 
   it('batch exec runs a simple node process in each CWD (one target)', async () => {
     const { stdout, exitCode } = await execa(
@@ -215,5 +215,5 @@ describe('E2E CLI (core options and plugins)', () => {
     expect(exitCode).toBe(0);
     // The child prints "true" once (for the single matched path)
     expect(stdout).toMatch(/true/);
-  }, 20000);
+  });
 });
