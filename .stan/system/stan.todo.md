@@ -230,3 +230,8 @@ When updated: 2025-12-09T00:00:00Z
   - init scaffolder tests: stopped asserting CLI-name token substitution inside
     template files; now validate compose-first wiring/alias in CLI index and
     generic hello plugin content.
+
+- Helper: getRootCommand and template usage
+  - Added src/cliHost/getRootCommand.ts to return the true root Command
+    from any mount/action. Exported via cliHost barrel.
+  - Updated template hello plugin to use getRootCommand for deriving the root name.
