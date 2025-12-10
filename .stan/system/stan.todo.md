@@ -30,6 +30,17 @@ When updated: 2025-12-09T00:00:00Z
 
 **CRITICAL: Append-only list. Add new completed items at the end. Prune old completed entries from the top. Do not edit existing entries.**
 
+- createCli: compose-first, runner return, and defaults precomposition
+  - Simplified API: createCli returns the runner function directly
+    (argv?: string[]) and defaults to process.argv, slicing internally
+    when full argv is provided.
+  - Introduced compose?: (program) => program for plugin wiring; removed
+    the need to surface configureOutput/exitOverride as createCli options.
+  - Preconfigure defaults BEFORE composition so they apply via inheritance:
+    default configureOutput on the root, tests-only exitOverride, and a
+    no-op root action so root-only flows trigger hooks. compose() may
+    override any of these.
+
 - Root no-op action to trigger hooks
   - Added a no-op root action in createCli() and initializeInstance() so
     passOptions preAction hooks run for root-only flows (e.g., -l) and alias
