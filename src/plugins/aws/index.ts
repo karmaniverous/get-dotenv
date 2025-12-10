@@ -1,8 +1,10 @@
-import { definePlugin } from '@/src/cliHost/definePlugin';
-import { runCommand } from '@/src/cliHost/exec';
-import { readMergedOptions } from '@/src/cliHost/readMergedOptions';
-import { resolveShell } from '@/src/cliHost/resolve';
-import { buildSpawnEnv } from '@/src/cliHost/spawnEnv';
+import {
+  buildSpawnEnv,
+  definePlugin,
+  readMergedOptions,
+  resolveShell,
+  runCommand,
+} from '@/src/cliHost';
 
 import { applyAwsContext } from './common';
 import { resolveAwsContext } from './service';

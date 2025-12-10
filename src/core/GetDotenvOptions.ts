@@ -13,15 +13,14 @@ import { packageDirectory } from 'package-directory';
 import { join } from 'path';
 import type { z } from 'zod';
 
-import type { Scripts } from '@/src/cliHost/GetDotenvCliOptions';
 import {
   baseGetDotenvCliOptions,
   type GetDotenvCliOptions,
-} from '@/src/cliHost/GetDotenvCliOptions';
-import type { RootOptionsShape } from '@/src/cliHost/types';
-import type { getDotenvOptionsSchemaResolved } from '@/src/schema/getDotenvOptions';
-import { defaultsDeep } from '@/src/util/defaultsDeep';
-import { omitUndefinedRecord } from '@/src/util/omitUndefined';
+  type RootOptionsShape,
+  type Scripts,
+} from '@/src/cliHost/';
+import type { getDotenvOptionsSchemaResolved } from '@/src/schema';
+import { defaultsDeep, omitUndefinedRecord } from '@/src/util';
 
 export const getDotenvOptionsFilename = 'getdotenv.config.json';
 
@@ -83,6 +82,7 @@ export type DynamicFn<Vars extends Record<string, string | undefined>> = (
   vars: Vars,
   env?: string,
 ) => string | undefined;
+
 export type DynamicMap<Vars extends Record<string, string | undefined>> =
   Record<string, DynamicFn<Vars> | ReturnType<DynamicFn<Vars>>>;
 
@@ -96,14 +96,13 @@ export function defineDynamic<
   Vars extends Record<string, string | undefined>,
   T extends DynamicMap<Vars>,
 >(d: T): T;
+
 /**
  * Overload B (backward-compatible): generic over legacy GetDotenvDynamic.
  *
  * Accepts legacy GetDotenvDynamic without Vars binding.
  */
-
 export function defineDynamic<T extends GetDotenvDynamic>(d: T): T;
-// Implementation
 export function defineDynamic(d: unknown): unknown {
   return d;
 }

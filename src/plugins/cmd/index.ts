@@ -1,4 +1,4 @@
-import { definePlugin } from '@/src/cliHost/definePlugin';
+import { definePlugin } from '@/src/cliHost';
 
 import { attachDefaultCmdAction } from './defaultCmdAction';
 import { attachParentInvoker } from './parentInvoker';

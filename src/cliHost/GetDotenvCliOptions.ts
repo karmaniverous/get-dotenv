@@ -1,7 +1,7 @@
 import type { z } from 'zod';
 
-import type { Logger } from '@/src/GetDotenvOptions';
-import type { getDotenvCliOptionsSchemaResolved } from '@/src/schema/getDotenvCliOptions';
+import type { Logger } from '@/src/core';
+import type { getDotenvCliOptionsSchemaResolved } from '@/src/schema';
 
 import { baseRootOptionDefaults } from './defaults';
 import type { ScriptsTable } from './types';

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import type { RootOptionsShape } from '@/src/cliHost/types';
-import { getDotenvCliOptions2Options } from '@/src/GetDotenvOptions';
+import type { RootOptionsShape } from '@/src/cliHost';
+import { getDotenvCliOptions2Options } from '@/src/core';
 
 describe('getDotenvCliOptions2Options (compat)', () => {
   it('accepts object vars and array paths', () => {

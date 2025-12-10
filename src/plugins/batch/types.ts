@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import type { ScriptsTable } from '@/src/cliHost/types';
+import type { ScriptsTable } from '@/src/cliHost';
 
 export type BatchPluginOptions = {
   scripts?: ScriptsTable;

@@ -1,6 +1,6 @@
 import { execa, execaCommand } from 'execa';
 
-import { tokenize } from '@/src/plugins/cmd/tokenize';
+import { tokenize } from '@/src/util';
 
 const dbg = (...args: unknown[]) => {
   if (process.env.GETDOTENV_DEBUG) {

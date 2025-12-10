@@ -2,7 +2,7 @@
  * Apply resolved AWS context to process.env and ctx.plugins.
  * Centralizes duplicated logic between action and afterResolve.
  */
-import type { GetDotenvCliCtx } from '@/src/cliHost/GetDotenvCli';
+import type { GetDotenvCliCtx } from '@/src/cliHost';
 
 import type { AwsContext } from './types';
 

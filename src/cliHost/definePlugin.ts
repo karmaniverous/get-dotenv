@@ -7,9 +7,9 @@
 import type { Command, OptionValues } from '@commander-js/extra-typings';
 import { z, type ZodObject } from 'zod';
 
-import { getPluginConfig } from '@/src/cliHost/computeContext';
-import type { GetDotenvOptions } from '@/src/GetDotenvOptions';
+import type { GetDotenvOptions } from '@/src/core';
 
+import { getPluginConfig } from './computeContext';
 import type {
   DefineSpec,
   GetDotenvCliPlugin,

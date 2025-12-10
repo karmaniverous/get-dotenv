@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import type { Scripts } from '@/src/cliHost/GetDotenvCliOptions';
+import type { Scripts } from '@/src/cliHost';
 
 /**
  * Zod schemas for configuration files discovered by the new loader.

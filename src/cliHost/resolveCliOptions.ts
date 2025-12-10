@@ -1,4 +1,4 @@
-import { defaultsDeep } from '@/src/util/defaultsDeep';
+import { defaultsDeep } from '@/src/util';
 
 import {
   resolveExclusion,

@@ -1,9 +1,12 @@
 import type { CommandUnknownOpts } from '@commander-js/extra-typings';
 
-import type { GetDotenvCliPublic } from '@/src/cliHost/contracts';
-import type { definePlugin } from '@/src/cliHost/definePlugin';
-import { readMergedOptions } from '@/src/cliHost/readMergedOptions';
-import { resolveCommand, resolveShell } from '@/src/cliHost/resolve';
+import {
+  type definePlugin,
+  type GetDotenvCliPublic,
+  readMergedOptions,
+  resolveCommand,
+  resolveShell,
+} from '@/src/cliHost';
 
 import { execShellCommandBatch } from './execShellCommandBatch';
 import type { BatchPluginOptions } from './types';

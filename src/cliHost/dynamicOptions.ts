@@ -1,10 +1,9 @@
 /** src/cliHost/GetDotenvCli/dynamicOptions.ts
  * Helpers for dynamic option descriptions and evaluation.
  */
-import type { CommandUnknownOpts, Option } from '@commander-js/extra-typings';
-import { Option as CommanderOption } from '@commander-js/extra-typings';
+import { type CommandUnknownOpts, Option } from '@commander-js/extra-typings';
 
-import type { GetDotenvCliOptions } from '@/src/cliHost/GetDotenvCliOptions';
+import type { GetDotenvCliOptions } from './GetDotenvCliOptions';
 
 export type ResolvedHelpConfigLite = Partial<GetDotenvCliOptions> & {
   plugins: Record<string, unknown>;
@@ -25,7 +24,7 @@ export function makeDynamicOption<Usage extends string>(
   parser?: (value: string, previous?: unknown) => unknown,
   defaultValue?: unknown,
 ): Option<Usage> {
-  const opt = new CommanderOption(flags, '');
+  const opt = new Option(flags, '');
   DYN_DESC.set(opt, desc);
   if (parser) {
     opt.argParser((value, previous) => parser(value, previous));

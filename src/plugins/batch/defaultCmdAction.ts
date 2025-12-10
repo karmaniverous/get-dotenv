@@ -1,10 +1,12 @@
 import type { Command, CommandUnknownOpts } from '@commander-js/extra-typings';
 
-import type { GetDotenvCliPublic } from '@/src/cliHost/contracts';
-import type { definePlugin } from '@/src/cliHost/definePlugin';
-import { readMergedOptions } from '@/src/cliHost/readMergedOptions';
-import { resolveCommand, resolveShell } from '@/src/cliHost/resolve';
-import type { Logger } from '@/src/GetDotenvOptions';
+import {
+  type definePlugin,
+  type GetDotenvCliPublic,
+  readMergedOptions,
+  resolveCommand,
+  resolveShell,
+} from '@/src/cliHost';
 
 import { execShellCommandBatch } from './execShellCommandBatch';
 import type { BatchConfig, BatchPluginOptions } from './types';
@@ -25,9 +27,8 @@ export const attachDefaultCmdAction = (
       _subOpts: {},
       thisCommand: CommandUnknownOpts,
     ) => {
-      // Inherit logger from the merged root options bag
-      const mergedForLogger = readMergedOptions(batchCmd);
-      const loggerLocal: Logger = mergedForLogger.logger;
+      const mergedBag = readMergedOptions(batchCmd);
+      const logger = mergedBag.logger;
 
       // Guard: when invoked without positional args (e.g., `batch --list`), defer to parent.
       const args = commandParts.map(String);
@@ -72,7 +73,6 @@ export const attachDefaultCmdAction = (
 
       // Resolve scripts/shell with precedence:
       // plugin opts → plugin config → merged root CLI options
-      const mergedBag = readMergedOptions(batchCmd);
       const scripts =
         pluginOpts.scripts ?? cfg.scripts ?? mergedBag.scripts ?? undefined;
       const shell = pluginOpts.shell ?? cfg.shell ?? mergedBag.shell;
@@ -88,7 +88,7 @@ export const attachDefaultCmdAction = (
             globs,
             ignoreErrors,
             list: false,
-            logger: loggerLocal,
+            logger,
             ...(pkgCwd ? { pkgCwd } : {}),
             rootPath,
             shell: resolveShell(scripts, commandOpt, shell),
@@ -97,7 +97,7 @@ export const attachDefaultCmdAction = (
         }
         if (g.list) {
           // Resolve shell fallback to a concrete value (never undefined)
-          const rootShell = readMergedOptions(batchCmd).shell;
+          const rootShell = mergedBag.shell;
           const listShell: string | boolean =
             shell !== undefined
               ? shell
@@ -108,7 +108,7 @@ export const attachDefaultCmdAction = (
             globs,
             ignoreErrors,
             list: true,
-            logger: loggerLocal,
+            logger,
             ...(pkgCwd ? { pkgCwd } : {}),
             rootPath,
             shell: listShell,
@@ -116,7 +116,7 @@ export const attachDefaultCmdAction = (
           return;
         }
         {
-          loggerLocal.error('No command provided. Use --command or --list.');
+          logger.error('No command provided. Use --command or --list.');
         }
         process.exit(0);
       }
@@ -136,9 +136,8 @@ export const attachDefaultCmdAction = (
           | undefined
       )?.getDotenvCliOptions;
 
-      const bag = readMergedOptions(batchCmd);
-      const scriptsExec = scripts ?? bag.scripts ?? undefined;
-      const shellExec = shell ?? bag.shell;
+      const scriptsExec = scripts ?? mergedBag.scripts ?? undefined;
+      const shellExec = shell ?? mergedBag.shell;
       const resolved = resolveCommand(scriptsExec, input);
       const shellSetting = resolveShell(scriptsExec, input, shellExec);
 
@@ -161,7 +160,7 @@ export const attachDefaultCmdAction = (
         globs,
         ignoreErrors,
         list: false,
-        logger: loggerLocal,
+        logger,
         ...(pkgCwd ? { pkgCwd } : {}),
         rootPath,
         shell: shellSetting,

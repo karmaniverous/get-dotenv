@@ -6,12 +6,16 @@
  * - Refresh dynamic help.
  * - Validate composed env (warn or --strict fail).
  */
-import { resolveGetDotenvConfigSources } from '@/src/config/loader';
-import { validateEnvAgainstSources } from '@/src/config/validate';
-import type { RootOptionsShapeCompat } from '@/src/GetDotenvOptions';
-import type { GetDotenvOptions } from '@/src/GetDotenvOptions';
-import { getDotenvCliOptions2Options } from '@/src/GetDotenvOptions';
-import { defaultsDeep } from '@/src/util/defaultsDeep';
+import {
+  resolveGetDotenvConfigSources,
+  validateEnvAgainstSources,
+} from '@/src/config';
+import {
+  getDotenvCliOptions2Options,
+  type GetDotenvOptions,
+  type RootOptionsShapeCompat,
+} from '@/src/core';
+import { defaultsDeep } from '@/src/util';
 
 import { baseRootOptionDefaults } from './defaults';
 import type { GetDotenvCli } from './GetDotenvCli';

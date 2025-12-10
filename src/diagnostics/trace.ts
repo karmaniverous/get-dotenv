@@ -2,11 +2,13 @@
  * Trace child env composition with redaction and entropy warnings.
  * Presentation-only: does not mutate env; writes lines via provided sink.
  */
-import type { EntropyOptions } from '@/src/diagnostics/entropy';
-import { maybeWarnEntropy } from '@/src/diagnostics/entropy';
-import type { RedactOptions } from '@/src/diagnostics/redact';
-import { redactTriple } from '@/src/diagnostics/redact';
-import type { ProcessEnv } from '@/src/GetDotenvOptions';
+import type { ProcessEnv } from '@/src/core';
+import {
+  type EntropyOptions,
+  maybeWarnEntropy,
+  type RedactOptions,
+  redactTriple,
+} from '@/src/diagnostics';
 
 export function traceChildEnv(opts: {
   parentEnv: ProcessEnv;

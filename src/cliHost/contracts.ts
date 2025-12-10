@@ -11,11 +11,9 @@ import type {
 } from '@commander-js/extra-typings';
 import type { ZodObject } from 'zod';
 
-import type {
-  GetDotenvCliCtx,
-  ResolvedHelpConfig,
-} from '@/src/cliHost/GetDotenvCli';
-import type { GetDotenvOptions } from '@/src/GetDotenvOptions';
+import type { GetDotenvOptions } from '@/src/core';
+
+import type { GetDotenvCliCtx, ResolvedHelpConfig } from './GetDotenvCli';
 
 /**
  * Structural public interface for the host exposed to plugins.

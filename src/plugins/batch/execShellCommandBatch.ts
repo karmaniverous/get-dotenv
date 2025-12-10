@@ -2,10 +2,8 @@ import { globby } from 'globby';
 import { packageDirectory } from 'package-directory';
 import path from 'path';
 
-import { runCommand } from '@/src/cliHost/exec';
-import { composeNestedEnv } from '@/src/cliHost/invoke';
-import { buildSpawnEnv } from '@/src/cliHost/spawnEnv';
-import type { Logger } from '@/src/GetDotenvOptions';
+import { buildSpawnEnv, composeNestedEnv, runCommand } from '@/src/cliHost';
+import type { Logger } from '@/src/core';
 
 type ExecShellCommandBatchOptions = {
   globs: string;

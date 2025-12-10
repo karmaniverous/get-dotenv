@@ -181,7 +181,7 @@ const config: RollupOptions[] = [
   // env overlay subpath
   {
     ...commonInputOptions,
-    input: 'src/env/overlay.ts',
+    input: 'src/env/index.ts',
     output: [
       {
         extend: true,
@@ -290,7 +290,7 @@ const config: RollupOptions[] = [
   // Types: env-overlay
   {
     ...commonInputOptions,
-    input: 'src/env/overlay.ts',
+    input: 'src/env/index.ts',
     plugins: [
       aliasPlugin({ entries: commonAliases }),
       ...commonPlugins,

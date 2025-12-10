@@ -2,26 +2,26 @@
 import type { OptionValues } from '@commander-js/extra-typings';
 import path from 'path';
 
-import { resolveGetDotenvConfigSources } from '@/src/config/loader';
-import { overlayEnv } from '@/src/env/overlay';
-import { getDotenv } from '@/src/getDotenv';
-import type { ProcessEnv } from '@/src/GetDotenvOptions';
+import { resolveGetDotenvConfigSources } from '@/src/config';
+import { overlayEnv, applyDynamicMap, loadAndApplyDynamic } from '@/src/env';
 import {
+  getDotenv,
   type GetDotenvDynamic,
   type GetDotenvOptions,
   type Logger,
   resolveGetDotenvOptions,
-} from '@/src/GetDotenvOptions';
-import { getDotenvOptionsSchemaResolved } from '@/src/schema/getDotenvOptions';
-import { defaultsDeep } from '@/src/util/defaultsDeep';
-import { interpolateDeep } from '@/src/util/interpolateDeep';
-import { omitUndefined } from '@/src/util/omitUndefined';
-import { applyDynamicMap, loadAndApplyDynamic } from '@/src/env/dynamic';
-import { writeDotenvFile } from '@/src/util/dotenvFile';
-import { flattenPluginTreeByPath } from '@/src/cliHost/paths';
+} from '@/src/core';
+import { getDotenvOptionsSchemaResolved } from '@/src/schema';
+import {
+  defaultsDeep,
+  interpolateDeep,
+  omitUndefined,
+  writeDotenvFile,
+} from '@/src/util';
 
 import type { GetDotenvCliPlugin } from './contracts';
 import type { GetDotenvCliCtx } from './GetDotenvCli';
+import { flattenPluginTreeByPath } from './paths';
 
 /**
  * Instance-bound plugin config store.

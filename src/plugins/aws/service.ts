@@ -1,5 +1,5 @@
-import { runCommandResult } from '@/src/cliHost/exec';
-import type { ProcessEnv } from '@/src/GetDotenvOptions';
+import { runCommandResult } from '@/src/cliHost';
+import type { ProcessEnv } from '@/src/core';
 
 import type { AwsContext, AwsCredentials, AwsPluginConfig } from './types';
 

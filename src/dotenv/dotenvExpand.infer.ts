@@ -1,7 +1,7 @@
 /** src/types/infer.dotenvExpandAll.ts
  * Compile-only sample to assert dotenvExpandAll key-preserving return type.
  */
-import { dotenvExpandAll } from '@/src/dotenvExpand';
+import { dotenvExpandAll } from './dotenvExpand';
 
 const input = {
   A: '1' as string,

@@ -3,7 +3,7 @@
  */
 import type { OptionValues } from '@commander-js/extra-typings';
 
-import type { GetDotenvOptions } from '@/src/GetDotenvOptions';
+import type { GetDotenvOptions } from '@/src/core';
 
 import type { GetDotenvCliPlugin, GetDotenvCliPublic } from './contracts';
 

@@ -3,11 +3,8 @@
  */
 import type { OptionValues } from '@commander-js/extra-typings';
 
-import {
-  type GetDotenvOptions,
-  resolveGetDotenvOptions,
-} from '@/src/GetDotenvOptions';
-import { getDotenvOptionsSchemaResolved } from '@/src/schema/getDotenvOptions';
+import { type GetDotenvOptions, resolveGetDotenvOptions } from '@/src/core';
+import { getDotenvOptionsSchemaResolved } from '@/src/schema';
 
 import { computeContext } from './computeContext';
 import type { GetDotenvCliPlugin } from './contracts';

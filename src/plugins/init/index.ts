@@ -10,8 +10,7 @@ import fs from 'fs-extra';
 import path from 'path';
 import { createInterface } from 'readline/promises';
 
-import { definePlugin } from '@/src/cliHost/definePlugin';
-import { readMergedOptions } from '@/src/cliHost/readMergedOptions';
+import { definePlugin, readMergedOptions } from '@/src/cliHost';
 
 import { copyTextFile, ensureLines } from './io';
 import { planCliCopies, planConfigCopies } from './plan';

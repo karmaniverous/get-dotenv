@@ -8,8 +8,8 @@
  */
 import fs from 'fs-extra';
 
-import type { GetDotenvDynamic, ProcessEnv } from '@/src/GetDotenvOptions';
-import { loadModuleDefault } from '@/src/util/loadModuleDefault';
+import type { GetDotenvDynamic, ProcessEnv } from '@/src/core';
+import { loadModuleDefault } from '@/src/util';
 
 /**
  * Apply a dynamic map to the target progressively.

@@ -5,19 +5,19 @@
  * - Preserves Node -e argv under shell-off
  * - Normalizes child env and honors capture
  */
-import type { GetDotenvCliPublic } from '@/src/cliHost/contracts';
-import { runCommand } from '@/src/cliHost/exec';
-import type { GetDotenvCliOptions } from '@/src/cliHost/GetDotenvCliOptions';
 import {
+  buildSpawnEnv,
   composeNestedEnv,
+  type GetDotenvCliOptions,
+  type GetDotenvCliPublic,
   maybePreserveNodeEvalArgv,
+  resolveCommand,
+  resolveShell,
+  runCommand,
   stripOne,
-} from '@/src/cliHost/invoke';
-import { resolveCommand, resolveShell } from '@/src/cliHost/resolve';
-import { buildSpawnEnv } from '@/src/cliHost/spawnEnv';
-import { traceChildEnv } from '@/src/diagnostics/trace';
-
-import { tokenize } from './tokenize';
+} from '@/src/cliHost';
+import { traceChildEnv } from '@/src/diagnostics';
+import { tokenize } from '@/src/util';
 
 export async function runCmdWithContext(
   cli: GetDotenvCliPublic,

@@ -8,7 +8,7 @@ import {
   type GetDotenvConfigResolved,
   getDotenvConfigSchemaRaw,
   getDotenvConfigSchemaResolved,
-} from '@/src/schema/getDotenvConfig';
+} from '@/src/schema';
 
 // Discovery candidates (first match wins per scope/privacy).
 // Order preserves historical JSON/YAML precedence; JS/TS added afterwards.

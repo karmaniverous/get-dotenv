@@ -1,7 +1,6 @@
 import type { CommandUnknownOpts } from '@commander-js/extra-typings';
 
-import type { GetDotenvCliPublic } from '@/src/cliHost/contracts';
-import { readMergedOptions } from '@/src/cliHost/readMergedOptions';
+import { type GetDotenvCliPublic, readMergedOptions } from '@/src/cliHost';
 
 import { runCmdWithContext } from './runner';
 

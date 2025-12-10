@@ -3,7 +3,7 @@
  * Shared by the generator path and the batch plugin to avoid circular deps.
  */
 
-import type { ScriptsTable } from '@/src/cliHost/types';
+import type { ScriptsTable } from './types';
 
 /**
  * Resolve a command string from the {@link ScriptsTable} table.

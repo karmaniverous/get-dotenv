@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { type OverlayConfigSources, overlayEnv } from './overlay';
+import { type OverlayConfigSources, overlayEnv } from './overlayEnv';
 
 describe('env/overlay', () => {
   it('applies precedence: base < packaged < project (public < local) and env > global', () => {

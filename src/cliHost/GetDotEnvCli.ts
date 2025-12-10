@@ -1,14 +1,13 @@
-import type { Option } from '@commander-js/extra-typings';
-import type {
-  CommandUnknownOpts,
-  InferCommandArguments,
-  OptionValues,
+import {
+  Command,
+  type CommandUnknownOpts,
+  type InferCommandArguments,
+  type Option,
+  type OptionValues,
 } from '@commander-js/extra-typings';
-import { Command } from '@commander-js/extra-typings';
 
 // Added: helpers and types for root wiring and validation
-import type { ProcessEnv } from '@/src/GetDotenvOptions';
-import { type GetDotenvOptions } from '@/src/GetDotenvOptions';
+import type { GetDotenvOptions, ProcessEnv } from '@/src/core';
 
 // New: small helpers to keep the class lean
 import { attachRootOptions as attachRootOptionsBuilder } from './attachRootOptions';

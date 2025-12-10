@@ -1,7 +1,7 @@
 /** src/cliHost/invoke.ts
  * Shared helpers for composing child env overlays and preserving argv for Node -e.
  */
-import type { GetDotenvCliOptions } from '@/src/cliHost/GetDotenvCliOptions';
+import type { GetDotenvCliOptions } from './GetDotenvCliOptions';
 
 /**
  * Compose a child-process env overlay from dotenv and the merged CLI options bag.

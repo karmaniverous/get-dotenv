@@ -1,7 +1,7 @@
 /** src/types/infer.overlayEnv.ts
  * Compile-only sample to assert overlayEnv key-preserving return types.
  */
-import { overlayEnv } from '@/src/env/overlay';
+import { overlayEnv } from '@/src/env/overlayEnv';
 
 type B = { A?: string; BASE?: string };
 const base: B = { A: 'a' };

@@ -18,8 +18,7 @@
       "src/diagnostics/**",
       "src/e2e/**",
       "src/env/**",
-      "src/schema/**",
-      "src/types/**"
+      "src/schema/**"
     ],
     "include": ["src/config/index.ts"]
   },

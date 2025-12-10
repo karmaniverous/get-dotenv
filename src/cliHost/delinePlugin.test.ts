@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import { GetDotenvCli } from '@/src/cliHost';
-import { definePlugin } from '@/src/cliHost/definePlugin';
+import { definePlugin } from './definePlugin';
+import { GetDotenvCli } from './GetDotenvCli';
 
 describe('cliHost/definePlugin helpers', () => {
   it('sibling uniqueness: throws on duplicate child ns under same parent', () => {

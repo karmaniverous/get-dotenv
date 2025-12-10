@@ -1,4 +1,4 @@
-import type { ProcessEnv } from './GetDotenvOptions';
+import type { ProcessEnv } from '@/src/core';
 
 /**
  * Dotenv expansion utilities.

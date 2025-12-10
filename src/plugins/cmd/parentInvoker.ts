@@ -1,18 +1,19 @@
 import type { CommandUnknownOpts } from '@commander-js/extra-typings';
 
-import type {
-  GetDotenvCliPublic,
-  PluginWithInstanceHelpers,
-} from '@/src/cliHost/contracts';
 import {
   baseGetDotenvCliOptions,
   type GetDotenvCliOptions,
-} from '@/src/cliHost/GetDotenvCliOptions';
-import { resolveCliOptions } from '@/src/cliHost/resolveCliOptions';
-import type { RootOptionsShape, ScriptsTable } from '@/src/cliHost/types';
-import { dotenvExpandFromProcessEnv } from '@/src/dotenvExpand';
-import type { RootOptionsShapeCompat } from '@/src/GetDotenvOptions';
-import { getDotenvCliOptions2Options } from '@/src/GetDotenvOptions';
+  type GetDotenvCliPublic,
+  type PluginWithInstanceHelpers,
+  resolveCliOptions,
+  type RootOptionsShape,
+  type ScriptsTable,
+} from '@/src/cliHost';
+import {
+  getDotenvCliOptions2Options,
+  type RootOptionsShapeCompat,
+} from '@/src/core';
+import { dotenvExpandFromProcessEnv } from '@/src/dotenv';
 
 import { runCmdWithContext } from './runner';
 import type { CmdPluginOptions } from './types';
