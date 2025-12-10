@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { createCli } from '@karmaniverous/get-dotenv';
+import { createCli } from '@karmaniverous/get-dotenv/cli';
 
 import {
   awsPlugin,

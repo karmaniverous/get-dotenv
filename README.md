@@ -170,7 +170,7 @@ Prefer the named factory when you want to embed the get‑dotenv CLI in your own
 
 ```ts
 #!/usr/bin/env node
-import { createCli } from '@karmaniverous/get-dotenv';
+import { createCli } from '@karmaniverous/get-dotenv/cli';
 
 // Build a CLI and run with your argv; alias appears in help.
 await createCli({
@@ -191,7 +191,7 @@ Notes:
 - Interop matrix (embedding in different module systems):
   - ESM dynamic:
     ```ts
-    const { createCli } = await import('@karmaniverous/get-dotenv');
+    const { createCli } = await import('@karmaniverous/get-dotenv/cli');
     await createCli({ alias: 'mycli' }).run(['-h']);
     ```
   - CommonJS require (using built outputs for smoke checks):

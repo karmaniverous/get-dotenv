@@ -3,10 +3,8 @@
     "allowSyntheticDefaultImports": true,
     "baseUrl": ".",
     "paths": {
-      "@karmaniverous/get-dotenv": ["src/index.ts"],
       "@/*": ["*"],
-      "@karmaniverous/get-dotenv/cliHost": ["src/cliHost/index.ts"],
-      "@karmaniverous/get-dotenv/plugins": ["src/plugins/index.ts"]
+      "@karmaniverous/get-dotenv/cli": ["src/cli/index.ts"]
     },
     "rootDir": ".",
     "emitDeclarationOnly": false,

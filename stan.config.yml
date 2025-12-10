@@ -25,7 +25,9 @@ stan-cli:
     docs:
       script: npm run docs -- --emit none
       warnPattern: \\[warning\\]
-    knip: npm run knip
+    knip:
+      script: npm run knip
+      warnPattern: Configuration hints
     verify-types: npm run verify:types
     verify-smoke: npm run verify:smoke
     verify-package: npm run verify:package

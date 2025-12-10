@@ -1,3 +1,5 @@
+// Avoid JSON import assertions; read and type package.json
+import type { Dirent } from 'node:fs';
 import { builtinModules } from 'node:module';
 
 import type { Alias } from '@rollup/plugin-alias';
@@ -10,7 +12,6 @@ import fs from 'fs-extra';
 import type { InputOptions, RollupOptions } from 'rollup';
 import copy from 'rollup-plugin-copy';
 import dtsPlugin from 'rollup-plugin-dts';
-// Avoid JSON import assertions; read and type package.json
 
 const outputPath = `dist`;
 // Configure the TS plugin explicitly for Rollup builds:
@@ -69,7 +70,16 @@ const commonInputOptions: InputOptions = {
   external,
   plugins: [aliasPlugin({ entries: commonAliases }), ...commonPlugins],
 };
-const cliCommands = await fs.readdir('src/cli');
+// Only treat subdirectories in src/cli as CLI binaries (e.g., "getdotenv").
+// Files like "createCli.ts" or "index.ts" are NOT CLI commands.
+const cliEntries: Dirent[] = (await fs.readdir('src/cli', {
+  withFileTypes: true,
+})) as unknown as Dirent[];
+const cliCommands = cliEntries
+  .filter((e) =>
+    typeof e.isDirectory === 'function' ? e.isDirectory() : false,
+  )
+  .map((e) => e.name);
 const config: RollupOptions[] = [
   // ESM outputs.
   {
@@ -78,6 +88,20 @@ const config: RollupOptions[] = [
       {
         extend: true,
         file: `${outputPath}/index.mjs`,
+        format: 'esm',
+        inlineDynamicImports: true,
+      },
+    ],
+  },
+
+  // cli subpath (ESM)
+  {
+    ...commonInputOptions,
+    input: 'src/cli/index.ts',
+    output: [
+      {
+        extend: true,
+        file: `${outputPath}/cli.mjs`,
         format: 'esm',
         inlineDynamicImports: true,
       },
@@ -221,6 +245,19 @@ const config: RollupOptions[] = [
       { extend: true, file: `${outputPath}/cliHost.d.ts`, format: 'esm' },
     ],
   },
+
+  // Types: cli subpath
+  {
+    ...commonInputOptions,
+    input: 'src/cli/index.ts',
+    plugins: [
+      aliasPlugin({ entries: commonAliases }),
+      ...commonPlugins,
+      dtsPlugin({ tsconfig: './tsconfig.base.json' }),
+    ],
+    output: [{ extend: true, file: `${outputPath}/cli.d.ts`, format: 'esm' }],
+  },
+
   // Types: plugins-batch
   {
     ...commonInputOptions,

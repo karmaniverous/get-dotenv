@@ -234,4 +234,10 @@ When updated: 2025-12-09T00:00:00Z
 - Helper: getRootCommand and template usage
   - Added src/cliHost/getRootCommand.ts to return the true root Command
     from any mount/action. Exported via cliHost barrel.
-  - Updated template hello plugin to use getRootCommand for deriving the root name.
+  - Updated template hello plugin to use getRootCommand for deriving the root name.
+
+- Subpath CLI export and build outputs
+  - Added optional package.json export "./cli" → dist/cli.mjs with types at dist/cli.d.ts.
+  - Updated Rollup to emit dist/cli.mjs and dist/cli.d.ts from src/cli/index.ts.
+  - Adjusted CLI binary enumeration to include only subdirectories under src/cli (prevents files like createCli.ts from being treated as commands).
+  - Updated templates (and README examples) to prefer importing createCli from '@karmaniverous/get-dotenv/cli' while keeping the root export available.

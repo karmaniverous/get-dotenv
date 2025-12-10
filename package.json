@@ -79,6 +79,12 @@
         "default": "./dist/index.mjs"
       }
     },
+    "./cli": {
+      "import": {
+        "types": "./dist/cli.d.ts",
+        "default": "./dist/cli.mjs"
+      }
+    },
     "./cliHost": {
       "import": {
         "types": "./dist/cliHost.d.ts",
