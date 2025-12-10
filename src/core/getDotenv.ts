@@ -2,13 +2,6 @@ import { nanoid } from 'nanoid';
 import path from 'path';
 
 import {
-  type GetDotenvDynamic,
-  type GetDotenvOptions,
-  type ProcessEnv,
-  readDotenv,
-  resolveGetDotenvOptions,
-} from '@/src/core';
-import {
   type EntropyOptions,
   maybeWarnEntropy,
   redactObject,
@@ -17,6 +10,13 @@ import {
 import { dotenvExpandAll } from '@/src/dotenv';
 import { applyDynamicMap, loadAndApplyDynamic } from '@/src/env';
 import { writeDotenvFile } from '@/src/util';
+
+import type { GetDotenvOptions, ProcessEnv } from './GetDotenvOptions';
+import {
+  type GetDotenvDynamic,
+  resolveGetDotenvOptions,
+} from './GetDotenvOptions';
+import { readDotenv } from './readDotenv';
 
 /**
  * Asynchronously process dotenv files of the form `.env[.<ENV>][.<PRIVATE_TOKEN>]`

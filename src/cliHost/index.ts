@@ -5,7 +5,7 @@ export type {
   InferPluginConfig,
   PluginWithInstanceHelpers,
 } from './contracts';
-export { createCli, type CreateCliOptions } from './createCli';
+export { baseRootOptionDefaults } from './defaults';
 export { definePlugin } from './definePlugin';
 export { runCommand, runCommandResult } from './exec';
 export { GetDotenvCli, type GetDotenvCliCtx } from './GetDotenvCli';
@@ -15,6 +15,7 @@ export {
   type Scripts,
 } from './GetDotenvCliOptions';
 export { getRootCommand } from './getRootCommand';
+export { toHelpConfig } from './helpConfig';
 export {
   composeNestedEnv,
   maybePreserveNodeEvalArgv,

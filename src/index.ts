@@ -1,7 +1,6 @@
+export { createCli, type CreateCliOptions } from './cli';
 export {
   buildSpawnEnv,
-  createCli,
-  type CreateCliOptions,
   definePlugin,
   defineScripts,
   GetDotenvCli,

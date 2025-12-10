@@ -3,12 +3,9 @@
  * Presentation-only: does not mutate env; writes lines via provided sink.
  */
 import type { ProcessEnv } from '@/src/core';
-import {
-  type EntropyOptions,
-  maybeWarnEntropy,
-  type RedactOptions,
-  redactTriple,
-} from '@/src/diagnostics';
+
+import { type EntropyOptions, maybeWarnEntropy } from './entropy';
+import { type RedactOptions, redactTriple } from './redact';
 
 export function traceChildEnv(opts: {
   parentEnv: ProcessEnv;

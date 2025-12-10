@@ -1,16 +1,18 @@
 import {
+  baseRootOptionDefaults,
+  GetDotenvCli,
+  resolveCliOptions,
+  type RootOptionsShape,
+  type ScriptsTable,
+  toHelpConfig,
+} from '@/src/cliHost';
+import {
   awsPlugin,
   awsWhoamiPlugin,
   batchPlugin,
   cmdPlugin,
   initPlugin,
 } from '@/src/plugins';
-
-import { baseRootOptionDefaults } from './defaults';
-import { GetDotenvCli } from './GetDotenvCli';
-import { toHelpConfig } from './helpConfig';
-import { resolveCliOptions } from './resolveCliOptions';
-import type { RootOptionsShape, ScriptsTable } from './types';
 
 /**
  * Create a get-dotenv CLI host with included plugins.
