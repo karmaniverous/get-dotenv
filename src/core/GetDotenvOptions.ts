@@ -13,12 +13,13 @@ import { packageDirectory } from 'package-directory';
 import { join } from 'path';
 import type { z } from 'zod';
 
-import {
-  baseGetDotenvCliOptions,
-  type GetDotenvCliOptions,
-  type RootOptionsShape,
-  type Scripts,
-} from '@/src/cliHost/';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import type { baseGetDotenvCliOptions } from '@/src/cliHost';
+import type {
+  RootOptionsShape,
+  ScriptsTable as Scripts,
+} from '@/src/cliHost/types';
+import { baseRootOptionDefaults } from '@/src/defaults';
 import type { getDotenvOptionsSchemaResolved } from '@/src/schema';
 import { defaultsDeep, omitUndefinedRecord } from '@/src/util';
 
@@ -246,13 +247,13 @@ export const resolveGetDotenvOptions = async (
     : undefined;
 
   // Safely read local CLI-facing defaults (defensive typing to satisfy strict linting).
-  let localOptions: Partial<GetDotenvCliOptions> = {};
+  let localOptions: Partial<RootOptionsShape> = {};
   if (localOptionsPath && (await fs.exists(localOptionsPath))) {
     try {
       const txt = await fs.readFile(localOptionsPath, 'utf-8');
       const parsed = JSON.parse(txt) as unknown;
       if (parsed && typeof parsed === 'object') {
-        localOptions = parsed as Partial<GetDotenvCliOptions>;
+        localOptions = parsed as Partial<RootOptionsShape>;
       }
     } catch {
       // Malformed or unreadable local options are treated as absent.
@@ -260,14 +261,15 @@ export const resolveGetDotenvOptions = async (
     }
   }
 
-  // Merge order: base < local < custom (custom has highest precedence)
-  const mergedCli = defaultsDeep(
-    baseGetDotenvCliOptions,
+  // Merge order for defaults: base (neutral) < local (project)
+  // Use neutral defaults to avoid a core -> cliHost back-edge at runtime.
+  const mergedDefaults = defaultsDeep(
+    baseRootOptionDefaults as Partial<RootOptionsShape>,
     localOptions,
-  ) as unknown as GetDotenvCliOptions;
+  ) as Partial<RootOptionsShape>;
 
   const defaultsFromCli = getDotenvCliOptions2Options(
-    mergedCli as unknown as RootOptionsShapeCompat,
+    mergedDefaults as unknown as RootOptionsShapeCompat,
   );
 
   const result = defaultsDeep(

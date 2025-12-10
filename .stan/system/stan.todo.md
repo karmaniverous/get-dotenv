@@ -240,4 +240,10 @@ When updated: 2025-12-09T00:00:00Z
   - Added optional package.json export "./cli" → dist/cli.mjs with types at dist/cli.d.ts.
   - Updated Rollup to emit dist/cli.mjs and dist/cli.d.ts from src/cli/index.ts.
   - Adjusted CLI binary enumeration to include only subdirectories under src/cli (prevents files like createCli.ts from being treated as commands).
-  - Updated templates (and README examples) to prefer importing createCli from '@karmaniverous/get-dotenv/cli' while keeping the root export available.
+  - Updated templates (and README examples) to prefer importing createCli from '@karmaniverous/get-dotenv/cli' while keeping the root export available.
+
+- Core/runtime cycle removal
+  - Eliminated the core ↔ cliHost circular dependency by removing the runtime
+    import of baseGetDotenvCliOptions from the host barrel in
+    src/core/GetDotenvOptions.ts. Core now imports neutral defaults from
+    src/defaults (baseRootOptionDefaults) and uses type-only imports from cliHost/types. Behavior unchanged.
