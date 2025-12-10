@@ -52,7 +52,7 @@ describe('plugins/init', () => {
     expect(await fs.pathExists(hello)).toBe(true);
     // validate token substitution coverage across skeleton files
     const helloTxt = await fs.readFile(hello, 'utf-8');
-    expect(helloTxt).toMatch(/acme/);
+    expect(helloTxt).toMatch(/Say hello with current dotenv context/i);
   }, 15000);
 
   it('idempotence with --yes (skip)', async () => {
@@ -118,8 +118,10 @@ describe('plugins/init', () => {
     );
     expect(await fs.pathExists(cliIndex)).toBe(true);
     expect(await fs.pathExists(hello)).toBe(true);
-    await expect(fs.readFile(cliIndex, 'utf-8')).resolves.toMatch(/case3/);
-    await expect(fs.readFile(hello, 'utf-8')).resolves.toMatch(/case3/);
+    // Compose-first template with fixed alias; validate wiring and alias.
+    await expect(fs.readFile(cliIndex, 'utf-8')).resolves.toMatch(/createCli\(/);
+    await expect(fs.readFile(cliIndex, 'utf-8')).resolves.toMatch(/alias:\s*'mycli'/);
+    await expect(fs.readFile(hello, 'utf-8')).resolves.toMatch(/Say hello with current dotenv context/i);
   }, 15000);
   it('forces overwrite in non-interactive/CI scenarios (force precedence)', async () => {
     const dir = path.posix.join(TROOT, 'case4');

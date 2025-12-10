@@ -220,4 +220,13 @@ When updated: 2025-12-09T00:00:00Z
   - Fixed smoke script to route command payloads via the cmd subcommand for steps 1–3.
   - Resolved Rollup multi-chunk error by enabling inlineDynamicImports on all ESM outputs.
   - Removed legacy "demo" plugin expectations from verify-package and verify-tarball,
-    and limited verify-bundle import checks to cliHost.mjs.
+    and limited verify-bundle import checks to cliHost.mjs.
+
+- Type tooling and scaffolder tests
+  - tsconfig.json: removed local "paths" override to inherit complete mappings
+    from tsconfig.base.json (including @karmaniverous/get-dotenv → src/index.ts),
+    and included templates/\*\* for typechecking so editor/tsc resolve createCli
+    to source (new callable signature).
+  - init scaffolder tests: stopped asserting CLI-name token substitution inside
+    template files; now validate compose-first wiring/alias in CLI index and
+    generic hello plugin content.
