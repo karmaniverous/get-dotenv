@@ -1,11 +1,11 @@
 import {
-  baseRootOptionDefaults,
   GetDotenvCli,
   resolveCliOptions,
   type RootOptionsShape,
   type ScriptsTable,
   toHelpConfig,
 } from '@/src/cliHost';
+import { baseRootOptionDefaults } from '@/src/defaults';
 import {
   awsPlugin,
   awsWhoamiPlugin,

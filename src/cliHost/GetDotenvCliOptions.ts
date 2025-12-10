@@ -1,9 +1,9 @@
 import type { z } from 'zod';
 
 import type { Logger } from '@/src/core';
+import { baseRootOptionDefaults } from '@/src/defaults';
 import type { getDotenvCliOptionsSchemaResolved } from '@/src/schema';
 
-import { baseRootOptionDefaults } from './defaults';
 import type { ScriptsTable } from './types';
 
 // Unify Scripts via the generic ScriptsTable<TShell> so shell types propagate.

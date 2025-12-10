@@ -1,1 +1,1 @@
-export * from './createCli';
+export { createCli, type CreateCliOptions } from './createCli';

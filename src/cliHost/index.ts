@@ -5,7 +5,6 @@ export type {
   InferPluginConfig,
   PluginWithInstanceHelpers,
 } from './contracts';
-export { baseRootOptionDefaults } from './defaults';
 export { definePlugin } from './definePlugin';
 export { runCommand, runCommandResult } from './exec';
 export { GetDotenvCli, type GetDotenvCliCtx } from './GetDotenvCli';

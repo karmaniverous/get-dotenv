@@ -32,8 +32,8 @@ const expected = [
   'templates/config/yaml/local/getdotenv.config.local.yaml',
   'templates/config/js/getdotenv.config.js',
   'templates/config/ts/getdotenv.config.ts',
-  'templates/cli/ts/index.ts',
-  'templates/cli/ts/plugins/hello.ts',
+  'templates/cli/index.ts',
+  'templates/cli/plugins/hello.ts',
 ];
 
 const pickPath = (entry) => {

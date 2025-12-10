@@ -8,12 +8,12 @@ import {
 
 // Added: helpers and types for root wiring and validation
 import type { GetDotenvOptions, ProcessEnv } from '@/src/core';
+import { baseRootOptionDefaults } from '@/src/defaults';
 
 // New: small helpers to keep the class lean
 import { attachRootOptions as attachRootOptionsBuilder } from './attachRootOptions';
 import { buildHelpInformation } from './buildHelpInformation';
 import type { GetDotenvCliPlugin, GetDotenvCliPublic } from './contracts';
-import { baseRootOptionDefaults } from './defaults';
 import {
   evaluateDynamicOptions as evalDyn,
   makeDynamicOption,

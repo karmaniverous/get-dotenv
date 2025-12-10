@@ -15,9 +15,9 @@ import {
   type GetDotenvOptions,
   type RootOptionsShapeCompat,
 } from '@/src/core';
+import { baseRootOptionDefaults } from '@/src/defaults';
 import { defaultsDeep } from '@/src/util';
 
-import { baseRootOptionDefaults } from './defaults';
 import type { GetDotenvCli } from './GetDotenvCli';
 import type { GetDotenvCliOptions } from './GetDotenvCliOptions';
 import { toHelpConfig } from './helpConfig';

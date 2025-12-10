@@ -11,7 +11,7 @@ export {
   type PluginWithInstanceHelpers,
   readMergedOptions,
   type ScriptsTable,
-} from '@/src/cliHost';
+} from './cliHost';
 export {
   defineDynamic,
   defineGetDotenvConfig,
@@ -24,11 +24,12 @@ export {
   type GetDotenvOptions,
   type InferGetDotenvVarsFromConfig,
   type ProcessEnv,
-} from '@/src/core';
+} from './core';
+export { baseRootOptionDefaults } from './defaults';
 export {
   dotenvExpand,
   dotenvExpandAll,
   dotenvExpandFromProcessEnv,
-} from '@/src/dotenv/dotenvExpand';
-export { interpolateDeep } from '@/src/util/interpolateDeep';
+} from './dotenv';
+export { interpolateDeep } from './util';
 export { z } from 'zod';
