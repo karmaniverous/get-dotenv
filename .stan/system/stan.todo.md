@@ -246,4 +246,8 @@ When updated: 2025-12-09T00:00:00Z
   - Eliminated the core ↔ cliHost circular dependency by removing the runtime
     import of baseGetDotenvCliOptions from the host barrel in
     src/core/GetDotenvOptions.ts. Core now imports neutral defaults from
-    src/defaults (baseRootOptionDefaults) and uses type-only imports from cliHost/types. Behavior unchanged.
+    src/defaults (baseRootOptionDefaults) and uses type-only imports from cliHost/types. Behavior unchanged.
+
+- Verify scripts: update verify-types fallback to read src/env/overlayEnv.ts (with legacy overlay.ts fallback) so env overlay type check matches current implementation.
+
+- Knip config: replace stale entry "src/env/overlay.ts" with "src/env/index.ts" to remove configuration hint and reflect current source layout.

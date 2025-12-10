@@ -261,16 +261,25 @@ const main = async () => {
     let finalOverlayOk = overlayOk;
     let finalOverlayProg = overlayProg;
     if (!finalOverlayOk || !finalOverlayProg) {
-      try {
-        const srcTxt = await readFileUtf8(
-          path.join('src', 'env', 'overlay.ts'),
-        );
-        if (srcTxt) {
-          finalOverlayOk = finalOverlayOk || hasOverlayDecl(srcTxt);
-          finalOverlayProg = finalOverlayProg || hasProgrammaticParam(srcTxt);
+      // Try current source name first, then legacy:
+      // - src/env/overlayEnv.ts (current)
+      // - src/env/overlay.ts     (legacy)
+      const candidates = [
+        path.join('src', 'env', 'overlayEnv.ts'),
+        path.join('src', 'env', 'overlay.ts'),
+      ];
+      for (const p of candidates) {
+        try {
+          const srcTxt = await readFileUtf8(p);
+          if (srcTxt) {
+            if (!finalOverlayOk) finalOverlayOk = hasOverlayDecl(srcTxt);
+            if (!finalOverlayProg)
+              finalOverlayProg = hasProgrammaticParam(srcTxt);
+            if (finalOverlayOk && finalOverlayProg) break;
+          }
+        } catch {
+          /* try next */
         }
-      } catch {
-        /* ignore source fallback errors */
       }
     }
 

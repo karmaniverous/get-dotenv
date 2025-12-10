@@ -6,7 +6,7 @@
     "src/plugins/batch/index.ts",
     "src/plugins/init/index.ts",
     "src/config/index.ts",
-    "src/env/overlay.ts"
+    "src/env/index.ts"
   ],
   "project": ["src/**/*.ts"],
   "ignore": ["**/*.infer.ts"],
