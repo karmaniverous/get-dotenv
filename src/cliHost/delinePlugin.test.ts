@@ -38,7 +38,7 @@ describe('cliHost/definePlugin helpers', () => {
       return p;
     })();
 
-    const cli = new GetDotenvCli('test').overrideRootOptions().use(plugin);
+    const cli = new GetDotenvCli('test').use(plugin);
     await cli.install();
 
     // Provide a synthetic help-time config bag with plugin slice at realized path "dyn"

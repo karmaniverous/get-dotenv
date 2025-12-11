@@ -17,7 +17,8 @@ vi.mock('../../cliHost/exec', () => ({
   ) => runCommandMock(cmd, shell, opts),
 }));
 
-import { GetDotenvCli } from '../../cliHost';
+import { createCli } from '@/src/cli';
+
 import { awsPlugin } from './index';
 
 describe('plugins/aws subcommand', () => {
@@ -31,9 +32,11 @@ describe('plugins/aws subcommand', () => {
   });
 
   it('session-only establishes region via flag without forwarding', async () => {
-    const cli = new GetDotenvCli('test').overrideRootOptions().use(awsPlugin());
-    await cli.install();
-    await cli.parseAsync(['node', 'test', 'aws', '--region', 'us-east-1']);
+    const run = createCli({
+      alias: 'test',
+      compose: (program) => program.use(awsPlugin()),
+    });
+    await run(['aws', '--region', 'us-east-1']);
     // No forwarding
     expect(runCommandMock).not.toHaveBeenCalled();
     // Region set
@@ -44,16 +47,11 @@ describe('plugins/aws subcommand', () => {
 
   it('forwards args after "--" to AWS CLI with env injection and capture honored', async () => {
     process.env.GETDOTENV_STDIO = 'pipe'; // force capture
-    const cli = new GetDotenvCli('test').overrideRootOptions().use(awsPlugin());
-    await cli.install();
-    await cli.parseAsync([
-      'node',
-      'test',
-      'aws',
-      '--',
-      'sts',
-      'get-caller-identity',
-    ]);
+    const run = createCli({
+      alias: 'test',
+      compose: (program) => program.use(awsPlugin()),
+    });
+    await run(['aws', '--', 'sts', 'get-caller-identity']);
 
     expect(runCommandMock).toHaveBeenCalledTimes(1);
     const [cmd, _shell, opts] = runCommandMock.mock.calls[0] as [

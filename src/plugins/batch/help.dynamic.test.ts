@@ -1,54 +1,36 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
-import { GetDotenvCli } from '@/src/cliHost';
+import { createCli } from '@/src/cli';
 
-import { batchPlugin } from './index';
+describe('GetDotenvCli root dynamic help', () => {
+  it('shows default labels for key root toggles (shell/log/load-process)', async () => {
+    // Build a CLI and render top-level help via the factory runner.
+    const run = createCli({ alias: 'test' });
 
-describe('plugins/batch dynamic help', () => {
-  it('shows effective defaults from plugin config in "help batch"', async () => {
-    const cli = new GetDotenvCli('test')
-      .overrideRootOptions()
-      .use(batchPlugin());
-    await cli.install();
+    // Capture stdout written by help output.
+    const writes: string[] = [];
+    const spy = vi
+      .spyOn(process.stdout, 'write')
+      .mockImplementation((chunk: unknown) => {
+        writes.push(String(chunk));
+        return true;
+      });
 
-    // Evaluate dynamic option descriptions using a synthetic resolved config:
-    // - plugins.batch: pkgCwd ON; rootPath "./work"; globs "apps/*"
-    cli.evaluateDynamicOptions({
-      plugins: {
-        batch: {
-          pkgCwd: true,
-          rootPath: './work',
-          globs: 'apps/*',
-        },
-      },
-    });
+    try {
+      await run(['-h']);
+    } finally {
+      spy.mockRestore();
+    }
 
-    // Render batch subcommand help; plugin options should appear here.
-    const commands = ((
-      cli as unknown as {
-        commands?: Array<{ name: () => string; helpInformation: () => string }>;
-      }
-    ).commands ?? []) as Array<{
-      name: () => string;
-      helpInformation: () => string;
-    }>;
-    const batch = commands.find(
-      (c) => typeof c.name === 'function' && c.name() === 'batch',
-    );
-    const help =
-      typeof batch?.helpInformation === 'function'
-        ? batch.helpInformation()
-        : '';
+    const help = writes.join('');
 
-    // pkg-cwd: ON (default)
-    expect(help).toMatch(/-p, --pkg-cwd[\s\S]*\(default\)/i);
-    // root-path default label
-    expect(help).toMatch(
-      /-r, --root-path <string>[\s\S]*\(default:\s+"\.\/work"\)/i,
-    );
-    // globs default label
-    expect(help).toMatch(
-      /-g, --globs <string>[\s\S]*\(default:\s+"apps\/\*"\)/i,
-    );
+    // Shell OFF is the default, so the OFF toggle should show "(default)".
+    expect(help).toMatch(/-S, --shell-off[\s\S]*\(default\)/i);
+
+    // Load process OFF is the default; OFF toggle shows "(default)".
+    expect(help).toMatch(/-P, --load-process-off[\s\S]*\(default\)/i);
+
+    // Log OFF is the default; OFF toggle shows "(default)".
+    expect(help).toMatch(/-L, --log-off[\s\S]*\(default\)/i);
   });
 });

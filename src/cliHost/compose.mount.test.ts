@@ -21,7 +21,7 @@ describe('cliHost nested composition (mount propagation)', () => {
     });
     parent.use(child);
 
-    const cli = new GetDotenvCli('test').overrideRootOptions().use(parent);
+    const cli = new GetDotenvCli('test').use(parent);
     await cli.install();
 
     // Find the parent command and assert child presence under it.
