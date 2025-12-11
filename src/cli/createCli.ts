@@ -1,5 +1,6 @@
 import {
   GetDotenvCli,
+  type GetDotenvCliOptions,
   resolveCliOptions,
   type RootOptionsShape,
   type ScriptsTable,
@@ -195,7 +196,8 @@ export function createCli(
         const { merged: defaultsMerged } = resolveCliOptions<
           RootOptionsShape & { scripts?: ScriptsTable }
         >({}, mergedDefaultsForHelp, undefined);
-        const resolved = ctx.optionsResolved ?? {};
+        const resolved =
+          ctx.optionsResolved as unknown as Partial<GetDotenvCliOptions>;
         // Overlay resolved toggles that we display in help-time defaults.
         const helpMerged: Partial<RootOptionsShape> = {
           ...defaultsMerged,

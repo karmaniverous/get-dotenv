@@ -8,9 +8,6 @@
  * - Provide Vars-aware defineDynamic and a typed config builder defineGetDotenvConfig\<Vars, Env\>().
  * - Preserve existing behavior for defaults resolution and compat converters.
  */
-import fs from 'fs-extra';
-import { packageDirectory } from 'package-directory';
-import { join } from 'path';
 import type { z } from 'zod';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -25,8 +22,6 @@ import { defaultsDeep, omitUndefinedRecord } from '@/src/util';
 
 export const getDotenvOptionsFilename = 'getdotenv.config.json';
 
-// Compat: widen CLI-facing shapes at the converter boundary so projects that
-// provide data-style config can pass vars as a map and paths as string[].
 export type RootOptionsShapeCompat = Omit<
   RootOptionsShape,
   'vars' | 'paths'
@@ -240,33 +235,10 @@ export const getDotenvCliOptions2Options = ({
 export const resolveGetDotenvOptions = async (
   customOptions: Partial<GetDotenvOptions>,
 ) => {
-  const localPkgDir = await packageDirectory();
-
-  const localOptionsPath = localPkgDir
-    ? join(localPkgDir, getDotenvOptionsFilename)
-    : undefined;
-
-  // Safely read local CLI-facing defaults (defensive typing to satisfy strict linting).
-  let localOptions: Partial<RootOptionsShape> = {};
-  if (localOptionsPath && (await fs.exists(localOptionsPath))) {
-    try {
-      const txt = await fs.readFile(localOptionsPath, 'utf-8');
-      const parsed = JSON.parse(txt) as unknown;
-      if (parsed && typeof parsed === 'object') {
-        localOptions = parsed as Partial<RootOptionsShape>;
-      }
-    } catch {
-      // Malformed or unreadable local options are treated as absent.
-      localOptions = {};
-    }
-  }
-
-  // Merge order for defaults: base (neutral) < local (project)
-  // Use neutral defaults to avoid a core -> cliHost back-edge at runtime.
-  const mergedDefaults = defaultsDeep(
-    baseRootOptionDefaults as Partial<RootOptionsShape>,
-    localOptions,
-  ) as Partial<RootOptionsShape>;
+  // Programmatic callers use neutral defaults only. Do not read local packaged
+  // getdotenv.config.json here; the host path applies packaged/project configs
+  // via the dedicated loader/overlay pipeline.
+  const mergedDefaults = baseRootOptionDefaults as Partial<RootOptionsShape>;
 
   const defaultsFromCli = getDotenvCliOptions2Options(
     mergedDefaults as unknown as RootOptionsShapeCompat,

@@ -55,3 +55,13 @@
   base defaults + composition defaults (overrideRootOptions) and overlays
   resolved toggles from ctx.optionsResolved. This fixes wrong labels for
   --load-process-off when packaged or composition defaults set it OFF.
+
+- Fix: Programmatic resolveGetDotenvOptions no longer reads a local
+  getdotenv.config.json from the current package root. This restores the
+  expected default behavior (loadProcess ON from base defaults) for
+  programmatic getDotenv, unblocking core tests that assert process.env
+  is populated by default.
+
+- Fix: createCli help-time overlay casts ctx.optionsResolved to the CLI
+  options shape and removes an unnecessary nullish coalescing default,
+  resolving TS2339 and lint (no-unnecessary-condition) errors.
