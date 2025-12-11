@@ -13,7 +13,8 @@ describe('/cliHost helpers exposure', () => {
       typeof (cli as unknown as { overrideRootOptions?: unknown })
         .overrideRootOptions === 'function';
     expect(hasAttach).toBe(true);
-    expect(hasOverride).toBe(true);
+    // Public overrideRootOptions has been removed
+    expect(hasOverride).toBe(false);
   });
   it('type-level visibility compiles (no runtime call required)', () => {
     const cli = new GetDotenvCli('test');
@@ -23,12 +24,7 @@ describe('/cliHost helpers exposure', () => {
         attachRootOptions?: (...args: unknown[]) => unknown;
       }
     ).attachRootOptions;
-    const override = (
-      cli as {
-        overrideRootOptions?: (...args: unknown[]) => unknown;
-      }
-    ).overrideRootOptions;
     expect(attach).toBeDefined();
-    expect(override).toBeDefined();
+    // overrideRootOptions is intentionally not present
   });
 });

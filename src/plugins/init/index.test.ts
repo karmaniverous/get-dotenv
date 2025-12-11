@@ -2,7 +2,7 @@ import fs from 'fs-extra';
 import path from 'path';
 import { describe, expect, it } from 'vitest';
 
-import { GetDotenvCli } from '@/src/cliHost';
+import { createCli } from '@/src/cli';
 
 import { initPlugin } from './index';
 
@@ -12,13 +12,13 @@ describe('plugins/init', () => {
   it('scaffolds json config and CLI skeleton (force)', async () => {
     const dir = path.posix.join(TROOT, 'case1');
     await fs.remove(dir);
-    const cli = new GetDotenvCli('test')
-      .overrideRootOptions()
-      .use(initPlugin());
-    await cli.install();
-    await cli.parseAsync([
-      'node',
-      'test',
+
+    const run = createCli({
+      alias: 'test',
+      compose: (program) => program.use(initPlugin()),
+    });
+
+    await run([
       'init',
       dir,
       '--config-format',
@@ -28,6 +28,7 @@ describe('plugins/init', () => {
       'acme',
       '--force',
     ]);
+
     const cfg = path.posix.join(dir, 'getdotenv.config.json');
     const cfgLocal = path.posix.join(dir, 'getdotenv.config.local.json');
     expect(await fs.pathExists(cfg)).toBe(true);
@@ -58,30 +59,19 @@ describe('plugins/init', () => {
   it('idempotence with --yes (skip)', async () => {
     const dir = path.posix.join(TROOT, 'case2');
     await fs.remove(dir);
-    const cli = new GetDotenvCli('test')
-      .overrideRootOptions()
-      .use(initPlugin());
-    await cli.install();
-    await cli.parseAsync([
-      'node',
-      'test',
-      'init',
-      dir,
-      '--config-format',
-      'json',
-      '--force',
-    ]);
+
+    const run = createCli({
+      alias: 'test',
+      compose: (program) => program.use(initPlugin()),
+    });
+
+    await run(['init', dir, '--config-format', 'json', '--force']);
+
     const cfg = path.posix.join(dir, 'getdotenv.config.json');
     await fs.writeFile(cfg, 'CHANGED', 'utf-8');
-    await cli.parseAsync([
-      'node',
-      'test',
-      'init',
-      dir,
-      '--config-format',
-      'json',
-      '--yes',
-    ]);
+
+    await run(['init', dir, '--config-format', 'json', '--yes']);
+
     const after = await fs.readFile(cfg, 'utf-8');
     expect(after).toBe('CHANGED');
   });
@@ -89,19 +79,14 @@ describe('plugins/init', () => {
   it('scaffolds ts config with dynamic', async () => {
     const dir = path.posix.join(TROOT, 'case3');
     await fs.remove(dir);
-    const cli = new GetDotenvCli('test')
-      .overrideRootOptions()
-      .use(initPlugin());
-    await cli.install();
-    await cli.parseAsync([
-      'node',
-      'test',
-      'init',
-      dir,
-      '--config-format',
-      'ts',
-      '--force',
-    ]);
+
+    const run = createCli({
+      alias: 'test',
+      compose: (program) => program.use(initPlugin()),
+    });
+
+    await run(['init', dir, '--config-format', 'ts', '--force']);
+
     const cfg = path.posix.join(dir, 'getdotenv.config.ts');
     expect(await fs.pathExists(cfg)).toBe(true);
     const txt = await fs.readFile(cfg, 'utf-8');
@@ -129,6 +114,7 @@ describe('plugins/init', () => {
       /Say hello with current dotenv context/i,
     );
   });
+
   it('forces overwrite in non-interactive/CI scenarios (force precedence)', async () => {
     const dir = path.posix.join(TROOT, 'case4');
     await fs.remove(dir);
@@ -137,19 +123,13 @@ describe('plugins/init', () => {
     // Precreate with sentinel content
     await fs.writeFile(cfg, 'OLD', 'utf-8');
 
-    const cli = new GetDotenvCli('test')
-      .overrideRootOptions()
-      .use(initPlugin());
-    await cli.install();
-    await cli.parseAsync([
-      'node',
-      'test',
-      'init',
-      dir,
-      '--config-format',
-      'json',
-      '--force',
-    ]);
+    const run = createCli({
+      alias: 'test',
+      compose: (program) => program.use(initPlugin()),
+    });
+
+    await run(['init', dir, '--config-format', 'json', '--force']);
+
     const after = await fs.readFile(cfg, 'utf-8');
     expect(after).not.toBe('OLD'); // overwritten
   });
@@ -166,18 +146,13 @@ describe('plugins/init', () => {
     const prev = process.env.CI;
     process.env.CI = 'true';
     try {
-      const cli = new GetDotenvCli('test')
-        .overrideRootOptions()
-        .use(initPlugin());
-      await cli.install();
-      await cli.parseAsync([
-        'node',
-        'test',
-        'init',
-        dir,
-        '--config-format',
-        'json',
-      ]);
+      const run = createCli({
+        alias: 'test',
+        compose: (program) => program.use(initPlugin()),
+      });
+
+      await run(['init', dir, '--config-format', 'json']);
+
       const after = await fs.readFile(cfg, 'utf-8');
       expect(after).toBe('OLD'); // skipped
     } finally {

@@ -8,7 +8,8 @@ vi.mock('execa', () => ({
     execMock(cmd, opts),
 }));
 
-import { GetDotenvCli } from '../../cliHost';
+import { createCli } from '@/src/cli';
+
 import { cmdPlugin } from './index';
 
 describe('plugins/cmd option alias', () => {
@@ -18,12 +19,14 @@ describe('plugins/cmd option alias', () => {
   });
 
   it('executes alias when provided on parent (variadic join)', async () => {
-    const cli = new GetDotenvCli('test')
-      .overrideRootOptions()
-      .use(cmdPlugin({ asDefault: true, optionAlias: '--cmd <command...>' }));
-    await cli.install();
-
-    await cli.parseAsync(['node', 'test', '--cmd', 'echo', 'OK']);
+    const run = createCli({
+      alias: 'test',
+      compose: (program) =>
+        program.use(
+          cmdPlugin({ asDefault: true, optionAlias: '--cmd <command...>' }),
+        ),
+    });
+    await run(['--cmd', 'echo', 'OK']);
 
     expect(execMock).toHaveBeenCalledTimes(1);
     const [command, opts] = execMock.mock.calls[0] as [
@@ -36,12 +39,14 @@ describe('plugins/cmd option alias', () => {
 
   it('expands alias value with dotenv expansion by default', async () => {
     process.env.FOO = 'BAR';
-    const cli = new GetDotenvCli('test')
-      .overrideRootOptions()
-      .use(cmdPlugin({ asDefault: true, optionAlias: '--cmd <command...>' }));
-    await cli.install();
-
-    await cli.parseAsync(['node', 'test', '--cmd', 'echo', '$FOO']);
+    const run = createCli({
+      alias: 'test',
+      compose: (program) =>
+        program.use(
+          cmdPlugin({ asDefault: true, optionAlias: '--cmd <command...>' }),
+        ),
+    });
+    await run(['--cmd', 'echo', '$FOO']);
 
     expect(execMock).toHaveBeenCalledTimes(1);
     const [command] = execMock.mock.calls[0] as [
@@ -58,23 +63,16 @@ describe('plugins/cmd option alias', () => {
       throw new Error('process.exit called');
     }) as never);
 
-    const cli = new GetDotenvCli('test')
-      .overrideRootOptions()
-      .use(cmdPlugin({ asDefault: true, optionAlias: '--cmd <command...>' }));
-    await cli.install();
+    const run = createCli({
+      alias: 'test',
+      compose: (program) =>
+        program.use(
+          cmdPlugin({ asDefault: true, optionAlias: '--cmd <command...>' }),
+        ),
+    });
 
     await expect(
-      cli.parseAsync([
-        'node',
-        'test',
-        '--cmd',
-        'echo',
-        'OK',
-        '--',
-        'cmd',
-        'echo',
-        'X',
-      ]),
+      run(['--cmd', 'echo', 'OK', '--', 'cmd', 'echo', 'X']),
     ).rejects.toThrow(/process\.exit called/);
 
     expect(execMock).toHaveBeenCalledTimes(0);

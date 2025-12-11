@@ -89,3 +89,11 @@
   generics (replacing the `unknown[]/OptionValues` alias). This removes the
   generic invariance mismatch when passing `new GetDotenvCli(alias)` and
   allows typecheck to pass. Also removed the now‑unused OptionValues import.
+- Remove public GetDotenvCli.prototype.overrideRootOptions. Advanced authors
+  should prefer createCli with rootOptionDefaults/rootOptionVisibility.
+  Internal root wiring remains via attachRootOptions + rootHooks (factory‑only).
+
+- Tests: refactor plugin/host tests to use createCli().compose(...) instead of
+  calling overrideRootOptions directly. Updated cmd/alias and batch/init tests
+  to construct a runner and pass argv arrays, preserving existing assertions.
+  Adjusted helpers.exposure test to assert overrideRootOptions is not present.

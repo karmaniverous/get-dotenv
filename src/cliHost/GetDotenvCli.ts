@@ -1,3 +1,13 @@
+/** src/cliHost/GetDotenvCli.ts
+ * Plugin-first CLI host for get-dotenv with Commander generics preserved.
+ * Public surface implements GetDotenvCliPublic and provides:
+ *  - attachRootOptions (builder-only; no public override wiring)
+ *  - resolveAndLoad (strict resolve + context compute)
+ *  - getCtx/hasCtx accessors
+ *  - ns() for typed subcommand creation with duplicate-name guard
+ *  - grouped help rendering with dynamic option descriptions
+ */
+
 import {
   Command,
   type CommandUnknownOpts,
@@ -6,21 +16,9 @@ import {
   type OptionValues,
 } from '@commander-js/extra-typings';
 
-import {
-  resolveGetDotenvConfigSources,
-  validateEnvAgainstSources,
-} from '@/src/config';
-// Added: helpers and types for root wiring and validation.
-import type {
-  GetDotenvOptions,
-  ProcessEnv,
-  RootOptionsShapeCompat,
-} from '@/src/core';
-import { getDotenvCliOptions2Options } from '@/src/core';
+import type { GetDotenvOptions, ProcessEnv } from '@/src/core';
 import { baseRootOptionDefaults } from '@/src/defaults';
-import { defaultsDeep } from '@/src/util';
 
-// New: small helpers to keep the class lean
 import { attachRootOptions as attachRootOptionsBuilder } from './attachRootOptions';
 import { buildHelpInformation } from './buildHelpInformation';
 import type { GetDotenvCliPlugin, GetDotenvCliPublic } from './contracts';
@@ -30,11 +28,9 @@ import {
 } from './dynamicOptions';
 import type { GetDotenvCliOptions } from './GetDotenvCliOptions';
 import { GROUP_TAG } from './groups';
-import { toHelpConfig } from './helpConfig';
 import { initializeInstance } from './initializeInstance';
 import { setupPluginTree } from './registerPlugin';
 import { resolveAndComputeContext } from './resolveAndComputeContext';
-import { resolveCliOptions } from './resolveCliOptions';
 import { runAfterResolveTree } from './runAfterResolve';
 import { tagAppOptionsAround } from './tagAppOptionsHelper';
 import type { RootOptionsShape } from './types';
@@ -120,169 +116,7 @@ export class GetDotenvCli<
    */
   attachRootOptions(defaults?: Partial<RootOptionsShape>): this {
     const d = (defaults ?? baseRootOptionDefaults) as Partial<RootOptionsShape>;
-    // Delegate to the existing builder; keep method minimal.
     attachRootOptionsBuilder(this as unknown as GetDotenvCli, d);
-    return this;
-  }
-
-  /**
-   * Override root options: declare flags and register resolution hooks.
-   * No early install is performed here; run() remains responsible for calling
-   * program.install() after composition.
-   */
-  overrideRootOptions(
-    defaults?: Partial<RootOptionsShape>,
-    _visibility?: Partial<Record<keyof RootOptionsShape, boolean>>,
-  ): this {
-    // Declare flags from defaults (scripts stay hidden in builder).
-    this.attachRootOptions(defaults);
-
-    // Merge base CLI defaults with compose-time overrides for hook-time resolution.
-    const d = defaultsDeep<Partial<RootOptionsShape>>(
-      baseRootOptionDefaults as Partial<RootOptionsShape>,
-      defaults ?? {},
-    );
-
-    const dbg = (...args: unknown[]) => {
-      if (process.env.GETDOTENV_DEBUG) {
-        try {
-          const line = args
-            .map((a) => (typeof a === 'string' ? a : JSON.stringify(a)))
-            .join(' ');
-          process.stderr.write(`[getdotenv:overrideRootOptions] ${line}\n`);
-        } catch {
-          /* ignore */
-        }
-      }
-    };
-
-    // Hook: preSubcommand — always run for subcommand flows.
-    this.hook('preSubcommand', async (thisCommand) => {
-      const rawArgs =
-        (thisCommand as unknown as { rawArgs?: string[] }).rawArgs ?? [];
-      dbg('preSubcommand:rawArgs', rawArgs);
-      const raw = (thisCommand as { opts?: () => Record<string, unknown> }).opts
-        ? (thisCommand as { opts: () => Record<string, unknown> }).opts()
-        : {};
-      const { merged } = resolveCliOptions<
-        RootOptionsShape & { scripts?: Record<string, unknown> }
-      >(
-        raw,
-        d,
-        (process.env as unknown as { getDotenvCliOptions?: string })
-          .getDotenvCliOptions,
-      );
-      dbg('preSubcommand:merged', {
-        env: (merged as Record<string, unknown>).env,
-        shell: (merged as Record<string, unknown>).shell,
-      });
-
-      // Persist merged options for nested flows and ergonomic access.
-      (
-        thisCommand as unknown as {
-          getDotenvCliOptions?: GetDotenvCliOptions;
-        }
-      ).getDotenvCliOptions = merged as unknown as GetDotenvCliOptions;
-      (this as unknown as GetDotenvCli)._setOptionsBag(
-        merged as unknown as GetDotenvCliOptions,
-      );
-
-      // Compute service options and resolve context (no early install needed here).
-      const serviceOptions = getDotenvCliOptions2Options(
-        merged as unknown as RootOptionsShapeCompat,
-      ) as unknown as Partial<GetDotenvOptions>;
-      await this.resolveAndLoad(serviceOptions as Partial<TOptions>);
-
-      // Refresh dynamic option descriptions using resolved config slices.
-      try {
-        const ctx = this.getCtx();
-        const helpCfg = toHelpConfig(merged, ctx.pluginConfigs);
-        this.evaluateDynamicOptions(helpCfg);
-      } catch {
-        /* best-effort */
-      }
-
-      // Global validation (once after overlays). Honor --strict.
-      try {
-        const ctx = this.getCtx();
-        const dotenv = ctx.dotenv;
-        const sources = await resolveGetDotenvConfigSources(import.meta.url);
-        const issues = validateEnvAgainstSources(dotenv, sources);
-        if (Array.isArray(issues) && issues.length > 0) {
-          const logger = (merged as unknown as GetDotenvCliOptions).logger;
-          issues.forEach((m) => {
-            logger.error(m);
-          });
-          if ((merged as unknown as GetDotenvCliOptions).strict)
-            process.exit(1);
-        }
-      } catch {
-        /* tolerate non-strict flows */
-      }
-    });
-
-    // Hook: preAction — root-only and parent-alias flows.
-    this.hook('preAction', async (thisCommand) => {
-      const rawArgs =
-        (thisCommand as unknown as { rawArgs?: string[] }).rawArgs ?? [];
-      dbg('preAction:rawArgs', rawArgs);
-      const raw = (thisCommand as { opts?: () => Record<string, unknown> }).opts
-        ? (thisCommand as { opts: () => Record<string, unknown> }).opts()
-        : {};
-      const { merged } = resolveCliOptions<
-        RootOptionsShape & { scripts?: Record<string, unknown> }
-      >(
-        raw,
-        d,
-        (process.env as unknown as { getDotenvCliOptions?: string })
-          .getDotenvCliOptions,
-      );
-      dbg('preAction:merged', {
-        env: (merged as Record<string, unknown>).env,
-        shell: (merged as Record<string, unknown>).shell,
-      });
-
-      (
-        thisCommand as unknown as {
-          getDotenvCliOptions?: GetDotenvCliOptions;
-        }
-      ).getDotenvCliOptions = merged as unknown as GetDotenvCliOptions;
-      (this as unknown as GetDotenvCli)._setOptionsBag(
-        merged as unknown as GetDotenvCliOptions,
-      );
-
-      // Avoid duplicate heavy work if a context is already present.
-      if (!this.hasCtx()) {
-        const serviceOptions = getDotenvCliOptions2Options(
-          merged as unknown as RootOptionsShapeCompat,
-        ) as unknown as Partial<GetDotenvOptions>;
-        await this.resolveAndLoad(serviceOptions as Partial<TOptions>);
-        try {
-          const ctx = this.getCtx();
-          const helpCfg = toHelpConfig(merged, ctx.pluginConfigs);
-          this.evaluateDynamicOptions(helpCfg);
-        } catch {
-          /* tolerate */
-        }
-        try {
-          const ctx = this.getCtx();
-          const dotenv = ctx.dotenv;
-          const sources = await resolveGetDotenvConfigSources(import.meta.url);
-          const issues = validateEnvAgainstSources(dotenv, sources);
-          if (Array.isArray(issues) && issues.length > 0) {
-            const logger = (merged as unknown as GetDotenvCliOptions).logger;
-            issues.forEach((m) => {
-              logger.error(m);
-            });
-            if ((merged as unknown as GetDotenvCliOptions).strict)
-              process.exit(1);
-          }
-        } catch {
-          /* tolerate non-strict flows */
-        }
-      }
-    });
-
     return this;
   }
 
@@ -521,8 +355,6 @@ export class GetDotenvCli<
    */
   async install(): Promise<void> {
     if (this._installed) return;
-    // If an install is already in progress (e.g., passOptions fired then run()
-    // also calls install), await the in-flight Promise to avoid duplicate wiring.
     if (this._installing) {
       await this._installing;
       return;
@@ -551,8 +383,7 @@ export class GetDotenvCli<
     try {
       await this._installing;
     } finally {
-      // leave _installing set to a resolved Promise; subsequent calls will
-      // return early due to _installed === true
+      // leave _installing as resolved; subsequent calls return early via _installed
     }
   }
 
@@ -562,7 +393,6 @@ export class GetDotenvCli<
   private async _runAfterResolve(
     ctx: GetDotenvCliCtx<TOptions>,
   ): Promise<void> {
-    // Run afterResolve only over the plugin list
     await runAfterResolveTree(
       this,
       this._plugins.map((e) => e.plugin),

@@ -8,7 +8,8 @@ vi.mock('./execShellCommandBatch', () => ({
   },
 }));
 
-import { GetDotenvCli } from '../../cliHost';
+import { createCli } from '@/src/cli';
+
 import { batchPlugin } from './index';
 describe('plugins/batch', () => {
   beforeEach(() => {
@@ -16,20 +17,12 @@ describe('plugins/batch', () => {
   });
 
   it('invokes list mode with globs and root path', async () => {
-    const cli = new GetDotenvCli('test')
-      .overrideRootOptions()
-      .use(batchPlugin());
-    await cli.install();
-    await cli.parseAsync([
-      'node',
-      'test',
-      'batch',
-      '--list',
-      '--globs',
-      'a b',
-      '--root-path',
-      './',
-    ]);
+    const run = createCli({
+      alias: 'test',
+      compose: (program) => program.use(batchPlugin()),
+    });
+
+    await run(['batch', '--list', '--globs', 'a b', '--root-path', './']);
 
     expect(execMock).toHaveBeenCalledTimes(1);
     // Safe after call-count assertion
@@ -41,17 +34,20 @@ describe('plugins/batch', () => {
     expect(args.globs).toBe('a b');
     expect(args.rootPath).toBe('./');
   });
+
   it('resolves shell from script override', async () => {
-    const cli = new GetDotenvCli('test').overrideRootOptions().use(
-      batchPlugin({
-        scripts: { build: { cmd: 'npm run build', shell: '/bin/zsh' } },
-        shell: false,
-      }),
-    );
-    await cli.install();
-    await cli.parseAsync([
-      'node',
-      'test',
+    const run = createCli({
+      alias: 'test',
+      compose: (program) =>
+        program.use(
+          batchPlugin({
+            scripts: { build: { cmd: 'npm run build', shell: '/bin/zsh' } },
+            shell: false,
+          }),
+        ),
+    });
+
+    await run([
       'batch',
       '--command',
       'build',
@@ -69,19 +65,14 @@ describe('plugins/batch', () => {
     expect(args.command).toBe('npm run build');
     expect(args.shell).toBe('/bin/zsh');
   });
+
   it('propagates pkg-cwd flag', async () => {
-    const cli = new GetDotenvCli('test')
-      .overrideRootOptions()
-      .use(batchPlugin());
-    await cli.install();
-    await cli.parseAsync([
-      'node',
-      'test',
-      'batch',
-      '--command',
-      'echo ok',
-      '--pkg-cwd',
-    ]);
+    const run = createCli({
+      alias: 'test',
+      compose: (program) => program.use(batchPlugin()),
+    });
+
+    await run(['batch', '--command', 'echo ok', '--pkg-cwd']);
 
     expect(execMock).toHaveBeenCalledTimes(1);
     const firstCall = execMock.mock.calls[0] as
@@ -90,19 +81,14 @@ describe('plugins/batch', () => {
     const [args] = firstCall as [Record<string, unknown>];
     expect(args.pkgCwd).toBe(true);
   });
+
   it('propagates ignore-errors', async () => {
-    const cli = new GetDotenvCli('test')
-      .overrideRootOptions()
-      .use(batchPlugin());
-    await cli.install();
-    await cli.parseAsync([
-      'node',
-      'test',
-      'batch',
-      '--command',
-      'echo ok',
-      '--ignore-errors',
-    ]);
+    const run = createCli({
+      alias: 'test',
+      compose: (program) => program.use(batchPlugin()),
+    });
+
+    await run(['batch', '--command', 'echo ok', '--ignore-errors']);
 
     expect(execMock).toHaveBeenCalledTimes(1);
     const firstCall = execMock.mock.calls[0] as
@@ -113,11 +99,12 @@ describe('plugins/batch', () => {
   });
 
   it('executes positional command without explicit subcommand', async () => {
-    const cli = new GetDotenvCli('test')
-      .overrideRootOptions()
-      .use(batchPlugin());
-    await cli.install();
-    await cli.parseAsync(['node', 'test', 'batch', 'echo', 'OK']);
+    const run = createCli({
+      alias: 'test',
+      compose: (program) => program.use(batchPlugin()),
+    });
+
+    await run(['batch', 'echo', 'OK']);
 
     expect(execMock).toHaveBeenCalledTimes(1);
     const firstCall = execMock.mock.calls[0] as
