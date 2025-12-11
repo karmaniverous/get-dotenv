@@ -97,3 +97,11 @@
   calling overrideRootOptions directly. Updated cmd/alias and batch/init tests
   to construct a runner and pass argv arrays, preserving existing assertions.
   Adjusted helpers.exposure test to assert overrideRootOptions is not present.
+- Refactor tests to the createCli runner and remove deprecated
+  overrideRootOptions usage. Updated unit tests for cmd, batch, init, and root
+  dynamic-help to compose plugins via createCli and to pass full argv style
+  arrays (['node','alias', ...]) so the runner’s derive logic preserves
+  subcommands. Enabled help capture under Vitest by setting
+  GETDOTENV_STDIO=pipe and adjusted expectations to current defaults
+  (shell ON, loadProcess ON, log OFF). This clears the TS error, lint errors,
+  and readMergedOptions failures in unit tests.

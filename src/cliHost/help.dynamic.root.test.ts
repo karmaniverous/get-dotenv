@@ -1,32 +1,38 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
-import { GetDotenvCli, type ResolvedHelpConfig } from './GetDotenvCli';
+import { createCli } from '@/src/cli';
 
 describe('GetDotenvCli root dynamic help', () => {
-  it('shows default labels for key root toggles (shell/log/load-process)', () => {
-    const cli = new GetDotenvCli('test').overrideRootOptions();
+  it('prints dynamic labels for root toggles (shell/log/load-process)', async () => {
+    const run = createCli({ alias: 'test' });
 
-    // Evaluate dynamic descriptions with an explicit resolved config bag.
-    // Set OFF defaults for shell/log/loadProcess to assert "(default)" tags.
-    const cfg: ResolvedHelpConfig = {
-      shell: false,
-      loadProcess: false,
-      log: false,
-      plugins: {},
-    };
+    const writes: string[] = [];
+    const spy = vi
+      .spyOn(process.stdout, 'write')
+      .mockImplementation((chunk: unknown) => {
+        writes.push(String(chunk));
+        return true;
+      });
 
-    cli.evaluateDynamicOptions(cfg);
+    const prev = process.env.GETDOTENV_STDIO;
+    process.env.GETDOTENV_STDIO = 'pipe';
+    try {
+      await run(['-h']);
+    } finally {
+      spy.mockRestore();
+      if (prev === undefined) delete process.env.GETDOTENV_STDIO;
+      else process.env.GETDOTENV_STDIO = prev;
+    }
 
-    // Render help and assert the OFF variants include "(default)".
-    const help = cli.helpInformation();
+    const help = writes.join('');
 
-    // Shell OFF is the default, so the OFF toggle should show "(default)".
-    expect(help).toMatch(/-S, --shell-off[\s\S]*\(default\)/i);
+    // Shell default is ON (default OS shell); ensure label mentions that.
+    expect(help).toMatch(/-s, --shell \[string][\s\S]*default OS shell/i);
 
-    // Load process OFF is the default; assert the OFF toggle shows "(default)".
-    expect(help).toMatch(/-P, --load-process-off[\s\S]*\(default\)/i);
+    // Load process default is ON; ON toggle shows "(default)".
+    expect(help).toMatch(/-p, --load-process[\s\S]*\(default\)/i);
 
-    // Log OFF is the default; assert the OFF toggle shows "(default)".
+    // Log default is OFF (unset); OFF toggle shows "(default)".
     expect(help).toMatch(/-L, --log-off[\s\S]*\(default\)/i);
   });
 });

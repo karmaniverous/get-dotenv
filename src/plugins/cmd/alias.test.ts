@@ -8,7 +8,7 @@ vi.mock('execa', () => ({
     execMock(cmd, opts),
 }));
 
-import { GetDotenvCli } from '@/src/cliHost';
+import { createCli } from '@/src/cli';
 
 import { cmdPlugin } from './index';
 
@@ -19,11 +19,14 @@ describe('plugins/cmd option alias', () => {
   });
 
   it('executes alias when provided on parent (variadic join)', async () => {
-    const cli = new GetDotenvCli('test').use(
-      cmdPlugin({ asDefault: true, optionAlias: '--cmd <command...>' }),
-    );
-    await cli.install();
-    await cli.parseAsync(['node', 'test', '--cmd', 'echo', 'OK']);
+    const run = createCli({
+      alias: 'test',
+      compose: (p) =>
+        p.use(
+          cmdPlugin({ asDefault: true, optionAlias: '--cmd <command...>' }),
+        ),
+    });
+    await run(['node', 'test', '--cmd', 'echo', 'OK']);
 
     expect(execMock).toHaveBeenCalledTimes(1);
     const [command, opts] = execMock.mock.calls[0] as [
@@ -36,11 +39,14 @@ describe('plugins/cmd option alias', () => {
 
   it('expands alias value with dotenv expansion by default', async () => {
     process.env.FOO = 'BAR';
-    const cli = new GetDotenvCli('test').use(
-      cmdPlugin({ asDefault: true, optionAlias: '--cmd <command...>' }),
-    );
-    await cli.install();
-    await cli.parseAsync(['node', 'test', '--cmd', 'echo', '$FOO']);
+    const run = createCli({
+      alias: 'test',
+      compose: (p) =>
+        p.use(
+          cmdPlugin({ asDefault: true, optionAlias: '--cmd <command...>' }),
+        ),
+    });
+    await run(['node', 'test', '--cmd', 'echo', '$FOO']);
 
     expect(execMock).toHaveBeenCalledTimes(1);
     const [command] = execMock.mock.calls[0] as [
@@ -52,31 +58,38 @@ describe('plugins/cmd option alias', () => {
   });
 
   it('conflicts when alias and cmd subcommand are both provided', async () => {
-    // Spy process.exit to avoid terminating the test process
-    const exitSpy = vi.spyOn(process, 'exit').mockImplementation((() => {
-      throw new Error('process.exit called');
-    }) as never);
+    // Spy logger.error to detect conflict message; no process exit under tests.
+    const errSpy = vi
+      .spyOn(console, 'error')
+      .mockImplementation(() => undefined as unknown as void);
+    const run = createCli({
+      alias: 'test',
+      compose: (p) =>
+        p.use(
+          cmdPlugin({ asDefault: true, optionAlias: '--cmd <command...>' }),
+        ),
+    });
 
-    const cli = new GetDotenvCli('test').use(
-      cmdPlugin({ asDefault: true, optionAlias: '--cmd <command...>' }),
-    );
-    await cli.install();
-
-    await expect(
-      cli.parseAsync([
-        'node',
-        'test',
-        '--cmd',
-        'echo',
-        'OK',
-        '--',
-        'cmd',
-        'echo',
-        'X',
-      ]),
-    ).rejects.toThrow(/process\.exit called/);
+    await run([
+      'node',
+      'test',
+      '--cmd',
+      'echo',
+      'OK',
+      '--',
+      'cmd',
+      'echo',
+      'X',
+    ]);
 
     expect(execMock).toHaveBeenCalledTimes(0);
-    exitSpy.mockRestore();
+    expect(
+      errSpy.mock.calls.some((c) =>
+        String(c[0] ?? '').includes(
+          '--cmd option conflicts with cmd subcommand',
+        ),
+      ),
+    ).toBe(true);
+    errSpy.mockRestore();
   });
 });
