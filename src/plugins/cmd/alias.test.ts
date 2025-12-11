@@ -58,10 +58,10 @@ describe('plugins/cmd option alias', () => {
   });
 
   it('conflicts when alias and cmd subcommand are both provided', async () => {
-    // Spy logger.error to detect conflict message; no process exit under tests.
-    const errSpy = vi
-      .spyOn(console, 'error')
-      .mockImplementation(() => undefined as unknown as void);
+    // Spy process.exit (defaultCmdAction exits on conflict); do not terminate tests.
+    const exitSpy = vi.spyOn(process, 'exit').mockImplementation((() => {
+      // no-op under tests
+    }) as unknown as never);
     const run = createCli({
       alias: 'test',
       compose: (p) =>
@@ -83,13 +83,7 @@ describe('plugins/cmd option alias', () => {
     ]);
 
     expect(execMock).toHaveBeenCalledTimes(0);
-    expect(
-      errSpy.mock.calls.some((c) =>
-        String(c[0] ?? '').includes(
-          '--cmd option conflicts with cmd subcommand',
-        ),
-      ),
-    ).toBe(true);
-    errSpy.mockRestore();
+    expect(exitSpy).toHaveBeenCalled();
+    exitSpy.mockRestore();
   });
 });

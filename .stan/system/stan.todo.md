@@ -105,3 +105,10 @@
   GETDOTENV_STDIO=pipe and adjusted expectations to current defaults
   (shell ON, loadProcess ON, log OFF). This clears the TS error, lint errors,
   and readMergedOptions failures in unit tests.
+- Fix unit test regressions after runner adoption:
+  - aws tests now pass full argv arrays (['node','test',...]) to createCli to
+    avoid “too many arguments” derive issues.
+  - init idempotence test constructs a fresh runner for the second invocation
+    to avoid duplicate '--version' registration.
+  - cmd alias conflict test now spies process.exit and asserts it is called;
+    removed unsafe void cast to satisfy ESLint.

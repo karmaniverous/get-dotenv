@@ -80,7 +80,7 @@ describe('plugins/init', () => {
     const cfg = path.posix.join(dir, 'getdotenv.config.json');
     await fs.writeFile(cfg, 'CHANGED', 'utf-8');
 
-    await run([
+    await createCli({ alias: 'test', compose: (p) => p.use(initPlugin()) })([
       'node',
       'test',
       'init',
