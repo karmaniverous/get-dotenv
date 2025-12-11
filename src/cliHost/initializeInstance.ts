@@ -5,7 +5,7 @@
  */
 import type { Command, Option } from '@commander-js/extra-typings';
 
-import type { GetDotenvCli } from './GetDotenvCli';
+import type { GetDotenvCli } from './GetDotenvCliq';
 import { GROUP_TAG } from './groups';
 
 export function initializeInstance(

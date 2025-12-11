@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { GetDotenvCli, type ResolvedHelpConfig } from './GetDotenvCli';
+import { GetDotenvCli, type ResolvedHelpConfig } from './GetDotenvCliq';
 
 describe('GetDotenvCli root dynamic help', () => {
   it('shows default labels for key root toggles (shell/log/load-process)', () => {

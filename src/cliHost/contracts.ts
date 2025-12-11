@@ -13,7 +13,7 @@ import type { ZodObject } from 'zod';
 
 import type { GetDotenvOptions } from '@/src/core';
 
-import type { GetDotenvCliCtx, ResolvedHelpConfig } from './GetDotenvCli';
+import type { GetDotenvCliCtx, ResolvedHelpConfig } from './GetDotenvCliq';
 
 /**
  * Structural public interface for the host exposed to plugins.

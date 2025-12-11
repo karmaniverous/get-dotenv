@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { GetDotenvCli } from './GetDotenvCli';
+import { GetDotenvCli } from './GetDotenvCliq';
 
 describe('GetDotenvCli.ns duplicate guard', () => {
   it('throws when adding a same-level duplicate command name', () => {

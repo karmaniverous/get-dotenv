@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { GetDotenvCli } from './GetDotenvCli';
+import { GetDotenvCli } from './GetDotenvCliq';
 
 describe('/cliHost helpers exposure', () => {
   it('exposes attachRootOptions and passOptions on the host prototype', () => {

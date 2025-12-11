@@ -1,7 +1,5 @@
 # Project Requirements — get-dotenv
 
-When updated: 2025-12-08T00:00:00Z
-
 ## Overview
 
 This document captures durable, project-level requirements for get-dotenv. It consolidates all product requirements that were previously intermingled in the project prompt. Assistant/policy instructions live in stan.project.md; keep requirements here.

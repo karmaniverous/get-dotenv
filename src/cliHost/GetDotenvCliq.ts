@@ -6,7 +6,7 @@ import {
   type OptionValues,
 } from '@commander-js/extra-typings';
 
-// Added: helpers and types for root wiring and validation
+// Added: helpers and types for root wiring and validation.
 import type { GetDotenvOptions, ProcessEnv } from '@/src/core';
 import { baseRootOptionDefaults } from '@/src/defaults';
 

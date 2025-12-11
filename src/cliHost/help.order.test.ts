@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { GetDotenvCli } from './GetDotenvCli';
+import { GetDotenvCli } from './GetDotenvCliq';
 
 describe('GetDotenvCli help ordering', () => {
   it('places short-aliased options before long-only flags', () => {
