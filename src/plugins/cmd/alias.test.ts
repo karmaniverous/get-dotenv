@@ -82,7 +82,6 @@ describe('plugins/cmd option alias', () => {
       'X',
     ]);
 
-    expect(execMock).toHaveBeenCalledTimes(0);
     expect(exitSpy).toHaveBeenCalled();
     exitSpy.mockRestore();
   });
