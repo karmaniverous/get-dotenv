@@ -84,3 +84,8 @@
 - rootHooks typing/lint fix: removed implicit any and unsafe member access in
   debug logging. Added a typed debugView over Partial<RootOptionsShape> and
   used it in preSubcommand/preAction logs to satisfy strict/ESLint.
+- Fix: resolve TS2379 in createCli → installRootHooks by relaxing the
+  installRootHooks signature to accept `GetDotenvCli<TOptions>` with default
+  generics (replacing the `unknown[]/OptionValues` alias). This removes the
+  generic invariance mismatch when passing `new GetDotenvCli(alias)` and
+  allows typecheck to pass. Also removed the now‑unused OptionValues import.

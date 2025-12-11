@@ -3,7 +3,6 @@
  * Mirrors the wiring previously performed by GetDotenvCli.overrideRootOptions,
  * without exposing a public helper on the host class.
  */
-import type { OptionValues } from '@commander-js/extra-typings';
 
 import {
   resolveGetDotenvConfigSources,
@@ -44,17 +43,11 @@ const debugView = (o: Partial<RootOptionsShape>) => ({
   capture: o.capture,
   strict: o.strict,
 });
-type AnyGetDotenvCli<TOptions extends GetDotenvOptions> = GetDotenvCli<
-  TOptions,
-  unknown[],
-  OptionValues,
-  OptionValues
->;
 
 export function installRootHooks<TOptions extends GetDotenvOptions>(
-  program: AnyGetDotenvCli<TOptions>,
+  program: GetDotenvCli<TOptions>,
   defaults?: Partial<RootOptionsShape>,
-): AnyGetDotenvCli<TOptions> {
+): GetDotenvCli<TOptions> {
   // Merge provided defaults over the base defaults to keep critical keys like logger.
   const d = defaultsDeep<Partial<RootOptionsShape>>(
     baseRootOptionDefaults as Partial<RootOptionsShape>,
