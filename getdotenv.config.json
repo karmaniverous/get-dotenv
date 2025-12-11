@@ -3,7 +3,7 @@
   "dotenvToken": ".env",
   "privateToken": "local",
   "paths": "./",
-  "loadProcess": true,
+  "loadProcess": false,
   "shell": true,
   "scripts": {
     "git-status": {
