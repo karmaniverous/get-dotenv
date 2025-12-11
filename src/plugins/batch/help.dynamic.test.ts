@@ -7,13 +7,12 @@ import { batchPlugin } from './index';
 describe('plugins/batch dynamic help', () => {
   it('shows effective defaults from plugin config in "help batch"', () => {
     const cli = new GetDotenvCli('test')
-      .attachRootOptions()
-      .use(batchPlugin())
-      .passOptions();
+      .overrideRootOptions()
+      .use(batchPlugin());
 
     // Evaluate dynamic option descriptions using a synthetic resolved config:
     // - plugins.batch: pkgCwd ON; rootPath "./work"; globs "apps/*"
-    (cli as unknown as GetDotenvCli).evaluateDynamicOptions({
+    cli.evaluateDynamicOptions({
       plugins: {
         batch: {
           pkgCwd: true,

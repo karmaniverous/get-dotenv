@@ -31,10 +31,7 @@ describe('plugins/aws subcommand', () => {
   });
 
   it('session-only establishes region via flag without forwarding', async () => {
-    const cli = new GetDotenvCli('test')
-      .attachRootOptions()
-      .use(awsPlugin())
-      .passOptions();
+    const cli = new GetDotenvCli('test').overrideRootOptions().use(awsPlugin());
     await cli.parseAsync(['node', 'test', 'aws', '--region', 'us-east-1']);
     // No forwarding
     expect(runCommandMock).not.toHaveBeenCalled();
@@ -46,10 +43,7 @@ describe('plugins/aws subcommand', () => {
 
   it('forwards args after "--" to AWS CLI with env injection and capture honored', async () => {
     process.env.GETDOTENV_STDIO = 'pipe'; // force capture
-    const cli = new GetDotenvCli('test')
-      .attachRootOptions()
-      .use(awsPlugin())
-      .passOptions();
+    const cli = new GetDotenvCli('test').overrideRootOptions().use(awsPlugin());
     await cli.parseAsync([
       'node',
       'test',

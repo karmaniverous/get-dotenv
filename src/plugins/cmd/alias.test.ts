@@ -19,9 +19,8 @@ describe('plugins/cmd option alias', () => {
 
   it('executes alias when provided on parent (variadic join)', async () => {
     const cli = new GetDotenvCli('test')
-      .attachRootOptions()
-      .use(cmdPlugin({ asDefault: true, optionAlias: '--cmd <command...>' }))
-      .passOptions();
+      .overrideRootOptions()
+      .use(cmdPlugin({ asDefault: true, optionAlias: '--cmd <command...>' }));
 
     await cli.parseAsync(['node', 'test', '--cmd', 'echo', 'OK']);
 
@@ -37,9 +36,8 @@ describe('plugins/cmd option alias', () => {
   it('expands alias value with dotenv expansion by default', async () => {
     process.env.FOO = 'BAR';
     const cli = new GetDotenvCli('test')
-      .attachRootOptions()
-      .use(cmdPlugin({ asDefault: true, optionAlias: '--cmd <command...>' }))
-      .passOptions();
+      .overrideRootOptions()
+      .use(cmdPlugin({ asDefault: true, optionAlias: '--cmd <command...>' }));
 
     await cli.parseAsync(['node', 'test', '--cmd', 'echo', '$FOO']);
 
@@ -59,9 +57,8 @@ describe('plugins/cmd option alias', () => {
     }) as never);
 
     const cli = new GetDotenvCli('test')
-      .attachRootOptions()
-      .use(cmdPlugin({ asDefault: true, optionAlias: '--cmd <command...>' }))
-      .passOptions();
+      .overrideRootOptions()
+      .use(cmdPlugin({ asDefault: true, optionAlias: '--cmd <command...>' }));
 
     await expect(
       cli.parseAsync([

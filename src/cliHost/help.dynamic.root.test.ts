@@ -4,9 +4,7 @@ import { GetDotenvCli, type ResolvedHelpConfig } from './GetDotenvCli';
 
 describe('GetDotenvCli root dynamic help', () => {
   it('shows default labels for key root toggles (shell/log/load-process)', () => {
-    // Build a host with root options and install passOptions so the instance
-    // has consistent help/grouping behavior.
-    const cli = new GetDotenvCli('test').attachRootOptions().passOptions();
+    const cli = new GetDotenvCli('test').overrideRootOptions();
 
     // Evaluate dynamic descriptions with an explicit resolved config bag.
     // Set OFF defaults for shell/log/loadProcess to assert "(default)" tags.

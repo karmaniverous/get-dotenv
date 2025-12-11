@@ -3,17 +3,17 @@ import { describe, expect, it } from 'vitest';
 import { GetDotenvCli } from './GetDotenvCli';
 
 describe('/cliHost helpers exposure', () => {
-  it('exposes attachRootOptions and passOptions on the host prototype', () => {
+  it('exposes attachRootOptions and overrideRootOptions on the host prototype', () => {
     const cli = new GetDotenvCli('test');
     // Runtime presence
     const hasAttach =
       typeof (cli as unknown as { attachRootOptions?: unknown })
         .attachRootOptions === 'function';
-    const hasPass =
-      typeof (cli as unknown as { passOptions?: unknown }).passOptions ===
-      'function';
+    const hasOverride =
+      typeof (cli as unknown as { overrideRootOptions?: unknown })
+        .overrideRootOptions === 'function';
     expect(hasAttach).toBe(true);
-    expect(hasPass).toBe(true);
+    expect(hasOverride).toBe(true);
   });
   it('type-level visibility compiles (no runtime call required)', () => {
     const cli = new GetDotenvCli('test');
@@ -23,12 +23,12 @@ describe('/cliHost helpers exposure', () => {
         attachRootOptions?: (...args: unknown[]) => unknown;
       }
     ).attachRootOptions;
-    const pass = (
+    const override = (
       cli as {
-        passOptions?: (...args: unknown[]) => unknown;
+        overrideRootOptions?: (...args: unknown[]) => unknown;
       }
-    ).passOptions;
+    ).overrideRootOptions;
     expect(attach).toBeDefined();
-    expect(pass).toBeDefined();
+    expect(override).toBeDefined();
   });
 });

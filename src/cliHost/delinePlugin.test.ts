@@ -38,13 +38,10 @@ describe('cliHost/definePlugin helpers', () => {
       return p;
     })();
 
-    const cli = new GetDotenvCli('test')
-      .attachRootOptions()
-      .use(plugin)
-      .passOptions();
+    const cli = new GetDotenvCli('test').overrideRootOptions().use(plugin);
 
     // Provide a synthetic help-time config bag with plugin slice at realized path "dyn"
-    (cli as unknown as GetDotenvCli).evaluateDynamicOptions({
+    cli.evaluateDynamicOptions({
       plugins: { dyn: { demo: 'injected' } },
     });
 

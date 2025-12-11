@@ -13,9 +13,8 @@ describe('plugins/init', () => {
     const dir = path.posix.join(TROOT, 'case1');
     await fs.remove(dir);
     const cli = new GetDotenvCli('test')
-      .attachRootOptions()
-      .use(initPlugin())
-      .passOptions();
+      .overrideRootOptions()
+      .use(initPlugin());
     await cli.parseAsync([
       'node',
       'test',
@@ -59,9 +58,8 @@ describe('plugins/init', () => {
     const dir = path.posix.join(TROOT, 'case2');
     await fs.remove(dir);
     const cli = new GetDotenvCli('test')
-      .attachRootOptions()
-      .use(initPlugin())
-      .passOptions();
+      .overrideRootOptions()
+      .use(initPlugin());
     await cli.parseAsync([
       'node',
       'test',
@@ -90,9 +88,8 @@ describe('plugins/init', () => {
     const dir = path.posix.join(TROOT, 'case3');
     await fs.remove(dir);
     const cli = new GetDotenvCli('test')
-      .attachRootOptions()
-      .use(initPlugin())
-      .passOptions();
+      .overrideRootOptions()
+      .use(initPlugin());
     await cli.parseAsync([
       'node',
       'test',
@@ -138,9 +135,8 @@ describe('plugins/init', () => {
     await fs.writeFile(cfg, 'OLD', 'utf-8');
 
     const cli = new GetDotenvCli('test')
-      .attachRootOptions()
-      .use(initPlugin())
-      .passOptions();
+      .overrideRootOptions()
+      .use(initPlugin());
     await cli.parseAsync([
       'node',
       'test',
@@ -167,9 +163,8 @@ describe('plugins/init', () => {
     process.env.CI = 'true';
     try {
       const cli = new GetDotenvCli('test')
-        .attachRootOptions()
-        .use(initPlugin())
-        .passOptions();
+        .overrideRootOptions()
+        .use(initPlugin());
       await cli.parseAsync([
         'node',
         'test',

@@ -17,9 +17,8 @@ describe('plugins/batch', () => {
 
   it('invokes list mode with globs and root path', async () => {
     const cli = new GetDotenvCli('test')
-      .attachRootOptions()
-      .use(batchPlugin())
-      .passOptions();
+      .overrideRootOptions()
+      .use(batchPlugin());
     await cli.parseAsync([
       'node',
       'test',
@@ -42,15 +41,12 @@ describe('plugins/batch', () => {
     expect(args.rootPath).toBe('./');
   });
   it('resolves shell from script override', async () => {
-    const cli = new GetDotenvCli('test')
-      .attachRootOptions()
-      .use(
-        batchPlugin({
-          scripts: { build: { cmd: 'npm run build', shell: '/bin/zsh' } },
-          shell: false,
-        }),
-      )
-      .passOptions();
+    const cli = new GetDotenvCli('test').overrideRootOptions().use(
+      batchPlugin({
+        scripts: { build: { cmd: 'npm run build', shell: '/bin/zsh' } },
+        shell: false,
+      }),
+    );
     await cli.parseAsync([
       'node',
       'test',
@@ -73,9 +69,8 @@ describe('plugins/batch', () => {
   });
   it('propagates pkg-cwd flag', async () => {
     const cli = new GetDotenvCli('test')
-      .attachRootOptions()
-      .use(batchPlugin())
-      .passOptions();
+      .overrideRootOptions()
+      .use(batchPlugin());
     await cli.parseAsync([
       'node',
       'test',
@@ -94,9 +89,8 @@ describe('plugins/batch', () => {
   });
   it('propagates ignore-errors', async () => {
     const cli = new GetDotenvCli('test')
-      .attachRootOptions()
-      .use(batchPlugin())
-      .passOptions();
+      .overrideRootOptions()
+      .use(batchPlugin());
     await cli.parseAsync([
       'node',
       'test',
@@ -116,9 +110,8 @@ describe('plugins/batch', () => {
 
   it('executes positional command without explicit subcommand', async () => {
     const cli = new GetDotenvCli('test')
-      .attachRootOptions()
-      .use(batchPlugin())
-      .passOptions();
+      .overrideRootOptions()
+      .use(batchPlugin());
     await cli.parseAsync(['node', 'test', 'batch', 'echo', 'OK']);
 
     expect(execMock).toHaveBeenCalledTimes(1);

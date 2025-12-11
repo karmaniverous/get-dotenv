@@ -3,7 +3,7 @@
 ## Next up (near‑term, actionable)
 
 - Implement overrideRootOptions(defaults?, visibility?) on GetDotenvCli; declare flags from visibility (default: all visible except scripts) and install resolution hooks replacing passOptions (merge: base < compose < inherited < current; resolve context; evaluate dynamic help; run --strict).
-- Replace attachRootOptions/passOptions usage in createCli and templates with overrideRootOptions(); shipped createCli calls overrideRootOptions() with no defaults and does not override loadProcess.
+- Replace attachRootOptions/passOptions usage from createCli and templates with overrideRootOptions(); shipped createCli calls overrideRootOptions() with no defaults and does not override loadProcess.
 - Persist the merged root bag on the host for in‑process nesting and serialize it to env for cross‑process; keep readMergedOptions behavior for plugins unchanged.
 - Unify top‑level -h/--help with parsed help by synthesizing the same help bag and overlaying resolved toggles (shell/log/loadProcess/entropy/redaction) from ctx.optionsResolved.
 - Hide the scripts family from help by default while keeping runtime behavior; ensure toggle families (e.g., shell, loadProcess) are hidden/shown together via visibility.
@@ -24,4 +24,23 @@
 
 - Amendment: overrideRootOptions declares flags only (no early install). Hooks
   and context resolution are still installed via passOptions() after plugin
-  wiring to ensure plugins are registered before installation.
+  wiring to ensure plugins are registered before installation.
+
+- Consolidated hook registration into overrideRootOptions (no early install,
+  no duplicated defaults). Removed passOptions usage from createCli and the
+  template CLI and updated the exposure test to assert overrideRootOptions
+  presence. Plugin install remains explicit in run() paths, preserving the
+  correct mount order.
+
+- Migrated unit tests off deprecated passOptions() to overrideRootOptions();
+  updated aws/batch/cmd/init and host dynamic‑help tests to call
+  overrideRootOptions() and removed unsafe casts where unnecessary. This
+  restores test/runtime parity under the new consolidated root wiring.
+
+- Fixed generic compatibility in GetDotenvCli hooks by casting service
+  options to Partial<TOptions> when calling resolveAndLoad(), satisfying
+  exactOptionalPropertyTypes and eliminating TS2379 in typecheck.
+
+- Follow‑through: remove src/cliHost/passOptions.ts and any stale exports in a
+  separate sweep, then re‑run verify scripts and bump version for the helper
+  removal once docs are updated.
