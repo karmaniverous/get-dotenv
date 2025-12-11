@@ -644,14 +644,17 @@ Regression and coverage
 - Dynamic help storage
   - The CLI host stores dynamic option description callbacks in a host-owned WeakMap keyed by Commander.Option. Do not mutate Option via symbol properties.
   - The CLI host stores option grouping metadata (for help rendering) in a host-owned WeakMap keyed by Option. Expose `setOptionGroup(opt, group)`.
+
 - Grouping policy (leaf‑only)
   - Plugin group headings render leaf‑only names (e.g., “Plugin options — whoami”). The full realized path is used internally for lookup and config keys but is not displayed in group headings.
   - In the rare event of ambiguous leafs under the same parent, the installer’s sibling‑uniqueness guard prevents ambiguous groupings by requiring a namespace override.
+
 - Namespace model
   - definePlugin requires `ns: string` for every plugin.
   - The host creates mounts (parent.ns(effectiveNs)) and passes the mount into `setup(mount)`; `setup` returns `void | Promise<void>`.
   - The `.use()` composer supports an override object: `.use(plugin, { ns: '...' })`.
   - Sibling namespace collisions under a parent are detected and reported with a clear error that suggests an override.
+
 - Identity and config keys
   - Plugin `id` is internal-only (Symbol). Public keys are the realized mount path segments (e.g., `aws/whoami`).
 
@@ -676,12 +679,50 @@ Regression and coverage
   - Use Commander’s public typed properties (options, commands, parent, flags, description). Avoid “unknown” casts.
   - Avoid erasing generics to `Command` or `CommandUnknownOpts` for any object on which further Commander chaining occurs.
 
+- Root options composition & visibility (overrideRootOptions)
+  - A single host method replaces legacy attachRootOptions and passOptions:
+    ```ts
+    overrideRootOptions(
+      defaults?: Partial<RootOptionsShape>,
+      visibility?: Partial<Record<keyof RootOptionsShape, boolean>>,
+    ): this
+    ```
+  - Semantics:
+    - defaults: a compose‑time override layer applied before local config. Omitted → preserve baseRootOptionDefaults from src/defaults.ts.
+    - visibility: controls which base root flags are declared on the CLI (and thus appear in help). true|undefined → visible; false → hidden. By policy, “scripts” remains hidden regardless; all other base root options are visible by default.
+    - Families of toggles (e.g., loadProcess ON/OFF, shell ON/OFF) are hidden/shown together by the corresponding visibility key.
+  - Under the hood, one call does both:
+    1. Declare visible root flags from visibility (dynamic options for labels; do not set Commander defaults for toggles).
+    2. Install resolution hooks that:
+       - Merge the CLI bag using layer order: baseRootOptionDefaults < compose defaults < inherited nested bag < current flags.
+       - Resolve dotenv context once.
+       - Build a help bag by overlaying selected root toggles from the resolved service defaults (ctx.optionsResolved) so “(default)” tags reflect local config as well.
+       - Refresh dynamic help and run validation (`--strict` honored).
+  - Top‑level -h/--help parity:
+    - The host synthesizes the same help bag as a parsed run:
+      base defaults + compose defaults, then overlay root toggles from ctx.optionsResolved after a context resolve with `loadProcess: false` and `runAfterResolve: false`.
+    - Evaluate dynamic help and print; “-h” and “help” agree and match runtime behavior.
+  - Keys whose local config overlay should reflect in help default tags (when present):
+    - shell (string or off), loadProcess, log, warnEntropy, entropyThreshold, entropyMinLength, entropyWhitelist, redactPatterns (display only).
+  - Inheritance invariants:
+    - Hiding a flag via visibility only removes it from the command line; the runtime still honors compose defaults and local config.
+    - Options-bag inheritance remains unchanged:
+      • In‑process nesting (Commander): parent < current precedence. The merged bag is persisted on root for subcommands.
+      • Cross‑process nesting (spawned child): the merged bag is serialized to `getDotenvCliOptions` in the child’s env; the child merges it. Same precedence.
+  - Shipped createCli defaults:
+    - The default host composition uses overrideRootOptions() with no compose‑time overrides (full base surface visible) and hides “scripts”. The shipped CLI does not set `{ loadProcess: false }`; base defaults apply (loadProcess ON by default from src/defaults.ts).
+  - Removal of legacy API:
+    - `attachRootOptions` and `passOptions` are removed from the public requirements and are superseded by `overrideRootOptions`. Backward compatibility is not required for these helpers.
+
 ## Environment normalization for subprocesses
 
 - Always use a single helper (buildSpawnEnv) to normalize/dedupe child env.
 - Drop `undefined` values; normalize Windows HOME/TMP/TEMP; ensure `TMPDIR` on POSIX when temp exists.
 - Composition for child: `{ ...process.env, ...ctx.dotenv }`.
 - Keep `URL` acceptance only at the outer execution seam (e.g., runCommand/runCommandResult). Internal helpers should use `string | false` to avoid widening shell types.
+- Process.env inheritance policy:
+  - Any instance of get-dotenv inherits the current process environment for expansion (dotenvExpand defaults to process.env).
+  - When commands are spawned, the child env is composed from the current process plus the composed dotenv overlay.
 
 ## Configuration files and overlays (always-on in host/generator)
 
@@ -776,10 +817,12 @@ Per‑plugin config keyed by realized path
   - `PluginWithInstanceHelpers<TOptions, TConfig>` is exported so downstream code can declare plugin variables with the precise config type.
   - `defineGetDotenvConfig<Vars extends ProcessEnv, Env extends string = string>()(cfg)` provides a typed builder for JS/TS configs that couples `vars`, `envVars`, and `dynamic`.
   - `getDotenv<Vars extends ProcessEnv = ProcessEnv>(...) => Promise<Vars>` provides an opt-in typed env shape; an overload that includes `vars: Vars` returns `Promise<ProcessEnv & Vars>`.
+  - `overrideRootOptions(defaults?: Partial<RootOptionsShape>, visibility?: Partial<Record<keyof RootOptionsShape, boolean>>): this` on the host replaces legacy attachRootOptions/passOptions and governs both the CLI surface and resolution hooks in a single call.
 - Removed from public API:
   - `readPluginConfig<T>(cli, id: string)`
   - Public `ctx.pluginConfigs` access
-  - Mount return from plugin `setup()` (host now creates mounts; setup returns void).
+  - Mount return from plugin `setup()` (host now creates mounts; setup returns void)
+  - Legacy `attachRootOptions` and `passOptions` helpers (superseded by `overrideRootOptions`).
 - Composition override API (additive)
   - `.use(plugin, { ns: '...' })` — minimal override shape to rename the mounted command segment during composition. The override only affects the realized path, not the plugin’s internal identity.
 

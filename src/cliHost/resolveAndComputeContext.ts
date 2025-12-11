@@ -8,7 +8,7 @@ import { getDotenvOptionsSchemaResolved } from '@/src/schema';
 
 import { computeContext } from './computeContext';
 import type { GetDotenvCliPlugin } from './contracts';
-import type { GetDotenvCliCtx } from './GetDotenvCliq';
+import type { GetDotenvCliCtx } from './GetDotenvCli';
 
 export async function resolveAndComputeContext<
   TOptions extends GetDotenvOptions,

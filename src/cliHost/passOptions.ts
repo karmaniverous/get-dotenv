@@ -18,7 +18,7 @@ import {
 import { baseRootOptionDefaults } from '@/src/defaults';
 import { defaultsDeep } from '@/src/util';
 
-import type { GetDotenvCli } from './GetDotenvCliq';
+import type { GetDotenvCli } from './GetDotenvCli';
 import type { GetDotenvCliOptions } from './GetDotenvCliOptions';
 import { toHelpConfig } from './helpConfig';
 import { resolveCliOptions } from './resolveCliOptions';

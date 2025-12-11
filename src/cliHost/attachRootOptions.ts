@@ -2,7 +2,7 @@ import { Option } from '@commander-js/extra-typings';
 
 import { dotenvExpandFromProcessEnv } from '@/src/dotenv';
 
-import type { GetDotenvCli } from './GetDotenvCliq';
+import type { GetDotenvCli } from './GetDotenvCli';
 import type { RootOptionsShape } from './types';
 
 /**

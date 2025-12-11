@@ -6,7 +6,7 @@ import type { OptionValues } from '@commander-js/extra-typings';
 import type { GetDotenvOptions } from '@/src/core';
 
 import type { GetDotenvCliPlugin, GetDotenvCliPublic } from './contracts';
-import type { GetDotenvCliCtx } from './GetDotenvCliq';
+import type { GetDotenvCliCtx } from './GetDotenvCli';
 
 export async function runAfterResolveTree<
   TOptions extends GetDotenvOptions = GetDotenvOptions,

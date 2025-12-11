@@ -7,7 +7,7 @@ export type {
 } from './contracts';
 export { definePlugin } from './definePlugin';
 export { runCommand, runCommandResult } from './exec';
-export { GetDotenvCli, type GetDotenvCliCtx } from './GetDotenvCliq';
+export { GetDotenvCli, type GetDotenvCliCtx } from './GetDotenvCli';
 export {
   baseGetDotenvCliOptions,
   type GetDotenvCliOptions,

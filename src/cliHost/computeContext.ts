@@ -20,7 +20,7 @@ import {
 } from '@/src/util';
 
 import type { GetDotenvCliPlugin } from './contracts';
-import type { GetDotenvCliCtx } from './GetDotenvCliq';
+import type { GetDotenvCliCtx } from './GetDotenvCli';
 import { flattenPluginTreeByPath } from './paths';
 
 /**
