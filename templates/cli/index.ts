@@ -16,13 +16,12 @@ await createCli({
   alias: 'mycli',
   compose: (program) =>
     program
-      .attachRootOptions({ loadProcess: false })
+      .overrideRootOptions({ loadProcess: false })
       .use(
         cmdPlugin({ asDefault: true, optionAlias: '-c, --cmd <command...>' }),
       )
       .use(batchPlugin())
       .use(awsPlugin().use(awsWhoamiPlugin()))
       .use(initPlugin())
-      .use(helloPlugin())
-      .passOptions({ loadProcess: false }),
+      .use(helloPlugin()),
 })();

@@ -16,3 +16,8 @@
 ## Completed (recent)
 
 **CRITICAL: Append-only list. Add new completed items at the end. Prune old completed entries from the top. Do not edit existing entries.**
+
+- Introduced GetDotenvCli.overrideRootOptions(defaults?, visibility?) as a
+  delegating shim over existing attachRootOptions + passOptions. Updated the
+  shipped createCli and template CLI to use overrideRootOptions. Visibility is
+  accepted but not yet enforced; scripts remain hidden by default.

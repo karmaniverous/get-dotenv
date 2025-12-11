@@ -120,14 +120,13 @@ export function createCli(
     opts.compose(program);
   } else {
     program
-      .attachRootOptions({ loadProcess: false })
+      .overrideRootOptions({ loadProcess: false })
       .use(
         cmdPlugin({ asDefault: true, optionAlias: '-c, --cmd <command...>' }),
       )
       .use(batchPlugin())
       .use(awsPlugin().use(awsWhoamiPlugin()))
-      .use(initPlugin())
-      .passOptions({ loadProcess: false });
+      .use(initPlugin());
   }
 
   // Runner function: accepts full argv or args-only; defaults to process.argv.
