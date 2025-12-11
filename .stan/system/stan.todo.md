@@ -50,3 +50,8 @@
   subcommands are registered ahead of Commander parse. This resolves
   “unknown option --cmd” and “too many arguments” failures introduced by
   the removal of passOptions() early install behavior.
+
+- Top-level -h parity: createCli now composes the help-time bag from
+  base defaults + composition defaults (overrideRootOptions) and overlays
+  resolved toggles from ctx.optionsResolved. This fixes wrong labels for
+  --load-process-off when packaged or composition defaults set it OFF.

@@ -13,6 +13,7 @@ import {
   cmdPlugin,
   initPlugin,
 } from '@/src/plugins';
+import { defaultsDeep } from '@/src/util';
 
 /**
  * Create a get-dotenv CLI host with included plugins.
@@ -73,6 +74,9 @@ export function createCli(
   // Apply default output on root BEFORE composition so subcommands inherit.
   program.configureOutput(outputCfg);
 
+  // Composition-time defaults for root options (reflected in help).
+  const composeDefaults: Partial<RootOptionsShape> = { loadProcess: false };
+
   // Tests-only: avoid process.exit during help/version flows under Vitest.
   const underTests =
     process.env.GETDOTENV_TEST === '1' ||
@@ -120,7 +124,7 @@ export function createCli(
     opts.compose(program);
   } else {
     program
-      .overrideRootOptions({ loadProcess: false })
+      .overrideRootOptions(composeDefaults)
       .use(
         cmdPlugin({ asDefault: true, optionAlias: '-c, --cmd <command...>' }),
       )
@@ -180,11 +184,54 @@ export function createCli(
           },
           { runAfterResolve: false },
         );
-        // Build a defaults-only merged CLI bag for help-time parity (no side effects).
+        // Build a help-time bag:
+        // - Start with base defaults + composition defaults,
+        // - Then overlay selected toggles from the resolved options so help
+        //   labels reflect the effective defaults (including local config).
+        const mergedDefaultsForHelp = defaultsDeep<Partial<RootOptionsShape>>(
+          baseRootOptionDefaults as Partial<RootOptionsShape>,
+          composeDefaults,
+        );
         const { merged: defaultsMerged } = resolveCliOptions<
           RootOptionsShape & { scripts?: ScriptsTable }
-        >({}, baseRootOptionDefaults as Partial<RootOptionsShape>, undefined);
-        const helpCfg = toHelpConfig(defaultsMerged, ctx.pluginConfigs);
+        >({}, mergedDefaultsForHelp, undefined);
+        const resolved = ctx.optionsResolved ?? {};
+        // Overlay resolved toggles that we display in help-time defaults.
+        const helpMerged: Partial<RootOptionsShape> = {
+          ...defaultsMerged,
+          ...(Object.prototype.hasOwnProperty.call(resolved, 'shell')
+            ? { shell: resolved.shell as string | boolean }
+            : {}),
+          ...(Object.prototype.hasOwnProperty.call(resolved, 'loadProcess')
+            ? { loadProcess: resolved.loadProcess as boolean }
+            : {}),
+          ...(Object.prototype.hasOwnProperty.call(resolved, 'log')
+            ? { log: resolved.log as boolean }
+            : {}),
+          ...(Object.prototype.hasOwnProperty.call(resolved, 'warnEntropy')
+            ? { warnEntropy: resolved.warnEntropy as boolean }
+            : {}),
+          ...(Object.prototype.hasOwnProperty.call(resolved, 'entropyThreshold')
+            ? { entropyThreshold: resolved.entropyThreshold as number }
+            : {}),
+          ...(Object.prototype.hasOwnProperty.call(resolved, 'entropyMinLength')
+            ? { entropyMinLength: resolved.entropyMinLength as number }
+            : {}),
+          ...(Array.isArray(
+            (resolved as { entropyWhitelist?: unknown }).entropyWhitelist,
+          )
+            ? {
+                entropyWhitelist: [
+                  ...((
+                    resolved as {
+                      entropyWhitelist?: ReadonlyArray<string>;
+                    }
+                  ).entropyWhitelist ?? []),
+                ] as ReadonlyArray<string>,
+              }
+            : {}),
+        };
+        const helpCfg = toHelpConfig(helpMerged, ctx.pluginConfigs);
         program.evaluateDynamicOptions(helpCfg);
         // Suppress output only during unit tests; allow E2E to capture.
         const piping =
