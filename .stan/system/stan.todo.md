@@ -2,22 +2,21 @@
 
 ## Next up (near‑term, actionable)
 
-- Implement overrideRootOptions(defaults?, visibility?) on GetDotenvCli; declare flags from visibility (default: all visible except scripts) and install resolution hooks replacing passOptions (merge: base < compose < inherited < current; resolve context; evaluate dynamic help; run --strict).
-- Replace attachRootOptions/passOptions usage from createCli and templates with overrideRootOptions(); shipped createCli calls overrideRootOptions() with no defaults and does not override loadProcess.
-- Persist the merged root bag on the host for in‑process nesting and serialize it to env for cross‑process; keep readMergedOptions behavior for plugins unchanged.
-- Unify top‑level -h/--help with parsed help by synthesizing the same help bag and overlaying resolved toggles (shell/log/loadProcess/entropy/redaction) from ctx.optionsResolved.
-- Hide the scripts family from help by default while keeping runtime behavior; ensure toggle families (e.g., shell, loadProcess) are hidden/shown together via visibility.
-- Remove attachRootOptions and passOptions from code and public exports; update cliHost barrel exports and internal imports accordingly.
-- Update README and templates to reference overrideRootOptions semantics, visibility, help‑defaults parity, and shipped createCli defaults; replace attachRootOptions/passOptions in templates/cli/index.ts.
-- Update unit and E2E tests to use overrideRootOptions; refresh help‑defaults expectations; ensure alias, batch, AWS, dynamic, smoke, and diagnostics tests remain green.
-- Ensure process.env inheritance and nested options‑bag inheritance are covered by tests; add regressions if missing.
-- Bump version for the breaking helper removal and update CHANGELOG; re‑run verify scripts (types, tarball, bundle, package).
+- Implement createCli rootOptionDefaults/rootOptionVisibility:
+  - Apply defaults/visibility once pre‑compose and install root resolution hooks.
+  - Ensure top‑level -h parity by overlaying resolved toggles from ctx.optionsResolved.
+  - Hide scripts by default; implement visibility families as specified in requirements.
+- Remove the public GetDotenvCli.prototype.overrideRootOptions helper; keep attachRootOptions internal only.
+- Update template CLI skeleton to set rootOptionDefaults/rootOptionVisibility on createCli and stop calling overrideRootOptions.
+- Update tests:
+  - E2E and unit paths that previously called overrideRootOptions should move to createCli or a small internal test helper.
+  - Refresh help-default assertions to reflect base (loadProcess ON) unless tests override via createCli.
+- Docs:
+  - (Follow‑through) Update README/guides and any shipped template commentary to reflect createCli-based overrides (scripts hidden; loadProcess not forced OFF).
 
 ## Completed (recent)
 
-**CRITICAL: Append-only list. Add new completed items at the end. Prune old completed entries from the top. Do not edit existing entries.**
-
-- Introduced GetDotenvCli.overrideRootOptions(defaults?, visibility?) as a
+- Introduced GetDotenvCli.overrideRootOptions as a
   delegating shim over existing attachRootOptions + passOptions. Updated the
   shipped createCli and template CLI to use overrideRootOptions. Visibility is
   accepted but not yet enforced; scripts remain hidden by default.
@@ -64,4 +63,14 @@
 
 - Fix: createCli help-time overlay casts ctx.optionsResolved to the CLI
   options shape and removes an unnecessary nullish coalescing default,
-  resolving TS2339 and lint (no-unnecessary-condition) errors.
+  resolving TS2339 and lint (no-unnecessary-condition) errors.
+
+- Lint: resolveGetDotenvOptions made non-async and now returns
+  Promise.resolve(...) to satisfy @typescript-eslint/require-await while
+  preserving the Promise-return contract for await call sites.
+
+- Requirements/doc refactor: adopted createCli rootOptionDefaults/rootOptionVisibility
+  as the single source of truth for root overrides and visibility; removed the public
+  overrideRootOptions helper in the requirements. Documented visibility families, shipped
+  defaults (scripts hidden; loadProcess not forced OFF), template changes, and advanced
+  host author guidance.

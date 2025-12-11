@@ -592,7 +592,6 @@ Goal: thread Commander’s generics `Command<Args, Opts, GlobalOpts>` end‑to�
 
 - Extra‑typings source of truth:
   - Treat `.stan/imports/extra-typings/index.d.ts` as canonical for local reasoning about Commander’s generics, especially `InferCommandArguments`, `OptionValues`, and `Command<Args, Opts, Global>`.
-  - Tooling and verify-bundle checks accept '@commander-js/extra-typings' as the primary external Commander reference (with 'commander' allowed for legacy).
 
 - Breaking change note:
   - Replace prior non‑generic `GetDotenvCliPublic extends Command` and `ns(name: string): Command` signatures. Backward-compat is not a constraint for this refactor; plan a major version bump.
@@ -607,28 +606,30 @@ Adopt a services-first architecture with clear ports (interfaces) and thin adapt
 
 - Adapters (CLI, HTTP, worker, GUI, etc.)
   - Map from the edge (flags/options → service inputs) and format outputs for the edge.
-  - Remain thin: no business logic; no hidden state management; no cross-cutting behavior beyond mapping/presentation.
+  - Remain thin: no business logic; no hidden state management; no cross‑cutting behavior beyond mapping/presentation.
   - Side effects (fs/process/network/clipboard) live at adapter boundaries or in small leaf helpers wired through ports.
 
 - Composition and seams
-  - Wire adapters to services in a small composition layer; use dependency injection via ports.
-  - Make seams testable: unit tests for services (pure), integration tests for adapters over minimal end-to-end slices.
+  - Wire adapters to services in a small composition layer; prefer dependency injection via ports.
+  - Make seams testable: unit tests for services (pure), integration tests for adapters over minimal end‑to‑end slices.
 
 - Code organization
-  - Prefer many small modules over large ones (see long-file guidance).
-  - Co-locate tests with modules for discoverability.
+  - Prefer many small modules over large ones (see long‑file guidance).
+  - Co‑locate tests with modules for discoverability.
+
+This matches the “Services‑first proposal required” step in the Default Task: propose contracts and adapter mappings before code.
 
 ## Testing architecture
 
 Principles
 
-- Pair every non-trivial module with a test file; co-locate tests (e.g., `foo.ts` with `foo.test.ts`).
+- Pair every non‑trivial module with a test file; co‑locate tests (e.g., `foo.ts` with `foo.test.ts`).
 - Favor small, focused unit tests for pure services and targeted integration tests for adapters/seams.
-- Exercise happy paths and representative error paths; avoid brittle, end-to-end fixtures unless necessary.
+- Exercise happy paths and representative error paths; avoid brittle, end‑to‑end fixtures unless necessary.
 
 Regression and coverage
 
-- Add minimal, high-value tests that pin down discovered bugs or branchy behavior.
+- Add minimal, high‑value tests that pin down discovered bugs or branchy behavior.
 - Keep coverage meaningful (prefer covering branches/decisions over chasing 100% lines).
 
 ## Diagnostics and safety (presentation only)
@@ -652,11 +653,6 @@ Regression and coverage
 - Namespace model
   - definePlugin requires `ns: string` for every plugin.
   - The host creates mounts (parent.ns(effectiveNs)) and passes the mount into `setup(mount)`; `setup` returns `void | Promise<void>`.
-  - The `.use()` composer supports an override object: `.use(plugin, { ns: '...' })`.
-  - Sibling namespace collisions under a parent are detected and reported with a clear error that suggests an override.
-
-- Identity and config keys
-  - Plugin `id` is internal-only (Symbol). Public keys are the realized mount path segments (e.g., `aws/whoami`).
 
 - Command creation semantics and uniqueness guard
   - The host’s `createCommand(name?)` must construct child commands via `new GetDotenvCli(name)` explicitly. Do not rely on subclass constructor semantics.
@@ -675,54 +671,117 @@ Regression and coverage
     - A defaults-only merged CLI bag (resolveCliOptions + baseRootOptionDefaults) in the top-level “-h/--help” flow (no side effects), for parity.
   - For plugin-scoped options, prefer plugin-bound dynamic helpers that inject that plugin’s TConfig; avoid relying on id-based lookups.
 
-- Commander usage
-  - Use Commander’s public typed properties (options, commands, parent, flags, description). Avoid “unknown” casts.
-  - Avoid erasing generics to `Command` or `CommandUnknownOpts` for any object on which further Commander chaining occurs.
+### Root options composition & visibility (createCli rootOptionDefaults/rootOptionVisibility)
 
-- Root options composition & visibility (overrideRootOptions)
-  - A single host method replaces legacy attachRootOptions and passOptions:
+A single host factory option replaces the legacy attachRootOptions/passOptions/overrideRootOptions sequencing.
+
+- Authoritative root overrides and visibility live on the createCli() options object:
+
+  ```ts
+  type CreateCliOptions = {
+    alias?: string;
+    branding?: string;
+    compose?: (program: GetDotenvCli) => GetDotenvCli;
+
+    // New:
+    rootOptionDefaults?: Partial<RootOptionsShape>;
+    rootOptionVisibility?: Partial<Record<keyof RootOptionsShape, boolean>>;
+  };
+  ```
+
+- Behavior:
+  - createCli applies rootOptionDefaults and rootOptionVisibility exactly once before it calls opts.compose(program).
+  - These govern:
+    - Which flags are declared on the host (visibility),
+    - The merge layer used by resolution hooks (defaults for the run),
+    - Help-time “(default)” labels (derived from the resolved bag for parity with parsed runs).
+
+- Visibility policy:
+  - scripts is hidden by default regardless of visibility overrides; all other base root options are visible by default unless set to false in rootOptionVisibility.
+
+  - Families (hide both toggles when the family key is false):
+    - shell/shell-off
+    - load-process/load-process-off
+    - log/log-off
+    - excludeDynamic + excludeDynamicOff
+    - excludeEnv + excludeEnvOff
+    - excludeGlobal + excludeGlobalOff
+    - excludePrivate + excludePrivateOff
+    - excludePublic + excludePublicOff
+    - entropy-warn/entropy-warn-off
+
+  - Singles (hide the single flag when the key is false):
+    - capture
+    - strict
+    - trace
+    - redact
+    - redact-pattern
+    - default-env
+    - dotenv-token
+    - private-token
+    - dynamic-path
+    - paths, paths-delimiter, paths-delimiter-pattern
+    - vars, vars-delimiter, vars-delimiter-pattern, vars-assignor, vars-assignor-pattern
+
+- Top-level -h/--help parity:
+  - createCli applies rootOptionDefaults before composition and produces help labels by resolving the context once with side-effects disabled, then overlaying the resolved toggles from ctx.optionsResolved onto the base+compose defaults to render “(default)” accurately (shell/log/loadProcess/warnEntropy and thresholds).
+
+- Shipped createCli defaults:
+  - The shipped CLI calls createCli() without rootOptionDefaults (base defaults apply; loadProcess ON by default) and hides “scripts”.
+  - The shipped CLI does not silently force `{ loadProcess: false }`.
+
+- Template skeleton:
+  - The canonical CLI template no longer calls program.overrideRootOptions(). Instead, it passes rootOptionDefaults/rootOptionVisibility to createCli:
+
     ```ts
-    overrideRootOptions(
-      defaults?: Partial<RootOptionsShape>,
-      visibility?: Partial<Record<keyof RootOptionsShape, boolean>>,
-    ): this
+    await createCli({
+      alias: '__CLI_NAME__',
+      compose: (program) =>
+        program
+          .use(
+            cmdPlugin({
+              asDefault: true,
+              optionAlias: '-c, --cmd <command...>',
+            }),
+          )
+          .use(batchPlugin())
+          .use(awsPlugin().use(awsWhoamiPlugin()))
+          .use(initPlugin()),
+      rootOptionDefaults: { loadProcess: false },
+      rootOptionVisibility: { log: false },
+    })();
     ```
-  - Semantics:
-    - defaults: a compose‑time override layer applied before local config. Omitted → preserve baseRootOptionDefaults from src/defaults.ts.
-    - visibility: controls which base root flags are declared on the CLI (and thus appear in help). true|undefined → visible; false → hidden. By policy, “scripts” remains hidden regardless; all other base root options are visible by default.
-    - Families of toggles (e.g., loadProcess ON/OFF, shell ON/OFF) are hidden/shown together by the corresponding visibility key.
-  - Under the hood, one call does both:
-    1. Declare visible root flags from visibility (dynamic options for labels; do not set Commander defaults for toggles).
-    2. Install resolution hooks that:
-       - Merge the CLI bag using layer order: baseRootOptionDefaults < compose defaults < inherited nested bag < current flags.
-       - Resolve dotenv context once.
-       - Build a help bag by overlaying selected root toggles from the resolved service defaults (ctx.optionsResolved) so “(default)” tags reflect local config as well.
-       - Refresh dynamic help and run validation (`--strict` honored).
-  - Top‑level -h/--help parity:
-    - The host synthesizes the same help bag as a parsed run:
-      base defaults + compose defaults, then overlay root toggles from ctx.optionsResolved after a context resolve with `loadProcess: false` and `runAfterResolve: false`.
-    - Evaluate dynamic help and print; “-h” and “help” agree and match runtime behavior.
-  - Keys whose local config overlay should reflect in help default tags (when present):
-    - shell (string or off), loadProcess, log, warnEntropy, entropyThreshold, entropyMinLength, entropyWhitelist, redactPatterns (display only).
-  - Inheritance invariants:
-    - Hiding a flag via visibility only removes it from the command line; the runtime still honors compose defaults and local config.
-    - Options-bag inheritance remains unchanged:
-      • In‑process nesting (Commander): parent < current precedence. The merged bag is persisted on root for subcommands.
-      • Cross‑process nesting (spawned child): the merged bag is serialized to `getDotenvCliOptions` in the child’s env; the child merges it. Same precedence.
-  - Shipped createCli defaults:
-    - The default host composition uses overrideRootOptions() with no compose‑time overrides (full base surface visible) and hides “scripts”. The shipped CLI does not set `{ loadProcess: false }`; base defaults apply (loadProcess ON by default from src/defaults.ts).
-  - Removal of legacy API:
-    - `attachRootOptions` and `passOptions` are removed from the public requirements and are superseded by `overrideRootOptions`. Backward compatibility is not required for these helpers.
 
-## Environment normalization for subprocesses
+- Advanced host authors:
+  - When constructing a raw GetDotenvCli without createCli, authors must wire the root surface by hand (declare flags and install resolution hooks). No public overrideRootOptions convenience is provided. This keeps the public ergonomic path in a single place (createCli) and avoids duplicate sources of truth.
 
-- Always use a single helper (buildSpawnEnv) to normalize/dedupe child env.
-- Drop `undefined` values; normalize Windows HOME/TMP/TEMP; ensure `TMPDIR` on POSIX when temp exists.
-- Composition for child: `{ ...process.env, ...ctx.dotenv }`.
-- Keep `URL` acceptance only at the outer execution seam (e.g., runCommand/runCommandResult). Internal helpers should use `string | false` to avoid widening shell types.
-- Process.env inheritance policy:
-  - Any instance of get-dotenv inherits the current process environment for expansion (dotenvExpand defaults to process.env).
-  - When commands are spawned, the child env is composed from the current process plus the composed dotenv overlay.
+- Public API removal (breaking, acceptable):
+  - The public GetDotenvCli.prototype.overrideRootOptions helper is removed.
+  - attachRootOptions is internal-only and used by the factory to declare flags.
+
+### Public API surface (exports and typing)
+
+- Keep public exports stable; add new generic types/helpers as additive improvements:
+  - `Scripts<TShell extends string | boolean = string | boolean>`
+  - `defineScripts<TShell extends string | boolean>() => <T extends Scripts<TShell>>(t: T) => T`
+  - `resolveShell<TShell extends string | boolean>(...) => TShell | false`
+  - `defineDynamic<Vars, T extends DynamicMap<Vars>>(d: T) => T`
+  - `dotenvExpandAll<T extends Record<string, string | undefined> | Readonly<Record<string, string | undefined>>>(...) => { [K in keyof T]: string | undefined } & Record<string, string | undefined>`
+  - `overlayEnv<B, P>(...) => B | (B & P)` generic return per presence of programmaticVars; accept Readonly inputs
+  - `definePlugin<TOptions, TConfig>(...)` returns a `PluginWithInstanceHelpers<TOptions, TConfig>` that includes instance-bound `readConfig(cli)` and `createPluginDynamicOption(...)`
+  - `PluginWithInstanceHelpers<TOptions, TConfig>` is exported so downstream code can declare plugin variables with the precise config type.
+  - `defineGetDotenvConfig<Vars extends ProcessEnv, Env extends string = string>()(cfg)` provides a typed builder for JS/TS configs that couples `vars`, `envVars`, and `dynamic`.
+  - `getDotenv<Vars extends ProcessEnv = ProcessEnv>(...) => Promise<Vars>` provides an opt-in typed env shape; an overload that includes `vars: Vars` returns `Promise<ProcessEnv & Vars>`.
+
+- Removed from public API (superseded by createCli options):
+  - `overrideRootOptions(...)` (legacy convenience removed)
+  - `readPluginConfig<T>(cli, id: string)`
+  - Public `ctx.pluginConfigs` access
+  - Mount return from plugin `setup()` (host creates mounts; setup returns void)
+  - Legacy `attachRootOptions` (internal-only)
+
+- Composition override API (additive)
+  - `.use(plugin, { ns: '...' })` — minimal override shape to rename the mounted command segment during composition. The override only affects the realized path, not the plugin’s internal identity.
 
 ## Configuration files and overlays (always-on in host/generator)
 
@@ -817,12 +876,12 @@ Per‑plugin config keyed by realized path
   - `PluginWithInstanceHelpers<TOptions, TConfig>` is exported so downstream code can declare plugin variables with the precise config type.
   - `defineGetDotenvConfig<Vars extends ProcessEnv, Env extends string = string>()(cfg)` provides a typed builder for JS/TS configs that couples `vars`, `envVars`, and `dynamic`.
   - `getDotenv<Vars extends ProcessEnv = ProcessEnv>(...) => Promise<Vars>` provides an opt-in typed env shape; an overload that includes `vars: Vars` returns `Promise<ProcessEnv & Vars>`.
-  - `overrideRootOptions(defaults?: Partial<RootOptionsShape>, visibility?: Partial<Record<keyof RootOptionsShape, boolean>>): this` on the host replaces legacy attachRootOptions/passOptions and governs both the CLI surface and resolution hooks in a single call.
+
 - Removed from public API:
   - `readPluginConfig<T>(cli, id: string)`
   - Public `ctx.pluginConfigs` access
   - Mount return from plugin `setup()` (host now creates mounts; setup returns void)
-  - Legacy `attachRootOptions` and `passOptions` helpers (superseded by `overrideRootOptions`).
+
 - Composition override API (additive)
   - `.use(plugin, { ns: '...' })` — minimal override shape to rename the mounted command segment during composition. The override only affects the realized path, not the plugin’s internal identity.
 

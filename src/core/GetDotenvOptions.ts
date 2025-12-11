@@ -232,7 +232,7 @@ export const getDotenvCliOptions2Options = ({
  *
  * The result preserves explicit empty values and drops only `undefined`.
  */
-export const resolveGetDotenvOptions = async (
+export const resolveGetDotenvOptions = (
   customOptions: Partial<GetDotenvOptions>,
 ) => {
   // Programmatic callers use neutral defaults only. Do not read local packaged
@@ -249,8 +249,8 @@ export const resolveGetDotenvOptions = async (
     customOptions,
   );
 
-  return {
+  return Promise.resolve({
     ...result, // Keep explicit empty strings/zeros; drop only undefined
     vars: omitUndefinedRecord(result.vars ?? {}),
-  };
+  });
 };

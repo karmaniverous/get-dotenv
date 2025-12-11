@@ -4,6 +4,7 @@
   "privateToken": "local",
   "paths": "./",
   "loadProcess": false,
+  "log": true,
   "shell": true,
   "scripts": {
     "git-status": {
