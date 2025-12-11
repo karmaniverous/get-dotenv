@@ -2,17 +2,9 @@
 
 ## Next up (near‑term, actionable)
 
-- Implement createCli rootOptionDefaults/rootOptionVisibility:
-  - Apply defaults/visibility once pre‑compose and install root resolution hooks.
-  - Ensure top‑level -h parity by overlaying resolved toggles from ctx.optionsResolved.
-  - Hide scripts by default; implement visibility families as specified in requirements.
 - Remove the public GetDotenvCli.prototype.overrideRootOptions helper; keep attachRootOptions internal only.
-- Update template CLI skeleton to set rootOptionDefaults/rootOptionVisibility on createCli and stop calling overrideRootOptions.
-- Update tests:
-  - E2E and unit paths that previously called overrideRootOptions should move to createCli or a small internal test helper.
-  - Refresh help-default assertions to reflect base (loadProcess ON) unless tests override via createCli.
-- Docs:
-  - (Follow‑through) Update README/guides and any shipped template commentary to reflect createCli-based overrides (scripts hidden; loadProcess not forced OFF).
+- Update tests to prefer createCli rootOptionDefaults/rootOptionVisibility over overrideRootOptions.
+- Docs: update README/guides and template commentary to reflect createCli-based overrides (scripts hidden; loadProcess not forced OFF).
 
 ## Completed (recent)
 
@@ -74,3 +66,12 @@
   overrideRootOptions helper in the requirements. Documented visibility families, shipped
   defaults (scripts hidden; loadProcess not forced OFF), template changes, and advanced
   host author guidance.
+
+- createCli: added rootOptionDefaults and rootOptionVisibility. Defaults are applied
+  once pre-compose; visibility is honored by hiding matching root options via hideHelp.
+  Top-level -h parity uses base defaults overlaid with rootOptionDefaults and the resolved
+  ctx toggles. Shipped CLI no longer forces loadProcess OFF by default (base defaults apply).
+
+- Template CLI: updated to pass rootOptionDefaults to createCli and stopped calling
+  overrideRootOptions in the compose block. This aligns the template with the factory’s
+  single source of truth for root wiring.

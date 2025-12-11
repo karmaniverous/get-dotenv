@@ -21,7 +21,7 @@ import { defaultsDeep } from '@/src/util';
  *
  * Options:
  * - alias: command name used for help/argv scaffolding (default: "getdotenv")
- * - branding: optional help header; when omitted, brand() uses "\<alias\> v\<version\>"
+ * - branding: optional help header; when omitted, brand() uses "<alias> v<version>"
  *
  * Usage:
  *   import \{ createCli \} from '\@karmaniverous/get-dotenv';
@@ -37,6 +37,17 @@ export type CreateCliOptions = {
    * you call here override the defaults.
    */
   compose?: (program: GetDotenvCli) => GetDotenvCli;
+  /**
+   * Root defaults applied once before composition. These are used by flag declaration
+   * and merge-time defaults (and top-level -h parity labels).
+   * Note: shipped CLI does not force loadProcess OFF; base defaults apply unless set here.
+   */
+  rootOptionDefaults?: Partial<RootOptionsShape>;
+  /**
+   * Visibility map to hide families/singles from root help. When a key is false,
+   * the corresponding option(s) are hidden (via hideHelp) after flags are declared.
+   */
+  rootOptionVisibility?: Partial<Record<keyof RootOptionsShape, boolean>>;
 };
 
 export function createCli(
@@ -75,8 +86,9 @@ export function createCli(
   // Apply default output on root BEFORE composition so subcommands inherit.
   program.configureOutput(outputCfg);
 
-  // Composition-time defaults for root options (reflected in help).
-  const composeDefaults: Partial<RootOptionsShape> = { loadProcess: false };
+  // Root defaults/visibility for this host (applied once, pre-compose).
+  const rootDefaults: Partial<RootOptionsShape> = opts.rootOptionDefaults ?? {};
+  const visibility = opts.rootOptionVisibility ?? {};
 
   // Tests-only: avoid process.exit during help/version flows under Vitest.
   const underTests =
@@ -120,12 +132,62 @@ export function createCli(
     /* no-op */
   });
 
+  // Declare root flags and resolution hooks once, pre-compose.
+  program.overrideRootOptions(rootDefaults);
+  // Apply visibility (hide selected options) after flags are declared.
+  if (Object.keys(visibility).length > 0) {
+    const hideByLong = (names: string[]) => {
+      for (const opt of program.options) {
+        const long = (opt as { long?: string }).long ?? '';
+        if (names.includes(long)) opt.hideHelp(true);
+      }
+    };
+    const fam = (key: keyof RootOptionsShape, longs: string[]) => {
+      if (visibility[key] === false) hideByLong(longs);
+    };
+    // Families
+    fam('shell', ['--shell', '--shell-off']);
+    fam('loadProcess', ['--load-process', '--load-process-off']);
+    fam('log', ['--log', '--log-off']);
+    fam('excludeDynamic', ['--exclude-dynamic', '--exclude-dynamic-off']);
+    fam('excludeEnv', ['--exclude-env', '--exclude-env-off']);
+    fam('excludeGlobal', ['--exclude-global', '--exclude-global-off']);
+    fam('excludePrivate', ['--exclude-private', '--exclude-private-off']);
+    fam('excludePublic', ['--exclude-public', '--exclude-public-off']);
+    fam('warnEntropy', ['--entropy-warn', '--entropy-warn-off']);
+    // Singles
+    const singles = [
+      ['capture', '--capture'],
+      ['strict', '--strict'],
+      ['trace', '--trace'],
+      ['defaultEnv', '--default-env'],
+      ['dotenvToken', '--dotenv-token'],
+      ['privateToken', '--private-token'],
+      ['dynamicPath', '--dynamic-path'],
+      ['paths', '--paths'],
+      ['pathsDelimiter', '--paths-delimiter'],
+      ['pathsDelimiterPattern', '--paths-delimiter-pattern'],
+      ['vars', '--vars'],
+      ['varsDelimiter', '--vars-delimiter'],
+      ['varsDelimiterPattern', '--vars-delimiter-pattern'],
+      ['varsAssignor', '--vars-assignor'],
+      ['varsAssignorPattern', '--vars-assignor-pattern'],
+      // diagnostics thresholds and whitelist/patterns
+      ['entropyThreshold', '--entropy-threshold'],
+      ['entropyMinLength', '--entropy-min-length'],
+      ['entropyWhitelist', '--entropy-whitelist'],
+      ['redactPatterns', '--redact-pattern'],
+    ] as Array<[keyof RootOptionsShape, string]>;
+    for (const [key, long] of singles) {
+      if (visibility[key] === false) hideByLong([long]);
+    }
+  }
+
   // Compose wiring: user-provided composer wins; otherwise apply shipped defaults.
   if (typeof opts.compose === 'function') {
     opts.compose(program);
   } else {
     program
-      .overrideRootOptions(composeDefaults)
       .use(
         cmdPlugin({ asDefault: true, optionAlias: '-c, --cmd <command...>' }),
       )
@@ -186,12 +248,12 @@ export function createCli(
           { runAfterResolve: false },
         );
         // Build a help-time bag:
-        // - Start with base defaults + composition defaults,
+        // - Start with base defaults + root defaults,
         // - Then overlay selected toggles from the resolved options so help
         //   labels reflect the effective defaults (including local config).
         const mergedDefaultsForHelp = defaultsDeep<Partial<RootOptionsShape>>(
           baseRootOptionDefaults as Partial<RootOptionsShape>,
-          composeDefaults,
+          rootDefaults,
         );
         const { merged: defaultsMerged } = resolveCliOptions<
           RootOptionsShape & { scripts?: ScriptsTable }

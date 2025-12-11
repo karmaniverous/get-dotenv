@@ -14,9 +14,9 @@ import { helloPlugin } from './plugins/hello';
 
 await createCli({
   alias: 'mycli',
+  rootOptionDefaults: { loadProcess: false },
   compose: (program) =>
     program
-      .overrideRootOptions({ loadProcess: false })
       .use(
         cmdPlugin({ asDefault: true, optionAlias: '-c, --cmd <command...>' }),
       )
