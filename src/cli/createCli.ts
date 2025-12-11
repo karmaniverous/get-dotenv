@@ -6,6 +6,8 @@ import {
   type ScriptsTable,
   toHelpConfig,
 } from '@/src/cliHost';
+import { attachRootOptions as attachRootOptionsBuilder } from '@/src/cliHost/attachRootOptions';
+import { installRootHooks } from '@/src/cliHost/rootHooks';
 import { baseRootOptionDefaults } from '@/src/defaults';
 import {
   awsPlugin,
@@ -133,7 +135,10 @@ export function createCli(
   });
 
   // Declare root flags and resolution hooks once, pre-compose.
-  program.overrideRootOptions(rootDefaults);
+  // 1) Declare flags using the internal builder (no public helper).
+  attachRootOptionsBuilder(program as unknown as GetDotenvCli, rootDefaults);
+  // 2) Install resolution hooks (preSubcommand/preAction).
+  installRootHooks(program as unknown as GetDotenvCli, rootDefaults);
   // Apply visibility (hide selected options) after flags are declared.
   if (Object.keys(visibility).length > 0) {
     const hideByLong = (names: string[]) => {

@@ -75,3 +75,9 @@
 - Template CLI: updated to pass rootOptionDefaults to createCli and stopped calling
   overrideRootOptions in the compose block. This aligns the template with the factory’s
   single source of truth for root wiring.
+
+- createCli wiring refactor: createCli no longer calls the public
+  overrideRootOptions helper. Root flags are declared via the internal
+  attachRootOptions builder and resolution hooks are installed via a new
+  internal helper (src/cliHost/rootHooks.ts). Behavior is unchanged; this
+  unblocks deprecating and ultimately removing the public helper.
