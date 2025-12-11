@@ -81,3 +81,6 @@
   attachRootOptions builder and resolution hooks are installed via a new
   internal helper (src/cliHost/rootHooks.ts). Behavior is unchanged; this
   unblocks deprecating and ultimately removing the public helper.
+- rootHooks typing/lint fix: removed implicit any and unsafe member access in
+  debug logging. Added a typed debugView over Partial<RootOptionsShape> and
+  used it in preSubcommand/preAction logs to satisfy strict/ESLint.

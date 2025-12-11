@@ -36,6 +36,14 @@ const dbg = (...args: unknown[]) => {
   }
 };
 
+// Typed projection for concise debug logs without unsafe member access.
+const debugView = (o: Partial<RootOptionsShape>) => ({
+  env: o.env,
+  shell: o.shell,
+  log: o.log,
+  capture: o.capture,
+  strict: o.strict,
+});
 type AnyGetDotenvCli<TOptions extends GetDotenvOptions> = GetDotenvCli<
   TOptions,
   unknown[],
@@ -65,19 +73,7 @@ export function installRootHooks<TOptions extends GetDotenvOptions>(
     const { merged } = resolveCliOptions<
       RootOptionsShape & { scripts?: ScriptsTable }
     >(raw, d, process.env.getDotenvCliOptions);
-    dbg(
-      'preSubcommand:merged',
-      ((pick) => pick(merged as Record<string, unknown>))(
-        (obj) =>
-          ({
-            env: obj.env,
-            shell: obj.shell,
-            log: obj.log,
-            capture: obj.capture,
-            strict: obj.strict,
-          }) as Record<string, unknown>,
-      ),
-    );
+    dbg('preSubcommand:merged', debugView(merged as Partial<RootOptionsShape>));
 
     // Persist merged bag for nested flows and ergonomic access.
     (
@@ -135,19 +131,7 @@ export function installRootHooks<TOptions extends GetDotenvOptions>(
     const { merged } = resolveCliOptions<
       RootOptionsShape & { scripts?: ScriptsTable }
     >(raw, d, process.env.getDotenvCliOptions);
-    dbg(
-      'preAction:merged',
-      ((pick) => pick(merged as Record<string, unknown>))(
-        (obj) =>
-          ({
-            env: obj.env,
-            shell: obj.shell,
-            log: obj.log,
-            capture: obj.capture,
-            strict: obj.strict,
-          }) as Record<string, unknown>,
-      ),
-    );
+    dbg('preAction:merged', debugView(merged as Partial<RootOptionsShape>));
 
     (
       thisCommand as unknown as {
