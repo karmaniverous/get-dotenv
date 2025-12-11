@@ -126,7 +126,8 @@ export function createCli(
       )
       .use(batchPlugin())
       .use(awsPlugin().use(awsWhoamiPlugin()))
-      .use(initPlugin());
+      .use(initPlugin())
+      .passOptions({ loadProcess: false });
   }
 
   // Runner function: accepts full argv or args-only; defaults to process.argv.

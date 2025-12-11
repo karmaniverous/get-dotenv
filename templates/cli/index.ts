@@ -23,5 +23,6 @@ await createCli({
       .use(batchPlugin())
       .use(awsPlugin().use(awsWhoamiPlugin()))
       .use(initPlugin())
-      .use(helloPlugin()),
+      .use(helloPlugin())
+      .passOptions({ loadProcess: false }),
 })();

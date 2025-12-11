@@ -20,4 +20,8 @@
 - Introduced GetDotenvCli.overrideRootOptions(defaults?, visibility?) as a
   delegating shim over existing attachRootOptions + passOptions. Updated the
   shipped createCli and template CLI to use overrideRootOptions. Visibility is
-  accepted but not yet enforced; scripts remain hidden by default.
+  accepted but not yet enforced; scripts remain hidden by default.
+
+- Amendment: overrideRootOptions declares flags only (no early install). Hooks
+  and context resolution are still installed via passOptions() after plugin
+  wiring to ensure plugins are registered before installation.

@@ -124,23 +124,19 @@ export class GetDotenvCli<
   }
 
   /**
-   * Override root options and install resolution hooks in a single call.
-   *
-   * For now this delegates to the legacy helpers:
-   * - Declares the visible root flags (scripts remain hidden by default).
-   * - Installs the merge/resolve hooks which persist the merged bag, resolve
-   *   context once, refresh dynamic help, and run validation (--strict).
-   *
-   * The optional `visibility` map is accepted for forward-compatibility but
-   * is not yet enforced; future iterations will selectively declare/hide
-   * families (e.g., shell, loadProcess) at declaration time.
+   * Override root options (declaration only).
+   * Declares the visible root flags using the provided defaults. Hooks that
+   * persist the merged bag and resolve context are installed by passOptions(),
+   * which should be called after composition so plugins are registered before
+   * any install occurs.
+   * The optional `visibility` map is accepted for forward-compatibility but is
+   * not yet enforced.
    */
   overrideRootOptions(
     defaults?: Partial<RootOptionsShape>,
     _visibility?: Partial<Record<keyof RootOptionsShape, boolean>>,
   ): this {
     this.attachRootOptions(defaults);
-    this.passOptions(defaults);
     return this;
   }
 
