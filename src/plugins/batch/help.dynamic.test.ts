@@ -5,10 +5,11 @@ import { GetDotenvCli } from '@/src/cliHost';
 import { batchPlugin } from './index';
 
 describe('plugins/batch dynamic help', () => {
-  it('shows effective defaults from plugin config in "help batch"', () => {
+  it('shows effective defaults from plugin config in "help batch"', async () => {
     const cli = new GetDotenvCli('test')
       .overrideRootOptions()
       .use(batchPlugin());
+    await cli.install();
 
     // Evaluate dynamic option descriptions using a synthetic resolved config:
     // - plugins.batch: pkgCwd ON; rootPath "./work"; globs "apps/*"

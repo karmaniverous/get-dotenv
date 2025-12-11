@@ -19,7 +19,7 @@ describe('cliHost/definePlugin helpers', () => {
     );
   });
 
-  it('createPluginDynamicOption: injects plugin config into help (smoke)', () => {
+  it('createPluginDynamicOption: injects plugin config into help (smoke)', async () => {
     // Build a plugin that adds a dynamic option on its mount
     const plugin = (() => {
       const p = definePlugin({
@@ -39,6 +39,7 @@ describe('cliHost/definePlugin helpers', () => {
     })();
 
     const cli = new GetDotenvCli('test').overrideRootOptions().use(plugin);
+    await cli.install();
 
     // Provide a synthetic help-time config bag with plugin slice at realized path "dyn"
     cli.evaluateDynamicOptions({

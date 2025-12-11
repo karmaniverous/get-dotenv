@@ -44,3 +44,9 @@
 - Follow‑through: remove src/cliHost/passOptions.ts and any stale exports in a
   separate sweep, then re‑run verify scripts and bump version for the helper
   removal once docs are updated.
+
+- Installed plugins explicitly in unit tests (await cli.install()) before
+  parsing and help evaluation to ensure parent-level alias options and
+  subcommands are registered ahead of Commander parse. This resolves
+  “unknown option --cmd” and “too many arguments” failures introduced by
+  the removal of passOptions() early install behavior.

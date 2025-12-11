@@ -15,6 +15,7 @@ describe('plugins/init', () => {
     const cli = new GetDotenvCli('test')
       .overrideRootOptions()
       .use(initPlugin());
+    await cli.install();
     await cli.parseAsync([
       'node',
       'test',
@@ -60,6 +61,7 @@ describe('plugins/init', () => {
     const cli = new GetDotenvCli('test')
       .overrideRootOptions()
       .use(initPlugin());
+    await cli.install();
     await cli.parseAsync([
       'node',
       'test',
@@ -90,6 +92,7 @@ describe('plugins/init', () => {
     const cli = new GetDotenvCli('test')
       .overrideRootOptions()
       .use(initPlugin());
+    await cli.install();
     await cli.parseAsync([
       'node',
       'test',
@@ -137,6 +140,7 @@ describe('plugins/init', () => {
     const cli = new GetDotenvCli('test')
       .overrideRootOptions()
       .use(initPlugin());
+    await cli.install();
     await cli.parseAsync([
       'node',
       'test',
@@ -165,6 +169,7 @@ describe('plugins/init', () => {
       const cli = new GetDotenvCli('test')
         .overrideRootOptions()
         .use(initPlugin());
+      await cli.install();
       await cli.parseAsync([
         'node',
         'test',

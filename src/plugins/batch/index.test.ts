@@ -19,6 +19,7 @@ describe('plugins/batch', () => {
     const cli = new GetDotenvCli('test')
       .overrideRootOptions()
       .use(batchPlugin());
+    await cli.install();
     await cli.parseAsync([
       'node',
       'test',
@@ -47,6 +48,7 @@ describe('plugins/batch', () => {
         shell: false,
       }),
     );
+    await cli.install();
     await cli.parseAsync([
       'node',
       'test',
@@ -71,6 +73,7 @@ describe('plugins/batch', () => {
     const cli = new GetDotenvCli('test')
       .overrideRootOptions()
       .use(batchPlugin());
+    await cli.install();
     await cli.parseAsync([
       'node',
       'test',
@@ -91,6 +94,7 @@ describe('plugins/batch', () => {
     const cli = new GetDotenvCli('test')
       .overrideRootOptions()
       .use(batchPlugin());
+    await cli.install();
     await cli.parseAsync([
       'node',
       'test',
@@ -112,6 +116,7 @@ describe('plugins/batch', () => {
     const cli = new GetDotenvCli('test')
       .overrideRootOptions()
       .use(batchPlugin());
+    await cli.install();
     await cli.parseAsync(['node', 'test', 'batch', 'echo', 'OK']);
 
     expect(execMock).toHaveBeenCalledTimes(1);

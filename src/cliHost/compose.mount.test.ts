@@ -4,7 +4,7 @@ import { definePlugin } from './definePlugin';
 import { GetDotenvCli } from './GetDotenvCli';
 
 describe('cliHost nested composition (mount propagation)', () => {
-  it('parent returns ns("parent"); child mounts under it', () => {
+  it('parent returns ns("parent"); child mounts under it', async () => {
     const parent = definePlugin({
       ns: 'parent',
       setup(cli) {
@@ -22,6 +22,7 @@ describe('cliHost nested composition (mount propagation)', () => {
     parent.use(child);
 
     const cli = new GetDotenvCli('test').overrideRootOptions().use(parent);
+    await cli.install();
 
     // Find the parent command and assert child presence under it.
     const commands = (

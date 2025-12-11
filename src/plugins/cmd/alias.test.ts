@@ -21,6 +21,7 @@ describe('plugins/cmd option alias', () => {
     const cli = new GetDotenvCli('test')
       .overrideRootOptions()
       .use(cmdPlugin({ asDefault: true, optionAlias: '--cmd <command...>' }));
+    await cli.install();
 
     await cli.parseAsync(['node', 'test', '--cmd', 'echo', 'OK']);
 
@@ -38,6 +39,7 @@ describe('plugins/cmd option alias', () => {
     const cli = new GetDotenvCli('test')
       .overrideRootOptions()
       .use(cmdPlugin({ asDefault: true, optionAlias: '--cmd <command...>' }));
+    await cli.install();
 
     await cli.parseAsync(['node', 'test', '--cmd', 'echo', '$FOO']);
 
@@ -59,6 +61,7 @@ describe('plugins/cmd option alias', () => {
     const cli = new GetDotenvCli('test')
       .overrideRootOptions()
       .use(cmdPlugin({ asDefault: true, optionAlias: '--cmd <command...>' }));
+    await cli.install();
 
     await expect(
       cli.parseAsync([
