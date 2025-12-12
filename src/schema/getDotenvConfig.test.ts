@@ -6,32 +6,28 @@ import {
 } from './getDotenvConfig';
 
 describe('schema/getDotenvConfig', () => {
-  it('accepts valid RAW shapes (string paths or array)', () => {
-    const raw1 = {
-      dotenvToken: '.env',
-      paths: './ ./apps/app',
+  it('accepts valid RAW shapes (vars and envVars)', () => {
+    const raw = {
       vars: { FOO: 'bar' },
       envVars: { dev: { DEV: '1' } },
+      scripts: { build: 'npm run build' },
     };
-    const res1 = getDotenvConfigSchemaRaw.safeParse(raw1);
-    expect(res1.success).toBe(true);
-
-    const raw2 = {
-      paths: ['./', './packages/app'],
-      vars: { FOO: 'bar' },
-    };
-    const res2 = getDotenvConfigSchemaRaw.safeParse(raw2);
-    expect(res2.success).toBe(true);
+    const res = getDotenvConfigSchemaRaw.safeParse(raw);
+    expect(res.success).toBe(true);
   });
 
-  it('normalizes paths to arrays in Resolved', () => {
-    const raw = { paths: './' };
+  it('resolves without top-level operational keys', () => {
+    const raw = {
+      vars: { A: '1' },
+      envVars: { dev: { B: '2' } },
+    };
     const resolved = getDotenvConfigSchemaResolved.parse(raw);
-    expect(resolved.paths).toEqual(['./']);
+    expect(resolved.vars?.A).toBe('1');
+    expect(resolved.envVars?.dev?.B).toBe('2');
   });
 
   it('errors on invalid shapes with helpful messages', () => {
-    const bad = { envVars: { dev: { OK: 1 } } } as unknown;
+    const bad = { envVars: { dev: { OK: 1 } } } as unknown; // non-string value
     const parsed = getDotenvConfigSchemaRaw.safeParse(bad);
     expect(parsed.success).toBe(false);
     if (!parsed.success) {

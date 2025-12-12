@@ -48,26 +48,9 @@ export function installRootHooks<TOptions extends GetDotenvOptions>(
   program: GetDotenvCli<TOptions>,
   defaults?: Partial<RootOptionsShape>,
 ): GetDotenvCli<TOptions> {
-  // Helper: compute merged root defaults from discovered config sources.
-  const computeConfigRootDefaults = async (): Promise<
-    Partial<RootOptionsShape>
-  > => {
-    try {
-      const sources = await resolveGetDotenvConfigSources(import.meta.url);
-      const merged = defaultsDeep<Partial<RootOptionsShape>>(
-        {},
-        sources.packaged?.rootOptionDefaults ?? {},
-        sources.project?.public?.rootOptionDefaults ?? {},
-        sources.project?.local?.rootOptionDefaults ?? {},
-      );
-      return merged;
-    } catch {
-      return {} as Partial<RootOptionsShape>;
-    }
-  };
-
   // Hook: preSubcommand — always runs for subcommand flows.
   program.hook('preSubcommand', async (thisCommand) => {
+    const sources = await resolveGetDotenvConfigSources(import.meta.url);
     const rawArgs =
       (thisCommand as unknown as { rawArgs?: string[] }).rawArgs ?? [];
     dbg('preSubcommand:rawArgs', rawArgs);
@@ -77,7 +60,12 @@ export function installRootHooks<TOptions extends GetDotenvOptions>(
 
     // Build unified defaults stack for this run:
     // baseRootOptionDefaults < createCli root defaults (argument) < config.rootOptionDefaults
-    const cfgDefaults = await computeConfigRootDefaults();
+    const cfgDefaults = defaultsDeep<Partial<RootOptionsShape>>(
+      {},
+      sources.packaged?.rootOptionDefaults ?? {},
+      sources.project?.public?.rootOptionDefaults ?? {},
+      sources.project?.local?.rootOptionDefaults ?? {},
+    );
     const d = defaultsDeep<Partial<RootOptionsShape>>(
       baseRootOptionDefaults as Partial<RootOptionsShape>,
       defaults ?? {},
@@ -88,6 +76,15 @@ export function installRootHooks<TOptions extends GetDotenvOptions>(
       RootOptionsShape & { scripts?: ScriptsTable }
     >(raw, d, process.env.getDotenvCliOptions);
     dbg('preSubcommand:merged', debugView(merged as Partial<RootOptionsShape>));
+
+    // Inject merged scripts from config sources (packaged < project/public < project/local).
+    (merged as unknown as Record<string, unknown>).scripts = defaultsDeep(
+      {},
+      (merged as unknown as { scripts?: ScriptsTable }).scripts ?? {},
+      (sources.packaged?.scripts as ScriptsTable | undefined) ?? {},
+      (sources.project?.public?.scripts as ScriptsTable | undefined) ?? {},
+      (sources.project?.local?.scripts as ScriptsTable | undefined) ?? {},
+    );
 
     // Persist merged bag for nested flows and ergonomic access.
     (
@@ -136,6 +133,7 @@ export function installRootHooks<TOptions extends GetDotenvOptions>(
 
   // Hook: preAction — root-only and parent-alias flows.
   program.hook('preAction', async (thisCommand) => {
+    const sources = await resolveGetDotenvConfigSources(import.meta.url);
     const rawArgs =
       (thisCommand as unknown as { rawArgs?: string[] }).rawArgs ?? [];
     dbg('preAction:rawArgs', rawArgs);
@@ -144,7 +142,12 @@ export function installRootHooks<TOptions extends GetDotenvOptions>(
 
     // Build unified defaults stack for this run:
     // baseRootOptionDefaults < createCli root defaults (argument) < config.rootOptionDefaults
-    const cfgDefaults = await computeConfigRootDefaults();
+    const cfgDefaults = defaultsDeep<Partial<RootOptionsShape>>(
+      {},
+      sources.packaged?.rootOptionDefaults ?? {},
+      sources.project?.public?.rootOptionDefaults ?? {},
+      sources.project?.local?.rootOptionDefaults ?? {},
+    );
     const d = defaultsDeep<Partial<RootOptionsShape>>(
       baseRootOptionDefaults as Partial<RootOptionsShape>,
       defaults ?? {},
@@ -155,6 +158,15 @@ export function installRootHooks<TOptions extends GetDotenvOptions>(
       RootOptionsShape & { scripts?: ScriptsTable }
     >(raw, d, process.env.getDotenvCliOptions);
     dbg('preAction:merged', debugView(merged as Partial<RootOptionsShape>));
+
+    // Inject merged scripts from config sources (packaged < project/public < project/local).
+    (merged as unknown as Record<string, unknown>).scripts = defaultsDeep(
+      {},
+      (merged as unknown as { scripts?: ScriptsTable }).scripts ?? {},
+      (sources.packaged?.scripts as ScriptsTable | undefined) ?? {},
+      (sources.project?.public?.scripts as ScriptsTable | undefined) ?? {},
+      (sources.project?.local?.scripts as ScriptsTable | undefined) ?? {},
+    );
 
     (
       thisCommand as unknown as {

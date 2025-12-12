@@ -2,19 +2,6 @@
 
 ## Next up (near‑term, actionable)
 
-- Config contract (breaking) — enforce strict schema and remove CLI pass‑through
-  - Schema (JSON/YAML/JS/TS):
-    - Reject root‑only operational flags at the top level; require them under `rootOptionDefaults`.
-    - Keep `scripts` top‑level only (not inside `rootOptionDefaults`; not exposed on CLI).
-    - Keep `dynamic` JS/TS‑only at the top level (never in `rootOptionDefaults`).
-  - Loader/validation:
-    - Fail with clear diagnostics when JSON/YAML contain disallowed top‑level root flags (guidance: move them to `rootOptionDefaults`).
-  - Host/CLI wiring:
-    - Remove the hidden `--scripts` CLI option; route scripts solely via config.
-  - Release & QA:
-    - Major version bump; changelog entry for stricter schema and CLI parity.
-    - Run verify scripts (types/bundle/tarball) and full CI matrix (POSIX + Windows).
-
 ## Completed (recent)
 
 - Requirements: unified root defaults via config.rootOptionDefaults with precedence
@@ -88,3 +75,11 @@
 
 - E2E: top-level -h includes redact flags
   - Hardened root help test to assert presence of `--redact` and `--redact-off` in top-level help output.
+
+- Config contract (breaking): strict schema + scripts via config (no CLI pass-through)
+  - Schema tightened (JSON/YAML/JS/TS): prohibited top‑level operational keys (dotenvToken, privateToken, paths, loadProcess, log, shell). Authors must use `rootOptionDefaults` for those.
+  - Retained only: `rootOptionDefaults`, `rootOptionVisibility`, `scripts`, `vars`, `envVars`, `dynamic` (JS/TS only), `schema` (JS/TS only), `plugins`, `requiredKeys`.
+  - Loader relies solely on schema for enforcement; no extra rejection logic added for top‑level operational keys.
+  - Removed hidden `--scripts` CLI option; injected merged scripts from config sources into the root merged options bag (packaged/public < project/public < project/local).
+  - Updated packaged `getdotenv.config.json` to `{}` to conform to the new schema.
+  - Updated schema tests to drop top‑level paths normalization checks.

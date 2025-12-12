@@ -10,27 +10,22 @@ const visibilityMap = z.record(z.string(), z.boolean());
  * Zod schemas for configuration files discovered by the new loader.
  *
  * Notes:
- * - RAW: all fields optional; shapes are stringly-friendly (paths may be string[] or string).
- * - RESOLVED: normalized shapes (paths always string[]).
- * - For JSON/YAML configs, the loader rejects "dynamic" and "schema" (JS/TS-only).
+ * - RAW: all fields optional; only allowed top-level keys are:
+ *   - rootOptionDefaults, rootOptionVisibility
+ *   - scripts, vars, envVars
+ *   - dynamic (JS/TS only), schema (JS/TS only)
+ *   - plugins, requiredKeys
+ * - RESOLVED: mirrors RAW (no path normalization).
+ * - For JSON/YAML configs, the loader rejects "dynamic" and "schema" (JS/TS only).
  */
 
 // String-only env value map
 const stringMap = z.record(z.string(), z.string());
 const envStringMap = z.record(z.string(), stringMap);
 
-// Allow string[] or single string for "paths" in RAW; normalize later.
-const rawPathsSchema = z.union([z.array(z.string()), z.string()]).optional();
-
 export const getDotenvConfigSchemaRaw = z.object({
   rootOptionDefaults: getDotenvCliOptionsSchemaRaw.optional(),
-  dotenvToken: z.string().optional(),
-  privateToken: z.string().optional(),
-  paths: rawPathsSchema,
   rootOptionVisibility: visibilityMap.optional(),
-  loadProcess: z.boolean().optional(),
-  log: z.boolean().optional(),
-  shell: z.union([z.string(), z.boolean()]).optional(),
   scripts: z.record(z.string(), z.unknown()).optional(), // Scripts validation left wide; generator validates elsewhere
   requiredKeys: z.array(z.string()).optional(),
   schema: z.unknown().optional(), // JS/TS-only; loader rejects in JSON/YAML
@@ -44,27 +39,13 @@ export const getDotenvConfigSchemaRaw = z.object({
 
 export type GetDotenvConfigRaw = z.infer<typeof getDotenvConfigSchemaRaw>;
 
-// Normalize paths to string[]
-const normalizePaths = (p?: string[] | string) =>
-  p === undefined ? undefined : Array.isArray(p) ? p : [p];
-
 export const getDotenvConfigSchemaResolved = getDotenvConfigSchemaRaw.transform(
-  (raw) =>
-    ({
-      ...raw,
-      paths: normalizePaths(raw.paths),
-    }) as GetDotenvConfigResolved,
+  (raw) => raw as GetDotenvConfigResolved,
 );
 
 export type GetDotenvConfigResolved = {
   rootOptionDefaults?: Partial<RootOptionsShape>;
-  dotenvToken?: string;
-  privateToken?: string;
-  paths?: string[];
   rootOptionVisibility?: Partial<Record<keyof RootOptionsShape, boolean>>;
-  loadProcess?: boolean;
-  log?: boolean;
-  shell?: string | boolean;
   scripts?: Scripts;
   requiredKeys?: string[];
   schema?: unknown;

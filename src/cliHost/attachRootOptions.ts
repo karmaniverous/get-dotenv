@@ -26,7 +26,6 @@ export const attachRootOptions = (
     pathsDelimiter,
     pathsDelimiterPattern,
     privateToken,
-    scripts,
     varsAssignor,
     varsAssignorPattern,
     varsDelimiter,
@@ -381,12 +380,6 @@ export const attachRootOptions = (
     if (varsAssignorPattern !== undefined) o11.default(varsAssignorPattern);
     program.addOption(o11);
     program.setOptionGroup(o11, GROUP);
-
-    const hidden = new Option('--scripts <string>')
-      .default(JSON.stringify(scripts))
-      .hideHelp();
-    program.addOption(hidden);
-    program.setOptionGroup(hidden, GROUP);
   }
 
   // Diagnostics / validation / entropy
