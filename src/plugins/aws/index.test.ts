@@ -9,10 +9,11 @@ const runCommandMock =
       opts: { env?: Record<string, string>; stdio?: 'inherit' | 'pipe' },
     ) => Promise<number>
   >();
-vi.mock('../../cliHost/exec', async (importOriginal) => {
-  const actual = await importOriginal();
+vi.mock('../../cliHost/exec', () => {
   return {
-    ...actual,
+    // Preserve capture behavior without importing actual module.
+    shouldCapture: (bagCapture?: boolean) =>
+      process.env.GETDOTENV_STDIO === 'pipe' || Boolean(bagCapture),
     runCommand: (
       cmd: string | string[],
       shell: string | boolean | URL,

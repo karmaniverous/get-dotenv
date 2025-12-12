@@ -4,6 +4,12 @@
 
 ## Completed (recent)
 
+- Tests: replace dynamic partial mock with static mock (no dynamic imports)
+  - Updated src/plugins/aws/index.test.ts to return a static mock for
+    ../../cliHost/exec exporting shouldCapture and runCommand only. Removes
+    dynamic importOriginal usage, fixes TS2698 and @typescript-eslint/no-unsafe-return,
+    and preserves correct capture behavior for assertions.
+
 - Tests: fix aws plugin mocks after adding shouldCapture
   - Updated src/plugins/aws/index.test.ts to use a partial mock for
     ../../cliHost/exec via importOriginal(), spreading actual exports and
