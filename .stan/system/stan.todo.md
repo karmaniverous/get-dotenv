@@ -114,4 +114,7 @@
 
 - Tests: visibility precedence and redact dynamic labels
   - Added src/cliHost/visibility.test.ts to cover mergeRootVisibility() and applyRootVisibility() hiding of long flags.
-  - Added src/cliHost/help.dynamic.redact.test.ts to assert default labeling for --redact / --redact-off based on help-time config.
+  - Added src/cliHost/help.dynamic.redact.test.ts to assert default labeling for --redact / --redact-off based on help-time config.
+
+- Fix: redact help tests robust to wrapped output
+  - Updated regex in help.dynamic.redact.test.ts to allow "(default)" on continuation lines produced by help wrapping.
