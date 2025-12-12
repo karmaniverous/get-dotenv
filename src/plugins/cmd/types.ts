@@ -1,5 +1,11 @@
 import { z } from 'zod';
 
+export interface CmdOptionAlias {
+  flags: string;
+  description?: string;
+  expand?: boolean;
+}
+
 export type CmdPluginOptions = {
   /**
    * When true, register as the default subcommand at the root.
@@ -9,9 +15,7 @@ export type CmdPluginOptions = {
    * Optional alias option attached to the parent command to invoke the cmd
    * behavior without specifying the subcommand explicitly.
    */
-  optionAlias?:
-    | string
-    | { flags: string; description?: string; expand?: boolean };
+  optionAlias?: string | CmdOptionAlias;
 };
 
 // Plugin config (Zod): currently a single optional flag to control alias expansion default.

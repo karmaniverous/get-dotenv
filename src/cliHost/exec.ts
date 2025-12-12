@@ -53,6 +53,10 @@ export interface RunCommandOptions {
   stdio?: 'inherit' | 'pipe';
 }
 
+interface ExecNormalizedOptions
+  extends RunCommandOptions,
+    RunCommandResultOptions {}
+
 // Strip repeated symmetric outer quotes (single or double) until stable.
 // This is safe for argv arrays passed to execa (no quoting needed) and avoids
 // passing quote characters through to Node (e.g., for `node -e "<code>"`).
@@ -104,12 +108,7 @@ const sanitizeEnv = (
 async function _execNormalized(
   command: string | readonly string[],
   shell: string | boolean | URL,
-  opts: {
-    cwd?: string | URL;
-    env?: NodeJS.ProcessEnv;
-    stdio?: 'inherit' | 'pipe';
-    timeoutMs?: number;
-  } = {},
+  opts: ExecNormalizedOptions = {},
 ): Promise<{ exitCode: number; stdout: string; stderr: string }> {
   const envSan = sanitizeEnv(opts.env);
   const timeoutBits =
@@ -221,11 +220,7 @@ export async function runCommandResult(
 export function runCommand(
   command: readonly string[],
   shell: false,
-  opts: {
-    cwd?: string | URL;
-    env?: NodeJS.ProcessEnv;
-    stdio?: 'inherit' | 'pipe';
-  },
+  opts: RunCommandOptions,
 ): Promise<number>;
 export function runCommand(
   command: string | readonly string[],
@@ -238,11 +233,7 @@ export async function runCommand(
   opts: RunCommandOptions,
 ): Promise<number> {
   // Build opts without injecting undefined (exactOptionalPropertyTypes-safe)
-  const callOpts: {
-    cwd?: string | URL;
-    env?: NodeJS.ProcessEnv;
-    stdio?: 'inherit' | 'pipe';
-  } = {};
+  const callOpts: RunCommandOptions = {};
   if (opts.cwd !== undefined) {
     callOpts.cwd = opts.cwd;
   }

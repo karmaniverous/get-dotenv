@@ -158,4 +158,11 @@
   - Refactor: simplify `ResolvedHelpConfig` usage in `contracts.ts`, `definePlugin.ts`, `GetDotenvCli.ts`
     - Removed redundant `& { plugins: ... }` intersection in `createDynamicOption` and `createPluginDynamicOption` signatures.
     - Replaced inline types with `ResolvedHelpConfig` in `definePlugin.ts` implementation.
-    - Cleaned up `GetDotenvCli.ts` implementation to match.
+    - Cleaned up `GetDotenvCli.ts` implementation to match.
+
+  - Refactor: resolve remaining inline option interfaces
+    - Updated `resolveAndLoad` in `src/cliHost/GetDotenvCli.ts` to use `ResolveAndLoadOptions`.
+    - Extracted `ExecNormalizedOptions` in `src/cliHost/exec.ts` and updated `runCommand` overloads.
+    - Extracted `CmdOptionAlias` in `src/plugins/cmd/types.ts`.
+    - Extracted `ScriptDef` in `src/cliHost/types.ts` and exported it via barrel.
+    - Replaced all corresponding inline types with the new interfaces.

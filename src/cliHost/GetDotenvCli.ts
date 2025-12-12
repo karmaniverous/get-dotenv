@@ -21,7 +21,11 @@ import { baseRootOptionDefaults } from '@/src/defaults';
 
 import { attachRootOptions as attachRootOptionsBuilder } from './attachRootOptions';
 import { buildHelpInformation } from './buildHelpInformation';
-import type { GetDotenvCliPlugin, GetDotenvCliPublic } from './contracts';
+import type {
+  GetDotenvCliPlugin,
+  GetDotenvCliPublic,
+  ResolveAndLoadOptions,
+} from './contracts';
 import {
   evaluateDynamicOptions as evalDyn,
   makeDynamicOption,
@@ -118,7 +122,7 @@ export class GetDotenvCli<
    */
   async resolveAndLoad(
     customOptions: Partial<TOptions> = {},
-    opts?: { runAfterResolve?: boolean }, // Compatible with ResolveAndLoadOptions
+    opts?: ResolveAndLoadOptions,
   ): Promise<GetDotenvCliCtx<TOptions>> {
     const ctx = await resolveAndComputeContext<TOptions, TArgs, TOpts, TGlobal>(
       customOptions,

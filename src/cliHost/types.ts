@@ -54,10 +54,18 @@ export type RootOptionsShape = {
 };
 
 /**
- * Scripts table shape (configurable shell type).
+ * Definition for a single script entry.
+ */
+export interface ScriptDef<TShell extends string | boolean = string | boolean> {
+  cmd: string;
+  shell?: TShell | undefined;
+}
+
+/**
+ * Scripts table shape.
  */
 export type ScriptsTable<TShell extends string | boolean = string | boolean> =
-  Record<string, string | { cmd: string; shell?: TShell | undefined }>;
+  Record<string, string | ScriptDef<TShell>>;
 
 /**
  * Identity helper to define a scripts table while preserving a concrete TShell

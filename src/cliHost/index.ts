@@ -32,5 +32,6 @@ export {
   defineScripts,
   type GetDotenvCliCtx,
   type RootOptionsShape,
+  type ScriptDef,
 } from './types';
 export { z } from 'zod';
