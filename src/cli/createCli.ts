@@ -268,7 +268,7 @@ export function createCli(
         }
         const mergedDefaultsForHelp = defaultsDeep<Partial<RootOptionsShape>>(
           baseRootOptionDefaults as Partial<RootOptionsShape>,
-          rootDefaults ?? {},
+          rootDefaults,
           cfgDefaults,
         );
         const { merged: defaultsMerged } = resolveCliOptions<
