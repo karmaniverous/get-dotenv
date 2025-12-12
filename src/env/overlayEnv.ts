@@ -86,19 +86,17 @@ export function overlayEnv<
   configs: OverlayConfigSources;
   programmaticVars: P;
 }): B & P;
-export function overlayEnv({
-  base,
-  env,
-  configs,
-  programmaticVars,
-}:
-  | OverlayEnvOptionsBase<
-      ProcessEnv | Readonly<Record<string, string | undefined>>
-    >
-  | OverlayEnvOptionsWithProgrammatic<
-      ProcessEnv | Readonly<Record<string, string | undefined>>,
-      ProcessEnv | Readonly<Record<string, string | undefined>>
-    >): ProcessEnv {
+export function overlayEnv(
+  args:
+    | OverlayEnvOptionsBase<
+        ProcessEnv | Readonly<Record<string, string | undefined>>
+      >
+    | OverlayEnvOptionsWithProgrammatic<
+        ProcessEnv | Readonly<Record<string, string | undefined>>,
+        ProcessEnv | Readonly<Record<string, string | undefined>>
+      >,
+): ProcessEnv {
+  const { base, env, configs } = args;
   let current = { ...base };
 
   // Source: packaged (public -> local)
@@ -111,13 +109,11 @@ export function overlayEnv({
   current = applyConfigSlice(current, configs.project?.local, env);
 
   // Programmatic explicit vars (top of static tier)
-  if (programmaticVars as ProcessEnv | undefined) {
+  if ('programmaticVars' in args) {
     const toApply: Record<string, string> = Object.fromEntries(
-      Object.entries(
-        programmaticVars as
-          | ProcessEnv
-          | Readonly<Record<string, string | undefined>>,
-      ).filter(([_k, v]) => typeof v === 'string') as Array<[string, string]>,
+      Object.entries(args.programmaticVars).filter(
+        ([_k, v]) => typeof v === 'string',
+      ) as Array<[string, string]>,
     );
     current = applyKv(current, toApply);
   }

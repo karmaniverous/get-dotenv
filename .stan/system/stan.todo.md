@@ -58,7 +58,7 @@
   - Batch cmd subcommand preserves argv for node -e using the shared
     maybePreserveNodeEvalArgv helper, keeping string form otherwise.
   - Verification scripts share expected dist outputs and template lists via
-    tools/_expected.js to avoid drift.
+    tools/\_expected.js to avoid drift.
   - Added shouldCapture helper in cliHost/exec.ts and reused in cmd runner and
     aws plugin.
   - Root defaults stacking (base < createCli < config) factored into a small
@@ -142,4 +142,6 @@
   - Loader relies solely on schema for enforcement; no extra rejection logic added for top‑level operational keys.
   - Removed hidden `--scripts` CLI option; injected merged scripts from config sources into the root merged options bag (packaged/public < project/public < project/local).
   - Updated packaged `getdotenv.config.json` to `{}` to conform to the new schema.
-  - Updated schema tests to drop top‑level paths normalization checks.
+  - Updated schema tests to drop top‑level paths normalization checks.
+
+- Fix typecheck: overlayEnv union narrowing — avoid destructuring `programmaticVars` from a union and use an `"in"` guard before applying programmatic vars (no behavior change).
