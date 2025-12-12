@@ -3,21 +3,18 @@ import { packageDirectory } from 'package-directory';
 import path from 'path';
 
 import { buildSpawnEnv, composeNestedEnv, runCommand } from '@/src/cliHost';
-import type { Logger } from '@/src/core';
 
-type ExecShellCommandBatchOptions = {
-  globs: string;
-  logger: Logger;
-  pkgCwd?: boolean;
-  rootPath: string;
-};
+import type {
+  BatchGlobPathsOptions,
+  ExecShellCommandBatchOptions,
+} from './types';
 
 const globPaths = async ({
   globs,
   logger,
   pkgCwd,
   rootPath,
-}: ExecShellCommandBatchOptions) => {
+}: BatchGlobPathsOptions) => {
   let cwd = process.cwd();
 
   if (pkgCwd) {
@@ -61,18 +58,7 @@ export const execShellCommandBatch = async ({
   pkgCwd,
   rootPath,
   shell,
-}: {
-  command?: string | string[];
-  getDotenvCliOptions?: Record<string, unknown>;
-  dotenvEnv?: Record<string, string | undefined>;
-  globs: string;
-  ignoreErrors?: boolean;
-  list?: boolean;
-  logger: Logger;
-  pkgCwd?: boolean;
-  rootPath: string;
-  shell: string | boolean | URL;
-}) => {
+}: ExecShellCommandBatchOptions) => {
   const capture =
     process.env.GETDOTENV_STDIO === 'pipe' ||
     Boolean(

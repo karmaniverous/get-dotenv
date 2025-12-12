@@ -4,6 +4,13 @@
 
 ## Completed (recent)
 
+- Batch: export typed option interfaces with TSDoc
+  - Introduced BatchGlobPathsOptions and ExecShellCommandBatchOptions in
+    src/plugins/batch/types.ts with full TSDoc to surface in TypeDoc output.
+  - Updated src/plugins/batch/execShellCommandBatch.ts to consume exported
+    interfaces instead of inline object types.
+  - Re-exported the new types from src/plugins/batch/index.ts per barrel policy.
+
 - Tests: replace dynamic partial mock with static mock (no dynamic imports)
   - Updated src/plugins/aws/index.test.ts to return a static mock for
     ../../cliHost/exec exporting shouldCapture and runCommand only. Removes

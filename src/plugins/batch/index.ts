@@ -1,6 +1,11 @@
 /** src/plugins/batch/index.ts */
 import { Command } from '@commander-js/extra-typings';
 
+export type {
+  BatchGlobPathsOptions,
+  ExecShellCommandBatchOptions,
+} from './types';
+
 import { definePlugin } from '@/src/cliHost';
 
 import { attachDefaultCmdAction } from './defaultCmdAction';

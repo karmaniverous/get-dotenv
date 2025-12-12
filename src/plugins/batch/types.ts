@@ -1,11 +1,58 @@
 import { z } from 'zod';
 
 import type { ScriptsTable } from '@/src/cliHost';
+import type { Logger } from '@/src/core';
 
 export type BatchPluginOptions = {
   scripts?: ScriptsTable;
   shell?: string | boolean;
 };
+
+/**
+ * Options for discovering batch working directories from a root path and globs.
+ *
+ * @public
+ */
+export interface BatchGlobPathsOptions {
+  /**
+   * Space-delimited glob patterns relative to {@link BatchGlobPathsOptions.rootPath}.
+   * Each pattern is resolved using posix-style separators and must resolve to
+   * directories (files are ignored).
+   */
+  globs: string;
+  /**
+   * Logger used for user-facing messages (errors, headings, and listings).
+   */
+  logger: Logger;
+  /**
+   * When true, resolve the batch root from the nearest package directory
+   * instead of the current working directory.
+   */
+  pkgCwd?: boolean;
+  /**
+   * Path to the batch root directory, resolved from the current working directory
+   * (or package directory when {@link BatchGlobPathsOptions.pkgCwd} is true).
+   */
+  rootPath: string;
+}
+
+/**
+ * Arguments for {@link execShellCommandBatch} — batch execution over discovered working directories.
+ *
+ * @public
+ */
+export interface ExecShellCommandBatchOptions {
+  command?: string | string[];
+  getDotenvCliOptions?: Record<string, unknown>;
+  dotenvEnv?: Record<string, string | undefined>;
+  globs: string;
+  ignoreErrors?: boolean;
+  list?: boolean;
+  logger: Logger;
+  pkgCwd?: boolean;
+  rootPath: string;
+  shell: string | boolean | URL;
+}
 
 // Per-plugin config schema (optional fields; used as defaults).
 export const ScriptSchema = z.union([
