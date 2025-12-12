@@ -38,8 +38,8 @@ Load environment variables with a cascade of environment-aware dotenv files. You
 
 ✅ Diagnostics for safer visibility without altering runtime values:
 
-- Redaction at presentation time for secret-like keys (`--redact`, `--redact-pattern`).
-- Entropy warnings (on by default) for high-entropy strings; gated by length/printability and tunable via `--entropy-*` flags. See [Config files and overlays](./guides/config.md).
+- Redaction at presentation time for secret-like keys (`--redact`, `--redact-off`, add patterns with `--redact-pattern`). You can set defaults in config using `rootOptionDefaults.redact` and `rootOptionDefaults.redactPatterns`.
+- Help-time root option visibility: hide selected root flags from top-level help via `rootOptionVisibility` in config (precedence: createCli < packaged/public < project/public < project/local).
 
 ✅ Clear tracing and CI-friendly capture:
 
@@ -409,6 +409,21 @@ Important:
   ```
   getdotenv --shell-off cmd node -e "console.log(process.env.APP_SETTING ?? '')"
   ```
+
+### Root option visibility (help-time)
+
+You can hide specific root flags from top-level help output without changing runtime behavior using `rootOptionVisibility` in your config. Visibility merges with precedence:
+
+- createCli(rootOptionVisibility) < packaged/public < project/public < project/local
+
+Set a key to `false` to hide that flag family or single flag:
+
+```js
+// getdotenv.config.js (JS/TS only example; JSON/YAML also supported)
+export default {
+  rootOptionVisibility: { capture: false, shell: true }, // hide --capture, show shell family
+};
+```
 
 Diagnostics and CI capture:
 

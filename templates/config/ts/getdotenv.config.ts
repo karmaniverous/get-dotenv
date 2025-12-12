@@ -6,6 +6,14 @@ type Vars = {
 };
 
 export default defineGetDotenvConfig<Vars>({
+  // Help-time root defaults (example):
+  // rootOptionDefaults: {
+  //   redact: true,
+  //   // redactPatterns: ['API_KEY', 'SECRET'],
+  // },
+  // Help-time visibility (example): hide selected root flags in -h
+  // rootOptionVisibility: { capture: false },
+
   vars: { APP_SETTING: 'app_value' },
   envVars: { dev: { ENV_SETTING: 'dev_value' } },
   dynamic: {

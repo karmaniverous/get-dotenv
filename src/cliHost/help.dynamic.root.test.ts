@@ -34,5 +34,9 @@ describe('GetDotenvCli root dynamic help', () => {
 
     // Log default is OFF (unset); OFF toggle shows "(default)".
     expect(help).toMatch(/-L, --log-off[\s\S]*\(default\)/i);
+
+    // Redact flags are present at the root level.
+    expect(help).toMatch(/\s--redact\b/i);
+    expect(help).toMatch(/\s--redact-off\b/i);
   });
 });

@@ -1,17 +1,34 @@
-/** src/cliHost/visibility.ts
- * Helpers to merge and apply root option visibility.
+/**
+ * src/cliHost/visibility.ts
  *
- * Requirements addressed:
- * - rootOptionVisibility precedence: createCli \< packaged/public \< project/public \< project/local.
- * - Apply visibility by hiding flags (hideHelp) for root options (families and singles).
- * - Keep help-time application centralized and reusable.
+ * Help-time root option visibility for the host.
+ *
+ * Purpose
+ * - Centralize merging and application of help-time visibility for root flags.
+ * - Hiding a key affects only help rendering; runtime behavior is unchanged.
+ *
+ * Precedence (left \< right; later wins):
+ * - createCli(rootOptionVisibility) \< packaged/public \< project/public \< project/local
+ *
+ * Usage
+ * - mergeRootVisibility(...layers) to compute an effective map once.
+ * - applyRootVisibility(program, map) to hide root flags (families and singles)
+ *   by calling Commander.Option.hideHelp(true) on matching long names.
+ *
+ * Notes
+ * - Families (e.g., shell, log, loadProcess, exclude*, warnEntropy, redact) hide both ON/OFF flags together.
+ * - Singles (e.g., --capture, --trace) are hidden individually.
  */
 import type { GetDotenvCli } from './GetDotenvCli';
 import type { RootOptionsShape } from './types';
 
 export type VisibilityMap = Partial<Record<keyof RootOptionsShape, boolean>>;
 
-/** Merge visibility maps left-to-right; later maps override earlier keys. */
+/**
+ * Merge visibility maps left-to-right; later maps override earlier keys.
+ * @param layers - zero or more partial visibility maps (undefined ignored)
+ * @returns a new merged visibility map
+ */
 export function mergeRootVisibility(
   ...layers: Array<VisibilityMap | undefined>
 ): VisibilityMap {
@@ -27,7 +44,11 @@ export function mergeRootVisibility(
   return out;
 }
 
-/** Hide a set of long flags (if present) on the provided root program. */
+/**
+ * Hide a set of long flags (if present) on the provided root program.
+ * @param program - the GetDotenvCli root instance
+ * @param names - array of long option names (e.g., "--capture")
+ */
 function hideByLong(program: GetDotenvCli, names: string[]): void {
   for (const opt of program.options) {
     const long = (opt as { long?: string }).long ?? '';
@@ -38,6 +59,16 @@ function hideByLong(program: GetDotenvCli, names: string[]): void {
 /**
  * Apply root option visibility to the provided program instance.
  * Flags set to false in the visibility map are hidden via hideHelp(true).
+ *
+ * Help-time only:
+ * - This affects rendering of top-level help; it does not alter parsing or runtime semantics.
+ *
+ * Families vs singles:
+ * - Families (e.g., "shell") hide both ON and OFF flags.
+ * - Singles (e.g., "capture") hide the named long flag only.
+ *
+ * @param program - the GetDotenvCli root instance
+ * @param visibility - effective visibility map (false hides; true/undefined shows)
  */
 export function applyRootVisibility(
   program: GetDotenvCli,

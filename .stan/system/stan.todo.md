@@ -117,4 +117,14 @@
   - Added src/cliHost/help.dynamic.redact.test.ts to assert default labeling for --redact / --redact-off based on help-time config.
 
 - Fix: redact help tests robust to wrapped output
-  - Updated regex in help.dynamic.redact.test.ts to allow "(default)" on continuation lines produced by help wrapping.
+  - Updated regex in help.dynamic.redact.test.ts to allow "(default)" on continuation lines produced by help wrapping.
+
+- Docs: root visibility and redact examples
+  - Updated README to document help-time `rootOptionVisibility` (precedence and example) and expanded redact diagnostics to include `--redact-off` and config defaults (`rootOptionDefaults.redact*`).
+  - Added commented examples for `rootOptionDefaults` and `rootOptionVisibility` to JS/TS templates.
+
+- Public API docs: visibility helper
+  - Added JSDoc to src/cliHost/visibility.ts describing purpose, precedence, and usage for `mergeRootVisibility` and `applyRootVisibility`.
+
+- E2E: top-level -h includes redact flags
+  - Hardened root help test to assert presence of `--redact` and `--redact-off` in top-level help output.
