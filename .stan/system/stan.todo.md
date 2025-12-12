@@ -29,7 +29,7 @@
       - Reject root-only toggles at top level; accept rootOptionDefaults-only; accept top-level scripts; reject scripts/dynamic within rootOptionDefaults.
       - Accept rootOptionVisibility; verify precedence packaged/public < project/public < project/local.
     - Host:
-      - Runtime precedence assertions for CLI flags > config.rootOptionDefaults > createCli > base across families (shell/log/loadProcess, exclude*, warnEntropy, tokens, paths/vars splitters, trace/strict, redact family).
+      - Runtime precedence assertions for CLI flags > config.rootOptionDefaults > createCli > base across families (shell/log/loadProcess, exclude\*, warnEntropy, tokens, paths/vars splitters, trace/strict, redact family).
       - Visibility: flags hidden when false via merged rootOptionVisibility (createCli + config).
       - Redact: CLI pair works; rootOptionDefaults.redact default respected; redact-pattern honored.
       - Remove any tests relying on hidden --scripts; ensure scripts are effective via config-only pathway.
@@ -86,9 +86,17 @@
     removed redundant dotenvToken/privateToken/paths and rootOptionDefaults that
     did not alter baseRootOptionDefaults.
   - Simplified repository root getdotenv.config.json to {} since no overrides
-    are required.
+    are required.
+
 - Requirements: tighten config contract & visibility; CLI parity (redact)
   - Updated requirements to remove redundancy between rootOptionDefaults and top-level root toggles.
   - Added rootOptionVisibility to config with precedence (createCli < packaged/public < project/public < project/local); false hides a flag.
   - Clarified scripts as top-level only (not in CLI; not in rootOptionDefaults) and dynamic as top-level JS/TS-only.
-  - Added CLI redact family (--redact/--redact-off) with config defaults in rootOptionDefaults.
+  - Added CLI redact family (--redact/--redact-off) with config defaults in rootOptionDefaults.
+
+- Design: rootOptionVisibility and redact toggles — decomposition plan before code
+  - Long‑file scan (300‑LOC gate): src/cli/createCli.ts and src/cliHost/attachRootOptions.ts exceed the threshold.
+  - Proposed split (requesting confirmation before implementation):
+    - createCli.ts: extract (1) visibility application into cliHost/visibility.ts, (2) help‑time defaults/visibility wiring into cliHost/helpConfig.ts (adjacent to toHelpConfig), and (3) runner help‑path into cli/runner.help.ts to keep createCli.ts focused on composition/branding.
+    - attachRootOptions.ts: extract family toggles into cliHost/options/families/\*.ts (shell.ts, load.ts, log.ts, exclude.ts, entropy.ts, redact.ts) and keep a thin builder that composes the families.
+  - After approval: implement schema rootOptionVisibility, merge precedence in loader/host, add --redact/--redact-off flags via new redact.ts family, apply visibility at runtime (rootHooks) and help‑time (createCli help path) using the shared visibility.ts helper, and update tests/docs accordingly.
