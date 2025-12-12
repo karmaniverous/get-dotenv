@@ -4,6 +4,7 @@
  * without exposing a public helper on the host class.
  */
 
+import type { ResolvedConfigSources } from '@/src/config';
 import {
   resolveGetDotenvConfigSources,
   validateEnvAgainstSources,
@@ -44,6 +45,23 @@ const debugView = (o: Partial<RootOptionsShape>) => ({
   strict: o.strict,
 });
 
+function computeRootDefaults(
+  defaults: Partial<RootOptionsShape> | undefined,
+  sources: ResolvedConfigSources,
+): Partial<RootOptionsShape> {
+  const cfgDefaults = defaultsDeep<Partial<RootOptionsShape>>(
+    {},
+    sources.packaged?.rootOptionDefaults ?? {},
+    sources.project?.public?.rootOptionDefaults ?? {},
+    sources.project?.local?.rootOptionDefaults ?? {},
+  );
+  return defaultsDeep<Partial<RootOptionsShape>>(
+    baseRootOptionDefaults as Partial<RootOptionsShape>,
+    defaults ?? {},
+    cfgDefaults,
+  );
+}
+
 export function installRootHooks<TOptions extends GetDotenvOptions>(
   program: GetDotenvCli<TOptions>,
   defaults?: Partial<RootOptionsShape>,
@@ -60,17 +78,7 @@ export function installRootHooks<TOptions extends GetDotenvOptions>(
 
     // Build unified defaults stack for this run:
     // baseRootOptionDefaults < createCli root defaults (argument) < config.rootOptionDefaults
-    const cfgDefaults = defaultsDeep<Partial<RootOptionsShape>>(
-      {},
-      sources.packaged?.rootOptionDefaults ?? {},
-      sources.project?.public?.rootOptionDefaults ?? {},
-      sources.project?.local?.rootOptionDefaults ?? {},
-    );
-    const d = defaultsDeep<Partial<RootOptionsShape>>(
-      baseRootOptionDefaults as Partial<RootOptionsShape>,
-      defaults ?? {},
-      cfgDefaults,
-    );
+    const d = computeRootDefaults(defaults ?? {}, sources);
 
     const { merged } = resolveCliOptions<
       RootOptionsShape & { scripts?: ScriptsTable }
@@ -117,8 +125,8 @@ export function installRootHooks<TOptions extends GetDotenvOptions>(
     try {
       const ctx = program.getCtx();
       const dotenv = ctx.dotenv;
-      const sources = await resolveGetDotenvConfigSources(import.meta.url);
-      const issues = validateEnvAgainstSources(dotenv, sources);
+      const sources2 = await resolveGetDotenvConfigSources(import.meta.url);
+      const issues = validateEnvAgainstSources(dotenv, sources2);
       if (Array.isArray(issues) && issues.length > 0) {
         const logger = (merged as unknown as GetDotenvCliOptions).logger;
         issues.forEach((m) => {
@@ -142,17 +150,7 @@ export function installRootHooks<TOptions extends GetDotenvOptions>(
 
     // Build unified defaults stack for this run:
     // baseRootOptionDefaults < createCli root defaults (argument) < config.rootOptionDefaults
-    const cfgDefaults = defaultsDeep<Partial<RootOptionsShape>>(
-      {},
-      sources.packaged?.rootOptionDefaults ?? {},
-      sources.project?.public?.rootOptionDefaults ?? {},
-      sources.project?.local?.rootOptionDefaults ?? {},
-    );
-    const d = defaultsDeep<Partial<RootOptionsShape>>(
-      baseRootOptionDefaults as Partial<RootOptionsShape>,
-      defaults ?? {},
-      cfgDefaults,
-    );
+    const d = computeRootDefaults(defaults ?? {}, sources);
 
     const { merged } = resolveCliOptions<
       RootOptionsShape & { scripts?: ScriptsTable }
@@ -194,8 +192,8 @@ export function installRootHooks<TOptions extends GetDotenvOptions>(
       try {
         const ctx = program.getCtx();
         const dotenv = ctx.dotenv;
-        const sources = await resolveGetDotenvConfigSources(import.meta.url);
-        const issues = validateEnvAgainstSources(dotenv, sources);
+        const sources2 = await resolveGetDotenvConfigSources(import.meta.url);
+        const issues = validateEnvAgainstSources(dotenv, sources2);
         if (Array.isArray(issues) && issues.length > 0) {
           const logger = (merged as unknown as GetDotenvCliOptions).logger;
           issues.forEach((m) => {

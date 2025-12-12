@@ -16,6 +16,7 @@ import {
   runCommand,
   stripOne,
 } from '@/src/cliHost';
+import { shouldCapture } from '@/src/cliHost/exec';
 import { traceChildEnv } from '@/src/diagnostics';
 import { tokenize } from '@/src/util';
 
@@ -94,8 +95,7 @@ export async function runCmdWithContext(
 
   // Child env: compose nested bag and sanitize.
   const childOverlay = composeNestedEnv(merged, dotenv);
-  const captureFlag =
-    process.env.GETDOTENV_STDIO === 'pipe' || Boolean(capture);
+  const captureFlag = shouldCapture(capture);
 
   let exit: number;
   try {

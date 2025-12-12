@@ -9,6 +9,10 @@ const dbg = (...args: unknown[]) => {
   }
 };
 
+// Helper to decide whether to capture child stdio.
+export const shouldCapture = (bagCapture?: boolean): boolean =>
+  process.env.GETDOTENV_STDIO === 'pipe' || Boolean(bagCapture);
+
 // Strip repeated symmetric outer quotes (single or double) until stable.
 // This is safe for argv arrays passed to execa (no quoting needed) and avoids
 // passing quote characters through to Node (e.g., for `node -e "<code>"`).

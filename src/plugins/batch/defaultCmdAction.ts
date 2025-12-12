@@ -3,6 +3,7 @@ import type { Command, CommandUnknownOpts } from '@commander-js/extra-typings';
 import {
   type definePlugin,
   type GetDotenvCliPublic,
+  maybePreserveNodeEvalArgv,
   readMergedOptions,
   resolveCommand,
   resolveShell,
@@ -146,11 +147,8 @@ export const attachDefaultCmdAction = (
       // commands (e.g., "echo OK") keep string form to satisfy unit tests.
       let commandArg: string | string[] = resolved;
       if (shellSetting === false && resolved === input) {
-        const first = (args[0] ?? '').toLowerCase();
-        const hasEval = args.some((t: string) => t === '-e' || t === '--eval');
-        if (first === 'node' && hasEval) {
-          commandArg = args.map(String);
-        }
+        const preserved = maybePreserveNodeEvalArgv(args);
+        if (preserved !== args) commandArg = preserved;
       }
 
       await execShellCommandBatch({

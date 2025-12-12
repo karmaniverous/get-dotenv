@@ -4,6 +4,20 @@
 
 ## Completed (recent)
 
+- DRY cleanups: module loader, dynamic apply, batch argv, verify expectations, capture helper, root defaults helper
+  - Config loader now reuses src/util/loadModuleDefault for JS/TS defaults,
+    removing duplicated bundling/transpile logic in src/config/loader.ts.
+  - Programmatic dynamic variables in the host now use applyDynamicMap,
+    eliminating a local apply function in computeContext.ts.
+  - Batch cmd subcommand preserves argv for node -e using the shared
+    maybePreserveNodeEvalArgv helper, keeping string form otherwise.
+  - Verification scripts share expected dist outputs and template lists via
+    tools/_expected.js to avoid drift.
+  - Added shouldCapture helper in cliHost/exec.ts and reused in cmd runner and
+    aws plugin.
+  - Root defaults stacking (base < createCli < config) factored into a small
+    helper inside rootHooks.ts, removing duplication across hooks.
+
 - Requirements: unified root defaults via config.rootOptionDefaults with precedence
   - Precedence finalized: CLI flags > config.rootOptionDefaults > createCli rootOptionDefaults > baseRootOptionDefaults.
   - rootOptionDefaults mirrors createCli rootOptionDefaults (collapsed families); applies to both runtime and help‑time labels.

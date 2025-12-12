@@ -10,30 +10,14 @@ import { promisify } from 'node:util';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import process from 'node:process';
+import { distCore, tarballDistExtras, tarballTemplates } from './_expected.js';
 const execFileAsync = promisify(execFile);
 
 const normalize = (p) => p.split(path.sep).join('/');
 const expected = [
-  // Core dist runtime entries (ESM/CJS + CLI)
-  'dist/index.mjs',
-  'dist/cliHost.mjs',
-  'dist/plugins.mjs',
-  'dist/plugins-aws.mjs',
-  'dist/plugins-batch.mjs',
-  'dist/plugins-init.mjs',
-  'dist/plugins-cmd.mjs',
-  'dist/config.mjs',
-  'dist/env-overlay.mjs',
-  'dist/getdotenv.cli.mjs',
-  // Templates: config (public/local across formats) and CLI skeleton
-  'templates/config/json/public/getdotenv.config.json',
-  'templates/config/json/local/getdotenv.config.local.json',
-  'templates/config/yaml/public/getdotenv.config.yaml',
-  'templates/config/yaml/local/getdotenv.config.local.yaml',
-  'templates/config/js/getdotenv.config.js',
-  'templates/config/ts/getdotenv.config.ts',
-  'templates/cli/index.ts',
-  'templates/cli/plugins/hello.ts',
+  ...distCore.map((f) => `dist/${f}`),
+  ...tarballDistExtras.map((f) => `dist/${f}`),
+  ...tarballTemplates,
 ];
 
 const pickPath = (entry) => {

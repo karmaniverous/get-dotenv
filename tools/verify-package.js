@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import fs from 'fs-extra';
+import { distCore, templateCore } from './_expected.js';
 
 const errors = [];
 const assert = (cond, msg) => {
@@ -40,18 +41,7 @@ const main = async () => {
   // Optional: if dist exists, check main JS outputs exist
   const distExists = await fs.pathExists('dist');
   if (distExists) {
-    const jsExpectations = [
-      'index.mjs',
-      'cliHost.mjs',
-      'plugins.mjs',
-      'plugins-aws.mjs',
-      'plugins-batch.mjs',
-      'plugins-init.mjs',
-      'plugins-cmd.mjs',
-      'config.mjs',
-      'env-overlay.mjs',
-    ];
-    for (const rel of jsExpectations) {
+    for (const rel of distCore) {
       assert(
         await fs.pathExists(`dist/${rel}`),
         `dist/${rel} not found (build before verify or check rollup config)`,
@@ -60,13 +50,7 @@ const main = async () => {
   }
 
   // Template presence sanity check
-  const templateChecks = [
-    'templates/config/json/public/getdotenv.config.json',
-    'templates/config/yaml/public/getdotenv.config.yaml',
-    'templates/config/js/getdotenv.config.js',
-    'templates/config/ts/getdotenv.config.ts',
-  ];
-  for (const p of templateChecks) {
+  for (const p of templateCore) {
     assert(
       await fs.pathExists(p),
       `Template missing: ${p} (ensure files are committed)`,

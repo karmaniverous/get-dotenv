@@ -131,30 +131,10 @@ export const computeContext = async <
     ...(validated.vars ? { programmaticVars: validated.vars } : {}),
   });
 
-  // Apply dynamics in order (programmatic -> packaged -> project/public -> project/local -> file dynamicPath)
-  const applyDynamic = (
-    target: Record<string, string | undefined>,
-    dynamic: GetDotenvDynamic | undefined,
-    env: string | undefined,
-  ) => {
-    if (!dynamic) return;
-    for (const key of Object.keys(dynamic)) {
-      const value =
-        typeof dynamic[key] === 'function'
-          ? (
-              dynamic[key] as (
-                v: Record<string, string | undefined>,
-                e?: string,
-              ) => string | undefined
-            )(target, env)
-          : dynamic[key];
-      Object.assign(target, { [key]: value });
-    }
-  };
-
   const dotenv: Record<string, string | undefined> = { ...dotenvOverlaid };
 
-  applyDynamic(
+  // Programmatic dynamic variables (when provided)
+  applyDynamicMap(
     dotenv,
     (validated as { dynamic?: GetDotenvDynamic }).dynamic,
     validated.env ?? validated.defaultEnv,

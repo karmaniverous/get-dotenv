@@ -5,6 +5,7 @@ import {
   resolveShell,
   runCommand,
 } from '@/src/cliHost';
+import { shouldCapture } from '@/src/cliHost/exec';
 
 import { applyAwsContext } from './common';
 import { resolveAwsContext } from './service';
@@ -104,7 +105,7 @@ export const awsPlugin = () => {
           const pluginInst = plugin;
           // Access merged root CLI options (installed by passOptions())
           const bag = readMergedOptions(thisCommand);
-          const capture = process.env.GETDOTENV_STDIO === 'pipe' || bag.capture;
+          const capture = shouldCapture(bag.capture);
           const underTests =
             process.env.GETDOTENV_TEST === '1' ||
             typeof process.env.VITEST_WORKER_ID === 'string';
