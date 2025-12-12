@@ -450,6 +450,27 @@ export const attachRootOptions = (
     );
     program.addOption(rp);
     program.setOptionGroup(rp, GROUP);
+    // Redact ON/OFF (dynamic)
+    {
+      const rOn = program
+        .createDynamicOption(
+          '--redact',
+          (cfg) =>
+            `presentation-time redaction for secret-like keys ON${cfg.redact ? ' (default)' : ''}`,
+        )
+        .conflicts('redactOff');
+      program.addOption(rOn);
+      program.setOptionGroup(rOn, GROUP);
+      const rOff = program
+        .createDynamicOption(
+          '--redact-off',
+          (cfg) =>
+            `presentation-time redaction for secret-like keys OFF${cfg.redact === false ? ' (default)' : ''}`,
+        )
+        .conflicts('redact');
+      program.addOption(rOff);
+      program.setOptionGroup(rOff, GROUP);
+    }
   }
 
   return program;

@@ -100,3 +100,9 @@
     - createCli.ts: extract (1) visibility application into cliHost/visibility.ts, (2) help‑time defaults/visibility wiring into cliHost/helpConfig.ts (adjacent to toHelpConfig), and (3) runner help‑path into cli/runner.help.ts to keep createCli.ts focused on composition/branding.
     - attachRootOptions.ts: extract family toggles into cliHost/options/families/\*.ts (shell.ts, load.ts, log.ts, exclude.ts, entropy.ts, redact.ts) and keep a thin builder that composes the families.
   - After approval: implement schema rootOptionVisibility, merge precedence in loader/host, add --redact/--redact-off flags via new redact.ts family, apply visibility at runtime (rootHooks) and help‑time (createCli help path) using the shared visibility.ts helper, and update tests/docs accordingly.
+
+- Impl: visibility helper + schema visibility + redact flags
+  - Added src/cliHost/visibility.ts to merge and apply root option visibility; reused in createCli help path.
+  - Schema: introduced rootOptionVisibility in getDotenvConfig (raw/resolved).
+  - Host/CLI: applied create-time visibility and merged config visibility for top-level -h; added --redact/--redact-off dynamic flags alongside existing diagnostics options.
+  - Follow-ups (next turn): integrate visibility into root runtime hooks (optional), expand tests to cover visibility precedence and redact toggles, and update docs/templates per plan.

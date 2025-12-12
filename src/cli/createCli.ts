@@ -7,6 +7,10 @@ import {
 } from '@/src/cliHost';
 import { attachRootOptions as attachRootOptionsBuilder } from '@/src/cliHost/attachRootOptions';
 import { installRootHooks } from '@/src/cliHost/rootHooks';
+import {
+  applyRootVisibility,
+  mergeRootVisibility,
+} from '@/src/cliHost/visibility';
 import { resolveGetDotenvConfigSources } from '@/src/config';
 import { baseRootOptionDefaults } from '@/src/defaults';
 import {
@@ -141,51 +145,7 @@ export function createCli(
   installRootHooks(program as unknown as GetDotenvCli, rootDefaults);
   // Apply visibility (hide selected options) after flags are declared.
   if (Object.keys(visibility).length > 0) {
-    const hideByLong = (names: string[]) => {
-      for (const opt of program.options) {
-        const long = (opt as { long?: string }).long ?? '';
-        if (names.includes(long)) opt.hideHelp(true);
-      }
-    };
-    const fam = (key: keyof RootOptionsShape, longs: string[]) => {
-      if (visibility[key] === false) hideByLong(longs);
-    };
-    // Families
-    fam('shell', ['--shell', '--shell-off']);
-    fam('loadProcess', ['--load-process', '--load-process-off']);
-    fam('log', ['--log', '--log-off']);
-    fam('excludeDynamic', ['--exclude-dynamic', '--exclude-dynamic-off']);
-    fam('excludeEnv', ['--exclude-env', '--exclude-env-off']);
-    fam('excludeGlobal', ['--exclude-global', '--exclude-global-off']);
-    fam('excludePrivate', ['--exclude-private', '--exclude-private-off']);
-    fam('excludePublic', ['--exclude-public', '--exclude-public-off']);
-    fam('warnEntropy', ['--entropy-warn', '--entropy-warn-off']);
-    // Singles
-    const singles = [
-      ['capture', '--capture'],
-      ['strict', '--strict'],
-      ['trace', '--trace'],
-      ['defaultEnv', '--default-env'],
-      ['dotenvToken', '--dotenv-token'],
-      ['privateToken', '--private-token'],
-      ['dynamicPath', '--dynamic-path'],
-      ['paths', '--paths'],
-      ['pathsDelimiter', '--paths-delimiter'],
-      ['pathsDelimiterPattern', '--paths-delimiter-pattern'],
-      ['vars', '--vars'],
-      ['varsDelimiter', '--vars-delimiter'],
-      ['varsDelimiterPattern', '--vars-delimiter-pattern'],
-      ['varsAssignor', '--vars-assignor'],
-      ['varsAssignorPattern', '--vars-assignor-pattern'],
-      // diagnostics thresholds and whitelist/patterns
-      ['entropyThreshold', '--entropy-threshold'],
-      ['entropyMinLength', '--entropy-min-length'],
-      ['entropyWhitelist', '--entropy-whitelist'],
-      ['redactPatterns', '--redact-pattern'],
-    ] as Array<[keyof RootOptionsShape, string]>;
-    for (const [key, long] of singles) {
-      if (visibility[key] === false) hideByLong([long]);
-    }
+    applyRootVisibility(program as unknown as GetDotenvCli, visibility);
   }
 
   // Compose wiring: user-provided composer wins; otherwise apply shipped defaults.
@@ -277,6 +237,7 @@ export function createCli(
         // Use unified defaults directly for help labels (no ctx overlays).
         const helpMerged: Partial<RootOptionsShape> = { ...defaultsMerged };
         const helpCfg = toHelpConfig(helpMerged, ctx.pluginConfigs);
+        // Evaluate dynamic labels
         program.evaluateDynamicOptions(helpCfg);
         // Suppress output only during unit tests; allow E2E to capture.
         const piping =
@@ -284,6 +245,31 @@ export function createCli(
           process.env.GETDOTENV_STDOUT === 'pipe';
         if (!(underTests && !piping)) {
           dbg('outputHelp()');
+          // Merge visibility for help-time using precedence:
+          // createCli(rootOptionVisibility) < packaged/public < project/public < project/local
+          try {
+            const sources = await resolveGetDotenvConfigSources(
+              import.meta.url,
+            );
+            const mergedVis = mergeRootVisibility(
+              visibility,
+              (sources.packaged?.rootOptionVisibility ?? undefined) as Partial<
+                Record<keyof RootOptionsShape, boolean>
+              >,
+              (sources.project?.public?.rootOptionVisibility ??
+                undefined) as Partial<Record<keyof RootOptionsShape, boolean>>,
+              (sources.project?.local?.rootOptionVisibility ??
+                undefined) as Partial<Record<keyof RootOptionsShape, boolean>>,
+            );
+            if (Object.keys(mergedVis).length > 0) {
+              applyRootVisibility(
+                program as unknown as GetDotenvCli,
+                mergedVis as Partial<Record<keyof RootOptionsShape, boolean>>,
+              );
+            }
+          } catch {
+            // best-effort; do not block help
+          }
           program.outputHelp();
         }
         return;

@@ -4,6 +4,7 @@ import type { Scripts } from '@/src/cliHost';
 import type { RootOptionsShape } from '@/src/cliHost';
 
 import { getDotenvCliOptionsSchemaRaw } from './getDotenvCliOptions';
+const visibilityMap = z.record(z.string(), z.boolean());
 
 /**
  * Zod schemas for configuration files discovered by the new loader.
@@ -26,6 +27,7 @@ export const getDotenvConfigSchemaRaw = z.object({
   dotenvToken: z.string().optional(),
   privateToken: z.string().optional(),
   paths: rawPathsSchema,
+  rootOptionVisibility: visibilityMap.optional(),
   loadProcess: z.boolean().optional(),
   log: z.boolean().optional(),
   shell: z.union([z.string(), z.boolean()]).optional(),
@@ -59,6 +61,7 @@ export type GetDotenvConfigResolved = {
   dotenvToken?: string;
   privateToken?: string;
   paths?: string[];
+  rootOptionVisibility?: Partial<RootOptionsShape>;
   loadProcess?: boolean;
   log?: boolean;
   shell?: string | boolean;
