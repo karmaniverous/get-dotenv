@@ -3,6 +3,7 @@ import { definePlugin } from '@/src/cliHost';
 import { attachDefaultCmdAction } from './defaultCmdAction';
 import { attachParentInvoker } from './parentInvoker';
 import { CmdConfigSchema, type CmdPluginOptions } from './types';
+export type { RunCmdWithContextOptions } from './types';
 
 /** Cmd plugin: executes a command using the current getdotenv CLI context. */
 export const cmdPlugin = (options: CmdPluginOptions = {}) => {

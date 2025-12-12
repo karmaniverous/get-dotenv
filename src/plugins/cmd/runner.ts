@@ -20,11 +20,13 @@ import { shouldCapture } from '@/src/cliHost/exec';
 import { traceChildEnv } from '@/src/diagnostics';
 import { tokenize } from '@/src/util';
 
+import type { RunCmdWithContextOptions } from './types';
+
 export async function runCmdWithContext(
   cli: GetDotenvCliPublic,
   merged: GetDotenvCliOptions,
   command: string | string[],
-  _opts?: { origin?: 'alias' | 'subcommand' },
+  _opts?: RunCmdWithContextOptions,
 ): Promise<number> {
   const {
     logger,

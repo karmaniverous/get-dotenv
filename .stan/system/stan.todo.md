@@ -4,6 +4,12 @@
 
 ## Completed (recent)
 
+- Cmd: export typed options for run helper
+  - Added RunCmdWithContextOptions (with TSDoc) in src/plugins/cmd/types.ts
+    to replace the inline options object used by runCmdWithContext.
+  - Updated src/plugins/cmd/runner.ts to consume the exported interface.
+  - Re-exported the new interface from src/plugins/cmd/index.ts (barrel-only).
+
 - Types: replace inline option objects with exported interfaces across core/diagnostics/plugins
   - cliHost/exec: added RunCommandResultOptions and RunCommandOptions with TSDoc,
     updated runCommandResult/runCommand overloads to use them, and re-exported from

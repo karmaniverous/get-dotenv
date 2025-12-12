@@ -21,3 +21,18 @@ export const CmdConfigSchema = z
   })
   .strict();
 export type CmdConfig = z.infer<typeof CmdConfigSchema>;
+
+/**
+ * Options for the cmd runner helper.
+ *
+ * Used to label the execution origin for diagnostics and future behavior
+ * adjustments without changing the call sites.
+ *
+ * @public
+ */
+export interface RunCmdWithContextOptions {
+  /**
+   * Execution origin: parent alias or explicit subcommand.
+   */
+  origin?: 'alias' | 'subcommand';
+}
