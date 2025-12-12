@@ -147,27 +147,21 @@ export class GetDotenvCli<
   // Base overload (parser/default optional; preferred match for 2-arg calls)
   createDynamicOption<Usage extends string>(
     flags: Usage,
-    desc: (
-      cfg: ResolvedHelpConfig & { plugins: Record<string, unknown> },
-    ) => string,
+    desc: (cfg: ResolvedHelpConfig) => string,
     parser?: (value: string, previous?: unknown) => unknown,
     defaultValue?: unknown,
   ): Option<Usage>;
   // Overload: typed parser & default for value inference
   createDynamicOption<Usage extends string, TValue = unknown>(
     flags: Usage,
-    desc: (
-      cfg: ResolvedHelpConfig & { plugins: Record<string, unknown> },
-    ) => string,
+    desc: (cfg: ResolvedHelpConfig) => string,
     parser: (value: string, previous?: TValue) => TValue,
     defaultValue?: TValue,
   ): Option<Usage>;
   // Implementation
   createDynamicOption<Usage extends string>(
     flags: Usage,
-    desc: (
-      cfg: ResolvedHelpConfig & { plugins: Record<string, unknown> },
-    ) => string,
+    desc: (cfg: ResolvedHelpConfig) => string,
     parser?: (value: string, previous?: unknown) => unknown,
     defaultValue?: unknown,
   ): Option<Usage> {

@@ -78,17 +78,13 @@ export interface GetDotenvCliPublic<
    */
   createDynamicOption<Usage extends string>(
     flags: Usage,
-    desc: (
-      cfg: ResolvedHelpConfig & { plugins: Record<string, unknown> },
-    ) => string,
+    desc: (cfg: ResolvedHelpConfig) => string,
     parser?: (value: string, previous?: unknown) => unknown,
     defaultValue?: unknown,
   ): Option<Usage>;
   createDynamicOption<Usage extends string, TValue = unknown>(
     flags: Usage,
-    desc: (
-      cfg: ResolvedHelpConfig & { plugins: Record<string, unknown> },
-    ) => string,
+    desc: (cfg: ResolvedHelpConfig) => string,
     parser: (value: string, previous?: TValue) => TValue,
     defaultValue?: TValue,
   ): Option<Usage>;
@@ -165,10 +161,7 @@ export type PluginWithInstanceHelpers<
   createPluginDynamicOption<TCfg = TConfig, Usage extends string = string>(
     cli: GetDotenvCliPublic<TOptions, unknown[], OptionValues, OptionValues>,
     flags: Usage,
-    desc: (
-      cfg: ResolvedHelpConfig & { plugins: Record<string, unknown> },
-      pluginCfg: Readonly<TCfg>,
-    ) => string,
+    desc: (cfg: ResolvedHelpConfig, pluginCfg: Readonly<TCfg>) => string,
     parser?: (value: string, previous?: unknown) => unknown,
     defaultValue?: unknown,
   ): Option<Usage>;

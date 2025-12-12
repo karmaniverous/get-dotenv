@@ -16,6 +16,7 @@ import type {
   GetDotenvCliPublic,
   PluginWithInstanceHelpers,
 } from './contracts';
+import type { ResolvedHelpConfig } from './helpConfig';
 
 /**
  * Define a GetDotenv CLI plugin with compositional helpers.
@@ -113,12 +114,7 @@ export function definePlugin<TOptions extends GetDotenvOptions>(
   >(
     cli: GetDotenvCliPublic<TOptions, unknown[], OptionValues, OptionValues>,
     flags: Usage,
-    desc: (
-      cfg: { plugins: Record<string, unknown> } & {
-        [k: string]: unknown;
-      },
-      pluginCfg: Readonly<TCfg>,
-    ) => string,
+    desc: (cfg: ResolvedHelpConfig, pluginCfg: Readonly<TCfg>) => string,
     parser?: (value: string, previous?: unknown) => unknown,
     defaultValue?: unknown,
   ) {
@@ -161,12 +157,8 @@ export function definePlugin<TOptions extends GetDotenvOptions>(
             cfgVal = maybe as Readonly<TCfg>;
           }
         }
-        return desc(
-          c as { plugins: Record<string, unknown> } & {
-            [k: string]: unknown;
-          },
-          cfgVal,
-        );
+        // c is strictly typed as ResolvedHelpConfig from cli.createDynamicOption
+        return desc(c, cfgVal);
       },
       parser,
       defaultValue,

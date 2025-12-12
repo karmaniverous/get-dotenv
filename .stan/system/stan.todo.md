@@ -154,3 +154,8 @@
   - Updated `GetDotenvCli.ts` to consume exported types and reduce LOC (~20 lines removed).
   - Updated `src/cliHost/index.ts` exports to expose new interfaces.
   - This completes the task of replacing inline option objects with explicitly defined, exported interfaces across the codebase.
+
+  - Refactor: simplify `ResolvedHelpConfig` usage in `contracts.ts`, `definePlugin.ts`, `GetDotenvCli.ts`
+    - Removed redundant `& { plugins: ... }` intersection in `createDynamicOption` and `createPluginDynamicOption` signatures.
+    - Replaced inline types with `ResolvedHelpConfig` in `definePlugin.ts` implementation.
+    - Cleaned up `GetDotenvCli.ts` implementation to match.
