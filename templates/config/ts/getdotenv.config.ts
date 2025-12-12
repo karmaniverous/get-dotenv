@@ -6,6 +6,9 @@ type Vars = {
 };
 
 export default defineGetDotenvConfig<Vars>({
+  rootOptionDefaults: {
+    loadProcess: true,
+  },
   dotenvToken: '.env',
   privateToken: 'local',
   paths: './',

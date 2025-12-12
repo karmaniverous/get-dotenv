@@ -112,6 +112,10 @@ export type GetDotenvConfig<
   Vars extends ProcessEnv,
   Env extends string = string,
 > = {
+  /**
+   * Operational root defaults applied by the host (collapsed families; stringly form).
+   */
+  rootOptionDefaults?: Partial<RootOptionsShape>;
   dotenvToken?: string;
   privateToken?: string;
   paths?: string | string[];

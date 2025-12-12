@@ -2,6 +2,8 @@ import fs from 'fs-extra';
 import path from 'path';
 import { describe, expect, it } from 'vitest';
 
+import { defaultsDeep } from '@/src/util';
+
 import {
   discoverConfigFiles,
   loadConfigFile,
@@ -56,6 +58,27 @@ describe('config/loader (JSON/YAML)', () => {
       expect(sources.packaged?.vars?.A).toBe('1');
       expect(sources.project?.public?.vars?.B).toBe('2');
       expect(sources.project?.local?.vars?.C).toBe('3');
+      // rootOptionDefaults precedence: packaged < project/public < project/local
+      // packaged
+      await writeJson(path.posix.join(PP, 'getdotenv.config.json'), {
+        rootOptionDefaults: { log: false, shell: '/bin/bash' },
+      });
+      // local overrides
+      await fs.writeFile(
+        path.posix.join(PR, 'getdotenv.config.local.yml'),
+        'rootOptionDefaults:\n  log: true\n  loadProcess: true\n',
+        'utf-8',
+      );
+      const src2 = await resolveGetDotenvConfigSources(packagedFileUrl);
+      const merged = defaultsDeep(
+        {},
+        src2.packaged?.rootOptionDefaults ?? {},
+        src2.project?.public?.rootOptionDefaults ?? {},
+        src2.project?.local?.rootOptionDefaults ?? {},
+      );
+      expect(merged.log).toBe(true);
+      expect(merged.loadProcess).toBe(true);
+      expect(merged.shell).toBe('/bin/bash');
     } finally {
       process.chdir(cwdOrig);
       await fs.remove(TROOT);

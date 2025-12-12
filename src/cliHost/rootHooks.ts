@@ -48,11 +48,26 @@ export function installRootHooks<TOptions extends GetDotenvOptions>(
   program: GetDotenvCli<TOptions>,
   defaults?: Partial<RootOptionsShape>,
 ): GetDotenvCli<TOptions> {
-  // Merge provided defaults over the base defaults to keep critical keys like logger.
-  const d = defaultsDeep<Partial<RootOptionsShape>>(
-    baseRootOptionDefaults as Partial<RootOptionsShape>,
-    defaults ?? {},
-  );
+  // Helper: compute merged root defaults from discovered config sources.
+  const computeConfigRootDefaults = async (): Promise<
+    Partial<RootOptionsShape>
+  > => {
+    try {
+      const sources = await resolveGetDotenvConfigSources(import.meta.url);
+      const merged = defaultsDeep<Partial<RootOptionsShape>>(
+        {},
+        (sources.packaged?.rootOptionDefaults as Partial<RootOptionsShape>) ??
+          {},
+        (sources.project?.public
+          ?.rootOptionDefaults as Partial<RootOptionsShape>) ?? {},
+        (sources.project?.local
+          ?.rootOptionDefaults as Partial<RootOptionsShape>) ?? {},
+      );
+      return merged;
+    } catch {
+      return {} as Partial<RootOptionsShape>;
+    }
+  };
 
   // Hook: preSubcommand — always runs for subcommand flows.
   program.hook('preSubcommand', async (thisCommand) => {
@@ -62,6 +77,15 @@ export function installRootHooks<TOptions extends GetDotenvOptions>(
 
     const raw =
       (thisCommand as { opts?: () => Record<string, unknown> }).opts?.() ?? {};
+
+    // Build unified defaults stack for this run:
+    // baseRootOptionDefaults < createCli root defaults (argument) < config.rootOptionDefaults
+    const cfgDefaults = await computeConfigRootDefaults();
+    const d = defaultsDeep<Partial<RootOptionsShape>>(
+      baseRootOptionDefaults as Partial<RootOptionsShape>,
+      defaults ?? {},
+      cfgDefaults,
+    );
 
     const { merged } = resolveCliOptions<
       RootOptionsShape & { scripts?: ScriptsTable }
@@ -120,6 +144,15 @@ export function installRootHooks<TOptions extends GetDotenvOptions>(
     dbg('preAction:rawArgs', rawArgs);
     const raw =
       (thisCommand as { opts?: () => Record<string, unknown> }).opts?.() ?? {};
+
+    // Build unified defaults stack for this run:
+    // baseRootOptionDefaults < createCli root defaults (argument) < config.rootOptionDefaults
+    const cfgDefaults = await computeConfigRootDefaults();
+    const d = defaultsDeep<Partial<RootOptionsShape>>(
+      baseRootOptionDefaults as Partial<RootOptionsShape>,
+      defaults ?? {},
+      cfgDefaults,
+    );
 
     const { merged } = resolveCliOptions<
       RootOptionsShape & { scripts?: ScriptsTable }

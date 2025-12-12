@@ -1,4 +1,7 @@
 export default {
+  rootOptionDefaults: {
+    loadProcess: true,
+  },
   dotenvToken: '.env',
   privateToken: 'local',
   paths: './',

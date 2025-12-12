@@ -64,3 +64,14 @@
   - Precedence finalized: CLI flags > config.rootOptionDefaults > createCli rootOptionDefaults > baseRootOptionDefaults.
   - rootOptionDefaults mirrors createCli rootOptionDefaults (collapsed families); applies to both runtime and help‑time labels.
   - Programmatic defaults resolution unchanged; host/generator paths apply config overlays.
+
+- Implement rootOptionDefaults support and defaults precedence
+  - Added rootOptionDefaults to getDotenv config schemas (JSON/YAML/JS/TS).
+  - Host now builds runtime defaults as: baseRootOptionDefaults < createCli rootOptionDefaults < config.rootOptionDefaults.
+  - Help-time labels (-h) computed from the same unified defaults without borrowing toggles from ctx; side effects remain suppressed.
+  - Updated templates:
+    - JSON: moved load/log under rootOptionDefaults.
+    - JS/TS: added rootOptionDefaults examples.
+  - Tests:
+    - Schema accepts rootOptionDefaults.
+    - Loader precedence verified for packaged < project/public < project/local (merged).

@@ -1,6 +1,9 @@
 import { z } from 'zod';
 
 import type { Scripts } from '@/src/cliHost';
+import type { RootOptionsShape } from '@/src/cliHost';
+
+import { getDotenvCliOptionsSchemaRaw } from './getDotenvCliOptions';
 
 /**
  * Zod schemas for configuration files discovered by the new loader.
@@ -19,6 +22,7 @@ const envStringMap = z.record(z.string(), stringMap);
 const rawPathsSchema = z.union([z.array(z.string()), z.string()]).optional();
 
 export const getDotenvConfigSchemaRaw = z.object({
+  rootOptionDefaults: getDotenvCliOptionsSchemaRaw.optional(),
   dotenvToken: z.string().optional(),
   privateToken: z.string().optional(),
   paths: rawPathsSchema,
@@ -51,6 +55,7 @@ export const getDotenvConfigSchemaResolved = getDotenvConfigSchemaRaw.transform(
 );
 
 export type GetDotenvConfigResolved = {
+  rootOptionDefaults?: Partial<RootOptionsShape>;
   dotenvToken?: string;
   privateToken?: string;
   paths?: string[];

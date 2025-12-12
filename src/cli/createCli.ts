@@ -8,6 +8,7 @@ import {
 } from '@/src/cliHost';
 import { attachRootOptions as attachRootOptionsBuilder } from '@/src/cliHost/attachRootOptions';
 import { installRootHooks } from '@/src/cliHost/rootHooks';
+import { resolveGetDotenvConfigSources } from '@/src/config';
 import { baseRootOptionDefaults } from '@/src/defaults';
 import {
   awsPlugin,
@@ -252,54 +253,33 @@ export function createCli(
           },
           { runAfterResolve: false },
         );
-        // Build a help-time bag:
-        // - Start with base defaults + root defaults,
-        // - Then overlay selected toggles from the resolved options so help
-        //   labels reflect the effective defaults (including local config).
+        // Build a help-time defaults bag using the unified stack:
+        // baseRootOptionDefaults < createCli rootOptionDefaults < config.rootOptionDefaults
+        let cfgDefaults: Partial<RootOptionsShape> = {};
+        try {
+          const sources = await resolveGetDotenvConfigSources(import.meta.url);
+          cfgDefaults = defaultsDeep<Partial<RootOptionsShape>>(
+            {},
+            (sources.packaged
+              ?.rootOptionDefaults as Partial<RootOptionsShape>) ?? {},
+            (sources.project?.public
+              ?.rootOptionDefaults as Partial<RootOptionsShape>) ?? {},
+            (sources.project?.local
+              ?.rootOptionDefaults as Partial<RootOptionsShape>) ?? {},
+          );
+        } catch {
+          /* tolerate missing config */
+        }
         const mergedDefaultsForHelp = defaultsDeep<Partial<RootOptionsShape>>(
           baseRootOptionDefaults as Partial<RootOptionsShape>,
           rootDefaults,
+          cfgDefaults,
         );
         const { merged: defaultsMerged } = resolveCliOptions<
           RootOptionsShape & { scripts?: ScriptsTable }
         >({}, mergedDefaultsForHelp, undefined);
-        const resolved =
-          ctx.optionsResolved as unknown as Partial<GetDotenvCliOptions>;
-        // Overlay resolved toggles that we display in help-time defaults.
-        const helpMerged: Partial<RootOptionsShape> = {
-          ...defaultsMerged,
-          ...(Object.prototype.hasOwnProperty.call(resolved, 'shell')
-            ? { shell: resolved.shell as string | boolean }
-            : {}),
-          ...(Object.prototype.hasOwnProperty.call(resolved, 'loadProcess')
-            ? { loadProcess: resolved.loadProcess as boolean }
-            : {}),
-          ...(Object.prototype.hasOwnProperty.call(resolved, 'log')
-            ? { log: resolved.log as boolean }
-            : {}),
-          ...(Object.prototype.hasOwnProperty.call(resolved, 'warnEntropy')
-            ? { warnEntropy: resolved.warnEntropy as boolean }
-            : {}),
-          ...(Object.prototype.hasOwnProperty.call(resolved, 'entropyThreshold')
-            ? { entropyThreshold: resolved.entropyThreshold as number }
-            : {}),
-          ...(Object.prototype.hasOwnProperty.call(resolved, 'entropyMinLength')
-            ? { entropyMinLength: resolved.entropyMinLength as number }
-            : {}),
-          ...(Array.isArray(
-            (resolved as { entropyWhitelist?: unknown }).entropyWhitelist,
-          )
-            ? {
-                entropyWhitelist: [
-                  ...((
-                    resolved as {
-                      entropyWhitelist?: ReadonlyArray<string>;
-                    }
-                  ).entropyWhitelist ?? []),
-                ] as ReadonlyArray<string>,
-              }
-            : {}),
-        };
+        // Use unified defaults directly for help labels (no ctx overlays).
+        const helpMerged: Partial<RootOptionsShape> = { ...defaultsMerged };
         const helpCfg = toHelpConfig(helpMerged, ctx.pluginConfigs);
         program.evaluateDynamicOptions(helpCfg);
         // Suppress output only during unit tests; allow E2E to capture.

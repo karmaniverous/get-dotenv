@@ -51,4 +51,20 @@ describe('schema/getDotenvConfig', () => {
     // dynamic passes through unchanged at schema level
     expect(resolved.dynamic).toBeDefined();
   });
+
+  it('accepts rootOptionDefaults (Partial<RootOptionsShape>)', () => {
+    const raw = {
+      rootOptionDefaults: {
+        shell: '/bin/zsh',
+        log: true,
+      },
+    };
+    const parsed = getDotenvConfigSchemaRaw.safeParse(raw);
+    expect(parsed.success).toBe(true);
+    const resolved = getDotenvConfigSchemaResolved.parse(
+      parsed.success ? parsed.data : {},
+    );
+    expect(resolved.rootOptionDefaults?.shell).toBe('/bin/zsh');
+    expect(resolved.rootOptionDefaults?.log).toBe(true);
+  });
 });
