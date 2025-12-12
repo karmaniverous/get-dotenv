@@ -18,8 +18,10 @@ export function mergeRootVisibility(
   const out: VisibilityMap = {};
   for (const m of layers) {
     if (!m) continue;
-    for (const [k, v] of Object.entries(m)) {
-      (out as Record<string, boolean>)[k] = Boolean(v);
+    for (const [k, v] of Object.entries(m) as Array<
+      [keyof RootOptionsShape, boolean]
+    >) {
+      out[k] = v;
     }
   }
   return out;

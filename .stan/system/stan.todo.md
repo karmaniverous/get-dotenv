@@ -105,4 +105,9 @@
   - Added src/cliHost/visibility.ts to merge and apply root option visibility; reused in createCli help path.
   - Schema: introduced rootOptionVisibility in getDotenvConfig (raw/resolved).
   - Host/CLI: applied create-time visibility and merged config visibility for top-level -h; added --redact/--redact-off dynamic flags alongside existing diagnostics options.
-  - Follow-ups (next turn): integrate visibility into root runtime hooks (optional), expand tests to cover visibility precedence and redact toggles, and update docs/templates per plan.
+  - Follow-ups (next turn): integrate visibility into root runtime hooks (optional), expand tests to cover visibility precedence and redact toggles, and update docs/templates per plan.
+
+- Fix: type and lint for rootOptionVisibility and visibility helper
+  - Schema: changed resolved type of rootOptionVisibility to Partial<Record<keyof RootOptionsShape, boolean>>.
+  - Host: removed unsafe casts in createCli; rely on schema-typed boolean map.
+  - Lint: replaced Boolean(v) with typed assignment in visibility.ts and tightened entry typing.

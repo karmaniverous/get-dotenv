@@ -61,7 +61,7 @@ export type GetDotenvConfigResolved = {
   dotenvToken?: string;
   privateToken?: string;
   paths?: string[];
-  rootOptionVisibility?: Partial<RootOptionsShape>;
+  rootOptionVisibility?: Partial<Record<keyof RootOptionsShape, boolean>>;
   loadProcess?: boolean;
   log?: boolean;
   shell?: string | boolean;

@@ -253,18 +253,14 @@ export function createCli(
             );
             const mergedVis = mergeRootVisibility(
               visibility,
-              (sources.packaged?.rootOptionVisibility ?? undefined) as Partial<
-                Record<keyof RootOptionsShape, boolean>
-              >,
-              (sources.project?.public?.rootOptionVisibility ??
-                undefined) as Partial<Record<keyof RootOptionsShape, boolean>>,
-              (sources.project?.local?.rootOptionVisibility ??
-                undefined) as Partial<Record<keyof RootOptionsShape, boolean>>,
+              sources.packaged?.rootOptionVisibility ?? undefined,
+              sources.project?.public?.rootOptionVisibility ?? undefined,
+              sources.project?.local?.rootOptionVisibility ?? undefined,
             );
             if (Object.keys(mergedVis).length > 0) {
               applyRootVisibility(
                 program as unknown as GetDotenvCli,
-                mergedVis as Partial<Record<keyof RootOptionsShape, boolean>>,
+                mergedVis,
               );
             }
           } catch {
