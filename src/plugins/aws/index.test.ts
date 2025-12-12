@@ -9,13 +9,17 @@ const runCommandMock =
       opts: { env?: Record<string, string>; stdio?: 'inherit' | 'pipe' },
     ) => Promise<number>
   >();
-vi.mock('../../cliHost/exec', () => ({
-  runCommand: (
-    cmd: string | string[],
-    shell: string | boolean | URL,
-    opts: { env?: Record<string, string>; stdio?: 'inherit' | 'pipe' },
-  ) => runCommandMock(cmd, shell, opts),
-}));
+vi.mock('../../cliHost/exec', async (importOriginal) => {
+  const actual = await importOriginal();
+  return {
+    ...actual,
+    runCommand: (
+      cmd: string | string[],
+      shell: string | boolean | URL,
+      opts: { env?: Record<string, string>; stdio?: 'inherit' | 'pipe' },
+    ) => runCommandMock(cmd, shell, opts),
+  };
+});
 
 import { createCli } from '@/src/cli';
 

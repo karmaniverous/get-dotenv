@@ -4,6 +4,12 @@
 
 ## Completed (recent)
 
+- Tests: fix aws plugin mocks after adding shouldCapture
+  - Updated src/plugins/aws/index.test.ts to use a partial mock for
+    ../../cliHost/exec via importOriginal(), spreading actual exports and
+    overriding runCommand only. This preserves shouldCapture and keeps tests
+    robust to future exec exports.
+
 - DRY cleanups: module loader, dynamic apply, batch argv, verify expectations, capture helper, root defaults helper
   - Config loader now reuses src/util/loadModuleDefault for JS/TS defaults,
     removing duplicated bundling/transpile logic in src/config/loader.ts.
