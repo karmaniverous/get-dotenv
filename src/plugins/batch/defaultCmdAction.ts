@@ -11,6 +11,7 @@ import {
 
 import { execShellCommandBatch } from './execShellCommandBatch';
 import type { BatchConfig, BatchPluginOptions } from './types';
+import type { BatchCmdSubcommandOptions } from './types';
 
 /**
  * Attach the default "cmd" subcommand action with contextual typing.
@@ -25,7 +26,7 @@ export const attachDefaultCmdAction = (
   cmd.action(
     async (
       commandParts: string[],
-      _subOpts: {},
+      _subOpts: BatchCmdSubcommandOptions,
       thisCommand: CommandUnknownOpts,
     ) => {
       const mergedBag = readMergedOptions(batchCmd);

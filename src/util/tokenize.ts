@@ -3,10 +3,21 @@
 // Optionally preserve doubled quotes inside quoted segments:
 // - default: "" => " (Windows/PowerShell style literal-quote escape)
 // - preserveDoubledQuotes: true => "" stays "" (needed for Node -e payloads)
-export const tokenize = (
-  command: string,
-  opts?: { preserveDoubledQuotes?: boolean },
-): string[] => {
+/**
+ * Options for the tokenizer used by shell-off command handling.
+ *
+ * @public
+ */
+export interface TokenizeOptions {
+  /**
+   * When true, keep doubled quotes inside a quoted segment (e.g., `""` stays `""`),
+   * which is useful for preserving Node -e payload quoting patterns.
+   * When false (default), doubled quotes collapse to a single literal quote.
+   */
+  preserveDoubledQuotes?: boolean;
+}
+
+export const tokenize = (command: string, opts?: TokenizeOptions): string[] => {
   const out: string[] = [];
   let cur = '';
   let quote: '"' | "'" | null = null;

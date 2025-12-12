@@ -4,6 +4,16 @@
 
 ## Completed (recent)
 
+- Batch/Cmd/Util/Env: exported interfaces for inline option objects
+  - batch/parentInvoker: introduced BatchParentInvokerFlags and updated usage;
+    batch/defaultCmdAction: added BatchCmdSubcommandOptions (empty) for clarity.
+    Re-exported from plugins/batch barrel.
+  - util/tokenize: added TokenizeOptions with TSDoc and updated signature;
+    public via util barrel.
+  - env/overlayEnv: added OverlayEnvOptionsBase and OverlayEnvOptionsWithProgrammatic
+    to replace inline implementation arg typing. Implementation updated to accept
+    the exported interfaces (function overloads remain unchanged). Public via env barrel.
+
 - Cmd: export typed options for run helper
   - Added RunCmdWithContextOptions (with TSDoc) in src/plugins/cmd/types.ts
     to replace the inline options object used by runCmdWithContext.

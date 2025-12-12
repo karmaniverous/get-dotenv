@@ -54,6 +54,29 @@ export interface ExecShellCommandBatchOptions {
   shell: string | boolean | URL;
 }
 
+/**
+ * Flags parsed at the batch parent command level (shared between invoker paths).
+ *
+ * @public
+ */
+export interface BatchParentInvokerFlags {
+  command?: string;
+  globs?: string;
+  list?: boolean;
+  ignoreErrors?: boolean;
+  pkgCwd?: boolean;
+  rootPath?: string;
+}
+
+/**
+ * Options parsed for the batch "cmd" subcommand.
+ * Currently empty; reserved for future extension.
+ *
+ * @public
+ */
+
+export interface BatchCmdSubcommandOptions {}
+
 // Per-plugin config schema (optional fields; used as defaults).
 export const ScriptSchema = z.union([
   z.string(),

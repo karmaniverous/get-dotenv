@@ -32,6 +32,40 @@ const applyConfigSlice = (
 };
 
 /**
+ * Base options for overlaying config-provided values onto a dotenv map.
+ *
+ * @typeParam B - base env shape
+ * @public
+ */
+export interface OverlayEnvOptionsBase<
+  B extends
+    | Record<string, string | undefined>
+    | Readonly<Record<string, string | undefined>>,
+> {
+  base: B;
+  env: string | undefined;
+  configs: OverlayConfigSources;
+}
+
+/**
+ * Options including explicit programmatic variables which take top precedence.
+ *
+ * @typeParam B - base env shape
+ * @typeParam P - programmatic vars shape
+ * @public
+ */
+export interface OverlayEnvOptionsWithProgrammatic<
+  B extends
+    | Record<string, string | undefined>
+    | Readonly<Record<string, string | undefined>>,
+  P extends
+    | Record<string, string | undefined>
+    | Readonly<Record<string, string | undefined>>,
+> extends OverlayEnvOptionsBase<B> {
+  programmaticVars: P;
+}
+
+/**
  * Overlay config-provided values onto a base ProcessEnv using precedence axes:
  * - kind: env \> global
  * - privacy: local \> public
@@ -57,12 +91,14 @@ export function overlayEnv({
   env,
   configs,
   programmaticVars,
-}: {
-  base: ProcessEnv | Readonly<Record<string, string | undefined>>;
-  env: string | undefined;
-  configs: OverlayConfigSources;
-  programmaticVars?: ProcessEnv | Readonly<Record<string, string | undefined>>;
-}): ProcessEnv {
+}:
+  | OverlayEnvOptionsBase<
+      ProcessEnv | Readonly<Record<string, string | undefined>>
+    >
+  | OverlayEnvOptionsWithProgrammatic<
+      ProcessEnv | Readonly<Record<string, string | undefined>>,
+      ProcessEnv | Readonly<Record<string, string | undefined>>
+    >): ProcessEnv {
   let current = { ...base };
 
   // Source: packaged (public -> local)
@@ -75,11 +111,13 @@ export function overlayEnv({
   current = applyConfigSlice(current, configs.project?.local, env);
 
   // Programmatic explicit vars (top of static tier)
-  if (programmaticVars) {
+  if (programmaticVars as ProcessEnv | undefined) {
     const toApply: Record<string, string> = Object.fromEntries(
-      Object.entries(programmaticVars).filter(
-        ([_k, v]) => typeof v === 'string',
-      ) as Array<[string, string]>,
+      Object.entries(
+        programmaticVars as
+          | ProcessEnv
+          | Readonly<Record<string, string | undefined>>,
+      ).filter(([_k, v]) => typeof v === 'string') as Array<[string, string]>,
     );
     current = applyKv(current, toApply);
   }

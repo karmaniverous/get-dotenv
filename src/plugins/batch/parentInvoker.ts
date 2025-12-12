@@ -11,6 +11,7 @@ import {
 import { execShellCommandBatch } from './execShellCommandBatch';
 import type { BatchPluginOptions } from './types';
 import type { BatchConfig } from './types';
+import type { BatchParentInvokerFlags } from './types';
 
 export const attachParentInvoker = (
   plugin: ReturnType<typeof definePlugin>,
@@ -21,25 +22,10 @@ export const attachParentInvoker = (
   parent.action(async function (...args: unknown[]) {
     // Commander Unknown generics: [...unknown[], OptionValues, thisCommand]
     const thisCommand = args[args.length - 1] as CommandUnknownOpts;
-    const opts = (
+    const opts =
       args.length >= 2
-        ? (args[args.length - 2] as {
-            command?: string;
-            globs?: string;
-            list?: boolean;
-            ignoreErrors?: boolean;
-            pkgCwd?: boolean;
-            rootPath?: string;
-          })
-        : {}
-    ) as {
-      command?: string;
-      globs?: string;
-      list?: boolean;
-      ignoreErrors?: boolean;
-      pkgCwd?: boolean;
-      rootPath?: string;
-    };
+        ? (args[args.length - 2] as BatchParentInvokerFlags)
+        : {};
     // Read merged root options once and reuse across all code paths.
     const merged = readMergedOptions(thisCommand);
     const logger = merged.logger;

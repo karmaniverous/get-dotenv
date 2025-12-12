@@ -2,7 +2,9 @@
 import { Command } from '@commander-js/extra-typings';
 
 export type {
+  BatchCmdSubcommandOptions,
   BatchGlobPathsOptions,
+  BatchParentInvokerFlags,
   ExecShellCommandBatchOptions,
 } from './types';
 
