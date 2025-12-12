@@ -75,3 +75,8 @@
   - Tests:
     - Schema accepts rootOptionDefaults.
     - Loader precedence verified for packaged < project/public < project/local (merged).
+
+- Fix lint + test path issues for root defaults work
+  - Resolved @typescript-eslint/no-unnecessary-condition by coalescing before casts in rootHooks.ts and createCli.ts.
+  - Removed unused type import in createCli.ts.
+  - Corrected loader.test.ts to use absolute paths for packaged/project after chdir to project; fixed ENOENT.

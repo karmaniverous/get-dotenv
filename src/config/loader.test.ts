@@ -11,9 +11,9 @@ import {
   toFileUrl,
 } from './loader';
 
-const TROOT = path.posix.join('.tsbuild', 'getdotenv-config-tests');
-const PP = path.posix.join(TROOT, 'packaged');
-const PR = path.posix.join(TROOT, 'project');
+const TROOT = path.resolve('.tsbuild', 'getdotenv-config-tests');
+const PP = path.resolve(TROOT, 'packaged');
+const PR = path.resolve(TROOT, 'project');
 
 const writeJson = async (p: string, v: unknown) =>
   fs.writeFile(p, JSON.stringify(v, null, 2), 'utf-8');
@@ -40,7 +40,7 @@ describe('config/loader (JSON/YAML)', () => {
     );
 
     // Point packaged discovery via importMetaUrl
-    const packagedFileUrl = toFileUrl(path.posix.join(PP, 'index.mjs'));
+    const packagedFileUrl = toFileUrl(path.join(PP, 'index.mjs'));
 
     // For project, ensure packageDirectory() resolves to our test project root
     const cwdOrig = process.cwd();
@@ -60,12 +60,12 @@ describe('config/loader (JSON/YAML)', () => {
       expect(sources.project?.local?.vars?.C).toBe('3');
       // rootOptionDefaults precedence: packaged < project/public < project/local
       // packaged
-      await writeJson(path.posix.join(PP, 'getdotenv.config.json'), {
+      await writeJson(path.join(PP, 'getdotenv.config.json'), {
         rootOptionDefaults: { log: false, shell: '/bin/bash' },
       });
       // local overrides
       await fs.writeFile(
-        path.posix.join(PR, 'getdotenv.config.local.yml'),
+        path.join(PR, 'getdotenv.config.local.yml'),
         'rootOptionDefaults:\n  log: true\n  loadProcess: true\n',
         'utf-8',
       );

@@ -56,12 +56,9 @@ export function installRootHooks<TOptions extends GetDotenvOptions>(
       const sources = await resolveGetDotenvConfigSources(import.meta.url);
       const merged = defaultsDeep<Partial<RootOptionsShape>>(
         {},
-        (sources.packaged?.rootOptionDefaults as Partial<RootOptionsShape>) ??
-          {},
-        (sources.project?.public
-          ?.rootOptionDefaults as Partial<RootOptionsShape>) ?? {},
-        (sources.project?.local
-          ?.rootOptionDefaults as Partial<RootOptionsShape>) ?? {},
+        sources.packaged?.rootOptionDefaults ?? {},
+        sources.project?.public?.rootOptionDefaults ?? {},
+        sources.project?.local?.rootOptionDefaults ?? {},
       );
       return merged;
     } catch {

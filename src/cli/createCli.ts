@@ -1,6 +1,5 @@
 import {
   GetDotenvCli,
-  type GetDotenvCliOptions,
   resolveCliOptions,
   type RootOptionsShape,
   type ScriptsTable,
@@ -260,19 +259,16 @@ export function createCli(
           const sources = await resolveGetDotenvConfigSources(import.meta.url);
           cfgDefaults = defaultsDeep<Partial<RootOptionsShape>>(
             {},
-            (sources.packaged
-              ?.rootOptionDefaults as Partial<RootOptionsShape>) ?? {},
-            (sources.project?.public
-              ?.rootOptionDefaults as Partial<RootOptionsShape>) ?? {},
-            (sources.project?.local
-              ?.rootOptionDefaults as Partial<RootOptionsShape>) ?? {},
+            sources.packaged?.rootOptionDefaults ?? {},
+            sources.project?.public?.rootOptionDefaults ?? {},
+            sources.project?.local?.rootOptionDefaults ?? {},
           );
         } catch {
           /* tolerate missing config */
         }
         const mergedDefaultsForHelp = defaultsDeep<Partial<RootOptionsShape>>(
           baseRootOptionDefaults as Partial<RootOptionsShape>,
-          rootDefaults,
+          rootDefaults ?? {},
           cfgDefaults,
         );
         const { merged: defaultsMerged } = resolveCliOptions<
