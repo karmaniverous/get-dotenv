@@ -16,6 +16,8 @@ import { copyTextFile, ensureLines } from './io';
 import { planCliCopies, planConfigCopies } from './plan';
 import { isNonInteractive, promptDecision } from './prompts';
 
+export type { PlanCliCopiesOptions, PlanConfigCopiesOptions } from './plan';
+
 type CopyDecision = 'overwrite' | 'example' | 'skip';
 
 export const initPlugin = () =>

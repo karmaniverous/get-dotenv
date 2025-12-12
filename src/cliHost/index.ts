@@ -6,6 +6,7 @@ export type {
   PluginWithInstanceHelpers,
 } from './contracts';
 export { definePlugin } from './definePlugin';
+export type { RunCommandOptions, RunCommandResultOptions } from './exec';
 export { runCommand, runCommandResult } from './exec';
 export { GetDotenvCli, type GetDotenvCliCtx } from './GetDotenvCli';
 export {

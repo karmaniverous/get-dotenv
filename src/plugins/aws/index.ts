@@ -1,3 +1,4 @@
+export type { ResolveAwsContextOptions } from './types';
 import {
   buildSpawnEnv,
   definePlugin,

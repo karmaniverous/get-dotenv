@@ -13,6 +13,46 @@ const dbg = (...args: unknown[]) => {
 export const shouldCapture = (bagCapture?: boolean): boolean =>
   process.env.GETDOTENV_STDIO === 'pipe' || Boolean(bagCapture);
 
+/**
+ * Options for runCommandResult (buffered execution).
+ *
+ * @public
+ */
+export interface RunCommandResultOptions {
+  /**
+   * Working directory for the child process.
+   */
+  cwd?: string | URL;
+  /**
+   * Environment variables for the child process. Undefined values are dropped.
+   */
+  env?: NodeJS.ProcessEnv;
+  /**
+   * Optional timeout (ms). Kills the child with SIGKILL on expiry.
+   */
+  timeoutMs?: number;
+}
+
+/**
+ * Options for runCommand (execution with optional inherit/pipe).
+ *
+ * @public
+ */
+export interface RunCommandOptions {
+  /**
+   * Working directory for the child process.
+   */
+  cwd?: string | URL;
+  /**
+   * Environment variables for the child process. Undefined values are dropped.
+   */
+  env?: NodeJS.ProcessEnv;
+  /**
+   * Stdio strategy for the child process.
+   */
+  stdio?: 'inherit' | 'pipe';
+}
+
 // Strip repeated symmetric outer quotes (single or double) until stable.
 // This is safe for argv arrays passed to execa (no quoting needed) and avoids
 // passing quote characters through to Node (e.g., for `node -e "<code>"`).
@@ -146,29 +186,17 @@ async function _execNormalized(
 export function runCommandResult(
   command: readonly string[],
   shell: false,
-  opts?: {
-    cwd?: string | URL;
-    env?: NodeJS.ProcessEnv;
-    timeoutMs?: number;
-  },
+  opts?: RunCommandResultOptions,
 ): Promise<{ exitCode: number; stdout: string; stderr: string }>;
 export function runCommandResult(
   command: string | readonly string[],
   shell: string | boolean | URL,
-  opts?: {
-    cwd?: string | URL;
-    env?: NodeJS.ProcessEnv;
-    timeoutMs?: number;
-  },
+  opts?: RunCommandResultOptions,
 ): Promise<{ exitCode: number; stdout: string; stderr: string }>;
 export async function runCommandResult(
   command: string | readonly string[],
   shell: string | boolean | URL,
-  opts: {
-    cwd?: string | URL;
-    env?: NodeJS.ProcessEnv;
-    timeoutMs?: number;
-  } = {},
+  opts: RunCommandResultOptions = {},
 ): Promise<{ exitCode: number; stdout: string; stderr: string }> {
   // Build opts without injecting undefined (exactOptionalPropertyTypes-safe)
   const coreOpts: {
@@ -202,20 +230,12 @@ export function runCommand(
 export function runCommand(
   command: string | readonly string[],
   shell: string | boolean | URL,
-  opts: {
-    cwd?: string | URL;
-    env?: NodeJS.ProcessEnv;
-    stdio?: 'inherit' | 'pipe';
-  },
+  opts: RunCommandOptions,
 ): Promise<number>;
 export async function runCommand(
   command: string | readonly string[],
   shell: string | boolean | URL,
-  opts: {
-    cwd?: string | URL;
-    env?: NodeJS.ProcessEnv;
-    stdio?: 'inherit' | 'pipe';
-  },
+  opts: RunCommandOptions,
 ): Promise<number> {
   // Build opts without injecting undefined (exactOptionalPropertyTypes-safe)
   const callOpts: {

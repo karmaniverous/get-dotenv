@@ -1,5 +1,7 @@
 import { z } from 'zod';
 
+import type { ProcessEnv } from '@/src/core';
+
 export const AwsPluginConfigSchema = z.object({
   profile: z.string().optional(),
   region: z.string().optional(),
@@ -24,3 +26,16 @@ export type AwsContext = {
   region?: string;
   credentials?: AwsCredentials;
 };
+
+/**
+ * Arguments for resolving AWS context (profile/region/credentials).
+ *
+ * @public
+ */
+export interface ResolveAwsContextOptions {
+  /**
+   * The current composed dotenv variables.
+   */
+  dotenv: ProcessEnv;
+  cfg: AwsPluginConfig;
+}

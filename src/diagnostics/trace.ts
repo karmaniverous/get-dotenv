@@ -7,18 +7,35 @@ import type { ProcessEnv } from '@/src/core';
 import { type EntropyOptions, maybeWarnEntropy } from './entropy';
 import { type RedactOptions, redactTriple } from './redact';
 
-export function traceChildEnv(opts: {
+/**
+ * Options for tracing composed child environment variables.
+ *
+ * Presentation-only: values are never mutated; output is written to {@link write}.
+ *
+ * @public
+ */
+export interface TraceChildEnvOptions
+  extends Pick<RedactOptions, 'redact' | 'redactPatterns'>,
+    EntropyOptions {
+  /**
+   * Parent process environment (source).
+   */
   parentEnv: ProcessEnv;
+  /**
+   * Composed dotenv map (target).
+   */
   dotenv: ProcessEnv;
+  /**
+   * Optional subset of keys to trace. When omitted, all keys are traced.
+   */
   keys?: string[];
-  redact?: boolean;
-  redactPatterns?: Array<string | RegExp>;
-  warnEntropy?: boolean;
-  entropyThreshold?: number;
-  entropyMinLength?: number;
-  entropyWhitelist?: Array<string | RegExp>;
+  /**
+   * Sink for trace lines (e.g., write to stderr).
+   */
   write: (line: string) => void;
-}): void {
+}
+
+export function traceChildEnv(opts: TraceChildEnvOptions): void {
   const {
     parentEnv,
     dotenv,

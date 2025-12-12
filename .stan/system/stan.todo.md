@@ -4,6 +4,17 @@
 
 ## Completed (recent)
 
+- Types: replace inline option objects with exported interfaces across core/diagnostics/plugins
+  - cliHost/exec: added RunCommandResultOptions and RunCommandOptions with TSDoc,
+    updated runCommandResult/runCommand overloads to use them, and re-exported from
+    the cliHost barrel.
+  - diagnostics/trace: introduced TraceChildEnvOptions and refactored traceChildEnv
+    signature; re-exported from diagnostics barrel.
+  - plugins/init/plan: added PlanConfigCopiesOptions and PlanCliCopiesOptions and
+    re-exported from plugins/init barrel.
+  - plugins/aws/service: added ResolveAwsContextOptions in types.ts and updated resolver
+    signature; re-exported from plugins/aws barrel.
+
 - Batch: export typed option interfaces with TSDoc
   - Introduced BatchGlobPathsOptions and ExecShellCommandBatchOptions in
     src/plugins/batch/types.ts with full TSDoc to surface in TypeDoc output.

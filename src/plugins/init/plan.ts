@@ -2,15 +2,35 @@ import path from 'path';
 
 import { TEMPLATES_ROOT } from './constants';
 
+/**
+ * Options for planning config template copies.
+ *
+ * @public
+ */
+export interface PlanConfigCopiesOptions {
+  /**
+   * Desired config format to scaffold.
+   */
+  format: 'json' | 'yaml' | 'js' | 'ts';
+  /**
+   * Whether to include a private .local variant (JSON/YAML only).
+   */
+  withLocal: boolean;
+  /**
+   * Absolute destination project root.
+   */
+  destRoot: string;
+}
+
 export const planConfigCopies = ({
   format,
   withLocal,
   destRoot,
-}: {
-  format: 'json' | 'yaml' | 'js' | 'ts';
-  withLocal: boolean;
-  destRoot: string;
-}): Array<{ src: string; dest: string; subs?: Record<string, string> }> => {
+}: PlanConfigCopiesOptions): Array<{
+  src: string;
+  dest: string;
+  subs?: Record<string, string>;
+}> => {
   const copies: Array<{
     src: string;
     dest: string;
@@ -76,13 +96,30 @@ export const planConfigCopies = ({
   return copies;
 };
 
+/**
+ * Options for planning CLI skeleton template copies.
+ *
+ * @public
+ */
+export interface PlanCliCopiesOptions {
+  /**
+   * CLI command name to substitute into templates.
+   */
+  cliName: string;
+  /**
+   * Absolute destination project root.
+   */
+  destRoot: string;
+}
+
 export const planCliCopies = ({
   cliName,
   destRoot,
-}: {
-  cliName: string;
-  destRoot: string;
-}): Array<{ src: string; dest: string; subs?: Record<string, string> }> => {
+}: PlanCliCopiesOptions): Array<{
+  src: string;
+  dest: string;
+  subs?: Record<string, string>;
+}> => {
   const subs = { __CLI_NAME__: cliName };
   const base = path.join(destRoot, 'src', 'cli', cliName);
   return [
