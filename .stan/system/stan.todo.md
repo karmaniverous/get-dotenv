@@ -2,61 +2,58 @@
 
 ## Next up (near‑term, actionable)
 
-- Root defaults via config.rootOptionDefaults (schema + loader)
-  - Add rootOptionDefaults to getDotenv config schemas (JSON/YAML/JS/TS):
-    - Schema shape: Partial<RootOptionsShape> (the CLI “stringly” form), with families collapsed (e.g., log, excludePrivate, warnEntropy).
-    - JSON/YAML: allow rootOptionDefaults; reject per‑key root toggles at top level (legacy keys become docs‑only).
-    - JS/TS: allow rootOptionDefaults, dynamic, and schema as today.
-  - Loader changes:
-    - Discover packaged → project/public → project/local; deep‑merge rootOptionDefaults in that order.
-    - Export a single merged config‑root‑defaults object alongside existing sources (used by host defaults).
+- Config contract (breaking) — eliminate redundancy; add visibility; separate scripts/dynamic
+  - Schema (JSON/YAML/JS/TS):
+    - Accept root-only operational knobs ONLY inside rootOptionDefaults (collapsed families; CLI-like). Reject these keys at the top level.
+    - Introduce rootOptionVisibility?: Partial<Record<keyof RootOptionsShape, boolean>> (false hides a flag). Allow in JSON/YAML/JS/TS.
+    - scripts?: Scripts allowed only as a top-level sibling (not in rootOptionDefaults, not on CLI).
+    - dynamic?: GetDotenvDynamic allowed only as a top-level JS/TS key (not in rootOptionDefaults).
+    - Keep vars, envVars, plugins, requiredKeys at top level as-is.
+  - Loader:
+    - Discover packaged/public → project/public → project/local.
+    - Merge rootOptionDefaults by precedence (packaged/public < project/public < project/local).
+    - Merge rootOptionVisibility by the same precedence; surface to host.
+    - Merge scripts by the same precedence; inject into the merged defaults bag used by host (no CLI flag).
+    - Enforce schema strictly: root-only keys at top level are invalid; scripts/dynamic cannot appear inside rootOptionDefaults.
 
-- Host defaults stack (runtime) — unify precedence
-  - In root hooks (preSubcommand, preAction):
-    - Build defaults “d” as baseRootOptionDefaults < createCli rootOptionDefaults < config.rootOptionDefaults.
-    - Pass “d” to resolveCliOptions(raw, d, parentJson) so CLI flags remain highest and parentJson stays above defaults.
-    - Persist merged bag (getDotenvCliOptions) for nested flows; proceed with resolveAndLoad as today.
-  - Ensure stringly handling matches CLI behavior:
-    - paths as a single string (joined by pathsDelimiter or default space).
-    - vars as a single string with varsDelimiter/assignor patterns respected.
-    - trace supports boolean or string[]; preserve arrays from config.
-    - scripts pass through; per‑script shell continues to override global shell for that script.
+  - Host/CLI wiring:
+    - Defaults stack (runtime/help): baseRootOptionDefaults < createCli(rootOptionDefaults) < packaged/public(rootOptionDefaults) < project/public(rootOptionDefaults) < project/local(rootOptionDefaults) < CLI flags.
+    - Visibility stack (no CLI): createCli(rootOptionVisibility) < packaged/public(rootOptionVisibility) < project/public(rootOptionVisibility) < project/local(rootOptionVisibility); apply hideHelp(true) for flags with false.
+    - Remove hidden --scripts CLI option entirely.
+    - Add redact family to root flags: --redact and --redact-off (dynamic help labels; grouped like entropy-warn).
+    - Ensure scripts from config are included in the merged root bag passed to resolveCliOptions/resolveCommand/resolveShell; keep nested inheritance via getDotenvCliOptions JSON as today.
+    - Help-time: evaluate dynamic labels using the unified defaults (not ctx effects); reflect visibility before rendering help.
 
-- Help‑time labels (-h) — parity with runtime defaults
-  - In createCli top‑level help branch:
-    - Load config sources and compute config.rootOptionDefaults as above.
-    - Build the same defaults stack (base < createCli < config) and evaluate dynamic help from that bag (do not borrow log/loadProcess from a side‑effect‑suppressed ctx).
-    - Keep help side effects disabled (no env merge, no outputPath writes, no logging) while labels reflect effective defaults.
+  - Tests (unit/E2E):
+    - Schema/loader:
+      - Reject root-only toggles at top level; accept rootOptionDefaults-only; accept top-level scripts; reject scripts/dynamic within rootOptionDefaults.
+      - Accept rootOptionVisibility; verify precedence packaged/public < project/public < project/local.
+    - Host:
+      - Runtime precedence assertions for CLI flags > config.rootOptionDefaults > createCli > base across families (shell/log/loadProcess, exclude*, warnEntropy, tokens, paths/vars splitters, trace/strict, redact family).
+      - Visibility: flags hidden when false via merged rootOptionVisibility (createCli + config).
+      - Redact: CLI pair works; rootOptionDefaults.redact default respected; redact-pattern honored.
+      - Remove any tests relying on hidden --scripts; ensure scripts are effective via config-only pathway.
+    - Help/E2E:
+      - Top-level -h uses the unified defaults/visibility (no ctx side effects); dynamic labels show correct “(default)”; hidden flags absent.
+      - Subcommand help remains unaffected by root-visibility rules (only root/grouped display changes).
 
-- Remove legacy root defaults at top level in config (compat note)
-  - Stop reading legacy top‑level root toggles for defaults in the loader/host.
-  - Migration: document rootOptionDefaults as the single source for operational root defaults (collapsed families).
+  - Documentation & templates:
+    - README/guides:
+      - Clarify strict config contract: root-only options live under rootOptionDefaults; no top-level duplicates.
+      - Introduce rootOptionVisibility and its precedence; document “false hides”.
+      - Show scripts/dynamic as top-level siblings; dynamic JS/TS-only; no CLI/ROD nesting.
+      - CLI parity: redact/redact-off documented; family mapping across config and CLI.
+    - Templates:
+      - Optionally add commented examples for rootOptionDefaults and rootOptionVisibility; scripts/dynamic examples at top-level (JS/TS templates).
+      - Ensure JSON/YAML templates demonstrate only vars/envVars (and optionally commented rootOptionDefaults/visibility), with no invalid top-level root toggles.
 
-- Tests (unit/E2E)
-  - Schema/loader:
-    - Accept JSON/YAML/JS/TS rootOptionDefaults; verify deep‑merge precedence packaged < project/public < project/local.
-    - Validate that invalid keys are rejected with clear diagnostics.
-  - Host defaults:
-    - Runtime: precedence assertions for CLI flags > config.rootOptionDefaults > createCli > base across key families (shell/log/loadProcess, exclude\*, warnEntropy, tokens, paths/vars, scripts).
-    - Help: dynamic labels show correct “(default)” based on the unified defaults stack; ensure side‑effects are suppressed.
-  - Nested flows:
-    - ParentJson remains above defaults; current CLI flags still win; verify conflict resolution with parent alias scenarios.
+  - Programmatic API:
+    - Keep resolveGetDotenvOptions behavior as “base < custom”; do not implicitly read configs; document host/generator pipeline as the place that applies overlays/defaults/visibility.
 
-- Documentation & templates
-  - README/guides (Config files and overlays, Shell behavior, Authoring Plugins):
-    - Introduce rootOptionDefaults; clarify unified precedence; remove references to setting root defaults at top level.
-    - Document stringly details (paths/vars splitters, trace boolean|string[]), script shell precedence, and examples.
-  - Templates:
-    - Add rootOptionDefaults examples to JSON/YAML/JS/TS config templates.
-    - Keep createCli({ rootOptionDefaults }) examples; note that project config can override them.
-
-- Programmatic API guardrails
-  - Keep resolveGetDotenvOptions as “base < custom” (no implicit config read) and document that host/generator paths apply config overlays and root defaults.
-
-- Release & QA
-  - Bump version (minor/major per policy).
-  - Update changelog; run verify scripts (types, bundle, tarball); full test suite on CI (POSIX + Windows).
-  - Note migration in CHANGELOG and docs (rootOptionDefaults replaces legacy top‑level root toggles for defaults).
+  - Release & QA:
+    - Big-bang breaking release (major).
+    - Update changelog with schema/CLI breaking changes.
+    - Run verify scripts (types, bundle, tarball) and full CI matrix (POSIX + Windows).
 
 ## Completed (recent)
 
@@ -90,3 +87,8 @@
     did not alter baseRootOptionDefaults.
   - Simplified repository root getdotenv.config.json to {} since no overrides
     are required.
+- Requirements: tighten config contract & visibility; CLI parity (redact)
+  - Updated requirements to remove redundancy between rootOptionDefaults and top-level root toggles.
+  - Added rootOptionVisibility to config with precedence (createCli < packaged/public < project/public < project/local); false hides a flag.
+  - Clarified scripts as top-level only (not in CLI; not in rootOptionDefaults) and dynamic as top-level JS/TS-only.
+  - Added CLI redact family (--redact/--redact-off) with config defaults in rootOptionDefaults.
