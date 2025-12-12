@@ -59,13 +59,26 @@ Load environment variables from a configurable cascade of dotenv files and/or ex
 
 ### 2) Option layering (defaults semantics, “custom overrides defaults”)
 
-- CLI host defaults resolution:
-  - Merge order (lowest precedence first): base < packaged root < project public < project local < custom invocation
-- Programmatic defaults (`resolveGetDotenvOptions`):
-  - Merge order: base (from CLI defaults) < local (getdotenv.config.\*) < custom invocation
-- Per-subcommand merges (nested CLI):
-  - Merge order: parent < current (current overrides).
-- Behavior: “defaults-deep” semantics for plain objects.
+There are two related layers of defaults in the system:
+
+- Root CLI options (host/generator flows): precedence for all root options is:
+
+  CLI flags > getdotenv.config.\* rootOptionDefaults > createCli rootOptionDefaults > baseRootOptionDefaults
+
+  Notes:
+  - rootOptionDefaults in getdotenv.config.\* is a single object that mirrors the shape of createCli({ rootOptionDefaults }), i.e., Partial<RootOptionsShape> (the “stringly” CLI form), with families collapsed (e.g., “log” and not “log-off”). This is merged by source precedence (packaged < project/public < project/local).
+  - The defaults stack is built once per run and used both for actual runs and for help-time labels; CLI flags remain the highest precedence layer at runtime.
+
+- Programmatic `resolveGetDotenvOptions` (library callers):
+  - Merge order remains: base (from CLI defaults) < custom invocation (no automatic read of local config files). Programmatic callers can read and apply config themselves if desired; the host path (CLI/generator) is responsible for config overlays and root defaults.
+
+Per-subcommand merges (nested CLI):
+
+- Merge order remains: parent < current for CLI flags; the default stack for root options still comes from base < createCli < config, with parent-provided options marshaled through the parentJson bag (above defaults, below current).
+
+Behavior:
+
+- “defaults-deep” semantics for plain objects are preserved wherever deep merges occur (root defaults, config slices, plugin slices).
 
 ### 3) Variable expansion
 
@@ -123,6 +136,7 @@ Where mounts are created
 
 Breaking API changes (acceptable)
 
+- definePlugin<TOptions, TConfig>() returns a plugin object that includes instance-bound helpers and is represented by the alias `PluginWithInstanceHelpers<TOptions, TConfig>`.
 - definePlugin requires ns (string) in the spec for every plugin.
 - Plugin setup return type becomes `void | Promise<void>`; plugins that previously returned a mount must be updated to use the provided mount parameter and return nothing.
 - The authoring surface no longer supports “return a mount from setup” as a way to guide attachment.
@@ -423,6 +437,9 @@ Goal: give authors of JS/TS config files a strongly-typed helper that ties toget
     Vars extends ProcessEnv,
     Env extends string = string,
   > = {
+    // Root CLI options defaults, same shape as CreateCliOptions['rootOptionDefaults']
+    rootOptionDefaults?: Partial<RootOptionsShape>;
+
     dotenvToken?: string;
     privateToken?: string;
     paths?: string | string[];
@@ -453,6 +470,11 @@ Goal: give authors of JS/TS config files a strongly-typed helper that ties toget
   type Vars = { APP_SETTING?: string; ENV_SETTING?: string };
 
   export default defineGetDotenvConfig<Vars>({
+    rootOptionDefaults: {
+      shell: '/bin/bash',
+      loadProcess: true,
+      warnEntropy: true,
+    },
     vars: { APP_SETTING: 'app_value' },
     envVars: { dev: { ENV_SETTING: 'dev_value' } },
     dynamic: {
@@ -666,98 +688,37 @@ Regression and coverage
 
 - Help evaluation typing
   - ResolvedHelpConfig is `Partial<GetDotenvCliOptions> & { plugins: Record<string, unknown> }` so callbacks can read shell/log/loadProcess/exclude\*/warnEntropy without casts at root or parent commands.
-  - Dynamic help must be evaluated against:
-    - The merged CLI options bag in normal flows (preSubcommand/preAction).
-    - A defaults-only merged CLI bag (resolveCliOptions + baseRootOptionDefaults) in the top-level “-h/--help” flow (no side effects), for parity.
+  - Dynamic help MUST be evaluated against the same default stack used for runtime:
+    - Defaults stack: baseRootOptionDefaults < createCli rootOptionDefaults < config.rootOptionDefaults.
+    - CLI flags are not applied for top-level -h, but labels must reflect the effective defaults, not side-effect suppression used to safely render help.
   - For plugin-scoped options, prefer plugin-bound dynamic helpers that inject that plugin’s TConfig; avoid relying on id-based lookups.
 
-### Root options composition & visibility (createCli rootOptionDefaults/rootOptionVisibility)
+### Root options composition, visibility, and config (createCli + config.rootOptionDefaults)
 
-A single host factory option replaces the legacy attachRootOptions/passOptions/overrideRootOptions sequencing.
+A single defaults surface drives both help-time and runtime behavior.
 
-- Authoritative root overrides and visibility live on the createCli() options object:
+- Authoritative root defaults live in two places merged by precedence:
 
-  ```ts
-  type CreateCliOptions = {
-    alias?: string;
-    branding?: string;
-    compose?: (program: GetDotenvCli) => GetDotenvCli;
+  CLI flags > getdotenv.config.\* rootOptionDefaults > createCli rootOptionDefaults > baseRootOptionDefaults
+  - rootOptionDefaults is a single object with exactly the same shape as CreateCliOptions['rootOptionDefaults'] (Partial<RootOptionsShape>, “stringly” CLI form).
+  - Family collapse applies (e.g., `log` not `log-off`; `excludePrivate` not `excludePrivateOff`).
+  - All root CLI options are configurable here; there are no “CLI-only” root options. This includes diagnostics like debug/capture/strict/trace, redaction/entropy flags, families, tokens/paths/shell/log/loadProcess/scripts, etc.
+  - Plugin options are explicitly excluded; they remain under plugins[...] keyed by realized path.
 
-    // New:
-    rootOptionDefaults?: Partial<RootOptionsShape>;
-    rootOptionVisibility?: Partial<Record<keyof RootOptionsShape, boolean>>;
-  };
-  ```
+- Visibility policy remains controlled by createCli({ rootOptionVisibility }), and only affects help presentation (hide selected root flags). Config does not change visibility—just defaults.
 
-- Behavior:
-  - createCli applies rootOptionDefaults and rootOptionVisibility exactly once before it calls opts.compose(program).
-  - These govern:
-    - Which flags are declared on the host (visibility),
-    - The merge layer used by resolution hooks (defaults for the run),
-    - Help-time “(default)” labels (derived from the resolved bag for parity with parsed runs).
-
-- Visibility policy:
-  - scripts is hidden by default regardless of visibility overrides; all other base root options are visible by default unless set to false in rootOptionVisibility.
-
-  - Families (hide both toggles when the family key is false):
-    - shell/shell-off
-    - load-process/load-process-off
-    - log/log-off
-    - excludeDynamic + excludeDynamicOff
-    - excludeEnv + excludeEnvOff
-    - excludeGlobal + excludeGlobalOff
-    - excludePrivate + excludePrivateOff
-    - excludePublic + excludePublicOff
-    - entropy-warn/entropy-warn-off
-
-  - Singles (hide the single flag when the key is false):
-    - capture
-    - strict
-    - trace
-    - redact
-    - redact-pattern
-    - default-env
-    - dotenv-token
-    - private-token
-    - dynamic-path
-    - paths, paths-delimiter, paths-delimiter-pattern
-    - vars, vars-delimiter, vars-delimiter-pattern, vars-assignor, vars-assignor-pattern
-
-- Top-level -h/--help parity:
-  - createCli applies rootOptionDefaults before composition and produces help labels by resolving the context once with side-effects disabled, then overlaying the resolved toggles from ctx.optionsResolved onto the base+compose defaults to render “(default)” accurately (shell/log/loadProcess/warnEntropy and thresholds).
+- Top-level -h parity:
+  - Help labels must reflect the effective defaults after applying base < createCli rootOptionDefaults < config.rootOptionDefaults, without applying side effects or current CLI flags.
 
 - Shipped createCli defaults:
   - The shipped CLI calls createCli() without rootOptionDefaults (base defaults apply; loadProcess ON by default) and hides “scripts”.
-  - The shipped CLI does not silently force `{ loadProcess: false }`.
+  - A project’s getdotenv.config.\* may override those defaults via rootOptionDefaults.
 
 - Template skeleton:
-  - The canonical CLI template no longer calls program.overrideRootOptions(). Instead, it passes rootOptionDefaults/rootOptionVisibility to createCli:
-
-    ```ts
-    await createCli({
-      alias: '__CLI_NAME__',
-      compose: (program) =>
-        program
-          .use(
-            cmdPlugin({
-              asDefault: true,
-              optionAlias: '-c, --cmd <command...>',
-            }),
-          )
-          .use(batchPlugin())
-          .use(awsPlugin().use(awsWhoamiPlugin()))
-          .use(initPlugin()),
-      rootOptionDefaults: { loadProcess: false },
-      rootOptionVisibility: { log: false },
-    })();
-    ```
+  - The canonical CLI template passes rootOptionDefaults/rootOptionVisibility to createCli and does not call public root override helpers.
 
 - Advanced host authors:
-  - When constructing a raw GetDotenvCli without createCli, authors must wire the root surface by hand (declare flags and install resolution hooks). No public overrideRootOptions convenience is provided. This keeps the public ergonomic path in a single place (createCli) and avoids duplicate sources of truth.
-
-- Public API removal (breaking, acceptable):
-  - The public GetDotenvCli.prototype.overrideRootOptions helper is removed.
-  - attachRootOptions is internal-only and used by the factory to declare flags.
+  - When constructing a raw GetDotenvCli without createCli, authors must wire the root surface by hand (declare flags and install resolution hooks), but the runtime defaults must still fold in config.rootOptionDefaults per the precedence above.
 
 ### Public API surface (exports and typing)
 
@@ -770,10 +731,10 @@ A single host factory option replaces the legacy attachRootOptions/passOptions/o
   - `overlayEnv<B, P>(...) => B | (B & P)` generic return per presence of programmaticVars; accept Readonly inputs
   - `definePlugin<TOptions, TConfig>(...)` returns a `PluginWithInstanceHelpers<TOptions, TConfig>` that includes instance-bound `readConfig(cli)` and `createPluginDynamicOption(...)`
   - `PluginWithInstanceHelpers<TOptions, TConfig>` is exported so downstream code can declare plugin variables with the precise config type.
-  - `defineGetDotenvConfig<Vars extends ProcessEnv, Env extends string = string>()(cfg)` provides a typed builder for JS/TS configs that couples `vars`, `envVars`, and `dynamic`.
+  - `defineGetDotenvConfig<Vars extends ProcessEnv, Env extends string = string>()(cfg)` provides a typed builder for JS/TS configs that couples `vars`, `envVars`, `dynamic`, and adds optional `rootOptionDefaults`.
   - `getDotenv<Vars extends ProcessEnv = ProcessEnv>(...) => Promise<Vars>` provides an opt-in typed env shape; an overload that includes `vars: Vars` returns `Promise<ProcessEnv & Vars>`.
 
-- Removed from public API (superseded by createCli options):
+- Removed from public API (superseded by createCli options and config.rootOptionDefaults):
   - `overrideRootOptions(...)` (legacy convenience removed)
   - `readPluginConfig<T>(cli, id: string)`
   - Public `ctx.pluginConfigs` access
@@ -794,29 +755,25 @@ Formats:
 
 - JSON/YAML (data only, always-on; no-op when no files are present):
   - Allowed keys:
-    - dotenvToken?: string
-    - privateToken?: string
-    - paths?: string | string[]
-    - loadProcess?: boolean
-    - log?: boolean
-    - shell?: string | boolean
-    - scripts?: Record<string, unknown>
     - vars?: Record<string, string> (global, public)
     - envVars?: Record<string, Record<string, string>> (per-env, public)
-  - Disallowed in JSON/YAML (this step): dynamic — use JS/TS instead.
+    - rootOptionDefaults?: Partial<RootOptionsShape> — operational root defaults (collapsed families) mirroring the CLI “stringly” surface; merged by source (packaged < project/public < project/local).
+  - Disallowed in JSON/YAML (this step): dynamic/schema for env (config-level); use JS/TS instead for those.
 
-JS/TS (data + dynamic):
+- JS/TS (data + dynamic + schema + root defaults):
+  - Accepts all JSON/YAML keys and also:
+    - dynamic?: GetDotenvDynamic — a map where values are either strings or functions of the form (vars: ProcessEnv, env?: string) => string | undefined.
+    - schema?: unknown — a schema object (e.g., a Zod schema) whose safeParse(finalEnv) will be executed once after overlays.
+    - rootOptionDefaults?: Partial<RootOptionsShape> — same as above, merged by source precedence.
 
-- Accepts all JSON/YAML keys and also:
-  - dynamic?: GetDotenvDynamic — a map where values are either strings or functions of the form (vars: ProcessEnv, env?: string) => string | undefined.
-  - schema?: unknown — a schema object (e.g., a Zod schema) whose safeParse(finalEnv) will be executed once after overlays.
-- Typed TS config helper:
-  - For TS configs, `defineGetDotenvConfig<Vars, Env>()` is the recommended helper to:
-    - Tie `vars`, `envVars`, and `dynamic` to a single Vars shape at compile time.
-    - Improve inference for dynamic functions without changing runtime behavior.
-  - JS configs may also use `defineGetDotenvConfig` when authored in ESM for better inference, but JSON/YAML remain data-only.
+Root option defaults (unified model):
 
-Overlays and precedence (higher wins):
+- There are no “CLI-only” root options. Any root option available in the CLI must be expressible under rootOptionDefaults (collapsed by family), including diagnostics/capture/strict/trace/redact families, entropy flags, token/shell/log/loadProcess/scripts, paths and splitters, defaultEnv/dynamicPath, and exclude\* families. Plugin options are not included here.
+- rootOptionDefaults drives both help-time default labels and actual runtime defaults (when not overridden by parent/current flags), with precedence:
+
+  CLI flags > config.rootOptionDefaults > createCli rootOptionDefaults > baseRootOptionDefaults
+
+Overlays and precedence for env/data (higher wins):
 
 1. Kind: `dynamic` > `env` > `global`
 2. Privacy: `local` > `public`
@@ -843,7 +800,7 @@ Validation:
 - Loader activation:
   - The config loader/overlay pipeline is always active for the plugin-first host and generator paths and is a no-op when no config files are present.
   - There is no `useConfigLoader` or similar flag in the public options surface; any previous no-op compatibility flag is removed.
-  - Programmatic callers use the same semantics as the host: options are resolved via `resolveGetDotenvOptions`, validated against the Zod schema, then overlaid by config and dynamic values.
+  - Programmatic callers use the same semantics as the host for env overlays/dynamic when they opt into the loader path, but do not implicitly read root defaults from config via `resolveGetDotenvOptions` (see “Option layering” above).
 
 Per‑plugin config keyed by realized path
 
@@ -854,36 +811,6 @@ Per‑plugin config keyed by realized path
 - Author guidance:
   - Stabilize namespaces in compositions to avoid churn in config keys over time.
   - Use leaf‑only names in help displays; rely on the realized path for config keys and internal lookups.
-
-## Scripts table (optional, config or root options)
-
-- Define scripts in config: `plugins.<id>.scripts` or root `scripts`.
-- Rare per-script shell overrides: `{ cmd, shell }` (string|boolean) take precedence over global shell for that script.
-- Generic typing is unified: `Scripts<TShell extends string | boolean>` (see “Strong typing and generics”).
-
-- Authors can use `defineScripts<TShell>()(table)` to keep TShell propagation when building tables in code.
-
-## API surface (exports and typing)
-
-- Keep public exports stable; add new generic types/helpers as additive improvements:
-  - `Scripts<TShell extends string | boolean = string | boolean>`
-  - `defineScripts<TShell extends string | boolean>() => <T extends Scripts<TShell>>(t: T) => T`
-  - `resolveShell<TShell extends string | boolean>(...) => TShell | false`
-  - `defineDynamic<Vars, T extends DynamicMap<Vars>>(d: T) => T`
-  - `dotenvExpandAll<T extends Record<string, string | undefined> | Readonly<Record<string, string | undefined>>>(...) => { [K in keyof T]: string | undefined } & Record<string, string | undefined>`
-  - `overlayEnv<B, P>(...) => B | (B & P)` generic return per presence of programmaticVars; accept Readonly inputs
-  - `definePlugin<TOptions, TConfig>(...)` returns a `PluginWithInstanceHelpers<TOptions, TConfig>` that includes instance-bound `readConfig(cli)` and `createPluginDynamicOption(...)`
-  - `PluginWithInstanceHelpers<TOptions, TConfig>` is exported so downstream code can declare plugin variables with the precise config type.
-  - `defineGetDotenvConfig<Vars extends ProcessEnv, Env extends string = string>()(cfg)` provides a typed builder for JS/TS configs that couples `vars`, `envVars`, and `dynamic`.
-  - `getDotenv<Vars extends ProcessEnv = ProcessEnv>(...) => Promise<Vars>` provides an opt-in typed env shape; an overload that includes `vars: Vars` returns `Promise<ProcessEnv & Vars>`.
-
-- Removed from public API:
-  - `readPluginConfig<T>(cli, id: string)`
-  - Public `ctx.pluginConfigs` access
-  - Mount return from plugin `setup()` (host now creates mounts; setup returns void)
-
-- Composition override API (additive)
-  - `.use(plugin, { ns: '...' })` — minimal override shape to rename the mounted command segment during composition. The override only affects the realized path, not the plugin’s internal identity.
 
 ## Prioritized roadmap (requirements)
 

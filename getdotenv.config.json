@@ -1,5 +1,4 @@
 {
-  "//": "Packaged root defaults for get-dotenv (lowest precedence).",
   "dotenvToken": ".env",
   "privateToken": "local",
   "paths": "./",
