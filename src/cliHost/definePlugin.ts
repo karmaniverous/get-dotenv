@@ -16,6 +16,7 @@ import type {
   GetDotenvCliPublic,
   PluginWithInstanceHelpers,
 } from './contracts';
+import type { PluginNamespaceOverride } from './contracts';
 import type { ResolvedHelpConfig } from './helpConfig';
 
 /**
@@ -52,7 +53,7 @@ export function definePlugin<TOptions extends GetDotenvOptions>(
     ...rest,
     configSchema: effectiveSchema,
     children: [],
-    use(child, override) {
+    use(child, override?: PluginNamespaceOverride) {
       // Enforce sibling uniqueness at composition time.
       const desired = (
         override && typeof override.ns === 'string' && override.ns.length > 0

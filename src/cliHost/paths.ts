@@ -28,6 +28,21 @@ export function realizedPathForMount(
   return parts.reverse().join('/');
 }
 
+/**
+ * A flattened plugin entry with its realized path.
+ *
+ * @public
+ */
+export interface PluginFlattenedEntry<
+  TOptions extends GetDotenvOptions = GetDotenvOptions,
+  TArgs extends unknown[] = [],
+  TOpts extends OptionValues = {},
+  TGlobal extends OptionValues = {},
+> {
+  plugin: GetDotenvCliPlugin<TOptions, TArgs, TOpts, TGlobal>;
+  path: string;
+}
+
 /** Flatten a plugin tree into [\{ plugin, path \}] using ns chain pre-order. */
 export function flattenPluginTreeByPath<
   TOptions extends GetDotenvOptions = GetDotenvOptions,
@@ -37,14 +52,8 @@ export function flattenPluginTreeByPath<
 >(
   plugins: GetDotenvCliPlugin<TOptions, TArgs, TOpts, TGlobal>[],
   prefix?: string,
-): Array<{
-  plugin: GetDotenvCliPlugin<TOptions, TArgs, TOpts, TGlobal>;
-  path: string;
-}> {
-  const out: Array<{
-    plugin: GetDotenvCliPlugin<TOptions, TArgs, TOpts, TGlobal>;
-    path: string;
-  }> = [];
+): Array<PluginFlattenedEntry<TOptions, TArgs, TOpts, TGlobal>> {
+  const out: Array<PluginFlattenedEntry<TOptions, TArgs, TOpts, TGlobal>> = [];
   for (const p of plugins) {
     const here = prefix && prefix.length > 0 ? `${prefix}/${p.ns}` : p.ns;
     out.push({ plugin: p, path: here });

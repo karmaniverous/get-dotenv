@@ -21,7 +21,7 @@ import {
 
 import type { GetDotenvCliPlugin } from './contracts';
 import type { GetDotenvCliCtx } from './types';
-import { flattenPluginTreeByPath } from './paths';
+import { flattenPluginTreeByPath, type PluginFlattenedEntry } from './paths';
 
 /**
  * Instance-bound plugin config store.
@@ -200,11 +200,8 @@ export const computeContext = async <
       ).plugins) ??
     {};
 
-  type Entry = {
-    plugin: GetDotenvCliPlugin<TOptions, TArgs, TOpts, TGlobal>;
-    path: string;
-  };
-  const entries: Entry[] = flattenPluginTreeByPath(plugins);
+  const entries: PluginFlattenedEntry<TOptions, TArgs, TOpts, TGlobal>[] =
+    flattenPluginTreeByPath(plugins);
 
   const mergedPluginConfigsByPath: Record<string, unknown> = {};
   const envRef: Record<string, string | undefined> = {

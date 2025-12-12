@@ -165,4 +165,12 @@
     - Extracted `ExecNormalizedOptions` in `src/cliHost/exec.ts` and updated `runCommand` overloads.
     - Extracted `CmdOptionAlias` in `src/plugins/cmd/types.ts`.
     - Extracted `ScriptDef` in `src/cliHost/types.ts` and exported it via barrel.
-    - Replaced all corresponding inline types with the new interfaces.
+    - Replaced all corresponding inline types with the new interfaces.
+
+  - Refactor: replace inline plugin composition types with interfaces
+    - Extracted `PluginNamespaceOverride` and `PluginChildEntry` in `src/cliHost/contracts.ts`.
+    - Extracted `PluginFlattenedEntry` in `src/cliHost/paths.ts`.
+    - Updated `GetDotenvCliPlugin` interface and `GetDotenvCli` class to use new types.
+    - Updated `definePlugin`, `computeContext`, and `registerPlugin` implementations.
+    - Exported new interfaces via `src/cliHost/index.ts`.
+    - This eliminates inline `{ plugin, override }` and `{ plugin, path }` object types across the host.

@@ -3,6 +3,8 @@ export type {
   GetDotenvCliPlugin,
   GetDotenvCliPublic,
   InferPluginConfig,
+  PluginChildEntry,
+  PluginNamespaceOverride,
   PluginWithInstanceHelpers,
   ResolveAndLoadOptions,
 } from './contracts';
@@ -22,6 +24,7 @@ export {
   maybePreserveNodeEvalArgv,
   stripOne,
 } from './invoke';
+export type { PluginFlattenedEntry } from './paths';
 export { readMergedOptions } from './readMergedOptions';
 export { resolveCommand, resolveShell } from './resolve';
 export { resolveCliOptions } from './resolveCliOptions';

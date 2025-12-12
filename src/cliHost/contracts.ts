@@ -90,6 +90,33 @@ export interface GetDotenvCliPublic<
   ): Option<Usage>;
 }
 
+/**
+ * Optional overrides for plugin composition.
+ *
+ * @public
+ */
+export interface PluginNamespaceOverride {
+  /**
+   * Override the default namespace for this plugin instance.
+   */
+  ns?: string;
+}
+
+/**
+ * An entry in the plugin children array.
+ *
+ * @public
+ */
+export interface PluginChildEntry<
+  TOptions extends GetDotenvOptions = GetDotenvOptions,
+  TArgs extends unknown[] = [],
+  TOpts extends OptionValues = {},
+  TGlobal extends OptionValues = {},
+> {
+  plugin: GetDotenvCliPlugin<TOptions, TArgs, TOpts, TGlobal>;
+  override: PluginNamespaceOverride | undefined;
+}
+
 /** Public plugin contract used by the GetDotenv CLI host. */
 export interface GetDotenvCliPlugin<
   TOptions extends GetDotenvOptions = GetDotenvOptions,
@@ -125,10 +152,7 @@ export interface GetDotenvCliPlugin<
    * Compositional children, with optional per-child overrides (e.g., ns).
    * Installed after the parent per pre-order.
    */
-  children: Array<{
-    plugin: GetDotenvCliPlugin<TOptions, TArgs, TOpts, TGlobal>;
-    override: { ns?: string } | undefined;
-  }>;
+  children: Array<PluginChildEntry<TOptions, TArgs, TOpts, TGlobal>>;
 
   /**
    * Compose a child plugin with optional override (ns). Returns the parent
@@ -136,7 +160,7 @@ export interface GetDotenvCliPlugin<
    */
   use: (
     child: GetDotenvCliPlugin<TOptions, TArgs, TOpts, TGlobal>,
-    override?: { ns?: string },
+    override?: PluginNamespaceOverride,
   ) => GetDotenvCliPlugin<TOptions, TArgs, TOpts, TGlobal>;
 }
 

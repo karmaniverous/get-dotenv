@@ -24,6 +24,8 @@ import { buildHelpInformation } from './buildHelpInformation';
 import type {
   GetDotenvCliPlugin,
   GetDotenvCliPublic,
+  PluginChildEntry,
+  PluginNamespaceOverride,
   ResolveAndLoadOptions,
 } from './contracts';
 import {
@@ -66,11 +68,8 @@ export class GetDotenvCli<
   implements GetDotenvCliPublic<TOptions, TArgs, TOpts, TGlobal>
 {
   /** Registered top-level plugins (composition happens via .use()) */
-  private _plugins: Array<{
-    plugin: GetDotenvCliPlugin<TOptions, TArgs, TOpts, TGlobal>;
-    // exactOptionalPropertyTypes-friendly: non-optional, may be undefined
-    override: { ns?: string } | undefined;
-  }> = [];
+  private _plugins: Array<PluginChildEntry<TOptions, TArgs, TOpts, TGlobal>> =
+    [];
 
   /** One-time installation guard */
   private _installed = false;
@@ -317,7 +316,7 @@ export class GetDotenvCli<
    */
   use(
     plugin: GetDotenvCliPlugin<TOptions, TArgs, TOpts, TGlobal>,
-    override?: { ns?: string },
+    override?: PluginNamespaceOverride,
   ): this {
     this._plugins.push({ plugin, override });
     return this;
