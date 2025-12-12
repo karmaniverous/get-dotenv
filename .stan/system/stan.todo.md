@@ -111,3 +111,7 @@
   - Schema: changed resolved type of rootOptionVisibility to Partial<Record<keyof RootOptionsShape, boolean>>.
   - Host: removed unsafe casts in createCli; rely on schema-typed boolean map.
   - Lint: replaced Boolean(v) with typed assignment in visibility.ts and tightened entry typing.
+
+- Tests: visibility precedence and redact dynamic labels
+  - Added src/cliHost/visibility.test.ts to cover mergeRootVisibility() and applyRootVisibility() hiding of long flags.
+  - Added src/cliHost/help.dynamic.redact.test.ts to assert default labeling for --redact / --redact-off based on help-time config.
