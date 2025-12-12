@@ -4,18 +4,19 @@ export type {
   GetDotenvCliPublic,
   InferPluginConfig,
   PluginWithInstanceHelpers,
+  ResolveAndLoadOptions,
 } from './contracts';
 export { definePlugin } from './definePlugin';
 export type { RunCommandOptions, RunCommandResultOptions } from './exec';
 export { runCommand, runCommandResult } from './exec';
-export { GetDotenvCli, type GetDotenvCliCtx } from './GetDotenvCli';
+export { GetDotenvCli } from './GetDotenvCli';
 export {
   baseGetDotenvCliOptions,
   type GetDotenvCliOptions,
   type Scripts,
 } from './GetDotenvCliOptions';
 export { getRootCommand } from './getRootCommand';
-export { toHelpConfig } from './helpConfig';
+export { type ResolvedHelpConfig, toHelpConfig } from './helpConfig';
 export {
   composeNestedEnv,
   maybePreserveNodeEvalArgv,
@@ -26,5 +27,10 @@ export { resolveCommand, resolveShell } from './resolve';
 export { resolveCliOptions } from './resolveCliOptions';
 export { buildSpawnEnv } from './spawnEnv';
 export type { ScriptsTable } from './types';
-export { defineScripts, type RootOptionsShape } from './types';
+export {
+  type BrandOptions,
+  defineScripts,
+  type GetDotenvCliCtx,
+  type RootOptionsShape,
+} from './types';
 export { z } from 'zod';

@@ -1,6 +1,9 @@
-import type { ResolvedHelpConfig } from './GetDotenvCli';
 import type { GetDotenvCliOptions } from './GetDotenvCliOptions';
 import type { RootOptionsShape } from './types';
+
+export type ResolvedHelpConfig = Partial<GetDotenvCliOptions> & {
+  plugins: Record<string, unknown>;
+};
 
 /**
  * Build a help-time configuration bag for dynamic option descriptions.

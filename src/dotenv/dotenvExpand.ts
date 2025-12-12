@@ -102,6 +102,22 @@ export const dotenvExpand = (
 };
 
 /**
+ * Options for {@link dotenvExpandAll}.
+ *
+ * @public
+ */
+export interface DotenvExpandAllOptions {
+  /**
+   * The reference object to use for expansion (defaults to process.env).
+   */
+  ref?: Record<string, string | undefined>;
+  /**
+   * Whether to progressively add expanded values to the set of reference keys.
+   */
+  progressive?: boolean;
+}
+
+/**
  * Recursively expands environment variables in the values of a JSON object.
  * Variables may be presented with optional default as `$VAR[:default]` or
  * `${VAR[:default]}`. Unknown variables will expand to an empty string.
@@ -132,10 +148,7 @@ export function dotenvExpandAll<
     | Readonly<Record<string, string | undefined>>,
 >(
   values: T,
-  options: {
-    ref?: Record<string, string | undefined>;
-    progressive?: boolean;
-  } = {},
+  options: DotenvExpandAllOptions = {},
 ): Record<string, string | undefined> & {
   [K in keyof T]: string | undefined;
 } {

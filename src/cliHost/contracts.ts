@@ -13,7 +13,24 @@ import type { ZodObject } from 'zod';
 
 import type { GetDotenvOptions } from '@/src/core';
 
-import type { GetDotenvCliCtx, ResolvedHelpConfig } from './GetDotenvCli';
+import type { ResolvedHelpConfig } from './helpConfig';
+import type { GetDotenvCliCtx } from './types';
+
+/**
+ * Options for resolving and loading the configuration.
+ *
+ * @public
+ */
+export interface ResolveAndLoadOptions {
+  /**
+   * When false, skips running plugin afterResolve hooks.
+   * Useful for top-level help rendering to avoid long-running side-effects
+   * while still evaluating dynamic help text.
+   *
+   * @default true
+   */
+  runAfterResolve?: boolean;
+}
 
 /**
  * Structural public interface for the host exposed to plugins.
@@ -50,7 +67,7 @@ export interface GetDotenvCliPublic<
 
   resolveAndLoad(
     customOptions?: Partial<TOptions>,
-    opts?: { runAfterResolve?: boolean },
+    opts?: ResolveAndLoadOptions,
   ): Promise<GetDotenvCliCtx<TOptions>>;
 
   setOptionGroup(opt: Option, group: string): void;

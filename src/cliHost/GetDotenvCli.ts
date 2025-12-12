@@ -16,7 +16,7 @@ import {
   type OptionValues,
 } from '@commander-js/extra-typings';
 
-import type { GetDotenvOptions, ProcessEnv } from '@/src/core';
+import type { GetDotenvOptions } from '@/src/core';
 import { baseRootOptionDefaults } from '@/src/defaults';
 
 import { attachRootOptions as attachRootOptionsBuilder } from './attachRootOptions';
@@ -28,27 +28,14 @@ import {
 } from './dynamicOptions';
 import type { GetDotenvCliOptions } from './GetDotenvCliOptions';
 import { GROUP_TAG } from './groups';
+import type { ResolvedHelpConfig } from './helpConfig';
 import { initializeInstance } from './initializeInstance';
 import { setupPluginTree } from './registerPlugin';
 import { resolveAndComputeContext } from './resolveAndComputeContext';
 import { runAfterResolveTree } from './runAfterResolve';
 import { tagAppOptionsAround } from './tagAppOptionsHelper';
-import type { RootOptionsShape } from './types';
+import type { BrandOptions, GetDotenvCliCtx, RootOptionsShape } from './types';
 import { readPkgVersion } from './version';
-
-export type ResolvedHelpConfig = Partial<GetDotenvCliOptions> & {
-  plugins: Record<string, unknown>;
-};
-
-/** Per-invocation context shared with plugins and actions. */
-export type GetDotenvCliCtx<
-  TOptions extends GetDotenvOptions = GetDotenvOptions,
-> = {
-  optionsResolved: TOptions;
-  dotenv: ProcessEnv;
-  plugins?: Record<string, unknown>;
-  pluginConfigs?: Record<string, unknown>;
-};
 
 const HOST_META_URL = import.meta.url;
 
@@ -131,7 +118,7 @@ export class GetDotenvCli<
    */
   async resolveAndLoad(
     customOptions: Partial<TOptions> = {},
-    opts?: { runAfterResolve?: boolean },
+    opts?: { runAfterResolve?: boolean }, // Compatible with ResolveAndLoadOptions
   ): Promise<GetDotenvCliCtx<TOptions>> {
     const ctx = await resolveAndComputeContext<TOptions, TArgs, TOpts, TGlobal>(
       customOptions,
@@ -184,12 +171,7 @@ export class GetDotenvCli<
     parser?: (value: string, previous?: unknown) => unknown,
     defaultValue?: unknown,
   ): Option<Usage> {
-    return makeDynamicOption(
-      flags,
-      (c) => desc(c as ResolvedHelpConfig),
-      parser,
-      defaultValue,
-    );
+    return makeDynamicOption(flags, (c) => desc(c), parser, defaultValue);
   }
 
   /**
@@ -298,13 +280,7 @@ export class GetDotenvCli<
    * If version is omitted and importMetaUrl is provided, attempts to read the
    * nearest package.json version (best-effort; non-fatal on failure).
    */
-  async brand(args: {
-    name?: string;
-    description?: string;
-    version?: string;
-    importMetaUrl?: string;
-    helpHeader?: string;
-  }): Promise<this> {
+  async brand(args: BrandOptions): Promise<this> {
     const { name, description, version, importMetaUrl, helpHeader } = args;
     if (typeof name === 'string' && name.length > 0) this.name(name);
     if (typeof description === 'string') this.description(description);

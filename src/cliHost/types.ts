@@ -1,5 +1,7 @@
 import type { Command } from '@commander-js/extra-typings';
 
+import type { GetDotenvOptions, ProcessEnv } from '@/src/core';
+
 /**
  * Minimal root options shape shared by CLI and generator layers.
  * Keep keys optional to respect exactOptionalPropertyTypes semantics.
@@ -73,3 +75,30 @@ export type CommandWithOptions<TOptions> = Command & {
   opts(): Partial<TOptions>;
   getDotenvCliOptions?: TOptions;
 };
+
+/**
+ * Per-invocation context shared with plugins and actions.
+ *
+ * @public
+ */
+export type GetDotenvCliCtx<
+  TOptions extends GetDotenvOptions = GetDotenvOptions,
+> = {
+  optionsResolved: TOptions;
+  dotenv: ProcessEnv;
+  plugins?: Record<string, unknown>;
+  pluginConfigs?: Record<string, unknown>;
+};
+
+/**
+ * Options for branding the CLI.
+ *
+ * @public
+ */
+export interface BrandOptions {
+  name?: string;
+  description?: string;
+  version?: string;
+  importMetaUrl?: string;
+  helpHeader?: string;
+}

@@ -3,16 +3,12 @@
  */
 import { type CommandUnknownOpts, Option } from '@commander-js/extra-typings';
 
-import type { GetDotenvCliOptions } from './GetDotenvCliOptions';
-
-export type ResolvedHelpConfigLite = Partial<GetDotenvCliOptions> & {
-  plugins: Record<string, unknown>;
-};
+import type { ResolvedHelpConfig } from './helpConfig';
 
 // Registry for dynamic descriptions keyed by Option (WeakMap so GC-friendly)
 export const DYN_DESC = new WeakMap<
   Option,
-  (cfg: ResolvedHelpConfigLite) => string
+  (cfg: ResolvedHelpConfig) => string
 >();
 
 /**
@@ -20,7 +16,7 @@ export const DYN_DESC = new WeakMap<
  */
 export function makeDynamicOption<Usage extends string>(
   flags: Usage,
-  desc: (cfg: ResolvedHelpConfigLite) => string,
+  desc: (cfg: ResolvedHelpConfig) => string,
   parser?: (value: string, previous?: unknown) => unknown,
   defaultValue?: unknown,
 ): Option<Usage> {
@@ -39,7 +35,7 @@ export function makeDynamicOption<Usage extends string>(
  */
 export function evaluateDynamicOptions(
   root: CommandUnknownOpts,
-  resolved: ResolvedHelpConfigLite,
+  resolved: ResolvedHelpConfig,
 ): void {
   const visit = (cmd: CommandUnknownOpts) => {
     const arr = cmd.options;

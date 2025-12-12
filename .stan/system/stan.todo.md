@@ -145,3 +145,12 @@
   - Updated schema tests to drop top‑level paths normalization checks.
 
 - Fix typecheck: overlayEnv union narrowing — avoid destructuring `programmaticVars` from a union and use an `"in"` guard before applying programmatic vars (no behavior change).
+
+- Refactor: decompose `GetDotenvCli.ts` and export option interfaces
+  - Extracted `DotenvExpandAllOptions` in `src/dotenv/dotenvExpand.ts`.
+  - Moved `GetDotenvCliCtx` and `BrandOptions` to `src/cliHost/types.ts`.
+  - Moved `ResolvedHelpConfig` to `src/cliHost/helpConfig.ts`.
+  - Defined `ResolveAndLoadOptions` in `src/cliHost/contracts.ts`.
+  - Updated `GetDotenvCli.ts` to consume exported types and reduce LOC (~20 lines removed).
+  - Updated `src/cliHost/index.ts` exports to expose new interfaces.
+  - This completes the task of replacing inline option objects with explicitly defined, exported interfaces across the codebase.
