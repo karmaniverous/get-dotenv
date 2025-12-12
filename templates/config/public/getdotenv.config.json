@@ -1,11 +1,4 @@
 {
-  "rootOptionDefaults": {
-    "loadProcess": true,
-    "log": false
-  },
-  "dotenvToken": ".env",
-  "privateToken": "local",
-  "paths": "./",
   "vars": {
     "APP_NAME": "my-app"
   },

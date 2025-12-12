@@ -6,12 +6,6 @@ type Vars = {
 };
 
 export default defineGetDotenvConfig<Vars>({
-  rootOptionDefaults: {
-    loadProcess: true,
-  },
-  dotenvToken: '.env',
-  privateToken: 'local',
-  paths: './',
   vars: { APP_SETTING: 'app_value' },
   envVars: { dev: { ENV_SETTING: 'dev_value' } },
   dynamic: {

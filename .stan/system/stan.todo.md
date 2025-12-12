@@ -82,4 +82,11 @@
   - Corrected loader.test.ts to use absolute paths for packaged/project after chdir to project; fixed ENOENT.
 
 - Final lint cleanup
-  - Removed unnecessary nullish coalescing on rootDefaults in createCli.ts help-time defaults merge.
+  - Removed unnecessary nullish coalescing on rootDefaults in createCli.ts help-time defaults merge.
+
+- Refactor configs to new format; remove redundant defaults
+  - Updated all shipped templates (JSON/JS/TS/YAML) to use only non-default keys;
+    removed redundant dotenvToken/privateToken/paths and rootOptionDefaults that
+    did not alter baseRootOptionDefaults.
+  - Simplified repository root getdotenv.config.json to {} since no overrides
+    are required.

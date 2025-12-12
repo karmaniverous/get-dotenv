@@ -1,6 +1,3 @@
-dotenvToken: ".env"
-privateToken: "local"
-paths: "./"
 vars:
   APP_SETTING: "app_value"
 envVars:
