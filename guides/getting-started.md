@@ -48,7 +48,7 @@ Prefer the named factory to get a small runner with the shipped plugins installe
 
 ```ts
 #!/usr/bin/env node
-import { createCli } from '@karmaniverous/get-dotenv';
+import { createCli } from '@karmaniverous/get-dotenv/cli';
 
 await createCli({ alias: 'toolbox' }).run(process.argv.slice(2));
 ```

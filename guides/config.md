@@ -40,16 +40,12 @@ JSON/YAML (data only, always-on; no-op when no files are present):
 
 - Allowed keys:
   - rootOptionDefaults?: Partial<RootOptionsShape> — collapsed, CLI‑like flags and strings (families, singles). Prefer this to set help‑time/runtime defaults for root options.
-  - rootOptionVisibility?: Partial<Record<keyof RootOptionsShape, boolean>> — help‑time visibility (false hides a flag or flag family). See [Root option visibility (help‑time)](../README.md#root-option-visibility-help-time).
-  - dotenvToken?: string
-  - privateToken?: string
-  - paths?: string | string[]
-  - loadProcess?: boolean
-  - log?: boolean
-  - shell?: string | boolean
+  - rootOptionVisibility?: Partial<Record<keyof RootOptionsShape, boolean>> — help‑time visibility (false hides a flag). See [Root option visibility (help‑time)](../README.md#root-option-visibility-help-time).
   - scripts?: Record<string, unknown>
   - vars?: Record<string, string> (global, public)
-  - envVars?: Record<string, Record<string, string>> (per-env, public)
+  - envVars?: Record<string, Record<string, string>> (per‑env, public)
+  - plugins?: Record<string, unknown>
+  - requiredKeys?: string[]
 - Disallowed in JSON/YAML (this step): dynamic and schema — use JS/TS instead.
 
 JS/TS (data + dynamic):
@@ -63,7 +59,7 @@ TS support:
 - Direct import works if a TS loader is present.
 - Otherwise, the loader auto-bundles via esbuild when available; if esbuild is not present, it falls back to a simple TypeScript transpile for single-file modules without imports.
 
-### Top‑level restrictions (clean contract)
+### Top‑level restrictions (clean contract; JSON/YAML)
 
 - Operational root flags must live under rootOptionDefaults. Do not place root toggles (e.g., env, shell, loadProcess, log, exclude\*, trace, strict, redact family, entropy family, splitters) at the top level in JSON/YAML. Put them under rootOptionDefaults to control both help‑time labels and runtime defaults.
 - scripts belongs at the top level only. Do not nest scripts inside rootOptionDefaults.
