@@ -1,3 +1,9 @@
+/**
+ * @packageDocumentation
+ * AWS plugin subpath. Establishes an AWS session (profile/region/credentials)
+ * and optionally forwards to the AWS CLI; includes a nested `whoami` child.
+ */
+
 export type { ResolveAwsContextOptions } from './types';
 import {
   buildSpawnEnv,

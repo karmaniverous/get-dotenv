@@ -23,6 +23,10 @@ const visibilityMap = z.record(z.string(), z.boolean());
 const stringMap = z.record(z.string(), z.string());
 const envStringMap = z.record(z.string(), stringMap);
 
+/**
+ * Raw configuration schema for get‑dotenv config files (JSON/YAML/JS/TS).
+ * Validates allowed top‑level keys without performing path normalization.
+ */
 export const getDotenvConfigSchemaRaw = z.object({
   rootOptionDefaults: getDotenvCliOptionsSchemaRaw.optional(),
   rootOptionVisibility: visibilityMap.optional(),
@@ -37,8 +41,14 @@ export const getDotenvConfigSchemaRaw = z.object({
   plugins: z.record(z.string(), z.unknown()).optional(),
 });
 
+/** Raw configuration type inferred from {@link getDotenvConfigSchemaRaw}. */
 export type GetDotenvConfigRaw = z.infer<typeof getDotenvConfigSchemaRaw>;
 
+/**
+ * Resolved configuration schema which preserves the raw shape while narrowing
+ * the output to {@link GetDotenvConfigResolved}. Consumers get a strongly typed
+ * object, while the underlying validation remains Zod‑driven.
+ */
 export const getDotenvConfigSchemaResolved = getDotenvConfigSchemaRaw.transform(
   (raw) => raw as GetDotenvConfigResolved,
 );

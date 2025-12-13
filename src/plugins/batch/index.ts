@@ -1,4 +1,10 @@
-/** src/plugins/batch/index.ts */
+/**
+ * @packageDocumentation
+ * Batch plugin subpath. Provides the `batch` command for executing a command
+ * across multiple working directories using glob discovery, with optional list
+ * mode and script‑aware shell resolution.
+ */
+
 import { Command } from '@commander-js/extra-typings';
 
 export type {

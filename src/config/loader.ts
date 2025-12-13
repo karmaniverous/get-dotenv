@@ -1,3 +1,9 @@
+/**
+ * @packageDocumentation
+ * Configuration discovery and loading for get‑dotenv. Discovers config files
+ * in the packaged root and project root, loads JSON/YAML/JS/TS documents, and
+ * validates them against Zod schemas.
+ */
 import fs from 'fs-extra';
 import { packageDirectory } from 'package-directory';
 import path, { extname, join } from 'path';

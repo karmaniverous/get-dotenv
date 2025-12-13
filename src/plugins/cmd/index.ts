@@ -1,3 +1,9 @@
+/**
+ * @packageDocumentation
+ * Cmd plugin subpath. Provides the `cmd` subcommand and an optional parent‑level
+ * alias to execute a command within the resolved dotenv context.
+ */
+
 import { definePlugin } from '@/src/cliHost';
 
 import { attachDefaultCmdAction } from './defaultCmdAction';

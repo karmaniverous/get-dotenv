@@ -1,3 +1,9 @@
+/**
+ * @packageDocumentation
+ * Init plugin subpath. Scaffolds get‑dotenv configuration files and a simple
+ * host‑based CLI skeleton with collision handling and CI‑safe defaults.
+ */
+
 import { stdin as input, stdout as output } from 'node:process';
 
 // NOTE: pay attention to non-interactive detection and precedence
