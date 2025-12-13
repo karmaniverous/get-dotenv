@@ -36,7 +36,7 @@ Keep requirement statements out of this file; use it solely to guide assistant b
 
 - All exported functions, classes, interfaces, types, and enums MUST have TypeDoc comments.
 - Function and method TypeDoc comments MUST document all parameters and the return type.
-- All properties of exported interfaces MUST have TypeDoc comments.
+- All properties of exported interfaces and interface-like types MUST have TypeDoc comments. **CRITICAL: Do NOT convert types to interfaces purely to support TypeDoc property comments; TypeDoc supports property comments on object types.**
 - All generic type parameters in exported functions, classes, interfaces, and types MUST be documented in TypeDoc comments.
 - Every TypeDoc comment MUST include a summary description.
 - TypeDoc comments MUST use proper formatting for code elements (e.g., backticks for code references).
