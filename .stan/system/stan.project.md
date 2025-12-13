@@ -32,11 +32,12 @@ Keep requirement statements out of this file; use it solely to guide assistant b
 - Exceptions to these rules are permitted only after a brief design discussion and rationale captured in the dev plan; prefer localized, well-justified exceptions.
 - CRITICAL: Downstream DX is NON-NEGOTIABLE. Favor intuitive signatures and inferred types over verbose annotations or casts; changes that degrade downstream inference require rework or a design adjustment before merging.
 
-## TSDoc
+## TypeDoc
 
-- All exported functions, classes, interfaces, types, and enums MUST have TSDoc comments.
-- All generic type parameters in exported functions, classes, interfaces, and types MUST be documented in TSDoc comments.
-- Every TSDoc comment MUST include a summary description.
-- Function and method TSDoc comments MUST document all parameters and the return type.
-- TSDoc comments MUST use proper formatting for code elements (e.g., backticks for code references).
-- When an interface or object-like type expresses properties and is documented with typedoc, every property MUST have a typedoc description.
+- All exported functions, classes, interfaces, types, and enums MUST have TypeDoc comments.
+- Function and method TypeDoc comments MUST document all parameters and the return type.
+- All properties of exported interfaces MUST have TypeDoc comments.
+- All generic type parameters in exported functions, classes, interfaces, and types MUST be documented in TypeDoc comments.
+- Every TypeDoc comment MUST include a summary description.
+- TypeDoc comments MUST use proper formatting for code elements (e.g., backticks for code references).
+- Special characters in TypeDoc comments (e.g. <, >, {, }) MUST be escaped with a backslash ('\') to avoid rendering issues.

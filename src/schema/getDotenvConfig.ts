@@ -44,14 +44,46 @@ export const getDotenvConfigSchemaResolved = getDotenvConfigSchemaRaw.transform(
 );
 
 export type GetDotenvConfigResolved = {
+  /**
+   * Help-time/runtime root defaults applied by the host (collapsed families; CLI‑like).
+   */
   rootOptionDefaults?: Partial<RootOptionsShape>;
+  /**
+   * Help-time visibility for root flags; when a key is false the corresponding
+   * option(s) are hidden in root help output.
+   */
   rootOptionVisibility?: Partial<Record<keyof RootOptionsShape, boolean>>;
+  /**
+   * Merged scripts table for resolving commands and shell behavior.
+   * Entries may be strings or objects with `cmd` and optional `shell`.
+   */
   scripts?: Scripts;
+  /**
+   * Keys required to be present in the final composed environment.
+   * Validation occurs after overlays and dynamics.
+   */
   requiredKeys?: string[];
+  /**
+   * Optional validation schema (e.g., Zod). When present and it exposes
+   * `safeParse(finalEnv)`, the host executes it once after overlays.
+   */
   schema?: unknown;
+  /**
+   * Public global variables (string‑only).
+   */
   vars?: Record<string, string>;
+  /**
+   * Public per‑environment variables (string‑only).
+   */
   envVars?: Record<string, Record<string, string>>;
+  /**
+   * Dynamic variable definitions (JS/TS configs only).
+   */
   dynamic?: unknown;
+  /**
+   * Per‑plugin configuration slices keyed by realized mount path
+   * (for example, "aws/whoami").
+   */
   plugins?: Record<string, unknown>;
 };
 
