@@ -169,6 +169,21 @@ export interface GetDotenvConfig<
   plugins?: Record<string, unknown>;
 }
 
+/**
+ * Define a strongly‑typed get‑dotenv configuration document for JS/TS authoring.
+ *
+ * This helper is compile‑time only: it returns the input unchanged at runtime,
+ * but enables rich TypeScript inference for `vars`, `envVars`, and `dynamic`,
+ * and validates property names and value shapes as you author the config.
+ *
+ * @typeParam Vars - The string‑valued env map your project uses (for example,
+ *   `{ APP_SETTING?: string }`). Keys propagate to `dynamic` function arguments.
+ * @typeParam Env - Allowed environment names used for `envVars` (defaults to `string`).
+ * @typeParam T - The full config type being produced (defaults to `GetDotenvConfig<Vars, Env>`).
+ *   This type parameter is rarely supplied explicitly.
+ * @param cfg - The configuration object literal.
+ * @returns The same `cfg` value, with its type preserved for inference.
+ */
 export function defineGetDotenvConfig<
   Vars extends ProcessEnv,
   Env extends string = string,
