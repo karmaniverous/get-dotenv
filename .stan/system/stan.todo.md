@@ -6,6 +6,7 @@
 
 ## Completed (recent)
 
+- Docs: Getting Started — remove mention of non-existent “demo” plugin in createCli defaults; clarify customization via custom host.
 - Docs: ESM/CJS interop — replace outdated CJS require with dynamic import
   - README: replaced `require('@karmaniverous/get-dotenv/dist/index.cjs')` example
     (non-existent CJS bundle) with a correct dynamic import snippet for CommonJS.

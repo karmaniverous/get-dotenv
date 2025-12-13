@@ -55,8 +55,8 @@ await createCli({ alias: 'toolbox' }).run(process.argv.slice(2));
 
 Notes:
 
-- `createCli` installs cmd, batch, aws, init, and a small demo by default. `-h/--help` prints help and returns. See [Shell execution behavior](./shell.md) and [Shipped Plugins](./shipped/index.md).
-- If you need to omit demo or add your own plugins, wire a [Custom host](./authoring/lifecycle.md) instead.
+- `createCli` installs cmd, batch, aws, and init by default. `-h/--help` prints help and returns. See [Shell execution behavior](./shell.md) and [Shipped Plugins](./shipped/index.md).
+- If you need to customize which plugins are installed (omit or add your own), wire a [Custom host](./authoring/lifecycle.md) instead.
 
 CommonJS usage (dynamic import):
 
