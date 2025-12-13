@@ -213,6 +213,9 @@
     - Dynamic Processing → reference and augment in Guides (add anchor links where needed).
     - Shell behavior and quoting → authoritative in guides/shell.md (README links only).
     - Batch command details → guides/shipped/batch.md (README links only).
-    - Authoring/plugins content → guides/authoring/*.md and guides/shipped/*.md (README links only).
+    - Authoring/plugins content → guides/authoring/_.md and guides/shipped/_.md (README links only).
   - Target size: < 250 lines. Cross‑link to specific guide anchors where appropriate. Proceed after approval.
-
+
+- Docs: Decompose README to concise overview with cross‑links
+  - Trimmed README.md to a sub‑250‑line overview and replaced deep sections with links to Guides
+  - Preserved Quick Start (CLI/programmatic/embed), Requirements, Installation, API, Changelog, License; added proper relative Markdown links to guides/
