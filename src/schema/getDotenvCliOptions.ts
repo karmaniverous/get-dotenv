@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 import { getDotenvOptionsSchemaRaw } from './getDotenvOptions';
+
 /**
  * Zod schemas for CLI-facing GetDotenv options (raw/resolved stubs).
  *
@@ -32,11 +33,22 @@ export const getDotenvCliOptionsSchemaRaw = getDotenvOptionsSchemaRaw.extend({
   varsDelimiter: z.string().optional(),
   varsDelimiterPattern: z.string().optional(),
 });
+
+/**
+ * Resolved CLI options schema.
+ * For the current step this mirrors the RAW schema; later stages may further
+ * narrow types post-resolution in the host pipeline.
+ */
 export const getDotenvCliOptionsSchemaResolved = getDotenvCliOptionsSchemaRaw;
 
+/** CLI options shape accepted at parse time (pre-normalization). */
 export type GetDotenvCliOptionsRaw = z.infer<
   typeof getDotenvCliOptionsSchemaRaw
 >;
+/**
+ * CLI options shape after host-side resolution/normalization (post-parse).
+ * This derives from {@link getDotenvCliOptionsSchemaResolved}.
+ */
 export type GetDotenvCliOptionsResolved = z.infer<
   typeof getDotenvCliOptionsSchemaResolved
 >;

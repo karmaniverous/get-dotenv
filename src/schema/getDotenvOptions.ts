@@ -6,7 +6,10 @@ import { z } from 'zod';
  * from these schemas (see consumers via z.output\<\>).
  */
 
-// Minimal process env representation: string values or undefined to indicate "unset".
+/**
+ * Minimal process env representation used by options and helpers.
+ * Values may be `undefined` to indicate "unset".
+ */
 export const processEnvSchema = z.record(z.string(), z.string().optional());
 
 // RAW: all fields optional — undefined means "inherit" from lower layers.
@@ -31,11 +34,19 @@ export const getDotenvOptionsSchemaRaw = z.object({
   vars: processEnvSchema.optional(),
 });
 
-// RESOLVED: service-boundary contract (post-inheritance).
-// For Step A, keep identical to RAW (no behavior change). Later stages will// materialize required defaults and narrow shapes as resolution is wired.
+/**
+ * Resolved programmatic options schema (post-inheritance).
+ * For now, this mirrors the RAW schema; future stages may materialize defaults
+ * and narrow shapes as resolution is wired into the host.
+ */
 export const getDotenvOptionsSchemaResolved = getDotenvOptionsSchemaRaw;
 
+/** Programmatic options shape accepted by getDotenv callers (pre-inheritance). */
 export type GetDotenvOptionsRaw = z.infer<typeof getDotenvOptionsSchemaRaw>;
+/**
+ * Programmatic options shape after resolution (post-inheritance). This derives
+ * from {@link getDotenvOptionsSchemaResolved}.
+ */
 export type GetDotenvOptionsResolved = z.infer<
   typeof getDotenvOptionsSchemaResolved
 >;

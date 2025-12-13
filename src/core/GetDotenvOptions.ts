@@ -21,7 +21,9 @@ import type { getDotenvOptionsSchemaResolved } from '@/src/schema';
 import { defaultsDeep, omitUndefinedRecord } from '@/src/util';
 
 /**
- * Standard filename for the get-dotenv configuration file.
+ * Standard filename for a get‑dotenv configuration file discovered by the
+ * loaders. This is provided as a convenience for tests and tooling and does
+ * not affect discovery precedence (JSON/YAML/JS/TS are supported).
  */
 export const getDotenvOptionsFilename = 'getdotenv.config.json';
 
