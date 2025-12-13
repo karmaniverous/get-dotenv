@@ -56,15 +56,48 @@ export interface BatchGlobPathsOptions {
  * @public
  */
 export interface ExecShellCommandBatchOptions {
+  /**
+   * Command to execute. A string is interpreted according to the shell preference;
+   * an array is treated as argv for shell‑off execution.
+   */
   command?: string | string[];
+  /**
+   * Merged root CLI options bag (JSON‑serializable) forwarded for nested composition
+   * by downstream executors. Used to compute child overlays deterministically.
+   */
   getDotenvCliOptions?: Record<string, unknown>;
+  /**
+   * Composed dotenv environment (string | undefined values) to inject into each child.
+   */
   dotenvEnv?: Record<string, string | undefined>;
+  /**
+   * Space‑delimited patterns used to discover target working directories.
+   */
   globs: string;
+  /**
+   * When true, continue processing remaining paths after a command error.
+   */
   ignoreErrors?: boolean;
+  /**
+   * When true, list matched directories without executing a command.
+   */
   list?: boolean;
+  /**
+   * Logger used for headings, listings, and diagnostics.
+   */
   logger: Logger;
+  /**
+   * Resolve the batch root from the nearest package directory instead of CWD.
+   */
   pkgCwd?: boolean;
+  /**
+   * Root path (relative to CWD or package directory) for resolving globs.
+   */
   rootPath: string;
+  /**
+   * Shell to use when executing the command. A string selects a specific shell,
+   * `false` disables the shell (plain execution), and `URL` mirrors executor options.
+   */
   shell: string | boolean | URL;
 }
 

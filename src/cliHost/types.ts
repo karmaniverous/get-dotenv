@@ -128,7 +128,16 @@ export const defineScripts =
  * for nested subcommands to inherit.
  */
 export type CommandWithOptions<TOptions> = Command & {
+  /**
+   * Retrieve the parsed local options for this command, typed as a partial
+   * of the generic options shape.
+   */
   opts(): Partial<TOptions>;
+  /**
+   * Merged root options bag persisted on the root host and propagated to
+   * subcommands for nested flows. This allows child actions to access the
+   * unified defaults and flags for the current invocation.
+   */
   getDotenvCliOptions?: TOptions;
 };
 
