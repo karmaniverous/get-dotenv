@@ -6,7 +6,7 @@ export interface CmdOptionAlias {
   expand?: boolean;
 }
 
-export type CmdPluginOptions = {
+export interface CmdPluginOptions {
   /**
    * When true, register as the default subcommand at the root.
    */
@@ -16,7 +16,7 @@ export type CmdPluginOptions = {
    * behavior without specifying the subcommand explicitly.
    */
   optionAlias?: string | CmdOptionAlias;
-};
+}
 
 // Plugin config (Zod): currently a single optional flag to control alias expansion default.
 export const CmdConfigSchema = z

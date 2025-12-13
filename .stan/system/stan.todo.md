@@ -173,4 +173,11 @@
     - Updated `GetDotenvCliPlugin` interface and `GetDotenvCli` class to use new types.
     - Updated `definePlugin`, `computeContext`, and `registerPlugin` implementations.
     - Exported new interfaces via `src/cliHost/index.ts`.
-    - This eliminates inline `{ plugin, override }` and `{ plugin, path }` object types across the host.
+    - This eliminates inline `{ plugin, override }` and `{ plugin, path }` object types across the host.
+
+  - Refactor: convert remaining type aliases to interfaces
+    - Converted `RootOptionsShape` and `GetDotenvCliCtx` in `src/cliHost/types.ts`.
+    - Converted `EntropyOptions` in `src/diagnostics/entropy.ts` and `RedactOptions` in `src/diagnostics/redact.ts`.
+    - Converted `CmdPluginOptions` in `src/plugins/cmd/types.ts` and `BatchPluginOptions` in `src/plugins/batch/types.ts`.
+    - Converted `ConfigFile` and `ResolvedConfigSources` in `src/config/loader.ts`.
+    - Extracted `ResolveCliOptionsResult` in `src/cliHost/resolveCliOptions.ts` and exported it via barrel.

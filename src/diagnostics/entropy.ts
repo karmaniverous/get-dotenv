@@ -6,12 +6,12 @@
  */
 const warned = new Set<string>();
 
-export type EntropyOptions = {
+export interface EntropyOptions {
   warnEntropy?: boolean;
   entropyThreshold?: number; // default 3.8
   entropyMinLength?: number; // default 16
   entropyWhitelist?: Array<string | RegExp>; // string or RegExp patterns
-};
+}
 
 const isPrintableAscii = (s: string) => /^[\x20-\x7E]+$/.test(s);
 

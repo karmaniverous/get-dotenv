@@ -3,10 +3,10 @@ import { z } from 'zod';
 import type { ScriptsTable } from '@/src/cliHost';
 import type { Logger } from '@/src/core';
 
-export type BatchPluginOptions = {
+export interface BatchPluginOptions {
   scripts?: ScriptsTable;
   shell?: string | boolean;
-};
+}
 
 /**
  * Options for discovering batch working directories from a root path and globs.

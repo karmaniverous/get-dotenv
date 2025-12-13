@@ -6,7 +6,7 @@ import type { GetDotenvOptions, ProcessEnv } from '@/src/core';
  * Minimal root options shape shared by CLI and generator layers.
  * Keep keys optional to respect exactOptionalPropertyTypes semantics.
  */
-export type RootOptionsShape = {
+export interface RootOptionsShape {
   env?: string;
   vars?: string;
   command?: string;
@@ -51,7 +51,7 @@ export type RootOptionsShape = {
   // Scripts table (string or { cmd, shell })
   scripts?: ScriptsTable;
   // Logger is intentionally omitted here; it is not round-tripped into env.
-};
+}
 
 /**
  * Definition for a single script entry.
@@ -89,14 +89,14 @@ export type CommandWithOptions<TOptions> = Command & {
  *
  * @public
  */
-export type GetDotenvCliCtx<
+export interface GetDotenvCliCtx<
   TOptions extends GetDotenvOptions = GetDotenvOptions,
-> = {
+> {
   optionsResolved: TOptions;
   dotenv: ProcessEnv;
   plugins?: Record<string, unknown>;
   pluginConfigs?: Record<string, unknown>;
-};
+}
 
 /**
  * Options for branding the CLI.

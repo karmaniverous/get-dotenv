@@ -45,11 +45,11 @@ const isJsOrTs = (p: string) =>
   );
 export type ConfigPrivacy = 'public' | 'local';
 export type ConfigScope = 'packaged' | 'project';
-export type ConfigFile = {
+export interface ConfigFile {
   path: string;
   privacy: ConfigPrivacy;
   scope: ConfigScope;
-};
+}
 
 /**
  * Discover JSON/YAML config files in the packaged root and project root.
@@ -143,13 +143,13 @@ export const loadConfigFile = async (
 
   return getDotenvConfigSchemaResolved.parse(parsed.data);
 };
-export type ResolvedConfigSources = {
+export interface ResolvedConfigSources {
   packaged?: GetDotenvConfigResolved;
   project?: {
     public?: GetDotenvConfigResolved;
     local?: GetDotenvConfigResolved;
   };
-};
+}
 
 /**
  * Discover and load configs into resolved shapes, ordered by scope/privacy.

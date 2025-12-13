@@ -6,10 +6,10 @@
  */
 import type { ProcessEnv } from '@/src/core';
 
-export type RedactOptions = {
+export interface RedactOptions {
   redact?: boolean;
   redactPatterns?: Array<string | RegExp>;
-};
+}
 
 const DEFAULT_PATTERNS = [
   '\\bsecret\\b',

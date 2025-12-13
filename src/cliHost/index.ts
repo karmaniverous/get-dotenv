@@ -27,7 +27,10 @@ export {
 export type { PluginFlattenedEntry } from './paths';
 export { readMergedOptions } from './readMergedOptions';
 export { resolveCommand, resolveShell } from './resolve';
-export { resolveCliOptions } from './resolveCliOptions';
+export {
+  resolveCliOptions,
+  type ResolveCliOptionsResult,
+} from './resolveCliOptions';
 export { buildSpawnEnv } from './spawnEnv';
 export type { ScriptsTable } from './types';
 export {

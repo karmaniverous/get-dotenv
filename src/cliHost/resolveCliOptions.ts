@@ -8,6 +8,14 @@ import {
 import type { RootOptionsShape, ScriptsTable } from './types';
 
 /**
+ * Result of CLI option resolution.
+ */
+export interface ResolveCliOptionsResult<T> {
+  merged: T;
+  command?: string;
+}
+
+/**
  * Merge and normalize raw Commander options (current + parent + defaults)
  * into a GetDotenvCliOptions-like object. Types are intentionally wide to
  * avoid cross-layer coupling; callers may cast as needed.
@@ -18,7 +26,7 @@ export const resolveCliOptions = <
   rawCliOptions: unknown,
   defaults: Partial<T>,
   parentJson?: string,
-): { merged: T; command?: string } => {
+): ResolveCliOptionsResult<T> => {
   const parent: Partial<T> | undefined =
     typeof parentJson === 'string' && parentJson.length > 0
       ? (JSON.parse(parentJson) as Partial<T>)
