@@ -145,8 +145,8 @@ function resolveScript(
   return typeof entry === 'string' ? { cmd: entry } : entry;
 }
 
-export const runPlugin = () =>
-  definePlugin({
+export const runPlugin = () => {
+  const plugin = definePlugin({
     ns: 'run',
     setup(cli) {
       cli
@@ -186,6 +186,8 @@ export const runPlugin = () =>
         });
     },
   });
+  return plugin;
+};
 ```
 
 Notes:

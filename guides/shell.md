@@ -5,6 +5,7 @@ title: Shell execution behavior
 Scope and precedence:
 
 This page documents the root shell behavior controlled by the host’s global `--shell` (and optional root `scripts`). Plugins normally rely on the root shell setting; a rare per‑script override may be honored by CLI‑driven plugins when a script entry uses the object form `{ cmd, shell }`. For subprocess patterns across plugins (including expansion timing, child env composition, capture, quoting, and safety), see Plugins → Executing shell commands: ./plugins/exec.md.
+This page documents the root shell behavior controlled by the host’s global `--shell` (and optional root `scripts`). Plugins normally rely on the root shell setting; a rare per‑script override may be honored by CLI‑driven plugins when a script entry uses the object form `{ cmd, shell }`. For subprocess patterns across plugins (including expansion timing, child env composition, capture, quoting, and safety), see [Authoring Plugins → Executing Shell Commands](./authoring/exec.md).
 
 # Shell execution behavior
 

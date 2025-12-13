@@ -185,4 +185,10 @@
   - Refactor: convert remaining inline/type aliases to interfaces
     - Converted `GetDotenvConfig` type alias to interface in `src/core/GetDotenvOptions.ts`.
     - Converted `PluginWithInstanceHelpers` intersection type to interface extending `GetDotenvCliPlugin` in `src/cliHost/contracts.ts`.
-    - Extracted `CopyOperation` interface in `src/plugins/init/plan.ts` and updated `src/plugins/init/index.ts`.
+    - Extracted `CopyOperation` interface in `src/plugins/init/plan.ts` and updated `src/plugins/init/index.ts`.
+
+- Docs: bring README/guides in sync with implementation
+  - Config guide: add `rootOptionDefaults` and `rootOptionVisibility`, clarify JSON/YAML top‑level restrictions, and link to README visibility section.
+  - Shell guide: fix broken link to “Executing Shell Commands” (now `./authoring/exec.md`).
+  - Authoring exec guide: fix example to capture the plugin instance before calling `plugin.readConfig(cli)`.
+  - Shipped aws guide: replace deprecated `id` with `ns` in the whoami child plugin example.

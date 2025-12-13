@@ -39,6 +39,8 @@ Notes:
 JSON/YAML (data only, always-on; no-op when no files are present):
 
 - Allowed keys:
+  - rootOptionDefaults?: Partial<RootOptionsShape> — collapsed, CLI‑like flags and strings (families, singles). Prefer this to set help‑time/runtime defaults for root options.
+  - rootOptionVisibility?: Partial<Record<keyof RootOptionsShape, boolean>> — help‑time visibility (false hides a flag or flag family). See [Root option visibility (help‑time)](../README.md#root-option-visibility-help-time).
   - dotenvToken?: string
   - privateToken?: string
   - paths?: string | string[]
@@ -48,7 +50,7 @@ JSON/YAML (data only, always-on; no-op when no files are present):
   - scripts?: Record<string, unknown>
   - vars?: Record<string, string> (global, public)
   - envVars?: Record<string, Record<string, string>> (per-env, public)
-- Disallowed in JSON/YAML (this step): dynamic — use JS/TS instead.
+- Disallowed in JSON/YAML (this step): dynamic and schema — use JS/TS instead.
 
 JS/TS (data + dynamic):
 
@@ -60,6 +62,12 @@ TS support:
 
 - Direct import works if a TS loader is present.
 - Otherwise, the loader auto-bundles via esbuild when available; if esbuild is not present, it falls back to a simple TypeScript transpile for single-file modules without imports.
+
+### Top‑level restrictions (clean contract)
+
+- Operational root flags must live under rootOptionDefaults. Do not place root toggles (e.g., env, shell, loadProcess, log, exclude\*, trace, strict, redact family, entropy family, splitters) at the top level in JSON/YAML. Put them under rootOptionDefaults to control both help‑time labels and runtime defaults.
+- scripts belongs at the top level only. Do not nest scripts inside rootOptionDefaults.
+- dynamic and schema are JS/TS‑only. JSON/YAML loader rejects them.
 
 ## Privacy
 
@@ -194,40 +202,11 @@ You can define a scripts table in config and optionally override shell behavior 
 }
 ```
 
-When a script is invoked, scripts[name].shell (string or boolean) overrides the global shell for that script.
+Then:
 
-## Example
-
-Project files:
-
-```yaml
-# getdotenv.config.yaml (public)
-vars:
-  FOO: 'foo'
-envVars:
-  dev:
-    ENV_SETTING: 'dev_value'
+```bash
+getdotenv cmd bash-only
+getdotenv cmd plain
 ```
 
-```yaml
-# getdotenv.config.local.yml (private)
-vars:
-  SECRET: 's3cr3t'
-```
-
-JS/TS dynamic (optional):
-
-```ts
-// getdotenv.config.ts
-export default {
-  dynamic: {
-    BOTH: ({ FOO = '', ENV_SETTING = '' }) => `${FOO}-${ENV_SETTING}`,
-  },
-};
-```
-
-With --use-config-loader (or { useConfigLoader: true } on the host), the final map for env=dev overlays global public (FOO) → env public (ENV_SETTING) → global local (SECRET) → dynamic from config (BOTH):
-
-```
-{ FOO: "foo", ENV_SETTING: "dev_value", SECRET: "s3cr3t", BOTH: "foo-dev_value" }
-```
+For help‑time visibility of root flags (e.g., hiding `--capture` or an entire family like `--shell`/`--shell-off`), set `rootOptionVisibility` in JSON/YAML/JS/TS config. Precedence matches root defaults: createCli < packaged/public < project/public < project/local. See [Root option visibility (help‑time)](../README.md#root-option-visibility-help-time).

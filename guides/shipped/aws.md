@@ -115,7 +115,7 @@ import { STSClient, GetCallerIdentityCommand } from '@aws-sdk/client-sts';
 
 export const whoamiPlugin = () =>
   definePlugin({
-    id: 'aws-whoami',
+    ns: 'whoami',
     setup(cli) {
       cli
         .ns('whoami')
