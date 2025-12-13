@@ -5,6 +5,10 @@
 /**
  * Omit keys whose runtime value is undefined from a shallow object.
  * Returns a Partial with non-undefined value types preserved.
+ *
+ * @typeParam T - Input object shape.
+ * @param obj - Object to filter.
+ * @returns A shallow copy of `obj` without keys whose value is `undefined`.
  */
 export function omitUndefined<T extends Record<string, unknown>>(
   obj: T,
@@ -18,6 +22,10 @@ export function omitUndefined<T extends Record<string, unknown>>(
 
 /**
  * Specialized helper for env-like maps: drop undefined and return string-only.
+ *
+ * @typeParam V - Value type for present entries (must extend `string`).
+ * @param obj - Env-like record containing `string | undefined` values.
+ * @returns A new record containing only the keys with defined values.
  */
 export function omitUndefinedRecord<V extends string>(
   obj: Record<string, V | undefined>,

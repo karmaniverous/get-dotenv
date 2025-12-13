@@ -38,6 +38,9 @@ export interface PlanConfigCopiesOptions {
 
 /**
  * Plan the copy operations for configuration files.
+ *
+ * @param options - Planning options for config scaffolding.
+ * @returns An array of copy operations to perform.
  */
 export const planConfigCopies = ({
   format,
@@ -123,6 +126,9 @@ export interface PlanCliCopiesOptions {
 
 /**
  * Plan the copy operations for the CLI skeleton.
+ *
+ * @param options - Planning options for CLI scaffolding.
+ * @returns An array of copy operations to perform.
  */
 export const planCliCopies = ({
   cliName,

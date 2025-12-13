@@ -14,6 +14,9 @@ const unquote = (s: string) =>
     : s;
 /**
  * Parse AWS credentials from JSON output (AWS CLI v2 export-credentials).
+ *
+ * @param txt - Raw stdout text from the AWS CLI.
+ * @returns Parsed credentials, or `undefined` when the input is not recognized.
  */
 export const parseExportCredentialsJson = (
   txt: string,
@@ -51,6 +54,9 @@ export const parseExportCredentialsJson = (
 /**
  * Parse AWS credentials from environment-export output (shell-agnostic).
  * Supports POSIX `export KEY=VAL` and PowerShell `$Env:KEY=VAL`.
+ *
+ * @param txt - Raw stdout text from the AWS CLI.
+ * @returns Parsed credentials, or `undefined` when the input is not recognized.
  */
 export const parseExportCredentialsEnv = (
   txt: string,
@@ -151,6 +157,7 @@ const exportCredentials = async (
  * Applies strategy (cli-export vs none) and handling for SSO login-on-demand.
  *
  * @param options - Context options including current dotenv and plugin config.
+ * @returns A `Promise\<AwsContext\>` containing any resolved profile, region, and credentials.
  */
 export const resolveAwsContext = async ({
   dotenv,

@@ -11,6 +11,10 @@ import type { ResolvedConfigSources } from './loader';
  * - If a JS/TS `schema` is present, use schema.safeParse(finalEnv).
  * - Else if `requiredKeys` is present, check presence (value !== undefined).
  * - Returns a flat list of issue strings; caller decides warn vs fail.
+ *
+ * @param finalEnv - Final composed environment to validate.
+ * @param sources - Resolved config sources providing `schema` and/or `requiredKeys`.
+ * @returns A list of human-readable issue strings (empty when valid).
  */
 export const validateEnvAgainstSources = (
   finalEnv: ProcessEnv,

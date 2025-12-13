@@ -15,6 +15,11 @@ import { loadModuleDefault } from '@/src/util';
  * Apply a dynamic map to the target progressively.
  * - Functions receive (target, env) and may return string | undefined.
  * - Literals are assigned directly (including undefined).
+ *
+ * @param target - Mutable target environment to assign into.
+ * @param map - Dynamic map to apply (functions and/or literal values).
+ * @param env - Selected environment name (if any) passed through to dynamic functions.
+ * @returns Nothing.
  */
 export function applyDynamicMap(
   target: ProcessEnv,
@@ -42,6 +47,12 @@ export function applyDynamicMap(
  * Error behavior:
  * - On failure to load/compile/evaluate the module, throws a unified message:
  *   "Unable to load dynamic TypeScript file: <absPath>. Install 'esbuild'..."
+ *
+ * @param target - Mutable target environment to assign into.
+ * @param absPath - Absolute path to the dynamic module file.
+ * @param env - Selected environment name (if any).
+ * @param cacheDirName - Cache subdirectory under `.tsbuild/` for compiled artifacts.
+ * @returns A `Promise\<void\>` which resolves after the module (if present) has been applied.
  */
 export async function loadAndApplyDynamic(
   target: ProcessEnv,

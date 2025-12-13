@@ -6,7 +6,10 @@ import type { AwsContext } from './types';
  * Apply resolved AWS context to `process.env` and `ctx.plugins`.
  * Centralizes logic shared between the plugin action and `afterResolve` hook.
  *
+ * @param out - Resolved AWS context to apply.
+ * @param ctx - Host context to publish non-sensitive metadata into.
  * @param setProcessEnv - Whether to write credentials/region to `process.env` (default true).
+ * @returns Nothing.
  */
 export function applyAwsContext(
   out: AwsContext,

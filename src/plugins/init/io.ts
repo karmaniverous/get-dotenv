@@ -2,7 +2,10 @@ import fs from 'fs-extra';
 import path from 'path';
 
 /**
- * Ensure a directory exists.
+ * Ensure a directory exists (parents included).
+ *
+ * @param p - Directory path to create.
+ * @returns A `Promise\<string\>` resolving to the provided `p` value.
  */
 export const ensureDir = async (p: string) => {
   await fs.ensureDir(p);
@@ -10,7 +13,11 @@ export const ensureDir = async (p: string) => {
 };
 
 /**
- * Write text content to a file, ensuring the parent directory exists.
+ * Write UTF-8 text content to a file, ensuring the parent directory exists.
+ *
+ * @param dest - Destination file path.
+ * @param data - File contents to write.
+ * @returns A `Promise\<void\>` which resolves when the file is written.
  */
 export const writeFile = async (dest: string, data: string) => {
   await ensureDir(path.dirname(dest));
@@ -23,6 +30,7 @@ export const writeFile = async (dest: string, data: string) => {
  * @param src - Source file path.
  * @param dest - Destination file path.
  * @param substitutions - Map of token literals to replacement strings.
+ * @returns A `Promise\<void\>` which resolves when the file has been copied.
  */
 export const copyTextFile = async (
   src: string,
@@ -43,6 +51,10 @@ export const copyTextFile = async (
 /**
  * Ensure a set of lines exist (exact match) in a file. Creates the file
  * when missing. Returns whether it was created or changed.
+ *
+ * @param filePath - Target file path to create/update.
+ * @param lines - Lines which must be present (exact string match).
+ * @returns A `Promise\<object\>` describing whether the file was created and/or changed.
  */
 export const ensureLines = async (
   filePath: string,

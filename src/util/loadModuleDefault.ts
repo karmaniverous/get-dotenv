@@ -50,14 +50,20 @@ const cleanupOldCacheFiles = async (
 };
 
 /**
- * Load a module default export from a JS/TS file with robust fallbacks:
- * - .js/.mjs/.cjs: direct import * - .ts/.mts/.cts/.tsx:
- *   1) try direct import (if a TS loader is active),
- *   2) esbuild bundle to a temp ESM file,
- *   3) typescript.transpileModule fallback for simple modules.
+ * Load a module default export from a JS/TS file with robust fallbacks.
  *
- * @param absPath - absolute path to source file
- * @param cacheDirName - cache subfolder under .tsbuild
+ * Behavior by extension:
+ *
+ * - `.js`/`.mjs`/`.cjs`: direct dynamic import.
+ * - `.ts`/`.mts`/`.cts`/`.tsx`:
+ *   - try direct dynamic import (when a TS loader is active),
+ *   - else compile via `esbuild` to a cached `.mjs` file and import,
+ *   - else fallback to `typescript.transpileModule` for simple modules.
+ *
+ * @typeParam T - Type of the expected default export.
+ * @param absPath - Absolute path to the source file.
+ * @param cacheDirName - Cache subfolder under `.tsbuild/`.
+ * @returns A `Promise\<T | undefined\>` resolving to the default export (if any).
  */
 export const loadModuleDefault = async <T>(
   absPath: string,

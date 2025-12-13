@@ -6,6 +6,10 @@ import type { GetDotenvCliOptions } from './GetDotenvCliOptions';
 /**
  * Compose a child-process env overlay from dotenv and the merged CLI options bag.
  * Returns a shallow object including getDotenvCliOptions when serializable.
+ *
+ * @param merged - Resolved CLI options bag (or a JSON-serializable subset).
+ * @param dotenv - Composed dotenv variables for the current invocation.
+ * @returns A string-only env overlay suitable for child process spawning.
  */
 export function composeNestedEnv(
   merged: GetDotenvCliOptions | Record<string, unknown>,
@@ -29,6 +33,7 @@ export function composeNestedEnv(
  * Strip one layer of symmetric outer quotes (single or double) from a string.
  *
  * @param s - Input string.
+ * @returns `s` without one symmetric outer quote pair (when present).
  */
 export const stripOne = (s: string) => {
   if (s.length < 2) return s;
@@ -41,6 +46,9 @@ export const stripOne = (s: string) => {
 /**
  * Preserve argv array for Node -e/--eval payloads under shell-off and
  * peel one symmetric outer quote layer from the code argument.
+ *
+ * @param args - Argument vector intended for direct execution (shell-off).
+ * @returns Either the original `args` or a modified copy with a normalized eval payload.
  */
 export function maybePreserveNodeEvalArgv(args: string[]): string[] {
   if (args.length >= 3) {

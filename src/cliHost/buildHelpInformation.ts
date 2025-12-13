@@ -5,6 +5,10 @@ import { renderOptionGroups } from './groups';
 /**
  * Compose root/parent help output by inserting grouped sections between
  * Options and Commands, ensuring a trailing blank line.
+ *
+ * @param base - Base help text produced by Commander.
+ * @param cmd - Command instance whose grouped options should be rendered.
+ * @returns The modified help text with grouped blocks inserted.
  */
 export function buildHelpInformation(
   base: string,
