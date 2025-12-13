@@ -30,4 +30,13 @@ Keep requirement statements out of this file; use it solely to guide assistant b
 - Embrace generics to facilitate type inference; design APIs to carry types through naturally.
 - The public API MUST support type inference without requiring downstream consumers to pass explicit type parameters.
 - Exceptions to these rules are permitted only after a brief design discussion and rationale captured in the dev plan; prefer localized, well-justified exceptions.
-- CRITICAL: Downstream DX is NON-NEGOTIABLE. Favor intuitive signatures and inferred types over verbose annotations or casts; changes that degrade downstream inference require rework or a design adjustment before merging.
+- CRITICAL: Downstream DX is NON-NEGOTIABLE. Favor intuitive signatures and inferred types over verbose annotations or casts; changes that degrade downstream inference require rework or a design adjustment before merging.
+
+## TSDoc
+
+- All exported functions, classes, interfaces, types, and enums MUST have TSDoc comments.
+- All generic type parameters in exported functions, classes, interfaces, and types MUST be documented in TSDoc comments.
+- Every TSDoc comment MUST include a summary description.
+- Function and method TSDoc comments MUST document all parameters and the return type.
+- TSDoc comments MUST use proper formatting for code elements (e.g., backticks for code references).
+- When an interface or object-like type expresses properties and is documented with typedoc, every property MUST have a typedoc description.

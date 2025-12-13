@@ -44,7 +44,11 @@ export interface PluginFlattenedEntry<
   TOpts extends OptionValues = {},
   TGlobal extends OptionValues = {},
 > {
+  /** The plugin instance for this entry in the flattened tree. */
   plugin: GetDotenvCliPlugin<TOptions, TArgs, TOpts, TGlobal>;
+  /**
+   * The realized mount path for this plugin (root alias excluded), e.g. "aws/whoami".
+   */
   path: string;
 }
 

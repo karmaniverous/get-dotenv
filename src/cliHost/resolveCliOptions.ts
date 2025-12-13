@@ -11,7 +11,16 @@ import type { RootOptionsShape, ScriptsTable } from './types';
  * Result of CLI option resolution.
  */
 export interface ResolveCliOptionsResult<T> {
+  /**
+   * The merged options object after applying defaults, inherited parent
+   * values, and the current CLI flags. This bag is used as the effective
+   * root options for the current invocation.
+   */
   merged: T;
+  /**
+   * Positional command (string) resolved for invokers that accept a command
+   * payload (e.g., batch parent or cmd alias). When absent, no command is set.
+   */
   command?: string;
 }
 

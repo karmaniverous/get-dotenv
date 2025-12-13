@@ -113,7 +113,12 @@ export interface PluginChildEntry<
   TOpts extends OptionValues = {},
   TGlobal extends OptionValues = {},
 > {
+  /** The child plugin instance to mount under this parent. */
   plugin: GetDotenvCliPlugin<TOptions, TArgs, TOpts, TGlobal>;
+  /**
+   * Optional namespace override for the child when mounted under the parent.
+   * When provided, this name is used instead of the child's default `ns`.
+   */
   override: PluginNamespaceOverride | undefined;
 }
 
