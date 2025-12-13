@@ -6,8 +6,11 @@ import { z } from 'zod';
  * @public
  */
 export interface CmdOptionAlias {
+  /** Option flags (e.g. "-c, --cmd <command...>"). */
   flags: string;
+  /** Option description. */
   description?: string;
+  /** Whether to expand the alias value before execution. */
   expand?: boolean;
 }
 

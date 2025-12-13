@@ -25,8 +25,11 @@ export type AwsPluginConfig = z.infer<typeof AwsPluginConfigSchema>;
  * AWS credentials object (Access Key ID, Secret Access Key, Session Token).
  */
 export type AwsCredentials = {
+  /** AWS Access Key ID. */
   accessKeyId: string;
+  /** AWS Secret Access Key. */
   secretAccessKey: string;
+  /** AWS Session Token (optional). */
   sessionToken?: string;
 };
 
@@ -34,8 +37,11 @@ export type AwsCredentials = {
  * Resolved AWS context.
  */
 export type AwsContext = {
+  /** Resolved AWS profile name. */
   profile?: string;
+  /** Resolved AWS region. */
   region?: string;
+  /** Resolved AWS credentials. */
   credentials?: AwsCredentials;
 };
 
@@ -49,5 +55,6 @@ export interface ResolveAwsContextOptions {
    * The current composed dotenv variables.
    */
   dotenv: ProcessEnv;
+  /** Plugin configuration. */
   cfg: AwsPluginConfig;
 }

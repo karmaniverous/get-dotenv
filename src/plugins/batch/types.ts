@@ -68,11 +68,17 @@ export interface ExecShellCommandBatchOptions {
  * @public
  */
 export interface BatchParentInvokerFlags {
+  /** Command to execute. */
   command?: string;
+  /** Space-delimited glob patterns. */
   globs?: string;
+  /** List directories without executing. */
   list?: boolean;
+  /** Ignore errors and continue. */
   ignoreErrors?: boolean;
+  /** Use package directory as root. */
   pkgCwd?: boolean;
+  /** Root path for discovery. */
   rootPath?: string;
 }
 

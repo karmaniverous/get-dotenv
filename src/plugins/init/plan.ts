@@ -8,8 +8,11 @@ import { TEMPLATES_ROOT } from './constants';
  * @public
  */
 export interface CopyOperation {
+  /** Source file path. */
   src: string;
+  /** Destination file path. */
   dest: string;
+  /** Token substitutions map. */
   subs?: Record<string, string>;
 }
 

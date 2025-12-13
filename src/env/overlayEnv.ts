@@ -9,9 +9,13 @@ import type { GetDotenvConfigResolved } from '@/src/schema';
  * @public
  */
 export type OverlayConfigSources = {
+  /** Packaged configuration (public). */
   packaged?: GetDotenvConfigResolved;
+  /** Project configuration (public and local). */
   project?: {
+    /** Project public configuration. */
     public?: GetDotenvConfigResolved;
+    /** Project local configuration. */
     local?: GetDotenvConfigResolved;
   };
 };
@@ -48,8 +52,11 @@ export interface OverlayEnvOptionsBase<
     | Record<string, string | undefined>
     | Readonly<Record<string, string | undefined>>,
 > {
+  /** Base environment variables. */
   base: B;
+  /** Target environment name. */
   env: string | undefined;
+  /** Configuration sources to overlay. */
   configs: OverlayConfigSources;
 }
 

@@ -132,18 +132,31 @@ export interface GetDotenvConfig<
    * Operational root defaults applied by the host (collapsed families; stringly form).
    */
   rootOptionDefaults?: Partial<RootOptionsShape>;
+  /** Token indicating a dotenv file. */
   dotenvToken?: string;
+  /** Token indicating private variables. */
   privateToken?: string;
+  /** Paths to search for dotenv files. */
   paths?: string | string[];
+  /** Whether to load variables into `process.env`. */
   loadProcess?: boolean;
+  /** Whether to log loaded variables. */
   log?: boolean;
+  /** Shell execution strategy. */
   shell?: string | boolean;
+  /** Scripts table. */
   scripts?: Scripts;
+  /** Keys required to be present in the final environment. */
   requiredKeys?: string[];
+  /** Validation schema (e.g. Zod). */
   schema?: unknown;
+  /** Global variables. */
   vars?: Vars;
+  /** Environment-specific variables. */
   envVars?: Record<Env, Partial<Vars>>;
+  /** Dynamic variable definitions. */
   dynamic?: DynamicMap<Vars>;
+  /** Plugin configuration slices. */
   plugins?: Record<string, unknown>;
 }
 

@@ -58,8 +58,11 @@ export type ConfigScope = 'packaged' | 'project';
  * Represents a discovered configuration file.
  */
 export interface ConfigFile {
+  /** Absolute path to the config file. */
   path: string;
+  /** Privacy scope (public vs local). */
   privacy: ConfigPrivacy;
+  /** Origin scope (packaged vs project). */
   scope: ConfigScope;
 }
 
@@ -156,9 +159,13 @@ export const loadConfigFile = async (
   return getDotenvConfigSchemaResolved.parse(parsed.data);
 };
 export interface ResolvedConfigSources {
+  /** Configuration from the package root (public only). */
   packaged?: GetDotenvConfigResolved;
+  /** Configuration from the project root. */
   project?: {
+    /** Project public configuration. */
     public?: GetDotenvConfigResolved;
+    /** Project local configuration. */
     local?: GetDotenvConfigResolved;
   };
 }

@@ -12,7 +12,9 @@ import type { ProcessEnv } from '@/src/core';
  * @public
  */
 export interface RedactOptions {
+  /** Enable redaction. */
   redact?: boolean;
+  /** Regex patterns for keys to redact. */
   redactPatterns?: Array<string | RegExp>;
 }
 

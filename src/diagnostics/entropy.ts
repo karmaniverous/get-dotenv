@@ -12,9 +12,13 @@ const warned = new Set<string>();
  * @public
  */
 export interface EntropyOptions {
+  /** Enable entropy warnings. */
   warnEntropy?: boolean;
+  /** Entropy threshold (bits/char). */
   entropyThreshold?: number; // default 3.8
+  /** Minimum string length to check. */
   entropyMinLength?: number; // default 16
+  /** Whitelist of regex patterns to ignore. */
   entropyWhitelist?: Array<string | RegExp>; // string or RegExp patterns
 }
 
