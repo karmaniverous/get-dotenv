@@ -12,7 +12,13 @@ import type { execShellCommandBatch } from './execShellCommandBatch';
  * @public
  */
 export interface BatchPluginOptions {
+  /**
+   * Scripts table used to resolve command names and optional per-script shell overrides.
+   */
   scripts?: ScriptsTable;
+  /**
+   * Global shell preference for batch execution; overridden by per-script shell when present.
+   */
   shell?: string | boolean;
 }
 

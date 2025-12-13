@@ -33,7 +33,14 @@ export type RootOptionsShapeCompat = Omit<
   RootOptionsShape,
   'vars' | 'paths'
 > & {
+  /**
+   * Extra variables as either a space‑delimited string of assignments
+   * (e.g., `"FOO=1 BAR=2"`) or an object map of `string | undefined` values.
+   */
   vars?: string | Record<string, string | undefined>;
+  /**
+   * Dotenv search paths as a space‑delimited string or a pre‑split string[].
+   */
   paths?: string | string[];
 };
 

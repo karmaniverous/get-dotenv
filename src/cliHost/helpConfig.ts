@@ -8,6 +8,10 @@ import type { RootOptionsShape } from './types';
  * @public
  */
 export type ResolvedHelpConfig = Partial<GetDotenvCliOptions> & {
+  /**
+   * Per‑plugin configuration slices keyed by realized mount path
+   * (e.g., `"aws"` or `"aws/whoami"`), used for dynamic help text.
+   */
   plugins: Record<string, unknown>;
 };
 

@@ -40,11 +40,19 @@ import { defaultsDeep } from '@/src/util';
  * ```
  */
 export type CreateCliOptions = {
+  /**
+   * CLI command name used for help and argv scaffolding.
+   * Defaults to `'getdotenv'` when omitted.
+   */
   alias?: string;
+  /**
+   * Optional help header text. When omitted, brand() uses
+   * `"<alias> v<resolved-version>"` if a version can be read.
+   */
   branding?: string;
   /**
    * Optional composer to wire the CLI (plugins/options). If not provided,
-   * the shipped default wiring is applied. Any configureOutput/exitOverride
+   * the shipped default wiring is applied. Any `configureOutput`/`exitOverride`
    * you call here override the defaults.
    */
   compose?: (program: GetDotenvCli) => GetDotenvCli;
