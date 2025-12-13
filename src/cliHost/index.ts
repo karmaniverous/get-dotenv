@@ -1,3 +1,10 @@
+/**
+ * @packageDocumentation
+ * Public surface of the get-dotenv CLI host. Re-exports the host class,
+ * plugin contracts, execution helpers, and strongly-typed utilities used to
+ * compose plugin-based CLIs.
+ */
+
 export type {
   DefineSpec,
   GetDotenvCliPlugin,

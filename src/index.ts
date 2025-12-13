@@ -1,3 +1,11 @@
+/**
+ * @packageDocumentation
+ * Public package entrypoint for get-dotenv. Re-exports the core programmatic API,
+ * the CLI host, and utility helpers for consumers. See the subpath modules for
+ * detailed documentation: `@karmaniverous/get-dotenv/cli`, `@karmaniverous/get-dotenv/cliHost`,
+ * `@karmaniverous/get-dotenv/config`, and the environment overlay helpers under `@karmaniverous/get-dotenv/env/overlay`.
+ */
+
 export { createCli, type CreateCliOptions } from './cli';
 export {
   buildSpawnEnv,
