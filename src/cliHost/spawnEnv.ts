@@ -1,17 +1,3 @@
-/** src/cliCore/spawnEnv.ts
- * Build a sanitized environment bag for child processes.
- *
- * Requirements addressed:
- * - Provide a single helper (buildSpawnEnv) to normalize/dedupe child env.
- * - Drop undefined values (exactOptional semantics).
- * - On Windows, dedupe keys case-insensitively and prefer the last value,
- *   preserving the latest key's casing. Ensure HOME fallback from USERPROFILE.
- *   Normalize TMP/TEMP consistency when either is present.
- * - On POSIX, keep keys as-is; when a temp dir key is present (TMPDIR/TMP/TEMP),
- *   ensure TMPDIR exists for downstream consumers that expect it.
- *
- * Adapter responsibility: pure mapping; no business logic.
- */
 const dropUndefined = (
   bag: Record<string, string | undefined>,
 ): Record<string, string> =>
@@ -21,7 +7,14 @@ const dropUndefined = (
     ),
   );
 
-/** Build a sanitized env for child processes from base + overlay. */
+/**
+ * Build a sanitized environment object for spawning child processes.
+ * Merges `base` and `overlay`, drops undefined values, and handles platform-specific
+ * normalization (e.g. case-insensitivity on Windows).
+ *
+ * @param base - Base environment (usually `process.env`).
+ * @param overlay - Environment variables to overlay.
+ */
 export const buildSpawnEnv = (
   base?: NodeJS.ProcessEnv,
   overlay?: Record<string, string | undefined>,

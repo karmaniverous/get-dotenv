@@ -1,6 +1,3 @@
-/** src/cliHost/GetDotenvCli/groups.ts
- * Grouped help rendering helpers for App/Plugin sections.
- */
 import type {
   CommandUnknownOpts as Command,
   Option,
@@ -9,6 +6,10 @@ import type {
 // Registry for grouping; root help renders groups between Options and Commands.
 export const GROUP_TAG = new WeakMap<Option, string>();
 
+/**
+ * Render help option groups (App/Plugins) for a given command.
+ * Groups are injected between Options and Commands in the help output.
+ */
 export function renderOptionGroups(cmd: Command): string {
   const all = cmd.options;
   type Row = { flags: string; description: string };

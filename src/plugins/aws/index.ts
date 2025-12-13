@@ -12,6 +12,11 @@ import { applyAwsContext } from './common';
 import { resolveAwsContext } from './service';
 import { type AwsPluginConfig, AwsPluginConfigSchema } from './types';
 
+/**
+ * AWS plugin: establishes an AWS session (credentials/region) based on dotenv configuration.
+ * Supports SSO login-on-demand and credential exporting.
+ * Can be used as a parent command to wrap `aws` CLI invocations.
+ */
 export const awsPlugin = () => {
   const plugin = definePlugin({
     ns: 'aws',

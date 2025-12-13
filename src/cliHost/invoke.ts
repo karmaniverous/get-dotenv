@@ -25,7 +25,11 @@ export function composeNestedEnv(
   return out;
 }
 
-/** Strip one symmetric outer quote layer from a string. */
+/**
+ * Strip one layer of symmetric outer quotes (single or double) from a string.
+ *
+ * @param s - Input string.
+ */
 export const stripOne = (s: string) => {
   if (s.length < 2) return s;
   const a = s.charAt(0);

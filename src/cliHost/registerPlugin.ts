@@ -1,6 +1,3 @@
-/** src/cliHost/registerPlugin.ts
- * Install a plugin and its children (setup phase), pre-order.
- */
 import type { OptionValues } from '@commander-js/extra-typings';
 
 import type { GetDotenvOptions } from '@/src/core';
@@ -76,6 +73,10 @@ function runInstall<TOptions extends GetDotenvOptions>(
   return;
 }
 
+/**
+ * Install a plugin and its children (pre-order setup phase).
+ * Enforces sibling namespace uniqueness.
+ */
 export function setupPluginTree<TOptions extends GetDotenvOptions>(
   cli: GetDotenvCliPublic<TOptions, unknown[], OptionValues, OptionValues>,
   plugin: GetDotenvCliPlugin<TOptions, unknown[], OptionValues, OptionValues>,

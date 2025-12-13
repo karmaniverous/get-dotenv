@@ -1,7 +1,3 @@
-/**
- * Requirements: Init scaffolding plugin with collision flow and CI detection.
- * Note: Large file scheduled for decomposition; tracked in stan.todo.md.
- */
 import { stdin as input, stdout as output } from 'node:process';
 
 // NOTE: pay attention to non-interactive detection and precedence
@@ -20,6 +16,10 @@ export type { PlanCliCopiesOptions, PlanConfigCopiesOptions } from './plan';
 
 type CopyDecision = 'overwrite' | 'example' | 'skip';
 
+/**
+ * Init plugin: scaffolds configuration files and a CLI skeleton for get-dotenv.
+ * Supports collision detection, interactive prompts, and CI bypass.
+ */
 export const initPlugin = () =>
   definePlugin({
     ns: 'init',

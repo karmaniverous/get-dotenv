@@ -1,12 +1,15 @@
-/** src/cliHost/readMergedOptions.ts
- * Helper to retrieve the merged root options bag from any action handler
- * that only has access to thisCommand. Avoids structural casts.
- */
 import type { CommandUnknownOpts } from '@commander-js/extra-typings';
 
 import { GetDotenvCli } from './GetDotenvCli';
 import type { GetDotenvCliOptions } from './GetDotenvCliOptions';
 
+/**
+ * Retrieve the merged root options bag from the current command context.
+ * Climbs to the root `GetDotenvCli` instance to access the persisted options.
+ *
+ * @param cmd - The current command instance (thisCommand).
+ * @throws Error if the root is not a GetDotenvCli or options are missing.
+ */
 export const readMergedOptions = (
   cmd: CommandUnknownOpts,
 ): GetDotenvCliOptions => {

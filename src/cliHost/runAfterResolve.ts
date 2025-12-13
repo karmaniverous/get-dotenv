@@ -1,6 +1,3 @@
-/** src/cliHost/runAfterResolve.ts
- * Run afterResolve hooks for a plugin tree (parent → children).
- */
 import type { OptionValues } from '@commander-js/extra-typings';
 
 import type { GetDotenvOptions } from '@/src/core';
@@ -8,6 +5,9 @@ import type { GetDotenvOptions } from '@/src/core';
 import type { GetDotenvCliPlugin, GetDotenvCliPublic } from './contracts';
 import type { GetDotenvCliCtx } from './types';
 
+/**
+ * Run afterResolve hooks for a plugin tree (parent → children).
+ */
 export async function runAfterResolveTree<
   TOptions extends GetDotenvOptions = GetDotenvOptions,
   TArgs extends unknown[] = [],

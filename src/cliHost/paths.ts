@@ -7,7 +7,12 @@ import type { GetDotenvOptions } from '@/src/core';
 
 import type { GetDotenvCliPlugin, GetDotenvCliPublic } from './contracts';
 
-/** Compute realized path for a mounted command (leaf-up to root, excluding root alias). */
+/**
+ * Compute the realized path for a command mount (leaf-up to root).
+ * Excludes the root application alias.
+ *
+ * @param cli - The mounted command instance.
+ */
 export function realizedPathForMount(
   cli: GetDotenvCliPublic<
     GetDotenvOptions,

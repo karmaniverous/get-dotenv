@@ -5,7 +5,12 @@ import { attachParentInvoker } from './parentInvoker';
 import { CmdConfigSchema, type CmdPluginOptions } from './types';
 export type { RunCmdWithContextOptions } from './types';
 
-/** Cmd plugin: executes a command using the current getdotenv CLI context. */
+/**
+ * Cmd plugin: executes a command using the current getdotenv CLI context.
+ * Registers the `cmd` subcommand and optionally attaches a parent-level alias (e.g. `-c`).
+ *
+ * @param options - Plugin configuration options.
+ */
 export const cmdPlugin = (options: CmdPluginOptions = {}) => {
   const plugin = definePlugin({
     ns: 'cmd',

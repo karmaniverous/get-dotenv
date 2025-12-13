@@ -1,6 +1,12 @@
 import type { GetDotenvCliOptions } from './GetDotenvCliOptions';
 import type { RootOptionsShape } from './types';
 
+/**
+ * Configuration context used for generating dynamic help descriptions.
+ * Contains merged CLI options and plugin configuration slices.
+ *
+ * @public
+ */
 export type ResolvedHelpConfig = Partial<GetDotenvCliOptions> & {
   plugins: Record<string, unknown>;
 };

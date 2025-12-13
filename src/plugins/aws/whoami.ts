@@ -2,6 +2,10 @@ import { GetCallerIdentityCommand, STSClient } from '@aws-sdk/client-sts';
 
 import { definePlugin } from '@/src/cliHost';
 
+/**
+ * AWS Whoami plugin: prints the current AWS caller identity (account, arn, userid).
+ * Intended to be mounted under the `aws` plugin.
+ */
 export const awsWhoamiPlugin = () =>
   definePlugin({
     ns: 'whoami',

@@ -1,9 +1,3 @@
-/** src/cliHost/rootHooks.ts
- * Internal helper to install root resolution hooks (preSubcommand/preAction).
- * Mirrors the wiring previously performed by GetDotenvCli.overrideRootOptions,
- * without exposing a public helper on the host class.
- */
-
 import type { ResolvedConfigSources } from '@/src/config';
 import {
   resolveGetDotenvConfigSources,
@@ -62,6 +56,13 @@ function computeRootDefaults(
   );
 }
 
+/**
+ * Install root-level hooks (preSubcommand/preAction) to handle configuration loading,
+ * option resolution, and context initialization before actions run.
+ *
+ * @param program - The CLI host instance.
+ * @param defaults - Optional root defaults overlay.
+ */
 export function installRootHooks<TOptions extends GetDotenvOptions>(
   program: GetDotenvCli<TOptions>,
   defaults?: Partial<RootOptionsShape>,

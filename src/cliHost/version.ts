@@ -1,10 +1,13 @@
-/** src/cliHost/version.ts
- * Read the nearest package.json version relative to an import.meta.url.
- */
 import fs from 'fs-extra';
 import { packageDirectory } from 'package-directory';
 import { fileURLToPath } from 'url';
 
+/**
+ * Read the version from the nearest `package.json` relative to the provided import URL.
+ *
+ * @param importMetaUrl - The `import.meta.url` of the calling module.
+ * @returns The version string or undefined if not found.
+ */
 export async function readPkgVersion(
   importMetaUrl?: string,
 ): Promise<string | undefined> {
