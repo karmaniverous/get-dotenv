@@ -5,6 +5,8 @@ import type { GetDotenvOptions, ProcessEnv } from '@/src/core';
 /**
  * Minimal root options shape shared by CLI and generator layers.
  * Keep keys optional to respect exactOptionalPropertyTypes semantics.
+ *
+ * @public
  */
 export interface RootOptionsShape {
   env?: string;

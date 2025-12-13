@@ -1,11 +1,21 @@
 import { z } from 'zod';
 
+/**
+ * Configuration for the parent-level command alias.
+ *
+ * @public
+ */
 export interface CmdOptionAlias {
   flags: string;
   description?: string;
   expand?: boolean;
 }
 
+/**
+ * Options provided to the cmd plugin factory.
+ *
+ * @public
+ */
 export interface CmdPluginOptions {
   /**
    * When true, register as the default subcommand at the root.
@@ -18,12 +28,17 @@ export interface CmdPluginOptions {
   optionAlias?: string | CmdOptionAlias;
 }
 
-// Plugin config (Zod): currently a single optional flag to control alias expansion default.
+/**
+ * Zod schema for cmd plugin configuration.
+ */
 export const CmdConfigSchema = z
   .object({
     expand: z.boolean().optional(),
   })
   .strict();
+/**
+ * Cmd plugin configuration object.
+ */
 export type CmdConfig = z.infer<typeof CmdConfigSchema>;
 
 /**

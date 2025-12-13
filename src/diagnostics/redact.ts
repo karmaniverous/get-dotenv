@@ -6,6 +6,11 @@
  */
 import type { ProcessEnv } from '@/src/core';
 
+/**
+ * Configuration options for secret redaction.
+ *
+ * @public
+ */
 export interface RedactOptions {
   redact?: boolean;
   redactPatterns?: Array<string | RegExp>;

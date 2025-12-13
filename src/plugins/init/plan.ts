@@ -2,6 +2,11 @@ import path from 'path';
 
 import { TEMPLATES_ROOT } from './constants';
 
+/**
+ * Represents a file copy operation during scaffolding.
+ *
+ * @public
+ */
 export interface CopyOperation {
   src: string;
   dest: string;
@@ -28,6 +33,9 @@ export interface PlanConfigCopiesOptions {
   destRoot: string;
 }
 
+/**
+ * Plan the copy operations for configuration files.
+ */
 export const planConfigCopies = ({
   format,
   withLocal,
@@ -110,6 +118,9 @@ export interface PlanCliCopiesOptions {
   destRoot: string;
 }
 
+/**
+ * Plan the copy operations for the CLI skeleton.
+ */
 export const planCliCopies = ({
   cliName,
   destRoot,

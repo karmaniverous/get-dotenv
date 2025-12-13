@@ -3,6 +3,11 @@ import { z } from 'zod';
 import type { ScriptsTable } from '@/src/cliHost';
 import type { Logger } from '@/src/core';
 
+/**
+ * Options provided to the batch plugin factory.
+ *
+ * @public
+ */
 export interface BatchPluginOptions {
   scripts?: ScriptsTable;
   shell?: string | boolean;
@@ -77,7 +82,9 @@ export interface BatchParentInvokerFlags {
 
 export interface BatchCmdSubcommandOptions {}
 
-// Per-plugin config schema (optional fields; used as defaults).
+/**
+ * Zod schema for a single script entry (string or object).
+ */
 export const ScriptSchema = z.union([
   z.string(),
   z.object({
@@ -86,6 +93,9 @@ export const ScriptSchema = z.union([
   }),
 ]);
 
+/**
+ * Zod schema for batch plugin configuration.
+ */
 export const BatchConfigSchema = z.object({
   scripts: z.record(z.string(), ScriptSchema).optional(),
   shell: z.union([z.string(), z.boolean()]).optional(),
@@ -93,4 +103,7 @@ export const BatchConfigSchema = z.object({
   globs: z.string().optional(),
   pkgCwd: z.boolean().optional(),
 });
+/**
+ * Batch plugin configuration object.
+ */
 export type BatchConfig = z.infer<typeof BatchConfigSchema>;

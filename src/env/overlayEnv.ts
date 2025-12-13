@@ -2,6 +2,12 @@ import type { ProcessEnv } from '@/src/core';
 import { dotenvExpandAll } from '@/src/dotenv';
 import type { GetDotenvConfigResolved } from '@/src/schema';
 
+/**
+ * Configuration sources for environment overlay.
+ * Organized by scope (packaged vs project) and privacy (public vs local).
+ *
+ * @public
+ */
 export type OverlayConfigSources = {
   packaged?: GetDotenvConfigResolved;
   project?: {

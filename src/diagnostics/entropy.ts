@@ -6,6 +6,11 @@
  */
 const warned = new Set<string>();
 
+/**
+ * Configuration options for entropy analysis.
+ *
+ * @public
+ */
 export interface EntropyOptions {
   warnEntropy?: boolean;
   entropyThreshold?: number; // default 3.8

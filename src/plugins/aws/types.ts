@@ -2,6 +2,9 @@ import { z } from 'zod';
 
 import type { ProcessEnv } from '@/src/core';
 
+/**
+ * Zod schema for AWS plugin configuration.
+ */
 export const AwsPluginConfigSchema = z.object({
   profile: z.string().optional(),
   region: z.string().optional(),
@@ -13,14 +16,23 @@ export const AwsPluginConfigSchema = z.object({
   loginOnDemand: z.boolean().default(false).optional(),
 });
 
+/**
+ * AWS plugin configuration object.
+ */
 export type AwsPluginConfig = z.infer<typeof AwsPluginConfigSchema>;
 
+/**
+ * AWS credentials object (Access Key ID, Secret Access Key, Session Token).
+ */
 export type AwsCredentials = {
   accessKeyId: string;
   secretAccessKey: string;
   sessionToken?: string;
 };
 
+/**
+ * Resolved AWS context.
+ */
 export type AwsContext = {
   profile?: string;
   region?: string;
