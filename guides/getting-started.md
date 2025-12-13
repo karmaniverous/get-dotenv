@@ -39,7 +39,7 @@ console.log(vars.APP_SETTING);
 Next:
 
 - Put defaults and validation in `getdotenv.config.json|yaml|js|ts` using [Config files and overlays](./config.md).
-- Use `dynamic` or `dynamicPath` for computed values; see [Dynamic Processing](../README.md#dynamic-processing).
+- Use `dynamic` or `dynamicPath` for computed values; see [Dynamic variables (JS/TS)](../README.md#dynamic-variables-jsts).
 - TypeScript: helper APIs such as env overlays/expansion accept readonly record inputs (e.g., `as const`) to keep inference strong without casts.
 
 ## 3) Embed a CLI quickly (included plugins)
