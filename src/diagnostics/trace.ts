@@ -1,7 +1,3 @@
-/** src/diagnostics/trace.ts
- * Trace child env composition with redaction and entropy warnings.
- * Presentation-only: does not mutate env; writes lines via provided sink.
- */
 import type { ProcessEnv } from '@/src/core';
 
 import { type EntropyOptions, maybeWarnEntropy } from './entropy';
@@ -35,6 +31,10 @@ export interface TraceChildEnvOptions
   write: (line: string) => void;
 }
 
+/**
+ * Trace child env composition with redaction and entropy warnings.
+ * Presentation-only: does not mutate env; writes lines via the provided sink.
+ */
 export function traceChildEnv(opts: TraceChildEnvOptions): void {
   const {
     parentEnv,

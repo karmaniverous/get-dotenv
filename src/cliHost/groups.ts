@@ -3,7 +3,10 @@ import type {
   Option,
 } from '@commander-js/extra-typings';
 
-// Registry for grouping; root help renders groups between Options and Commands.
+/**
+ * Registry for option grouping.
+ * Root help renders these groups between "Options" and "Commands".
+ */
 export const GROUP_TAG = new WeakMap<Option, string>();
 
 /**

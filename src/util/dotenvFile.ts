@@ -1,12 +1,9 @@
-/** src/util/dotenvFile.ts
- * Serialize a dotenv record to a file with minimal quoting (multiline values are quoted).
- *
- * Requirements addressed:
- * - One authoritative serializer/writer for consolidated dotenv output.
- * - Future-proof for ordering/sorting changes (today: insertion order).
- */
 import fs from 'fs-extra';
 
+/**
+ * Serialize a dotenv record to a file with minimal quoting (multiline values are quoted).
+ * Future-proofs for ordering/sorting changes (currently insertion order).
+ */
 export async function writeDotenvFile(
   filename: string,
   data: Record<string, string | undefined>,

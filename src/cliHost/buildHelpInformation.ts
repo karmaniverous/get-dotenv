@@ -1,11 +1,11 @@
-/** src/cliHost/buildHelpInformation.ts
- * Compose root/parent help output by inserting grouped sections between
- * Options and Commands and ensuring a trailing blank line.
- */
 import type { CommandUnknownOpts } from '@commander-js/extra-typings';
 
 import { renderOptionGroups } from './groups';
 
+/**
+ * Compose root/parent help output by inserting grouped sections between
+ * Options and Commands, ensuring a trailing blank line.
+ */
 export function buildHelpInformation(
   base: string,
   cmd: CommandUnknownOpts,

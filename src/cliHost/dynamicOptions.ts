@@ -5,7 +5,9 @@ import { type CommandUnknownOpts, Option } from '@commander-js/extra-typings';
 
 import type { ResolvedHelpConfig } from './helpConfig';
 
-// Registry for dynamic descriptions keyed by Option (WeakMap so GC-friendly)
+/**
+ * Registry for dynamic descriptions keyed by Option (WeakMap for GC safety).
+ */
 export const DYN_DESC = new WeakMap<
   Option,
   (cfg: ResolvedHelpConfig) => string

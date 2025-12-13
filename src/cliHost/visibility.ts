@@ -22,6 +22,9 @@
 import type { GetDotenvCli } from './GetDotenvCli';
 import type { RootOptionsShape } from './types';
 
+/**
+ * Map of root options to their visibility state (true=show, false=hide).
+ */
 export type VisibilityMap = Partial<Record<keyof RootOptionsShape, boolean>>;
 
 /**

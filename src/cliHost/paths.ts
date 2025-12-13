@@ -48,7 +48,10 @@ export interface PluginFlattenedEntry<
   path: string;
 }
 
-/** Flatten a plugin tree into [\{ plugin, path \}] using ns chain pre-order. */
+/**
+ * Flatten a plugin tree into a list of `{ plugin, path }` entries.
+ * Traverses the namespace chain in pre-order.
+ */
 export function flattenPluginTreeByPath<
   TOptions extends GetDotenvOptions = GetDotenvOptions,
   TArgs extends unknown[] = [],

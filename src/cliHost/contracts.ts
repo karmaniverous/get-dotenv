@@ -213,6 +213,9 @@ export type DefineSpec<
   ) => void | Promise<void>;
 };
 
+/**
+ * Helper to infer the configuration type from a `PluginWithInstanceHelpers` type.
+ */
 export type InferPluginConfig<P> =
   P extends PluginWithInstanceHelpers<GetDotenvOptions, infer C>
     ? Readonly<C>
