@@ -170,13 +170,13 @@ export interface GetDotenvCliPlugin<
  * interface optional preserves compatibility for ad-hoc/test plugins, while
  * return types from definePlugin provide stronger DX for shipped/typed plugins.
  */
-export type PluginWithInstanceHelpers<
+export interface PluginWithInstanceHelpers<
   TOptions extends GetDotenvOptions = GetDotenvOptions,
   TConfig = unknown,
   TArgs extends unknown[] = [],
   TOpts extends OptionValues = {},
   TGlobal extends OptionValues = {},
-> = GetDotenvCliPlugin<TOptions, TArgs, TOpts, TGlobal> & {
+> extends GetDotenvCliPlugin<TOptions, TArgs, TOpts, TGlobal> {
   // Instance-bound helpers preserve plugin identity and inject validated slices.
   readConfig<TCfg = TConfig>(
     cli: GetDotenvCliPublic<TOptions, unknown[], OptionValues, OptionValues>,
@@ -189,7 +189,7 @@ export type PluginWithInstanceHelpers<
     parser?: (value: string, previous?: unknown) => unknown,
     defaultValue?: unknown,
   ): Option<Usage>;
-};
+}
 
 /**
  * Public spec type for defining a plugin with compositional helpers.

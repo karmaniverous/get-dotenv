@@ -180,4 +180,9 @@
     - Converted `EntropyOptions` in `src/diagnostics/entropy.ts` and `RedactOptions` in `src/diagnostics/redact.ts`.
     - Converted `CmdPluginOptions` in `src/plugins/cmd/types.ts` and `BatchPluginOptions` in `src/plugins/batch/types.ts`.
     - Converted `ConfigFile` and `ResolvedConfigSources` in `src/config/loader.ts`.
-    - Extracted `ResolveCliOptionsResult` in `src/cliHost/resolveCliOptions.ts` and exported it via barrel.
+    - Extracted `ResolveCliOptionsResult` in `src/cliHost/resolveCliOptions.ts` and exported it via barrel.
+
+  - Refactor: convert remaining inline/type aliases to interfaces
+    - Converted `GetDotenvConfig` type alias to interface in `src/core/GetDotenvOptions.ts`.
+    - Converted `PluginWithInstanceHelpers` intersection type to interface extending `GetDotenvCliPlugin` in `src/cliHost/contracts.ts`.
+    - Extracted `CopyOperation` interface in `src/plugins/init/plan.ts` and updated `src/plugins/init/index.ts`.

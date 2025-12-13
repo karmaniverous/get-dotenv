@@ -2,6 +2,12 @@ import path from 'path';
 
 import { TEMPLATES_ROOT } from './constants';
 
+export interface CopyOperation {
+  src: string;
+  dest: string;
+  subs?: Record<string, string>;
+}
+
 /**
  * Options for planning config template copies.
  *
@@ -26,16 +32,8 @@ export const planConfigCopies = ({
   format,
   withLocal,
   destRoot,
-}: PlanConfigCopiesOptions): Array<{
-  src: string;
-  dest: string;
-  subs?: Record<string, string>;
-}> => {
-  const copies: Array<{
-    src: string;
-    dest: string;
-    subs?: Record<string, string>;
-  }> = [];
+}: PlanConfigCopiesOptions): Array<CopyOperation> => {
+  const copies: Array<CopyOperation> = [];
   if (format === 'json') {
     copies.push({
       src: path.join(
@@ -115,11 +113,7 @@ export interface PlanCliCopiesOptions {
 export const planCliCopies = ({
   cliName,
   destRoot,
-}: PlanCliCopiesOptions): Array<{
-  src: string;
-  dest: string;
-  subs?: Record<string, string>;
-}> => {
+}: PlanCliCopiesOptions): Array<CopyOperation> => {
   const subs = { __CLI_NAME__: cliName };
   const base = path.join(destRoot, 'src', 'cli', cliName);
   return [

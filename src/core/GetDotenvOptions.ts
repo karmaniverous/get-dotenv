@@ -108,10 +108,10 @@ export function defineDynamic(d: unknown): unknown {
  *
  * Compile-time only; the runtime loader remains schema-driven.
  */
-export type GetDotenvConfig<
+export interface GetDotenvConfig<
   Vars extends ProcessEnv,
   Env extends string = string,
-> = {
+> {
   /**
    * Operational root defaults applied by the host (collapsed families; stringly form).
    */
@@ -129,7 +129,7 @@ export type GetDotenvConfig<
   envVars?: Record<Env, Partial<Vars>>;
   dynamic?: DynamicMap<Vars>;
   plugins?: Record<string, unknown>;
-};
+}
 
 export function defineGetDotenvConfig<
   Vars extends ProcessEnv,

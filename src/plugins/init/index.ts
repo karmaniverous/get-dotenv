@@ -13,7 +13,7 @@ import { createInterface } from 'readline/promises';
 import { definePlugin, readMergedOptions } from '@/src/cliHost';
 
 import { copyTextFile, ensureLines } from './io';
-import { planCliCopies, planConfigCopies } from './plan';
+import { type CopyOperation, planCliCopies, planConfigCopies } from './plan';
 import { isNonInteractive, promptDecision } from './prompts';
 
 export type { PlanCliCopiesOptions, PlanConfigCopiesOptions } from './plan';
@@ -76,11 +76,7 @@ export const initPlugin = () =>
           // Build copy plan
           const cfgCopies = planConfigCopies({ format, withLocal, destRoot });
           const cliCopies = planCliCopies({ cliName, destRoot });
-          const copies: Array<{
-            src: string;
-            dest: string;
-            subs?: Record<string, string>;
-          }> = [...cfgCopies, ...cliCopies];
+          const copies: Array<CopyOperation> = [...cfgCopies, ...cliCopies];
 
           // Interactive state
           let globalDecision: CopyDecision | undefined;
