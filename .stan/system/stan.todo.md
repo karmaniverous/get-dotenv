@@ -4,6 +4,11 @@
 
 ## Completed (recent)
 
+- Docs: authoring guides — add root helper and Node eval snippet
+  - Lifecycle: added a concise, code‑backed subsection demonstrating getRootCommand for typed access to the true root; cross‑linked to the scaffolded hello plugin and other Guides.
+  - Exec: added an early cross‑link to Shell execution behavior, plus a short example using maybePreserveNodeEvalArgv to preserve Node -e argv in shell‑off flows; cross‑linked to the template and shipped cmd plugin.
+  - Note: README remains a legacy long file (>300 LOC). In a follow‑up turn, decompose README by moving detailed sections into Guides and trimming it below 300 LOC, keeping a concise overview and links.
+
 - Docs: sync guides with implementation. Fixed guides/config.md allowed keys to match schema (removed top‑level operational keys; added plugins/requiredKeys; clarified JS/TS‑only dynamic and schema). Removed duplicated intro in guides/shell.md and kept canonical link to Authoring/exec. Updated guides/getting-started.md to import createCli from the /cli subpath for consistency with README examples. Intentionally avoided patching README due to the 300‑LOC hard gate; propose a future split if README needs edits.
 - Batch/Cmd/Util/Env: exported interfaces for inline option objects
   - batch/parentInvoker: introduced BatchParentInvokerFlags and updated usage;

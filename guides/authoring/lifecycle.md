@@ -4,7 +4,7 @@ title: Lifecycle & Wiring
 
 # Authoring Plugins: Lifecycle & Wiring
 
-Plugins are small modules that register commands and behavior against the plugin‑first host. The host resolves dotenv context once per invocation, overlays config, validates, and then runs your plugin’s setup and optional afterResolve hooks.
+Plugins are small modules that register commands and behavior against the plugin‑first host. The host resolves dotenv context once per invocation, overlays config, validates, and then runs your plugin’s setup and optional afterResolve hooks. See also: [Config & Validation](./config.md), [Diagnostics & Errors](./diagnostics.md), and [Executing Shell Commands](./exec.md).
 
 ## Minimal plugin
 
@@ -53,6 +53,33 @@ await createCli({
       .use(helloPlugin()),
 }).run(process.argv.slice(2));
 ```
+
+### Access the true root command (typed helper)
+
+When you need the real root command (for branding, alias labels, or reading root‑level metadata) from inside a plugin mount or action, use the small typed helper exported by the host:
+
+```ts
+import {
+  definePlugin,
+  getRootCommand,
+} from '@karmaniverous/get-dotenv/cliHost';
+
+export const helloPlugin = () => {
+  const plugin = definePlugin({
+    ns: 'hello',
+    setup(cli) {
+      cli.ns('hello').action(() => {
+        const root = getRootCommand(cli); // typed Commander root
+        // Example: include the root name in your output
+        console.log(`[${root.name()}] hello from plugin`);
+      });
+    },
+  });
+  return plugin;
+};
+```
+
+For a fuller example in context, see the scaffolded template plugin at [templates/cli/plugins/hello.ts](../../templates/cli/plugins/hello.ts).
 
 Notes:
 
