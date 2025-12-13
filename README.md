@@ -24,6 +24,19 @@ See full guides:
 - [Shipped plugins](./guides/shipped/index.md)
 - [Authoring plugins](./guides/authoring/index.md) (host, lifecycle, exec, diagnostics)
 
+## Use Cases
+
+- Execute deployment steps across many repositories from one command sequence. See [batch plugin guide](./guides/shipped/batch.md)
+- Run config‑driven, environment‑aware operations with simple CLI commands. See [config guide](./guides/config.md)
+- Compose a rich CLI from shipped and third‑party plugins and share it across projects. See [shipped plugins overview](./guides/shipped/index.md)
+- Drive complex AWS workflows in an authenticated, environment‑aware context. See [aws plugin guide](./guides/shipped/aws.md)
+- Scaffold a project config and a host‑based CLI skeleton in seconds. See [init plugin guide](./guides/shipped/init.md)
+- Batch lint/build/test across a monorepo with deterministic output. See [batch plugin guide](./guides/shipped/batch.md)
+- Run cross‑platform commands in CI with normalized shells and capture. See [shell guide](./guides/shell.md)
+- Programmatically compose env and run tools inside Node scripts. See [Getting started](./guides/getting-started.md)
+- Add observability without leaking secrets using trace, redaction, and entropy warnings. See [diagnostics guide](./guides/authoring/diagnostics.md)
+- Author new plugins with maximum DX and minimal boilerplate. See [authoring plugins guide](./guides/authoring/index.md)
+
 ## Requirements
 
 - Node.js ≥ 20 (this repository pins 22.19.0 for CI/reproducibility)
