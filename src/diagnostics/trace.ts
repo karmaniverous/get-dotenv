@@ -11,8 +11,7 @@ import { type RedactOptions, redactTriple } from './redact';
  * @public
  */
 export interface TraceChildEnvOptions
-  extends Pick<RedactOptions, 'redact' | 'redactPatterns'>,
-    EntropyOptions {
+  extends Pick<RedactOptions, 'redact' | 'redactPatterns'>, EntropyOptions {
   /**
    * Parent process environment (source).
    */

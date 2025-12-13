@@ -221,3 +221,7 @@
 - Docs: Decompose README to concise overview with cross‑links
   - Trimmed README.md to a sub‑250‑line overview and replaced deep sections with links to Guides
   - Preserved Quick Start (CLI/programmatic/embed), Requirements, Installation, API, Changelog, License; added proper relative Markdown links to guides/
+
+- Lint: fix Vitest rules in tests (no-standalone-expect / no-conditional-expect)
+  - Rewrote dynamic test selection to explicit if/else with it or it.skip in E2E tests.
+  - Removed placeholder “skip” tests with conditional expects and refactored schema tests to assert unconditionally on collected issues.

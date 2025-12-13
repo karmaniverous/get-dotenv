@@ -30,11 +30,11 @@ describe('schema/getDotenvConfig', () => {
     const bad = { envVars: { dev: { OK: 1 } } } as unknown; // non-string value
     const parsed = getDotenvConfigSchemaRaw.safeParse(bad);
     expect(parsed.success).toBe(false);
-    if (!parsed.success) {
-      // Expect a message referencing the incorrect type
-      const msgs = parsed.error.issues.map((i) => i.path.join('.'));
-      expect(msgs.some((s) => s.includes('envVars'))).toBe(true);
-    }
+    // Expect a message referencing the incorrect type
+    const msgs = parsed.success
+      ? []
+      : parsed.error.issues.map((i) => i.path.join('.'));
+    expect(msgs.some((s) => s.includes('envVars'))).toBe(true);
   });
 
   it('allows dynamic key in schema (loader rejects for JSON/YAML later)', () => {

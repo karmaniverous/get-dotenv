@@ -57,8 +57,7 @@ export interface RunCommandOptions {
 }
 
 interface ExecNormalizedOptions
-  extends RunCommandOptions,
-    RunCommandResultOptions {}
+  extends RunCommandOptions, RunCommandResultOptions {}
 
 // Strip repeated symmetric outer quotes (single or double) until stable.
 // This is safe for argv arrays passed to execa (no quoting needed) and avoids

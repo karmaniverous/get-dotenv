@@ -7,9 +7,8 @@ import { describe, expect, it } from 'vitest';
 describe('E2E alias termination (Windows)', () => {
   const isWindows = process.platform === 'win32';
 
-  (isWindows ? it : it.skip)(
-    'terminates with GETDOTENV_STDIO=pipe and prints expected JSON',
-    async () => {
+  if (isWindows) {
+    it('terminates with GETDOTENV_STDIO=pipe and prints expected JSON', async () => {
       const nodeBin = process.execPath;
       const CLI = (...args: string[]) => [
         '--import',
@@ -72,6 +71,8 @@ describe('E2E alias termination (Windows)', () => {
       expect(obj.ENV).toBe('deep_test_setting');
       // With -r/--exclude-private set, SECRET should be blank.
       expect(obj.SECRET ?? '').toBe('');
-    },
-  );
+    });
+  } else {
+    it.skip('terminates with GETDOTENV_STDIO=pipe and prints expected JSON', async () => {});
+  }
 });

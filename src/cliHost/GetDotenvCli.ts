@@ -59,11 +59,11 @@ const HELP_HEADER_SYMBOL = Symbol('GetDotenvCli.helpHeader');
  * - Support composable plugins with parent → children install and afterResolve.
  */
 export class GetDotenvCli<
-    TOptions extends GetDotenvOptions = GetDotenvOptions,
-    TArgs extends unknown[] = [],
-    TOpts extends OptionValues = {},
-    TGlobal extends OptionValues = {},
-  >
+  TOptions extends GetDotenvOptions = GetDotenvOptions,
+  TArgs extends unknown[] = [],
+  TOpts extends OptionValues = {},
+  TGlobal extends OptionValues = {},
+>
   extends Command<TArgs, TOpts, TGlobal>
   implements GetDotenvCliPublic<TOptions, TArgs, TOpts, TGlobal>
 {

@@ -7,16 +7,10 @@ describe('E2E quoting (POSIX)', () => {
   const isWindows = process.platform === 'win32';
   const shell = '/bin/bash';
 
-  it('skips on non-POSIX platforms', () => {
-    if (isWindows) {
-      // This assert is here only to make the intent explicit; real tests are below.
-      expect(true).toBe(true);
-    }
-  });
-
-  (isWindows ? it.skip : it)(
-    'outer shell expands unquoted and double-quoted variables; single quotes are literal',
-    async () => {
+  if (isWindows) {
+    it.skip('outer shell expands unquoted and double-quoted variables; single quotes are literal', async () => {});
+  } else {
+    it('outer shell expands unquoted and double-quoted variables; single quotes are literal', async () => {
       const env = { ...process.env, APP_SETTING: 'posix_value' };
 
       // Unquoted: $APP_SETTING is expanded by the shell.
@@ -39,7 +33,6 @@ describe('E2E quoting (POSIX)', () => {
         env,
       });
       expect(singleQuoted.stdout.trim()).toBe('$APP_SETTING');
-    },
-    15000,
-  );
+    }, 15000);
+  }
 });

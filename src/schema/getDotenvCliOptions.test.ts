@@ -55,11 +55,11 @@ describe('schema/getDotenvCliOptions', () => {
     const res = getDotenvCliOptionsSchemaRaw.safeParse(bad);
     expect(res.success).toBe(false);
 
-    if (!res.success) {
-      const issues = res.error.issues.map((i) => i.path.join('.'));
-      expect(issues).toContain('shell');
-      expect(issues).toContain('debug');
-      expect(issues).toContain('pathsDelimiter');
-    }
+    const issues = res.success
+      ? []
+      : res.error.issues.map((i) => i.path.join('.'));
+    expect(issues).toContain('shell');
+    expect(issues).toContain('debug');
+    expect(issues).toContain('pathsDelimiter');
   });
 });

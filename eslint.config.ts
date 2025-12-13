@@ -145,6 +145,8 @@ export default [
       ...vitestRecommendedRules,
       // Keep Prettier alignment in tests as well if desired (optional)
       'prettier/prettier': 'error',
+      'vitest/no-disabled-tests': 'off',
+      'vitest/no-identical-title': 'off',
     },
   },
   prettierConfig,

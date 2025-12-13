@@ -12,11 +12,13 @@ describe('schema/getDotenvOptions', () => {
     };
     const res = getDotenvOptionsSchemaRaw.safeParse(input);
     expect(res.success).toBe(true);
-    if (res.success) {
-      expect(res.data.paths).toEqual(['./', './packages/app']);
-      expect(res.data.vars?.FOO).toBe('bar');
-      expect(res.data.vars?.BAR).toBeUndefined();
+    if (!res.success) {
+      // Unexpected failure: surface diagnostics to aid debugging
+      throw new Error(JSON.stringify(res.error.issues));
     }
+    expect(res.data.paths).toEqual(['./', './packages/app']);
+    expect(res.data.vars?.FOO).toBe('bar');
+    expect(res.data.vars?.BAR).toBeUndefined();
   });
 
   it('produces informative errors on invalid shapes', () => {
@@ -28,16 +30,15 @@ describe('schema/getDotenvOptions', () => {
     const res = getDotenvOptionsSchemaRaw.safeParse(bad);
     expect(res.success).toBe(false);
 
-    if (!res.success) {
-      const issues = res.error.issues.map((i) => ({
-        path: i.path.join('.'),
-        message: i.message,
-      }));
-
-      // Expect errors to reference the offending keys
-      expect(issues.some((i) => i.path === 'paths')).toBe(true);
-      expect(issues.some((i) => i.path === 'excludePublic')).toBe(true);
-    }
+    const issues = res.success
+      ? []
+      : res.error.issues.map((i) => ({
+          path: i.path.join('.'),
+          message: i.message,
+        }));
+    // Expect errors to reference the offending keys
+    expect(issues.some((i) => i.path === 'paths')).toBe(true);
+    expect(issues.some((i) => i.path === 'excludePublic')).toBe(true);
   });
 
   it('allows minimal empty object (all fields optional in RAW)', () => {
