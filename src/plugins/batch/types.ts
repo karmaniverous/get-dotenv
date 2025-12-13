@@ -3,6 +3,9 @@ import { z } from 'zod';
 import type { ScriptsTable } from '@/src/cliHost';
 import type { Logger } from '@/src/core';
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import type { execShellCommandBatch } from './execShellCommandBatch';
+
 /**
  * Options provided to the batch plugin factory.
  *

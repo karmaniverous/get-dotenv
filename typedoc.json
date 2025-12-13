@@ -3,6 +3,11 @@
   "entryPointStrategy": "expand",
   "exclude": ["**/*.test.ts"],
   "excludeInternal": false,
+  "externalSymbolLinkMappings": {
+    "@commander-js/extra-typings": {
+      "*": "https://github.com/commander-js/extra-typings/blob/main/index.d.ts"
+    }
+  },
   "highlightLanguages": [
     "bash",
     "console",

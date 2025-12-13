@@ -30,9 +30,14 @@ import { defaultsDeep } from '@/src/util';
  * - branding: optional help header; when omitted, brand() uses "<alias> v<version>"
  *
  * Usage:
- *   import \{ createCli \} from '\@karmaniverous/get-dotenv';
- *   await createCli(\{ alias: 'getdotenv', branding: 'getdotenv vX.Y.Z' \})
- *     .run(process.argv.slice(2));
+ * ```ts
+ * import { createCli } from '@karmaniverous/get-dotenv';
+ *
+ * await createCli({
+ *    alias: 'getdotenv',
+ *    branding: 'getdotenv vX.Y.Z'
+ * })();
+ * ```
  */
 export type CreateCliOptions = {
   alias?: string;

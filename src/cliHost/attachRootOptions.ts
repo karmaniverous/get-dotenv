@@ -6,9 +6,9 @@ import type { GetDotenvCli } from './GetDotenvCli';
 import type { RootOptionsShape } from './types';
 
 /**
- * Attach root flags to a GetDotenvCli instance.
- * - Host-only: program is typed as GetDotenvCli and supports dynamicOption/createDynamicOption.
- * - Any flag that displays an effective default in help uses dynamic descriptions.
+ * Attach root flags to a {@link GetDotenvCli} instance.
+ *
+ * Program is typed as {@link GetDotenvCli} and supports {@link GetDotenvCli.createDynamicOption | createDynamicOption}.
  */
 export const attachRootOptions = (
   program: GetDotenvCli,
