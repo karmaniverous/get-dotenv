@@ -2,6 +2,14 @@
  * Base root CLI defaults (shared; kept untyped here to avoid cross-layer deps).
  * Used as the bottom layer for CLI option resolution.
  */
+/**
+ * Default values for root CLI options used by the host and helpers as the
+ * baseline layer during option resolution.
+ *
+ * These defaults correspond to the "stringly" root surface (see `RootOptionsShape`)
+ * and are merged by precedence with create-time overrides and any discovered
+ * configuration `rootOptionDefaults` before CLI flags are applied.
+ */
 export const baseRootOptionDefaults = {
   dotenvToken: '.env',
   loadProcess: true,
