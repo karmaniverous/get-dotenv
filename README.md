@@ -194,10 +194,12 @@ Notes:
     const { createCli } = await import('@karmaniverous/get-dotenv/cli');
     await createCli({ alias: 'mycli' }).run(['-h']);
     ```
-  - CommonJS require (using built outputs for smoke checks):
+  - CommonJS (load ESM with dynamic import):
     ```js
-    const { createCli } = require('@karmaniverous/get-dotenv/dist/index.cjs');
-    createCli({ alias: 'mycli' }).run(['-h']);
+    (async () => {
+      const { createCli } = await import('@karmaniverous/get-dotenv/cli');
+      await createCli({ alias: 'mycli' }).run(['-h']);
+    })();
     ```
 
 ### Custom host (wire plugins)

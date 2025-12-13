@@ -58,6 +58,18 @@ Notes:
 - `createCli` installs cmd, batch, aws, init, and a small demo by default. `-h/--help` prints help and returns. See [Shell execution behavior](./shell.md) and [Shipped Plugins](./shipped/index.md).
 - If you need to omit demo or add your own plugins, wire a [Custom host](./authoring/lifecycle.md) instead.
 
+CommonJS usage (dynamic import):
+
+```js
+(async () => {
+  // The package is ESM-only; use dynamic import from CommonJS.
+  const { createCli } = await import('@karmaniverous/get-dotenv/cli');
+
+  // Build and run your CLI with args
+  await createCli({ alias: 'toolbox' }).run(['-h']);
+})();
+```
+
 ## 4) Scaffold config and a CLI skeleton
 
 Use `init` to copy templates and a host‑based CLI skeleton into your project.

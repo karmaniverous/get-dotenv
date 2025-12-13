@@ -4,6 +4,12 @@
 
 ## Completed (recent)
 
+- Docs: ESM/CJS interop — replace outdated CJS require with dynamic import
+  - README: replaced `require('@karmaniverous/get-dotenv/dist/index.cjs')` example
+    (non-existent CJS bundle) with a correct dynamic import snippet for CommonJS.
+  - Guides/Getting Started: added a short CommonJS (dynamic import) example under
+    “Embed a CLI quickly”.
+
 - Docs: authoring guides — add root helper and Node eval snippet
   - Lifecycle: added a concise, code‑backed subsection demonstrating getRootCommand for typed access to the true root; cross‑linked to the scaffolded hello plugin and other Guides.
   - Exec: added an early cross‑link to Shell execution behavior, plus a short example using maybePreserveNodeEvalArgv to preserve Node -e argv in shell‑off flows; cross‑linked to the template and shipped cmd plugin.
