@@ -26,7 +26,11 @@
     "GitHub": "https://github.com/karmaniverous/get-dotenv"
   },
   "out": "./docs/",
-  "plugin": ["typedoc-plugin-mdn-links", "typedoc-plugin-replace-text"],
+  "plugin": [
+    "typedoc-plugin-mdn-links",
+    "typedoc-plugin-replace-text",
+    "typedoc-plugin-zod"
+  ],
   "projectDocuments": ["./guides/index.md", "./CHANGELOG.md"],
   "replaceText": {
     "replacements": [
