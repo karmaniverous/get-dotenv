@@ -47,6 +47,10 @@ const globPaths = async ({
   return { absRootPath, paths };
 };
 
+/**
+ * Execute a batch of commands across multiple directories.
+ * Discovers targets via globs/rootPath and runs the command in each.
+ */
 export const execShellCommandBatch = async ({
   command,
   getDotenvCliOptions,

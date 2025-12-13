@@ -1,11 +1,13 @@
-/** src/plugins/aws/common.ts
- * Apply resolved AWS context to process.env and ctx.plugins.
- * Centralizes duplicated logic between action and afterResolve.
- */
 import type { GetDotenvCliCtx } from '@/src/cliHost';
 
 import type { AwsContext } from './types';
 
+/**
+ * Apply resolved AWS context to `process.env` and `ctx.plugins`.
+ * Centralizes logic shared between the plugin action and `afterResolve` hook.
+ *
+ * @param setProcessEnv - Whether to write credentials/region to `process.env` (default true).
+ */
 export function applyAwsContext(
   out: AwsContext,
   ctx: GetDotenvCliCtx,

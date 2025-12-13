@@ -13,6 +13,10 @@ import type { BatchPluginOptions } from './types';
 import type { BatchConfig } from './types';
 import type { BatchParentInvokerFlags } from './types';
 
+/**
+ * Attach the parent-level action for the batch plugin.
+ * Handles parent flags (e.g. `getdotenv batch -l`) and delegates to the batch executor.
+ */
 export const attachParentInvoker = (
   plugin: ReturnType<typeof definePlugin>,
   cli: GetDotenvCliPublic,

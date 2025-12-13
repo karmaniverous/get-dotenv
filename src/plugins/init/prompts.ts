@@ -18,6 +18,10 @@ export const isNonInteractive = () => {
   return Boolean(ciLike) || !(input.isTTY && output.isTTY);
 };
 
+/**
+ * Prompt the user for a file collision decision.
+ * Returns a single-character code representing overwrite/example/skip (or 'all' variants).
+ */
 export const promptDecision = async (
   filePath: string,
   logger: Logger,

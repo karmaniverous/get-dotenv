@@ -56,6 +56,11 @@ export type CreateCliOptions = {
   rootOptionVisibility?: Partial<Record<keyof RootOptionsShape, boolean>>;
 };
 
+/**
+ * Create a configured get-dotenv CLI host.
+ * Applies defaults, installs root hooks, and composes plugins.
+ * Returns a runner function that accepts an argv array.
+ */
 export function createCli(
   opts: CreateCliOptions = {},
 ): (argv?: string[]) => Promise<void> {
