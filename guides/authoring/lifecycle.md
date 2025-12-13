@@ -61,14 +61,17 @@ Notes:
 
 ## Branding the host
 
-Use brand() to set CLI name/description and a versioned header:
+When using the factory, prefer the `branding` option:
 
 ```ts
-await (program as unknown as GetDotenvCli).brand({
-  importMetaUrl: import.meta.url, // resolve version from nearest package.json
-  description: 'Toolbox CLI',
-});
+await createCli({
+  alias: 'toolbox',
+  branding: 'toolbox v1.0.0', // optional help header
+  compose: (p) => p /* ...wire plugins... */,
+}).run(process.argv.slice(2));
 ```
+
+If you construct a host directly, call `program.brand({ importMetaUrl, description })` before parsing.
 
 ## Accessing context and options
 

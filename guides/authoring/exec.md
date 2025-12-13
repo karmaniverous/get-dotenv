@@ -165,9 +165,8 @@ export const runPlugin = () =>
             return;
           }
           // Prefer plugin-scoped scripts first (rare), then optionally fall back to root scripts
-          const pluginScripts =
-            (ctx?.pluginConfigs?.['run'] as { scripts?: Scripts })?.scripts ??
-            undefined;
+          const { scripts: pluginScripts } =
+            plugin.readConfig<{ scripts?: Scripts }>(cli);
           const rootScripts =
             (bag as { scripts?: Scripts }).scripts ?? undefined;
           const chosen = resolveScript(pluginScripts ?? rootScripts, input);
@@ -192,7 +191,7 @@ export const runPlugin = () =>
 Notes:
 
 - Commands typed at the CLI may be a script name or a raw command.
-- Prefer plugin‑scoped `plugins.run.scripts` for clarity; fall back to root scripts when it’s helpful.
+- Prefer plugin‑scoped `plugins.<mount-path>.scripts` for clarity; fall back to root scripts when it’s helpful.
 - Rarely, the object form `{ cmd, shell }` lets a single script request a different shell; otherwise the root shell applies.
 
 See also:

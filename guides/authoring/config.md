@@ -4,7 +4,7 @@ title: Config & Validation
 
 # Authoring Plugins: Config & Validation
 
-The host discovers config in packaged and project roots, overlays privacy (public/local) and source (packaged/project), and exposes the merged result to plugins. Plugin config lives under `plugins.<id>` in getdotenv.config.\*.
+The host discovers config in packaged and project roots, overlays privacy (public/local) and source (packaged/project), and exposes the merged result to plugins. Plugin config lives under `plugins.<mount-path>` (realized namespace path, e.g., `aws/whoami`) in getdotenv.config.\*.
 
 ## Overlay and interpolation timing
 
@@ -97,7 +97,7 @@ export const myPlugin = () => {
 
 ## Plugin-scoped scripts (rare)
 
-For CLI‑driven, arbitrary‑command plugins (like cmd/batch), you may offer `plugins.<id>.scripts`. Prefer plugin‑scoped scripts over root scripts for clarity, and optionally fall back to root scripts when it improves UX. Use the object form to allow rare per‑script shell overrides; otherwise rely on the root shell.
+For CLI‑driven, arbitrary‑command plugins (like cmd/batch), you may offer `plugins.<mount-path>.scripts`. Prefer plugin‑scoped scripts over root scripts for clarity, and optionally fall back to root scripts when it improves UX. Use the object form to allow rare per‑script shell overrides; otherwise rely on the root shell. Inside your plugin code, prefer `plugin.readConfig(cli)` to access your validated slice.
 
 ## Runtime contract (validation & defaults)
 
