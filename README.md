@@ -18,11 +18,11 @@ get‑dotenv helps you:
 
 See full guides:
 
-- Getting started: [guides/getting-started.md](./guides/getting-started.md)
-- Config and overlays (dynamic, validation, defaults): [guides/config.md](./guides/config.md)
-- Shell execution behavior, quoting, capture: [guides/shell.md](./guides/shell.md)
-- Shipped plugins: [guides/shipped/index.md](./guides/shipped/index.md)
-- Authoring plugins (host, lifecycle, exec, diagnostics): [guides/authoring/index.md](./guides/authoring/index.md)
+- [Getting started](./guides/getting-started.md)
+- [Config and overlays](./guides/config.md) (dynamic, validation, defaults):
+- [Shell execution behavior, quoting, capture](./guides/shell.md)
+- [Shipped plugins](./guides/shipped/index.md)
+- [Authoring plugins](./guides/authoring/index.md) (host, lifecycle, exec, diagnostics)
 
 ## Requirements
 
@@ -60,7 +60,7 @@ import { createCli } from '@karmaniverous/get-dotenv/cli';
 await createCli({ alias: 'toolbox' }).run(process.argv.slice(2));
 ```
 
-More first steps and tips: [guides/getting-started.md](./guides/getting-started.md)
+More first steps and tips at [Getting Started](./guides/getting-started.md)
 
 ## Configuration & overlays
 
@@ -72,7 +72,7 @@ Author config in JSON/YAML/JS/TS at your project root. The loader is always on i
 - Dynamic (JS/TS only): `dynamic`
 - Validation (JS/TS schema or required keys): `schema`, `requiredKeys`
 
-Overlays apply by kind/env/privacy/source with clear precedence. Details and examples: [guides/config.md](./guides/config.md).
+Overlays apply by kind/env/privacy/source with clear precedence. Details and examples in the [Config guide](./guides/config.md).
 
 ## Dynamic variables (JS/TS)
 
@@ -85,7 +85,7 @@ export default {
 };
 ```
 
-Learn more: [guides/config.md#formats](./guides/config.md#formats)
+Learn more in the [Config guide formats section](./guides/config.md#formats).
 
 ## CLI basics
 
@@ -93,11 +93,10 @@ The shipped CLI is plugin‑first:
 
 - Execute commands within your dotenv context using the `cmd` subcommand or the parent alias:
   - `getdotenv cmd ...` or `getdotenv -c 'echo $APP_SETTING'`
-  - Quoting, alias conflicts, expansion behavior: [guides/shipped/cmd.md](./guides/shipped/cmd.md)
+  - Quoting, alias conflicts, expansion behavior. [More info...](./guides/shipped/cmd.md)
 - Normalize shell behavior across platforms; use `--shell` (default OS shell) or `--shell-off`, and enable capture for CI:
-  - [guides/shell.md](./guides/shell.md)
-- Execute across multiple working directories with the `batch` plugin:
-  - [guides/shipped/batch.md](./guides/shipped/batch.md)
+  - [Shell guide](./guides/shell.md)
+- Execute across multiple working directories with the [`batch` plugin][guides/shipped/batch.md](./guides/shipped/batch.md)
 
 ## Diagnostics (trace, capture, redact, entropy)
 
@@ -108,29 +107,29 @@ The shipped CLI is plugin‑first:
 
 Learn more:
 
-- Shell & capture: [guides/shell.md](./guides/shell.md)
-- Authoring diagnostics (redaction & entropy): [guides/authoring/diagnostics.md](./guides/authoring/diagnostics.md)
+- [Shell & capture](./guides/shell.md)
+- [Authoring diagnostics](./guides/authoring/diagnostics.md) (redaction & entropy)
 
 ## Shipped plugins
 
-- cmd — execute a command (with parent alias): [guides/shipped/cmd.md](./guides/shipped/cmd.md)
-- batch — run a command across multiple working directories: [guides/shipped/batch.md](./guides/shipped/batch.md)
-- aws — establish a session and optionally forward to AWS CLI: [guides/shipped/aws.md](./guides/shipped/aws.md)
-- init — scaffold config files and a host‑based CLI skeleton: [guides/shipped/init.md](./guides/shipped/init.md)
+- [cmd](./guides/shipped/cmd.md) — execute a command (with parent alias)
+- [batch](./guides/shipped/batch.md) — run a command across multiple working directories
+- [aws](./guides/shipped/aws.md) — establish a session and optionally forward to AWS CLI
+- [init](./guides/shipped/init.md) — scaffold config files and a host‑based CLI skeleton
 
-Overview: [guides/shipped/index.md](./guides/shipped/index.md)
+Also see the [shipped plugins overview](./guides/shipped/index.md).
 
 ## Authoring your own CLI & plugins
 
 The host resolves dotenv context once per invocation, overlays config, validates, and then runs plugins with a typed options bag.
 
-- Lifecycle & wiring: [guides/authoring/lifecycle.md](./guides/authoring/lifecycle.md)
-- Executing shell commands from plugins: [guides/authoring/exec.md](./guides/authoring/exec.md)
-- Config & validation for plugins: [guides/authoring/config.md](./guides/authoring/config.md)
+- [Lifecycle & wiring](./guides/authoring/lifecycle.md)
+- [Executing shell commands](./guides/authoring/exec.md) from plugins
+- [Config & validation](./guides/authoring/config.md) for plugins
 
 ## API Reference
 
-Typed API docs are built with TypeDoc: https://docs.karmanivero.us/get-dotenv
+[Typed API docs](https://docs.karmanivero.us/get-dotenv) are built with TypeDoc.
 
 ## Changelog
 
