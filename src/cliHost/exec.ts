@@ -9,7 +9,10 @@ const dbg = (...args: unknown[]) => {
   }
 };
 
-// Helper to decide whether to capture child stdio.
+/**
+ * Helper to decide whether to capture child stdio.
+ * Checks GETDOTENV_STDIO env var or the provided bag capture flag.
+ */
 export const shouldCapture = (bagCapture?: boolean): boolean =>
   process.env.GETDOTENV_STDIO === 'pipe' || Boolean(bagCapture);
 

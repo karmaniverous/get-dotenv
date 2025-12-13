@@ -6,7 +6,9 @@ import type { getDotenvCliOptionsSchemaResolved } from '@/src/schema';
 
 import type { ScriptsTable } from './types';
 
-// Unify Scripts via the generic ScriptsTable<TShell> so shell types propagate.
+/**
+ * Unify Scripts via the generic ScriptsTable<TShell> so shell types propagate.
+ */
 export type Scripts = ScriptsTable;
 
 /**
@@ -28,5 +30,9 @@ export type GetDotenvCliOptions = z.output<
   scripts?: Scripts;
 };
 
+/**
+ * Base CLI options derived from the shared root option defaults.
+ * Used for type-safe initialization of CLI options bags.
+ */
 export const baseGetDotenvCliOptions: Partial<GetDotenvCliOptions> =
   baseRootOptionDefaults as unknown as Partial<GetDotenvCliOptions>;

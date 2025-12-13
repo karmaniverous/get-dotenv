@@ -1,8 +1,3 @@
-// Minimal tokenizer for shell-off execution:
-// Splits by whitespace while preserving quoted segments (single or double quotes).
-// Optionally preserve doubled quotes inside quoted segments:
-// - default: "" => " (Windows/PowerShell style literal-quote escape)
-// - preserveDoubledQuotes: true => "" stays "" (needed for Node -e payloads)
 /**
  * Options for the tokenizer used by shell-off command handling.
  *
@@ -17,6 +12,13 @@ export interface TokenizeOptions {
   preserveDoubledQuotes?: boolean;
 }
 
+/**
+ * Minimal tokenizer for shell-off execution.
+ * Splits by whitespace while preserving quoted segments (single or double quotes).
+ *
+ * @param command - The command string to tokenize.
+ * @param opts - Tokenization options (e.g. quote handling).
+ */
 export const tokenize = (command: string, opts?: TokenizeOptions): string[] => {
   const out: string[] = [];
   let cur = '';

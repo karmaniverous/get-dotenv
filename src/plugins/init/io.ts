@@ -1,16 +1,29 @@
 import fs from 'fs-extra';
 import path from 'path';
 
+/**
+ * Ensure a directory exists.
+ */
 export const ensureDir = async (p: string) => {
   await fs.ensureDir(p);
   return p;
 };
 
+/**
+ * Write text content to a file, ensuring the parent directory exists.
+ */
 export const writeFile = async (dest: string, data: string) => {
   await ensureDir(path.dirname(dest));
   await fs.writeFile(dest, data, 'utf-8');
 };
 
+/**
+ * Copy a text file with optional string substitution.
+ *
+ * @param src - Source file path.
+ * @param dest - Destination file path.
+ * @param substitutions - Map of token literals to replacement strings.
+ */
 export const copyTextFile = async (
   src: string,
   dest: string,

@@ -22,6 +22,15 @@ import { tokenize } from '@/src/util';
 
 import type { RunCmdWithContextOptions } from './types';
 
+/**
+ * Execute a command using the current CLI context.
+ * Resolves command/shell via scripts, emits traces, and handles execution.
+ *
+ * @param cli - The CLI instance.
+ * @param merged - Merged CLI options.
+ * @param command - Command string or array of args.
+ * @param _opts - Execution options (e.g. origin label).
+ */
 export async function runCmdWithContext(
   cli: GetDotenvCliPublic,
   merged: GetDotenvCliOptions,

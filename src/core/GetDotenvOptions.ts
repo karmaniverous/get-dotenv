@@ -20,8 +20,15 @@ import { baseRootOptionDefaults } from '@/src/defaults';
 import type { getDotenvOptionsSchemaResolved } from '@/src/schema';
 import { defaultsDeep, omitUndefinedRecord } from '@/src/util';
 
+/**
+ * Standard filename for the get-dotenv configuration file.
+ */
 export const getDotenvOptionsFilename = 'getdotenv.config.json';
 
+/**
+ * Compatibility shape for root options allowing string inputs for vars/paths.
+ * Used during CLI argument parsing before normalization.
+ */
 export type RootOptionsShapeCompat = Omit<
   RootOptionsShape,
   'vars' | 'paths'
@@ -45,10 +52,19 @@ export type GetDotenvDynamicFunction = (
   vars: ProcessEnv,
   env: string | undefined,
 ) => string | undefined;
+
+/**
+ * A map of dynamic variable definitions.
+ * Keys are variable names; values are either literal strings or functions.
+ */
 export type GetDotenvDynamic = Record<
   string,
   GetDotenvDynamicFunction | ReturnType<GetDotenvDynamicFunction>
 >;
+
+/**
+ * Logger interface compatible with `console` or a subset thereof.
+ */
 export type Logger =
   | Record<string, (...args: unknown[]) => void>
   | typeof console;

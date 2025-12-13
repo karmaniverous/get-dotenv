@@ -1,4 +1,7 @@
-// Base root CLI defaults (shared; kept untyped here to avoid cross-layer deps).
+/**
+ * Base root CLI defaults (shared; kept untyped here to avoid cross-layer deps).
+ * Used as the bottom layer for CLI option resolution.
+ */
 export const baseRootOptionDefaults = {
   dotenvToken: '.env',
   loadProcess: true,

@@ -43,8 +43,20 @@ const isJsOrTs = (p: string) =>
   ['.js', '.mjs', '.cjs', '.ts', '.mts', '.cts'].includes(
     extname(p).toLowerCase(),
   );
+
+/**
+ * Privacy scope of a configuration file ('public' is checked into git, 'local' is gitignored).
+ */
 export type ConfigPrivacy = 'public' | 'local';
+
+/**
+ * Origin scope of a configuration file ('packaged' inside the library, 'project' in the consumer repo).
+ */
 export type ConfigScope = 'packaged' | 'project';
+
+/**
+ * Represents a discovered configuration file.
+ */
 export interface ConfigFile {
   path: string;
   privacy: ConfigPrivacy;
@@ -174,6 +186,9 @@ export const resolveGetDotenvConfigSources = async (
   return result;
 };
 
-// Utility primarily for tests: create a file: URL string from a path
+/**
+ * Utility primarily for tests: create a file: URL string from a path.
+ * @param p - File path.
+ */
 export const toFileUrl = (p: string) =>
   pathToFileURL(path.resolve(p)).toString();
