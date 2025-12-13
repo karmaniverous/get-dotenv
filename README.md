@@ -202,43 +202,39 @@ Notes:
 
 ### Custom host (wire plugins)
 
-When you want full control over the command surface, construct a host directly and choose which plugins to install. This example omits the demo plugin by default and shows where to add your own:
+Prefer the factory’s compose hook when you want to choose which plugins to expose, while keeping the host wiring and root hooks identical to the shipped CLI.
 
 ```ts
 #!/usr/bin/env node
-import { GetDotenvCli } from '@karmaniverous/get-dotenv/cliHost';
+import { createCli } from '@karmaniverous/get-dotenv/cli';
 import {
   cmdPlugin,
   batchPlugin,
   awsPlugin,
   initPlugin,
 } from '@karmaniverous/get-dotenv/plugins';
-// import { demoPlugin } from '@karmaniverous/get-dotenv/plugins/demo'; // optional
-// import { helloPlugin } from './plugins/hello'; // your plugin
+// import { helloPlugin } from './plugins/hello'; // your plugin(s)
 
-const program = new GetDotenvCli('mycli');
-await program.brand({
-  importMetaUrl: import.meta.url,
-  description: 'mycli',
-});
-
-program
-  .attachRootOptions({ loadProcess: false })
-  .use(cmdPlugin({ asDefault: true, optionAlias: '-c, --cmd <command...>' }))
-  .use(batchPlugin())
-  .use(awsPlugin())
-  .use(initPlugin())
-  // .use(demoPlugin())        // omit demo by default
-  // .use(helloPlugin())       // add your own plugin(s)
-  .passOptions({ loadProcess: false });
-
-await program.parseAsync();
+await createCli({
+  alias: 'mycli',
+  branding: 'mycli',
+  compose(program) {
+    return program
+      .use(
+        cmdPlugin({ asDefault: true, optionAlias: '-c, --cmd <command...>' }),
+      )
+      .use(batchPlugin())
+      .use(awsPlugin())
+      .use(initPlugin());
+      // .use(helloPlugin());
+  },
+}).run(process.argv.slice(2));
 ```
 
 Notes:
 
-- Root flags come from `attachRootOptions()`. `passOptions()` merges flags (parent < current), resolves dotenv context once, validates, and persists the merged options bag for nested flows.
-- See [Authoring Plugins → Lifecycle & Wiring](./guides/authoring/lifecycle.md) for a deeper walk‑through and best practices.
+- `createCli` installs root hooks that resolve the merged options bag and dotenv context once per invocation. Shipped plugins rely on this bag via `readMergedOptions()`.
+- If you truly need to construct a host directly, mirror the shipped wiring from `createCli` (root options + root hooks) before attaching plugins. For most CLIs, the compose path above is the simplest and safest.
 
 ## Dynamic Processing
 
@@ -447,7 +443,7 @@ Diagnostics and CI capture:
 - [Authoring Plugins](./guides/authoring/index.md) - Compose CLIs with once‑per‑invoke dotenv context and plugin lifecycles.
 - [Shipped Plugins](./guides/shipped/index.md) - The get‑dotenv host ships a small set of plugins that cover needs.
 
-Note: Dynamic option descriptions and help‑time default labels are documented under [Authoring Plugins → Lifecycle](./guides/authoring/lifecycle.md) (plugin‑bound createPluginDynamicOption), [Config files and overlays](./guides/config.md) (plugin config), and [Shell execution behavior](./guides/shell.md) (dynamic defaults).
+Note: Dynamic option descriptions and help‑time default labels are documented under [Authoring Plugins → Lifecycle](./guides/authoring/lifecycle.md) (plugin‑bound `createPluginDynamicOption`), [Config files and overlays](./guides/config.md) (plugin config), and [Shell execution behavior](./guides/shell.md) (dynamic defaults).
 The guides are also included in the [hosted API docs](https://docs.karmanivero.us/get-dotenv).
 
 ---

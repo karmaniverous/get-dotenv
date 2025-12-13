@@ -80,7 +80,7 @@ import { execa } from 'execa';
 
 export const dockerPlugin = () =>
   definePlugin({
-    id: 'docker',
+    ns: 'docker',
     setup(cli) {
       cli
         .ns('docker')
@@ -147,7 +147,7 @@ function resolveScript(
 
 export const runPlugin = () =>
   definePlugin({
-    id: 'run',
+    ns: 'run',
     setup(cli) {
       cli
         .ns('run')

@@ -53,7 +53,7 @@ export type MyPluginConfig = z.infer<typeof MyPluginConfig>;
 
 export const myPlugin = () => {
   const plugin = definePlugin({
-    id: 'my',
+    ns: 'my',
     configSchema: MyPluginConfig,
     setup(cli) {
       cli.ns('my').action(() => {
@@ -82,7 +82,7 @@ export type MyPluginConfig = z.infer<typeof MyPluginConfig>;
 
 export const myPlugin = () => {
   const plugin = definePlugin({
-    id: 'my',
+    ns: 'my',
     configSchema: MyPluginConfig,
     setup(cli) {
       cli.ns('my').action(() => {

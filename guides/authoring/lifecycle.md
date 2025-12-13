@@ -13,7 +13,7 @@ import { definePlugin } from '@karmaniverous/get-dotenv/cliHost';
 
 export const helloPlugin = () =>
   definePlugin({
-    id: 'hello',
+    ns: 'hello',
     setup(cli) {
       cli
         .ns('hello')
@@ -30,7 +30,7 @@ export const helloPlugin = () =>
 
 ```ts
 #!/usr/bin/env node
-import { GetDotenvCli } from '@karmaniverous/get-dotenv/cliHost';
+import { createCli } from '@karmaniverous/get-dotenv/cli';
 import {
   cmdPlugin,
   batchPlugin,
@@ -39,28 +39,25 @@ import {
 } from '@karmaniverous/get-dotenv/plugins';
 import { helloPlugin } from './plugins/hello';
 
-const program = new GetDotenvCli('toolbox');
-await program.brand({
-  importMetaUrl: import.meta.url,
-  description: 'Toolbox CLI',
-});
-
-program
-  .attachRootOptions({ loadProcess: false })
-  .use(cmdPlugin({ asDefault: true, optionAlias: '-c, --cmd <command...>' }))
-  .use(batchPlugin())
-  .use(awsPlugin())
-  .use(initPlugin())
-  .use(helloPlugin())
-  .passOptions({ loadProcess: false });
-
-await program.parseAsync();
+await createCli({
+  alias: 'toolbox',
+  branding: 'Toolbox CLI',
+  compose: (p) =>
+    p
+      .use(
+        cmdPlugin({ asDefault: true, optionAlias: '-c, --cmd <command...>' }),
+      )
+      .use(batchPlugin())
+      .use(awsPlugin())
+      .use(initPlugin())
+      .use(helloPlugin()),
+}).run(process.argv.slice(2));
 ```
 
 Notes:
 
-- attachRootOptions() installs base flags (env/paths/shell/trace/etc.).
-- passOptions() merges flags (parent < current), resolves dotenv context once, validates against config, and persists the merged options bag for nested flows.
+- The `compose` hook runs before parsing and is the recommended way to assemble your CLI surface. The factory installs root options and hooks so shipped plugins can read the merged options bag with `readMergedOptions()`.
+- If you construct a host directly, mirror the shipped wiring (root options + root hooks) before attaching shipped plugins. For most use cases, `createCli` is simpler and safer.
 
 ## Branding the host
 
@@ -112,7 +109,7 @@ type HelloConfig = { loud?: boolean };
 
 export const helloPlugin = () => {
   const plugin = definePlugin({
-    id: 'hello',
+    ns: 'hello',
     setup(cli) {
       cli
         .ns('hello')
