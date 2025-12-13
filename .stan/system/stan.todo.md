@@ -2,6 +2,8 @@
 
 ## Next up (near‑term, actionable)
 
+- Decompose README.md per plan (trim to concise overview and move long sections into Guides; keep README under 250 lines). Await approval before applying changes.
+
 ## Completed (recent)
 
 - Docs: ESM/CJS interop — replace outdated CJS require with dynamic import
@@ -204,3 +206,13 @@
   - Shell guide: fix broken link to “Executing Shell Commands” (now `./authoring/exec.md`).
   - Authoring exec guide: fix example to capture the plugin instance before calling `plugin.readConfig(cli)`.
   - Shipped aws guide: replace deprecated `id` with `ns` in the whoami child plugin example.
+
+- Docs: full audit pass — propose README decomposition (no content changes applied)
+  - Long‑file gate: README.md currently exceeds the 300‑LOC threshold. Per policy, propose a split before editing.
+  - Plan: keep README focused (badges, short positioning, Requirements, Quick Start, Getting Started pointers, API link, and “How to embed CLI”). Move deeper material into Guides:
+    - Dynamic Processing → reference and augment in Guides (add anchor links where needed).
+    - Shell behavior and quoting → authoritative in guides/shell.md (README links only).
+    - Batch command details → guides/shipped/batch.md (README links only).
+    - Authoring/plugins content → guides/authoring/*.md and guides/shipped/*.md (README links only).
+  - Target size: < 250 lines. Cross‑link to specific guide anchors where appropriate. Proceed after approval.
+
