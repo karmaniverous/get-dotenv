@@ -54,6 +54,7 @@ export const parseExportCredentialsJson = (
 /**
  * Parse AWS credentials from environment-export output (shell-agnostic).
  * Supports POSIX `export KEY=VAL` and PowerShell `$Env:KEY=VAL`.
+ * Also supports AWS CLI `windows-cmd` (`set KEY=VAL`) and `env-no-export` (`KEY=VAL`).
  *
  * @param txt - Raw stdout text from the AWS CLI.
  * @returns Parsed credentials, or `undefined` when the input is not recognized.
@@ -68,12 +69,16 @@ export const parseExportCredentialsEnv = (
   for (const raw of lines) {
     const line = raw.trim();
     if (!line) continue;
-    // POSIX: export AWS_ACCESS_KEY_ID=..., export AWS_SECRET_ACCESS_KEY=..., export AWS_SESSION_TOKEN=...
-    let m = /^export\s+([A-Z0-9_]+)\s*=\s*(.+)$/.exec(line);
-    if (!m) {
-      // PowerShell: $Env:AWS_ACCESS_KEY_ID="...", etc.
-      m = /^\$Env:([A-Z0-9_]+)\s*=\s*(.+)$/.exec(line);
-    }
+    // POSIX: export AWS_ACCESS_KEY_ID=..., ...
+    let m: RegExpExecArray | null = /^export\s+([A-Z0-9_]+)\s*=\s*(.+)$/.exec(
+      line,
+    );
+    // PowerShell: $Env:AWS_ACCESS_KEY_ID="...", etc.
+    if (!m) m = /^\$Env:([A-Z0-9_]+)\s*=\s*(.+)$/i.exec(line);
+    // Windows cmd: set AWS_ACCESS_KEY_ID=..., etc.
+    if (!m) m = /^(?:set)\s+([A-Z0-9_]+)\s*=\s*(.+)$/i.exec(line);
+    // env-no-export: AWS_ACCESS_KEY_ID=..., etc.
+    if (!m) m = /^([A-Z0-9_]+)\s*=\s*(.+)$/.exec(line);
     if (!m) continue;
     const k = m[1];
     const valRaw = m[2];
@@ -121,35 +126,43 @@ const exportCredentials = async (
   profile: string,
   timeoutMs = DEFAULT_TIMEOUT_MS,
 ): Promise<AwsCredentials | undefined> => {
-  // Try JSON format first (AWS CLI v2)
-  const rJson = await runCommandResult(
-    [
+  const tryExport = async (
+    format?: string,
+  ): Promise<AwsCredentials | undefined> => {
+    const argv = [
       'aws',
       'configure',
       'export-credentials',
       '--profile',
       profile,
-      '--format',
-      'json',
-    ],
-    false,
-    { env: process.env, timeoutMs },
-  );
-  if (rJson.exitCode === 0) {
-    const creds = parseExportCredentialsJson(rJson.stdout);
+      ...(format ? (['--format', format] as const) : []),
+    ];
+    const r = await runCommandResult(argv, false, {
+      env: process.env,
+      timeoutMs,
+    });
+    if (r.exitCode !== 0) return undefined;
+    const out = trim(r.stdout);
+    if (!out) return undefined;
+    // Some formats produce JSON ("process"), some produce shell-ish env lines.
+    return parseExportCredentialsJson(out) ?? parseExportCredentialsEnv(out);
+  };
+
+  // Prefer JSON-like formats first; then fall back to shell-specific env outputs.
+  // Note: some AWS CLI versions do not support "--format json"; tolerate and try others.
+  const formats: string[] = [
+    'json',
+    'process',
+    ...(process.platform === 'win32'
+      ? ['powershell', 'windows-cmd', 'env', 'env-no-export']
+      : ['env', 'env-no-export']),
+  ];
+  for (const f of formats) {
+    const creds = await tryExport(f);
     if (creds) return creds;
   }
-  // Fallback: env lines
-  const rEnv = await runCommandResult(
-    ['aws', 'configure', 'export-credentials', '--profile', profile],
-    false,
-    { env: process.env, timeoutMs },
-  );
-  if (rEnv.exitCode === 0) {
-    const creds = parseExportCredentialsEnv(rEnv.stdout);
-    if (creds) return creds;
-  }
-  return undefined;
+  // Final fallback: no --format (AWS CLI default output)
+  return tryExport(undefined);
 };
 
 /**
@@ -203,7 +216,11 @@ export const resolveAwsContext = async ({
     // On failure, detect SSO and optionally login then retry
     if (!credentials) {
       const ssoSession = await getAwsConfigure('sso_session', profile);
-      const looksSSO = typeof ssoSession === 'string' && ssoSession.length > 0;
+      // Legacy SSO profiles use sso_start_url/sso_region rather than sso_session.
+      const ssoStartUrl = await getAwsConfigure('sso_start_url', profile);
+      const looksSSO =
+        (typeof ssoSession === 'string' && ssoSession.length > 0) ||
+        (typeof ssoStartUrl === 'string' && ssoStartUrl.length > 0);
       if (looksSSO && cfg.loginOnDemand) {
         // Best-effort login, then retry export once.
         await runCommandResult(

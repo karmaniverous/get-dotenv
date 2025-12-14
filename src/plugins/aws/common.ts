@@ -18,6 +18,18 @@ export function applyAwsContext(
 ): void {
   const { profile, region, credentials } = out;
   if (setProcessEnv) {
+    // Ensure the AWS SDK can load profile-based credentials (including SSO)
+    // from ~/.aws/config. This is required on many setups where the SDK does
+    // not read the config file unless explicitly enabled.
+    if (profile) {
+      process.env.AWS_PROFILE = profile;
+      if (!process.env.AWS_DEFAULT_PROFILE) {
+        process.env.AWS_DEFAULT_PROFILE = profile;
+      }
+      if (!process.env.AWS_SDK_LOAD_CONFIG) {
+        process.env.AWS_SDK_LOAD_CONFIG = '1';
+      }
+    }
     if (region) {
       process.env.AWS_REGION = region;
       if (!process.env.AWS_DEFAULT_REGION) {

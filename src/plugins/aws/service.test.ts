@@ -76,6 +76,26 @@ $Env:AWS_SESSION_TOKEN='TOKEN'`;
       sessionToken: 'TOKEN',
     });
   });
+
+  it('parseExportCredentialsEnv supports env-no-export and windows-cmd', () => {
+    const envNoExport = `AWS_ACCESS_KEY_ID=AKIA
+AWS_SECRET_ACCESS_KEY=SECRET
+AWS_SESSION_TOKEN=TOKEN`;
+    expect(parseExportCredentialsEnv(envNoExport)).toEqual({
+      accessKeyId: 'AKIA',
+      secretAccessKey: 'SECRET',
+      sessionToken: 'TOKEN',
+    });
+
+    const winCmd = `set AWS_ACCESS_KEY_ID=AKIA
+set AWS_SECRET_ACCESS_KEY=SECRET
+set AWS_SESSION_TOKEN=TOKEN`;
+    expect(parseExportCredentialsEnv(winCmd)).toEqual({
+      accessKeyId: 'AKIA',
+      secretAccessKey: 'SECRET',
+      sessionToken: 'TOKEN',
+    });
+  });
 });
 
 describe('plugins/aws/service.resolveAwsContext', () => {
@@ -106,11 +126,18 @@ describe('plugins/aws/service.resolveAwsContext', () => {
       SecretAccessKey: 'S',
       SessionToken: 'T',
     });
-    // First call: export with --format json -> success
-    runCommandResultMock.mockResolvedValueOnce({
-      exitCode: 0,
-      stdout: json,
-      stderr: '',
+    runCommandResultMock.mockImplementation(async (cmd) => {
+      const args = Array.isArray(cmd) ? cmd : cmd.split(/\s+/);
+      const isExport =
+        args[0] === 'aws' &&
+        args[1] === 'configure' &&
+        args[2] === 'export-credentials';
+      const fmtIdx = args.indexOf('--format');
+      const fmt = fmtIdx >= 0 ? args[fmtIdx + 1] : undefined;
+      if (isExport && fmt === 'json') {
+        return { exitCode: 0, stdout: json, stderr: '' };
+      }
+      return { exitCode: 1, stdout: '', stderr: '' };
     });
     const out = await resolveAwsContext({
       dotenv: { AWS_LOCAL_PROFILE: 'dev' },
@@ -124,15 +151,23 @@ describe('plugins/aws/service.resolveAwsContext', () => {
   });
 
   it('export-credentials fallback to env-lines', async () => {
-    // First call (json) fails, second (env) succeeds
-    runCommandResultMock
-      .mockResolvedValueOnce({ exitCode: 1, stdout: '', stderr: 'no json' })
-      .mockResolvedValueOnce({
+    runCommandResultMock.mockImplementation(async (cmd) => {
+      const args = Array.isArray(cmd) ? cmd : cmd.split(/\s+/);
+      const isExport =
+        args[0] === 'aws' &&
+        args[1] === 'configure' &&
+        args[2] === 'export-credentials';
+      const fmtIdx = args.indexOf('--format');
+      const fmt = fmtIdx >= 0 ? args[fmtIdx + 1] : undefined;
+      if (!isExport) return { exitCode: 1, stdout: '', stderr: '' };
+      if (fmt === 'json') return { exitCode: 1, stdout: '', stderr: 'no json' };
+      return {
         exitCode: 0,
         stdout:
           'export AWS_ACCESS_KEY_ID=AKIA\nexport AWS_SECRET_ACCESS_KEY=SECRET',
         stderr: '',
-      });
+      };
+    });
     const out = await resolveAwsContext({
       dotenv: { AWS_PROFILE: 'dev' },
       cfg: baseCfg,
@@ -144,18 +179,34 @@ describe('plugins/aws/service.resolveAwsContext', () => {
   });
 
   it('static fallback when export fails', async () => {
-    // export json/env both fail
-    runCommandResultMock
-      .mockResolvedValueOnce({ exitCode: 1, stdout: '', stderr: '' }) // export json
-      .mockResolvedValueOnce({ exitCode: 1, stdout: '', stderr: '' }) // export env
-      // sso_session get -> empty (not SSO)
-      .mockResolvedValueOnce({ exitCode: 0, stdout: '', stderr: '' })
-      // aws_access_key_id
-      .mockResolvedValueOnce({ exitCode: 0, stdout: 'AKIA', stderr: '' })
-      // aws_secret_access_key
-      .mockResolvedValueOnce({ exitCode: 0, stdout: 'SECRET', stderr: '' })
-      // aws_session_token (optional, missing)
-      .mockResolvedValueOnce({ exitCode: 0, stdout: '', stderr: '' });
+    runCommandResultMock.mockImplementation(async (cmd) => {
+      const args = Array.isArray(cmd) ? cmd : cmd.split(/\s+/);
+      const isExport =
+        args[0] === 'aws' &&
+        args[1] === 'configure' &&
+        args[2] === 'export-credentials';
+      if (isExport) return { exitCode: 1, stdout: '', stderr: '' };
+      const isGet =
+        args[0] === 'aws' &&
+        args[1] === 'configure' &&
+        args[2] === 'get' &&
+        typeof args[3] === 'string';
+      if (isGet) {
+        const key = args[3];
+        if (key === 'sso_session')
+          return { exitCode: 0, stdout: '', stderr: '' };
+        if (key === 'sso_start_url')
+          return { exitCode: 0, stdout: '', stderr: '' };
+        if (key === 'aws_access_key_id')
+          return { exitCode: 0, stdout: 'AKIA', stderr: '' };
+        if (key === 'aws_secret_access_key')
+          return { exitCode: 0, stdout: 'SECRET', stderr: '' };
+        if (key === 'aws_session_token')
+          return { exitCode: 0, stdout: '', stderr: '' };
+        if (key === 'region') return { exitCode: 0, stdout: '', stderr: '' };
+      }
+      return { exitCode: 1, stdout: '', stderr: '' };
+    });
     const out = await resolveAwsContext({
       dotenv: { AWS_LOCAL_PROFILE: 'dev' },
       cfg: baseCfg,
@@ -167,20 +218,90 @@ describe('plugins/aws/service.resolveAwsContext', () => {
   });
 
   it('SSO loginOnDemand retry when export fails and sso_session present', async () => {
-    // export json/env both fail initially
-    runCommandResultMock
-      .mockResolvedValueOnce({ exitCode: 1, stdout: '', stderr: '' }) // export json
-      .mockResolvedValueOnce({ exitCode: 1, stdout: '', stderr: '' }) // export env
-      // sso_session get -> present
-      .mockResolvedValueOnce({ exitCode: 0, stdout: 'mysession', stderr: '' })
-      // aws sso login
-      .mockResolvedValueOnce({ exitCode: 0, stdout: '', stderr: '' })
-      // retry export json -> success
-      .mockResolvedValueOnce({
-        exitCode: 0,
-        stdout: JSON.stringify({ AccessKeyId: 'A', SecretAccessKey: 'S' }),
-        stderr: '',
-      });
+    let loggedIn = false;
+    runCommandResultMock.mockImplementation(async (cmd) => {
+      const args = Array.isArray(cmd) ? cmd : cmd.split(/\s+/);
+      const isExport =
+        args[0] === 'aws' &&
+        args[1] === 'configure' &&
+        args[2] === 'export-credentials';
+      if (isExport) {
+        if (!loggedIn) return { exitCode: 1, stdout: '', stderr: '' };
+        return {
+          exitCode: 0,
+          stdout: JSON.stringify({ AccessKeyId: 'A', SecretAccessKey: 'S' }),
+          stderr: '',
+        };
+      }
+      const isGet =
+        args[0] === 'aws' &&
+        args[1] === 'configure' &&
+        args[2] === 'get' &&
+        typeof args[3] === 'string';
+      if (isGet) {
+        const key = args[3];
+        if (key === 'sso_session')
+          return { exitCode: 0, stdout: 'mysession', stderr: '' };
+        if (key === 'sso_start_url')
+          return { exitCode: 0, stdout: '', stderr: '' };
+        return { exitCode: 0, stdout: '', stderr: '' };
+      }
+      const isLogin =
+        args[0] === 'aws' && args[1] === 'sso' && args[2] === 'login';
+      if (isLogin) {
+        loggedIn = true;
+        return { exitCode: 0, stdout: '', stderr: '' };
+      }
+      return { exitCode: 1, stdout: '', stderr: '' };
+    });
+    const out = await resolveAwsContext({
+      dotenv: { AWS_PROFILE: 'dev' },
+      cfg: { ...baseCfg, loginOnDemand: true },
+    });
+    expect(out.credentials).toEqual({ accessKeyId: 'A', secretAccessKey: 'S' });
+  });
+
+  it('SSO loginOnDemand retry when export fails and legacy sso_start_url present', async () => {
+    let loggedIn = false;
+    runCommandResultMock.mockImplementation(async (cmd) => {
+      const args = Array.isArray(cmd) ? cmd : cmd.split(/\s+/);
+      const isExport =
+        args[0] === 'aws' &&
+        args[1] === 'configure' &&
+        args[2] === 'export-credentials';
+      if (isExport) {
+        if (!loggedIn) return { exitCode: 1, stdout: '', stderr: '' };
+        return {
+          exitCode: 0,
+          stdout: JSON.stringify({ AccessKeyId: 'A', SecretAccessKey: 'S' }),
+          stderr: '',
+        };
+      }
+      const isGet =
+        args[0] === 'aws' &&
+        args[1] === 'configure' &&
+        args[2] === 'get' &&
+        typeof args[3] === 'string';
+      if (isGet) {
+        const key = args[3];
+        if (key === 'sso_session')
+          return { exitCode: 0, stdout: '', stderr: '' };
+        if (key === 'sso_start_url')
+          return {
+            exitCode: 0,
+            stdout: 'https://example.awsapps.com/start',
+            stderr: '',
+          };
+        return { exitCode: 0, stdout: '', stderr: '' };
+      }
+      const isLogin =
+        args[0] === 'aws' && args[1] === 'sso' && args[2] === 'login';
+      if (isLogin) {
+        loggedIn = true;
+        return { exitCode: 0, stdout: '', stderr: '' };
+      }
+      return { exitCode: 1, stdout: '', stderr: '' };
+    });
     const out = await resolveAwsContext({
       dotenv: { AWS_PROFILE: 'dev' },
       cfg: { ...baseCfg, loginOnDemand: true },

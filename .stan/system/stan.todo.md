@@ -241,3 +241,5 @@
 - AWS: apply aws flags to nested subcommands (region/profile).
 
 - Lint: fix aws subcommand flags test async mocks.
+
+- Fix: aws whoami SSO creds on older AWS CLI (support non-json export-credentials formats; detect legacy sso_start_url for login-on-demand; set AWS_PROFILE/AWS_SDK_LOAD_CONFIG for AWS SDK v3)
