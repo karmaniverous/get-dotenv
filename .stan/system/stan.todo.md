@@ -239,3 +239,5 @@
 - Lint: fix whoami/really test mocks for ESLint.
 
 - AWS: apply aws flags to nested subcommands (region/profile).
+
+- Lint: fix aws subcommand flags test async mocks.

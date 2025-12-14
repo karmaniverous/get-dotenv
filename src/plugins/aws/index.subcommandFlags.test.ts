@@ -1,17 +1,18 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const resolveAwsContextMock = vi.fn(
-  async ({ cfg }: { cfg: { profile?: string; region?: string } }) => ({
-    profile: cfg.profile,
-    region: cfg.region,
-  }),
+  ({ cfg }: { cfg: { profile?: string; region?: string } }) =>
+    Promise.resolve({
+      profile: cfg.profile,
+      region: cfg.region,
+    }),
 );
 vi.mock('./service', () => ({
   resolveAwsContext: (arg: { cfg: { profile?: string; region?: string } }) =>
     resolveAwsContextMock(arg),
 }));
 
-const sendMock = vi.fn(async () => ({}));
+const sendMock = vi.fn(() => Promise.resolve({}));
 vi.mock('@aws-sdk/client-sts', () => ({
   STSClient: class {
     constructor() {
