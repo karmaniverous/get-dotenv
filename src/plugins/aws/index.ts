@@ -18,6 +18,34 @@ import { applyAwsContext } from './common';
 import { resolveAwsContext } from './service';
 import { type AwsPluginConfig, AwsPluginConfigSchema } from './types';
 
+const isRecord = (v: unknown): v is Record<string, unknown> =>
+  v !== null && typeof v === 'object' && !Array.isArray(v);
+
+const overlayFromAwsCliOpts = (opts: unknown): Partial<AwsPluginConfig> => {
+  const o = isRecord(opts) ? opts : {};
+  const overlay: Partial<AwsPluginConfig> = {};
+
+  // Map boolean toggles (respect explicit --no-*)
+  if (Object.prototype.hasOwnProperty.call(o, 'loginOnDemand'))
+    overlay.loginOnDemand = Boolean(o.loginOnDemand);
+
+  // Strings/enums
+  if (typeof o.profile === 'string') overlay.profile = o.profile;
+  if (typeof o.region === 'string') overlay.region = o.region;
+  if (typeof o.defaultRegion === 'string')
+    overlay.defaultRegion = o.defaultRegion;
+  if (o.strategy === 'cli-export' || o.strategy === 'none')
+    overlay.strategy = o.strategy;
+
+  // Advanced key overrides
+  if (typeof o.profileKey === 'string') overlay.profileKey = o.profileKey;
+  if (typeof o.profileFallbackKey === 'string')
+    overlay.profileFallbackKey = o.profileFallbackKey;
+  if (typeof o.regionKey === 'string') overlay.regionKey = o.regionKey;
+
+  return overlay;
+};
+
 /**
  * AWS plugin: establishes an AWS session (credentials/region) based on dotenv configuration.
  * Supports SSO login-on-demand and credential exporting.
@@ -113,6 +141,28 @@ export const awsPlugin = () => {
         )
         // Accept any extra operands so Commander does not error when tokens appear after "--".
         .argument('[args...]')
+        // Ensure aws flags (e.g., --profile/--region/--default-region) apply to nested subcommands.
+        // Without this, `aws --profile X whoami` would skip the parent action and leave the child
+        // without region/credentials setup.
+        .hook('preSubcommand', async (thisCommand) => {
+          // Avoid side effects for help rendering.
+          if (process.argv.includes('-h') || process.argv.includes('--help'))
+            return;
+
+          const ctx = cli.getCtx();
+          const cfgBase = plugin.readConfig(cli);
+          const cfg: AwsPluginConfig = {
+            ...cfgBase,
+            ...overlayFromAwsCliOpts(thisCommand.opts()),
+          };
+
+          const out = await resolveAwsContext({
+            dotenv: ctx.dotenv,
+            cfg,
+          });
+
+          applyAwsContext(out, ctx, true);
+        })
         .action(async (args, opts, thisCommand) => {
           const pluginInst = plugin;
           // Access merged root CLI options (installed by passOptions())
@@ -125,29 +175,9 @@ export const awsPlugin = () => {
           // Build overlay cfg from subcommand flags layered over discovered config.
           const ctx = cli.getCtx();
           const cfgBase = pluginInst.readConfig(cli);
-          type AwsCliFlags = Partial<AwsPluginConfig>;
-          const o = opts as AwsCliFlags;
-          const overlay: Partial<AwsPluginConfig> = {};
-          // Map boolean toggles (respect explicit --no-*)
-          if (Object.prototype.hasOwnProperty.call(o, 'loginOnDemand'))
-            overlay.loginOnDemand = Boolean(o.loginOnDemand);
-          // Strings/enums
-          if (typeof o.profile === 'string') overlay.profile = o.profile;
-          if (typeof o.region === 'string') overlay.region = o.region;
-          if (typeof o.defaultRegion === 'string')
-            overlay.defaultRegion = o.defaultRegion;
-          if (typeof o.strategy === 'string')
-            overlay.strategy = o.strategy as AwsPluginConfig['strategy'];
-          // Advanced key overrides
-          if (typeof o.profileKey === 'string')
-            overlay.profileKey = o.profileKey;
-          if (typeof o.profileFallbackKey === 'string')
-            overlay.profileFallbackKey = o.profileFallbackKey;
-          if (typeof o.regionKey === 'string') overlay.regionKey = o.regionKey;
-
           const cfg: AwsPluginConfig = {
             ...cfgBase,
-            ...overlay,
+            ...overlayFromAwsCliOpts(opts),
           };
 
           // Resolve current context with overrides

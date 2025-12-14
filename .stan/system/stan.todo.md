@@ -237,3 +237,5 @@
 - Plugins: aws/whoami — refactor into a “bucket of subcommands” example (`index.ts` + `defaultAction.ts` + `really.ts`).
 
 - Lint: fix whoami/really test mocks for ESLint.
+
+- AWS: apply aws flags to nested subcommands (region/profile).
