@@ -231,4 +231,7 @@
   - Removed placeholder “skip” tests with conditional expects and refactored schema tests to assert unconditionally on collected issues.
 
 - Docs: authoring — document dotenv-style expansion for plugin flag values (ctx-aware) with links to shipped cmd alias expansion and root argParser usage.
-- Docs/templates/API: align mount semantics; export shouldCapture; deprecate z re-export; fix createCli examples.- Docs: batch guide — focus on options, usage, and host integration (no plugin authoring).
+- Docs/templates/API: align mount semantics; export shouldCapture; deprecate z re-export; fix createCli examples.
+- Docs: batch guide — focus on options, usage, and host integration (no plugin authoring).
+
+- Plugins: aws/whoami — refactor into a “bucket of subcommands” example (`index.ts` + `defaultAction.ts` + `really.ts`).

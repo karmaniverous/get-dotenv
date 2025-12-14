@@ -10,10 +10,10 @@ stan-core:
   imports:
     extra-typings:
       - node_modules/@commander-js/extra-typings/index.d.ts
-    smoz:
-      # - ../smoz/.stan/system/stan.requirements.md
-      # - ../smoz/.stan/system/stan.todo.md
-      - ../smoz/.stan/interop/get-dotenv/**
+    # smoz:
+    # - ../smoz/.stan/system/stan.requirements.md
+    # - ../smoz/.stan/system/stan.todo.md
+    # - ../smoz/.stan/interop/get-dotenv/**
 stan-cli:
   scripts:
     typecheck: npm run typecheck
@@ -35,7 +35,7 @@ stan-cli:
     verify-tarball: npm run verify:tarball
   cliDefaults:
     run:
-      facets: false
+      facets: true
       plan: false
       sequential: true
   patchOpenCommand: code -g {file}

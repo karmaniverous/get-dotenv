@@ -31,7 +31,9 @@
       "src/plugins/cmd/index.ts",
       "src/plugins/demo/index.ts",
       "src/plugins/init/index.ts",
-      "src/plugins/aws/whoami.ts"
+      "src/plugins/aws/whoami/index.ts",
+      "src/plugins/aws/whoami/defaultAction.ts",
+      "src/plugins/aws/whoami/really.ts"
     ]
   },
   "templates": {
