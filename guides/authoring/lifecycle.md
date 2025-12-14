@@ -115,6 +115,8 @@ cli.ns('print').action((_args, _opts, thisCommand) => {
 });
 ```
 
+If your plugin accepts option values that may include environment references (for example, `--table-name '${TABLE_NAME}'`), expand them yourself at action time using the resolved context (so you are not dependent on `loadProcess`). See [Executing Shell Commands](./exec.md#expanding-environment-references-in-plugin-flag-values) for recommended patterns and cross-platform quoting guidance.
+
 See also:
 
 - Config & Validation

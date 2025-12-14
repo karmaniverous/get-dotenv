@@ -35,7 +35,7 @@ stan-cli:
     verify-tarball: npm run verify:tarball
   cliDefaults:
     run:
-      facets: true
+      facets: false
       plan: false
       sequential: true
   patchOpenCommand: code -g {file}

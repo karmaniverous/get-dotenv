@@ -21,6 +21,88 @@ This guide explains expansion timing, shell selection, child environment composi
   - The parent‑level alias (`--cmd 'node -e "…"'`) expands the alias value once before execution.
   - The `cmd` subcommand’s positional tokens are not pre‑expanded; the shell (or lack of shell) governs expansion.
 
+### Expanding environment references in plugin flag values
+
+Downstream users of third‑party plugins often want to reference values from the current dotenv context inside command-line option values, for example: `getdotenv aws dynamodb migrate --table-name '${TABLE_NAME}'`.
+
+Important: the host does not automatically dotenv-expand arbitrary plugin flag values. This differs from config-derived strings (which the host interpolates before your plugin runs) and from selected root flags which explicitly install an `argParser` (see [`src/cliHost/attachRootOptions.ts`](../../src/cliHost/attachRootOptions.ts)).
+
+If you want this UX, you must expand the option value yourself, and you should document the quoting rules so users don’t accidentally expand in the outer shell before your plugin sees the raw `$VAR`/`${VAR}` expression.
+
+Recommended strategies:
+
+- Action-time expansion (ctx-aware; recommended): expand using `{ ...process.env, ...ctx.dotenv }` so the resolved dotenv context takes precedence, and so the behavior does not depend on `loadProcess` being enabled.
+- Parse-time expansion (process-only; niche): use `.argParser(dotenvExpandFromProcessEnv)` only when you explicitly want to expand against the parent process environment. This is the pattern used by the shipped cmd plugin alias expansion in [`src/plugins/cmd/parentInvoker.ts`](../../src/plugins/cmd/parentInvoker.ts), and it’s appropriate for “expand with whatever the current process already has” semantics.
+
+#### Action-time expansion (ctx-aware; recommended)
+
+This is the most reliable approach for plugins, because it expands against the resolved get-dotenv context even when `loadProcess` is OFF (which is common for safety).
+
+```ts
+import { dotenvExpand } from '@karmaniverous/get-dotenv';
+import { definePlugin } from '@karmaniverous/get-dotenv/cliHost';
+
+export const dynamodbMigratePlugin = () =>
+  definePlugin({
+    ns: 'migrate',
+    setup(cli) {
+      cli
+        .ns('migrate')
+        .requiredOption(
+          '--table-name <string>',
+          'DynamoDB table name (dotenv-expanded against ctx.dotenv)',
+        )
+        .action((_args, opts) => {
+          const ctx = cli.getCtx();
+          const raw = String((opts as { tableName?: unknown }).tableName ?? '');
+
+          const expanded =
+            dotenvExpand(raw, { ...process.env, ...ctx.dotenv }) ?? raw;
+
+          if (!expanded) {
+            throw new Error(
+              'Missing --table-name (or it expanded to an empty string). ' +
+                "If you intended to reference an env var, pass it as '${NAME}' and ensure NAME exists in the resolved dotenv context.",
+            );
+          }
+
+          // Use expanded value (do not re-expand config-derived strings here)
+          console.log(`migrating table=${expanded}`);
+        });
+    },
+  });
+```
+
+Notes:
+
+- `dotenvExpand` is implemented in [`src/dotenv/dotenvExpand.ts`](../../src/dotenv/dotenvExpand.ts).
+- `dotenvExpand('$MISSING')` returns `undefined` (isolated missing var), while embedded missing vars usually collapse to `''` inside a larger string. Decide whether your plugin should treat “missing” as an error (recommended for required flags) or as a best-effort expansion.
+- If you want a default/fallback value, document the supported syntax to your users: `${NAME:default}` (or `$NAME:default`).
+
+#### CLI usage examples and quoting (portable)
+
+Preferred (portable across shells): quote the expression so the _outer shell_ does not expand it before your plugin sees it.
+
+```bash
+# Expand from the resolved get-dotenv context inside the plugin
+getdotenv aws dynamodb migrate --table-name '${TABLE_NAME}'
+
+# Provide a fallback/default at the call site
+getdotenv aws dynamodb migrate --table-name '${TABLE_NAME:my-table}'
+```
+
+Alternative (outer shell expansion): let the outer shell expand first, and pass the fully expanded value to the plugin. This is less portable, but sometimes convenient.
+
+```bash
+# POSIX shells (bash/zsh): $TABLE_NAME is expanded by the shell
+getdotenv aws dynamodb migrate --table-name "$TABLE_NAME"
+
+# PowerShell: use $env:TABLE_NAME for environment variables
+getdotenv aws dynamodb migrate --table-name "$env:TABLE_NAME"
+```
+
+If you choose to rely on outer shell expansion, document the shell-specific syntax and quoting differences explicitly; otherwise, prefer the portable dotenv-style `${NAME}` syntax and expand inside the plugin action.
+
 ## Shell selection and precedence
 
 Plugins should rely on the root shell setting unless a command itself requests a different shell:

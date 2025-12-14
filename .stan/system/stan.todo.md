@@ -224,4 +224,6 @@
 
 - Lint: fix Vitest rules in tests (no-standalone-expect / no-conditional-expect)
   - Rewrote dynamic test selection to explicit if/else with it or it.skip in E2E tests.
-  - Removed placeholder “skip” tests with conditional expects and refactored schema tests to assert unconditionally on collected issues.
+  - Removed placeholder “skip” tests with conditional expects and refactored schema tests to assert unconditionally on collected issues.
+
+- Docs: authoring — document dotenv-style expansion for plugin flag values (ctx-aware) with links to shipped cmd alias expansion and root argParser usage.
