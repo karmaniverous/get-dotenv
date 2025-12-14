@@ -19,6 +19,7 @@ export {
   type PluginWithInstanceHelpers,
   readMergedOptions,
   type ScriptsTable,
+  shouldCapture,
 } from './cliHost';
 export {
   defineDynamic,
@@ -35,9 +36,19 @@ export {
 } from './core';
 export { baseRootOptionDefaults } from './defaults';
 export {
+  type EntropyOptions,
+  maybeWarnEntropy,
+  redactDisplay,
+  redactObject,
+  type RedactOptions,
+  traceChildEnv,
+  type TraceChildEnvOptions,
+} from './diagnostics';
+export {
   dotenvExpand,
   dotenvExpandAll,
   dotenvExpandFromProcessEnv,
 } from './dotenv';
 export { interpolateDeep } from './util';
+/** @deprecated Import \{ z \} from 'zod' directly. Will be removed in v7. */
 export { z } from 'zod';

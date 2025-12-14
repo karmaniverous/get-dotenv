@@ -91,7 +91,7 @@ import type { BatchConfig } from '@karmaniverous/get-dotenv/plugins/batch';
 
 export const myBatchAwarePlugin = () => {
   const plugin = definePlugin({
-    id: 'my-batch',
+    ns: 'my-batch',
     setup(cli) {
       const cfg = plugin.readConfig<BatchConfig>(cli);
       // cfg.scripts / cfg.shell / cfg.rootPath / cfg.globs / cfg.pkgCwd are strongly typed here

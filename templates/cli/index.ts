@@ -1,14 +1,13 @@
 #!/usr/bin/env node
 
 import { createCli } from '@karmaniverous/get-dotenv/cli';
-
 import {
   awsPlugin,
   awsWhoamiPlugin,
   batchPlugin,
   cmdPlugin,
   initPlugin,
-} from '@/src/plugins';
+} from '@karmaniverous/get-dotenv/plugins';
 
 import { helloPlugin } from './plugins/hello';
 

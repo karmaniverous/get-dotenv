@@ -29,6 +29,7 @@ Load environment variables from a configurable cascade of dotenv files and/or ex
 
 - The plugin-first shipped CLI is the only CLI surface. It may evolve under semantic versioning; breaking changes require a major bump.
 - Note: The Commander generics refactor (see Strong typing and generics → J) is intentionally allowed to introduce breaking type changes in favor of significantly better downstream inference. Plan a major bump as needed.
+- The package currently re-exports `z` from `zod` for convenience, but this re-export is deprecated; docs and templates must import `z` from `zod` directly. Removal is planned for v7 (next major).
 
 ## Supported Node/Runtime
 

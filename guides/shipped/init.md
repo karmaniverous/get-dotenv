@@ -77,11 +77,13 @@ import { createCli } from '@karmaniverous/get-dotenv/cli';
 import { batchPlugin } from '@karmaniverous/get-dotenv/plugins/batch';
 import { awsPlugin } from '@karmaniverous/get-dotenv/plugins/aws';
 
-await createCli({
+const run = createCli({
   alias: 'acme',
   compose: (p) =>
     p
       .use(batchPlugin())
       .use(awsPlugin()),
-}).run(process.argv.slice(2));
+});
+
+await run();
 ```

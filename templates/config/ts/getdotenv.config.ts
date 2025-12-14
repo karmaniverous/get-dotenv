@@ -1,4 +1,4 @@
-import { defineGetDotenvConfig } from '@karmaniverous/get-dotenv/core';
+import { defineGetDotenvConfig } from '@karmaniverous/get-dotenv';
 
 type Vars = {
   APP_SETTING?: string;

@@ -2,7 +2,11 @@
 
 ## Next up (near‑term, actionable)
 
-- Decompose README.md per plan (trim to concise overview and move long sections into Guides; keep README under 250 lines). Await approval before applying changes.
+- Docs/templates: finish mount-semantics audit across authoring and shipped guides (ensure `setup(mount)` examples don’t double-nest).
+- Docs/templates: fix `createCli` examples everywhere (runner function; no `.run()`).
+- Public API: export `shouldCapture` from `@karmaniverous/get-dotenv/cliHost` (and re-export from root), and make diagnostics helpers reachable from the root entrypoint for copy/paste-friendly examples.
+- Deprecations: soft-deprecate the `z` re-export (JSDoc + a short Guides callout) and ensure docs/templates import `{ z }` from `zod`.
+- Verification: run typecheck, lint, tests, verify:types, verify:package, verify:bundle, verify:tarball.
 
 ## Completed (recent)
 
@@ -227,3 +231,4 @@
   - Removed placeholder “skip” tests with conditional expects and refactored schema tests to assert unconditionally on collected issues.
 
 - Docs: authoring — document dotenv-style expansion for plugin flag values (ctx-aware) with links to shipped cmd alias expansion and root argParser usage.
+- Docs/templates/API: align mount semantics; export shouldCapture; deprecate z re-export; fix createCli examples.

@@ -70,7 +70,7 @@ Embed a CLI quickly (shipped plugins wired for you):
 #!/usr/bin/env node
 import { createCli } from '@karmaniverous/get-dotenv/cli';
 
-await createCli({ alias: 'toolbox' }).run(process.argv.slice(2));
+await createCli({ alias: 'toolbox' })();
 ```
 
 More first steps and tips at [Getting Started](./guides/getting-started.md)

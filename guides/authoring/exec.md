@@ -47,7 +47,6 @@ export const dynamodbMigratePlugin = () =>
     ns: 'migrate',
     setup(cli) {
       cli
-        .ns('migrate')
         .requiredOption(
           '--table-name <string>',
           'DynamoDB table name (dotenv-expanded against ctx.dotenv)',
@@ -150,8 +149,7 @@ If you have multiple options that should support `${NAME}`-style expansion, cons
 ```ts
 import { dotenvExpand } from '@karmaniverous/get-dotenv';
 import type { GetDotenvCliPublic } from '@karmaniverous/get-dotenv/cliHost';
-
-type EnvRef = Record<string, string | undefined>;
+import type { ProcessEnv } from '@karmaniverous/get-dotenv';
 
 type ExpandMode = 'strict' | 'best-effort';
 
@@ -169,7 +167,7 @@ function expandFlagValue(
   }
 
   const ctx = cli.getCtx();
-  const envRef: EnvRef = { ...process.env, ...ctx.dotenv };
+  const envRef: ProcessEnv = { ...process.env, ...ctx.dotenv };
   const expanded = dotenvExpand(value, envRef);
 
   if (expanded === undefined) {
@@ -336,47 +334,33 @@ const argv = maybePreserveNodeEvalArgv(args);
 ### Tool‑invocation (no scripts)
 
 ```ts
-import type { GetDotenvCliPublic } from '@karmaniverous/get-dotenv/cliHost';
-import { readMergedOptions } from '@karmaniverous/get-dotenv/cliHost';
 import { buildSpawnEnv } from '@karmaniverous/get-dotenv';
-import { definePlugin } from '@karmaniverous/get-dotenv/cliHost';
-import { execa } from 'execa';
+import { definePlugin, readMergedOptions, runCommand, shouldCapture } from '@karmaniverous/get-dotenv/cliHost';
 
 export const dockerPlugin = () =>
   definePlugin({
     ns: 'docker',
     setup(cli) {
       cli
-        .ns('docker')
         .argument('[args...]')
         .action(async (args, _opts, thisCommand) => {
-          const bag = readMergedOptions(thisCommand) ?? {};
+          const bag = readMergedOptions(thisCommand);
           const ctx = cli.getCtx();
-          const env = buildSpawnEnv(process.env, ctx?.dotenv ?? {});
+          const env = buildSpawnEnv(process.env, ctx.dotenv);
 
           // Choose shell behavior: explicit false (plain), or inherit the normalized root shell
-          const shell = (bag as { shell?: string | boolean }).shell ?? false;
-          const capture =
-            process.env.GETDOTENV_STDIO === 'pipe' ||
-            (bag as { capture?: boolean }).capture;
+          const shell = bag.shell ?? false;
+          const capture = shouldCapture(bag.capture);
 
           // Shell-off: prefer argv arrays to preserve payloads
           const argv = [
             'docker',
             ...(Array.isArray(args) ? args.map(String) : []),
           ];
-          const file = argv[0]!;
-          const fileArgs = argv.slice(1);
-
-          const child = await execa(file, fileArgs, {
+          await runCommand(argv, shell === false ? false : shell, {
             env,
             stdio: capture ? 'pipe' : 'inherit',
-            ...(shell !== false ? { shell } : {}),
           });
-          if (capture && child.stdout)
-            process.stdout.write(
-              child.stdout + (child.stdout.endsWith('\n') ? '' : '\n'),
-            );
         });
     },
   });
@@ -391,35 +375,28 @@ Notes:
 ### CLI‑driven (scripts optional, rare per‑script override)
 
 ```ts
-import type { GetDotenvCliPublic } from '@karmaniverous/get-dotenv/cliHost';
-import { readMergedOptions } from '@karmaniverous/get-dotenv/cliHost';
 import { buildSpawnEnv } from '@karmaniverous/get-dotenv';
-import { definePlugin } from '@karmaniverous/get-dotenv/cliHost';
-import { execaCommand } from 'execa';
-
-type Script = string | { cmd: string; shell?: string | boolean };
-type Scripts = Record<string, Script>;
-
-function resolveScript(
-  scripts: Scripts | undefined,
-  nameOrCmd: string,
-): { cmd: string; shell?: string | boolean } {
-  const entry = scripts?.[nameOrCmd];
-  if (!entry) return { cmd: nameOrCmd };
-  return typeof entry === 'string' ? { cmd: entry } : entry;
-}
+import {
+  definePlugin,
+  maybePreserveNodeEvalArgv,
+  readMergedOptions,
+  resolveCommand,
+  resolveShell,
+  runCommand,
+  shouldCapture,
+  type ScriptsTable,
+} from '@karmaniverous/get-dotenv/cliHost';
 
 export const runPlugin = () => {
   const plugin = definePlugin({
     ns: 'run',
     setup(cli) {
       cli
-        .ns('run')
         .argument('[command...]')
         .action(async (commandParts, _opts, thisCommand) => {
-          const bag = readMergedOptions(thisCommand) ?? {};
+          const bag = readMergedOptions(thisCommand);
           const ctx = cli.getCtx();
-          const env = buildSpawnEnv(process.env, ctx?.dotenv ?? {});
+          const env = buildSpawnEnv(process.env, ctx.dotenv);
 
           const input = Array.isArray(commandParts)
             ? commandParts.map(String).join(' ')
@@ -430,23 +407,26 @@ export const runPlugin = () => {
           }
           // Prefer plugin-scoped scripts first (rare), then optionally fall back to root scripts
           const { scripts: pluginScripts } = plugin.readConfig<{
-            scripts?: Scripts;
+            scripts?: ScriptsTable;
           }>(cli);
-          const rootScripts =
-            (bag as { scripts?: Scripts }).scripts ?? undefined;
-          const chosen = resolveScript(pluginScripts ?? rootScripts, input);
+          const rootScripts = bag.scripts;
+          const scripts = pluginScripts ?? rootScripts;
+          const resolvedCmd = resolveCommand(scripts, input);
 
           // Precedence: per-script shell (object form) > root shell
-          const rootShell = (bag as { shell?: string | boolean }).shell;
-          const shell = chosen.shell !== undefined ? chosen.shell : rootShell;
-          const capture =
-            process.env.GETDOTENV_STDIO === 'pipe' ||
-            (bag as { capture?: boolean }).capture;
+          const shell = resolveShell(scripts, input, bag.shell);
+          const capture = shouldCapture(bag.capture);
 
-          await execaCommand(chosen.cmd, {
+          // Preserve argv only when shell-off and the command wasn't remapped by scripts.
+          const argvIn = Array.isArray(commandParts) ? commandParts.map(String) : [];
+          const commandArg =
+            shell === false && resolvedCmd === input
+              ? maybePreserveNodeEvalArgv(argvIn)
+              : resolvedCmd;
+
+          await runCommand(commandArg, shell, {
             env,
             stdio: capture ? 'pipe' : 'inherit',
-            ...(shell !== undefined ? { shell } : {}),
           });
         });
     },

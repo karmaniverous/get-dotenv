@@ -17,7 +17,7 @@ export type {
 } from './contracts';
 export { definePlugin } from './definePlugin';
 export type { RunCommandOptions, RunCommandResultOptions } from './exec';
-export { runCommand, runCommandResult } from './exec';
+export { runCommand, runCommandResult, shouldCapture } from './exec';
 export { GetDotenvCli } from './GetDotenvCli';
 export {
   baseGetDotenvCliOptions,
@@ -47,4 +47,5 @@ export {
   type RootOptionsShape,
   type ScriptDef,
 } from './types';
+/** @deprecated Import \{ z \} from 'zod' directly. Will be removed in v7. */
 export { z } from 'zod';

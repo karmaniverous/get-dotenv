@@ -6,6 +6,10 @@ title: Getting Started
 
 This page gives you four fast on‑ramps. Each section includes a minimal snippet and links to the right deep‑dive.
 
+## Deprecations
+
+- The package currently re-exports `z` as a convenience, but this is deprecated. Import `{ z }` from `zod` directly; the re-export will be removed in v7.
+
 ## 1) Run a one‑off command with your env
 
 Use the parent alias so flags apply to getdotenv, not the inner command. Prefer single quotes to avoid outer‑shell expansion.
@@ -50,7 +54,7 @@ Prefer the named factory to get a small runner with the shipped plugins installe
 #!/usr/bin/env node
 import { createCli } from '@karmaniverous/get-dotenv/cli';
 
-await createCli({ alias: 'toolbox' }).run(process.argv.slice(2));
+await createCli({ alias: 'toolbox' })();
 ```
 
 Notes:
@@ -66,7 +70,8 @@ CommonJS usage (dynamic import):
   const { createCli } = await import('@karmaniverous/get-dotenv/cli');
 
   // Build and run your CLI with args
-  await createCli({ alias: 'toolbox' }).run(['-h']);
+  const run = createCli({ alias: 'toolbox' });
+  await run(['-h']);
 })();
 ```
 
