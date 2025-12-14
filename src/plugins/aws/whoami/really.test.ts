@@ -1,11 +1,11 @@
 import { describe, expect, it, vi } from 'vitest';
 
-const sendMock = vi.fn(async () => ({}));
+const sendMock = vi.fn(() => Promise.resolve({}));
 vi.mock('@aws-sdk/client-sts', () => ({
   STSClient: class {
     send = sendMock;
   },
-  GetCallerIdentityCommand: class {},
+  GetCallerIdentityCommand: function GetCallerIdentityCommand() {},
 }));
 
 import { createCli } from '@/src/cli';
