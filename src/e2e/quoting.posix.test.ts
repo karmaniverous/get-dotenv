@@ -33,6 +33,6 @@ describe('E2E quoting (POSIX)', () => {
         env,
       });
       expect(singleQuoted.stdout.trim()).toBe('$APP_SETTING');
-    }, 15000);
+    });
   }
 });

@@ -113,41 +113,44 @@ describe('E2E CLI (core options and plugins)', () => {
   });
 
   it('writes output file (-o) with merged variables', async () => {
-    const out = path.posix.join(TROOT, 'cli.core.out.env');
-    await fs.ensureDir(path.posix.dirname(out));
-    const { exitCode } = await execa(
-      nodeBin,
-      CLI(
-        '--shell-off',
-        '--paths',
-        './test/full',
-        '-e',
-        'test',
-        '--dotenv-token',
-        '.testenv',
-        '--private-token',
-        'secret',
-        '-o',
-        out,
-        'cmd',
-        'node',
-        '-e',
-        '0',
-      ),
-      { env: { ...process.env, GETDOTENV_STDIO: 'pipe' } },
+    const out = path.posix.join(
+      TROOT,
+      `cli.core.out.${String(process.pid)}.${process.env.VITEST_WORKER_ID ?? '0'}.env`,
     );
-    expect(exitCode).toBe(0);
-    const exists = await fs.pathExists(out);
-    expect(exists).toBe(true);
-    const contents = await fs.readFile(out, 'utf-8');
-    const parsed = parseDotenv(contents);
-    // Expect merged values from test/full for env=test
-    expect(parsed.APP_SETTING).toBe('deep_app_setting');
-    expect(parsed.APP_SECRET).toBe('deep_app_secret');
-    expect(parsed.ENV_SETTING).toBe('deep_test_setting');
-    expect(parsed.ENV_SECRET).toBe('deep_test_secret');
+    await fs.ensureDir(path.posix.dirname(out));
     await fs.remove(out);
-  });
+    try {
+      const { exitCode } = await execa(
+        nodeBin,
+        CLI(
+          '--shell-off',
+          '--paths',
+          './test/full',
+          '-e',
+          'test',
+          '--dotenv-token',
+          '.testenv',
+          '--private-token',
+          'secret',
+          '-o',
+          out,
+        ),
+        { env: { ...process.env, GETDOTENV_STDIO: 'pipe' } },
+      );
+      expect(exitCode).toBe(0);
+      const exists = await fs.pathExists(out);
+      expect(exists).toBe(true);
+      const contents = await fs.readFile(out, 'utf-8');
+      const parsed = parseDotenv(contents);
+      // Expect merged values from test/full for env=test
+      expect(parsed.APP_SETTING).toBe('deep_app_setting');
+      expect(parsed.APP_SECRET).toBe('deep_app_secret');
+      expect(parsed.ENV_SETTING).toBe('deep_test_setting');
+      expect(parsed.ENV_SECRET).toBe('deep_test_secret');
+    } finally {
+      await fs.remove(out);
+    }
+  }, 60_000);
 
   it('excludes private when -r/--exclude-private is set', async () => {
     const { stdout, exitCode } = await execa(

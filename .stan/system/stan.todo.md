@@ -254,4 +254,6 @@
 - Plugins/templates: extract options modules for cmd/batch/whoami; keep plugin descriptions in index files; refactor template hello plugin to the same attach\* wiring pattern.
 
 - Init: scaffold hello as folder template; update tests and expected tarball templates.
-- Templates: add hello --loud-off and tests (no dist copy).- Fix: template hello typing + init hello file list
+- Templates: add hello --loud-off and tests (no dist copy).
+- Fix: template hello typing + init hello file list
+- Fix: stabilize E2E output-path test
