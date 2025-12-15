@@ -48,8 +48,8 @@ describe('templates/cli/plugins/hello', () => {
       });
 
       expect(logSpy).toHaveBeenCalledTimes(1);
-      const [label] = logSpy.mock.calls[0] ?? [];
-      expect(String(label)).toMatch(/HELLO, STRANGER!/);
+      const label = String(logSpy.mock.calls[0]?.[0] ?? '');
+      expect(label).toMatch(/HELLO, STRANGER!/);
     } finally {
       logSpy.mockRestore();
       await fs.remove(dir);
@@ -72,9 +72,9 @@ describe('templates/cli/plugins/hello', () => {
       });
 
       expect(logSpy).toHaveBeenCalledTimes(1);
-      const [label] = logSpy.mock.calls[0] ?? [];
-      expect(String(label)).toMatch(/Hello, stranger!/);
-      expect(String(label)).not.toMatch(/HELLO, STRANGER!/);
+      const label = String(logSpy.mock.calls[0]?.[0] ?? '');
+      expect(label).toMatch(/Hello, stranger!/);
+      expect(label).not.toMatch(/HELLO, STRANGER!/);
     } finally {
       logSpy.mockRestore();
       await fs.remove(dir);
@@ -97,8 +97,8 @@ describe('templates/cli/plugins/hello', () => {
       });
 
       expect(logSpy).toHaveBeenCalledTimes(1);
-      const [label] = logSpy.mock.calls[0] ?? [];
-      expect(String(label)).toMatch(/HELLO, STRANGER!/);
+      const label = String(logSpy.mock.calls[0]?.[0] ?? '');
+      expect(label).toMatch(/HELLO, STRANGER!/);
     } finally {
       logSpy.mockRestore();
       await fs.remove(dir);

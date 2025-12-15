@@ -14,8 +14,8 @@ export const helloPlugin = () => {
       cli.description('Say hello with current dotenv context');
 
       const helloCmd = attachHelloOptions(cli, plugin);
-      attachHelloDefaultAction(helloCmd, plugin);
-      attachHelloStrangerAction(helloCmd);
+      attachHelloDefaultAction(cli, helloCmd, plugin);
+      attachHelloStrangerAction(cli);
 
       return undefined;
     },

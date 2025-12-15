@@ -70,20 +70,30 @@ describe('plugins/init', () => {
       'hello',
       'defaultAction.ts',
     );
-    const helloSchema = path.posix.join(
+    const helloStrangerAction = path.posix.join(
       dir,
       'src',
       'cli',
       'acme',
       'plugins',
       'hello',
-      'schema.ts',
+      'strangerAction.ts',
+    );
+    const helloTypes = path.posix.join(
+      dir,
+      'src',
+      'cli',
+      'acme',
+      'plugins',
+      'hello',
+      'types.ts',
     );
     expect(await fs.pathExists(cliIndex)).toBe(true);
     expect(await fs.pathExists(helloIndex)).toBe(true);
     expect(await fs.pathExists(helloOptions)).toBe(true);
     expect(await fs.pathExists(helloDefaultAction)).toBe(true);
-    expect(await fs.pathExists(helloSchema)).toBe(true);
+    expect(await fs.pathExists(helloStrangerAction)).toBe(true);
+    expect(await fs.pathExists(helloTypes)).toBe(true);
     // validate token substitution coverage across skeleton files
     const helloTxt = await fs.readFile(helloIndex, 'utf-8');
     expect(helloTxt).toMatch(/Say hello with current dotenv context/i);

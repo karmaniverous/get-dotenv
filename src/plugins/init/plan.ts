@@ -165,8 +165,19 @@ export const planCliCopies = ({
       subs,
     },
     {
-      src: path.join(TEMPLATES_ROOT, 'cli', 'plugins', 'hello', 'schema.ts'),
-      dest: path.join(helloBase, 'schema.ts'),
+      src: path.join(
+        TEMPLATES_ROOT,
+        'cli',
+        'plugins',
+        'hello',
+        'strangerAction.ts',
+      ),
+      dest: path.join(helloBase, 'strangerAction.ts'),
+      subs,
+    },
+    {
+      src: path.join(TEMPLATES_ROOT, 'cli', 'plugins', 'hello', 'types.ts'),
+      dest: path.join(helloBase, 'types.ts'),
       subs,
     },
   ];

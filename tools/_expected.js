@@ -35,5 +35,6 @@ export const tarballTemplates = [
   'templates/cli/plugins/hello/index.ts',
   'templates/cli/plugins/hello/options.ts',
   'templates/cli/plugins/hello/defaultAction.ts',
-  'templates/cli/plugins/hello/schema.ts',
+  'templates/cli/plugins/hello/strangerAction.ts',
+  'templates/cli/plugins/hello/types.ts',
 ];
