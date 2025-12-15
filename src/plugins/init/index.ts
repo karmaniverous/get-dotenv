@@ -19,8 +19,8 @@ export const initPlugin = () =>
   definePlugin({
     ns: 'init',
     setup(cli) {
-      attachInitOptions(cli);
-      attachInitDefaultAction(cli);
+      const initCmd = attachInitOptions(cli);
+      attachInitDefaultAction(initCmd);
       return undefined;
     },
   });

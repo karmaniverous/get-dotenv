@@ -6,9 +6,10 @@ import fs from 'fs-extra';
 import path from 'path';
 import { createInterface } from 'readline/promises';
 
-import { type GetDotenvCliPublic, readMergedOptions } from '@/src/cliHost';
+import { readMergedOptions } from '@/src/cliHost';
 
 import { copyTextFile, ensureLines } from './io';
+import type { InitCommand } from './options';
 import { type CopyOperation, planCliCopies, planConfigCopies } from './plan';
 import { isNonInteractive, promptDecision } from './prompts';
 
@@ -17,11 +18,11 @@ type CopyDecision = 'overwrite' | 'example' | 'skip';
 /**
  * Attach the init plugin default action.
  *
- * @param cli - The `init` command mount.
+ * @param cli - The `init` command mount (with args/options attached).
  *
  * @internal
  */
-export function attachInitDefaultAction(cli: GetDotenvCliPublic): void {
+export function attachInitDefaultAction(cli: InitCommand): void {
   cli.action(async (destArg, opts, thisCommand) => {
     // Inherit logger from merged root options (base).
     const bag = readMergedOptions(thisCommand);
@@ -32,28 +33,26 @@ export function attachInitDefaultAction(cli: GetDotenvCliPublic): void {
     const cwd = process.cwd();
     const destRoot = path.resolve(cwd, destRel);
 
-    const formatInput = (opts as { configFormat?: unknown }).configFormat;
+    const formatInput = opts['configFormat'];
     const formatRaw =
       typeof formatInput === 'string' ? formatInput.toLowerCase() : 'json';
     const format = (
       ['json', 'yaml', 'js', 'ts'].includes(formatRaw) ? formatRaw : 'json'
     ) as 'json' | 'yaml' | 'js' | 'ts';
-    const withLocal = Boolean((opts as { withLocal?: unknown }).withLocal);
+    const withLocal = Boolean(opts['withLocal']);
     // dynamic flag reserved for future template variants; present for UX compatibility
-    void (opts as { dynamic?: unknown }).dynamic;
+    void opts['dynamic'];
 
     // CLI name default: --cli-name | basename(dest) | 'mycli'
-    const cliNameInput = (opts as { cliName?: unknown }).cliName;
+    const cliNameInput = opts['cliName'];
     const cliName =
       (typeof cliNameInput === 'string' && cliNameInput.length > 0
         ? cliNameInput
         : path.basename(destRoot) || 'mycli') || 'mycli';
 
     // Precedence: --force > --yes > auto-detect(non-interactive => yes)
-    const force = Boolean((opts as { force?: unknown }).force);
-    const yes =
-      Boolean((opts as { yes?: unknown }).yes) ||
-      (!force && isNonInteractive());
+    const force = Boolean(opts['force']);
+    const yes = Boolean(opts['yes']) || (!force && isNonInteractive());
 
     // Build copy plan
     const cfgCopies = planConfigCopies({ format, withLocal, destRoot });

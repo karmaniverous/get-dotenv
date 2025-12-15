@@ -7,8 +7,8 @@ import type { GetDotenvCliPublic } from '@/src/cliHost';
  *
  * @internal
  */
-export function attachInitOptions(cli: GetDotenvCliPublic): void {
-  cli
+export function attachInitOptions(cli: GetDotenvCliPublic) {
+  return cli
     .description(
       'Scaffold getdotenv config files and a host-based CLI skeleton.',
     )
@@ -24,3 +24,6 @@ export function attachInitOptions(cli: GetDotenvCliPublic): void {
     .option('--force', 'overwrite all existing files')
     .option('--yes', 'skip all collisions (no overwrite)');
 }
+
+/** @internal */
+export type InitCommand = ReturnType<typeof attachInitOptions>;

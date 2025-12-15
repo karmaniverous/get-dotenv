@@ -23,9 +23,9 @@ export const awsPlugin = () => {
     ns: 'aws',
     configSchema: AwsPluginConfigSchema,
     setup(cli) {
-      attachAwsOptions(cli, plugin);
+      const awsCmd = attachAwsOptions(cli, plugin);
       attachAwsPreSubcommandHook(cli, plugin);
-      attachAwsDefaultAction(cli, plugin);
+      attachAwsDefaultAction(cli, plugin, awsCmd);
       return undefined;
     },
   });
