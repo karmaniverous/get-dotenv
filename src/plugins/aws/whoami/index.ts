@@ -1,6 +1,7 @@
 import { definePlugin } from '@/src/cliHost';
 
 import { attachWhoamiDefaultAction } from './defaultAction';
+import { attachWhoamiOptions } from './options';
 import { attachWhoamiReallyAction } from './reallyAction';
 
 /**
@@ -18,11 +19,14 @@ export const awsWhoamiPlugin = () =>
     setup(cli) {
       cli.description('Print AWS caller identity (uses parent aws session)');
 
+      // Options/args (none today, but keep layout consistent with other plugins).
+      const whoami = attachWhoamiOptions(cli);
+
       // Default behavior: `getdotenv aws whoami`
-      attachWhoamiDefaultAction(cli);
+      attachWhoamiDefaultAction(whoami);
 
       // Subcommand behavior: `getdotenv aws whoami really`
-      attachWhoamiReallyAction(cli);
+      attachWhoamiReallyAction(whoami);
 
       return undefined;
     },

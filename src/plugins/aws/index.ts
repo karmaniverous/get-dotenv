@@ -23,6 +23,9 @@ export const awsPlugin = () => {
     ns: 'aws',
     configSchema: AwsPluginConfigSchema,
     setup(cli) {
+      cli.description(
+        'Establish an AWS session and optionally forward to the AWS CLI',
+      );
       const awsCmd = attachAwsOptions(cli, plugin);
       attachAwsPreSubcommandHook(cli, plugin);
       attachAwsDefaultAction(cli, plugin, awsCmd);

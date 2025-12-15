@@ -7,6 +7,7 @@
 import { definePlugin } from '@/src/cliHost';
 
 import { attachCmdDefaultAction } from './defaultAction';
+import { attachCmdOptions } from './options';
 import { attachCmdParentInvoker } from './parentInvoker';
 import { CmdConfigSchema, type CmdPluginOptions } from './types';
 export type { RunCmdWithContextOptions } from './types';
@@ -35,18 +36,17 @@ export const cmdPlugin = (options: CmdPluginOptions = {}) => {
       const aliasKey = aliasSpec ? deriveKey(aliasSpec.flags) : undefined;
 
       // Mount is the command ('cmd'); attach default action.
-      cli
-        .description(
-          'Execute command according to the --shell option, conflicts with --command option (default subcommand)',
-        )
-        // Accept payload tokens as positional arguments for the default subcommand.
-        .argument('[command...]');
+      cli.description(
+        'Execute command according to the --shell option, conflicts with --command option (default subcommand)',
+      );
+      // Options/arguments (positional payload, argv routing) are attached separately.
+      attachCmdOptions(cli);
 
       attachCmdDefaultAction(cli, cli, aliasKey);
 
       // Parent-attached option alias (optional, unified naming).
       if (aliasSpec !== undefined) {
-        attachCmdParentInvoker(cli, options, cli, plugin);
+        attachCmdParentInvoker(cli, options, plugin);
       }
       return undefined;
     },

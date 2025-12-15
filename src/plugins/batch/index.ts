@@ -16,6 +16,7 @@ import { definePlugin } from '@/src/cliHost';
 
 import { attachBatchCmdSubcommand } from './cmdSubcommand';
 import { attachBatchDefaultAction } from './defaultAction';
+import { attachBatchOptions } from './options';
 import { BatchConfigSchema, type BatchPluginOptions } from './types';
 
 /**
@@ -33,68 +34,10 @@ export const batchPlugin = (opts: BatchPluginOptions = {}) => {
     configSchema: BatchConfigSchema,
     setup(cli) {
       const batchCmd = cli; // mount provided by host
-      const GROUP = `plugin:${cli.name()}`;
-
-      batchCmd
-        .description(
-          'Batch command execution across multiple working directories.',
-        )
-        .enablePositionalOptions()
-        .passThroughOptions()
-        // Dynamic help: show effective defaults from the merged/interpolated plugin config slice.
-        .addOption(
-          (() => {
-            const opt = plugin.createPluginDynamicOption(
-              cli,
-              '-p, --pkg-cwd',
-              (_bag, cfg) =>
-                `use nearest package directory as current working directory${cfg.pkgCwd ? ' (default)' : ''}`,
-            );
-            cli.setOptionGroup(opt, GROUP);
-            return opt;
-          })(),
-        )
-        .addOption(
-          (() => {
-            const opt = plugin.createPluginDynamicOption(
-              cli,
-              '-r, --root-path <string>',
-              (_bag, cfg) =>
-                `path to batch root directory from current working directory (default: ${JSON.stringify(
-                  cfg.rootPath || './',
-                )})`,
-            );
-            cli.setOptionGroup(opt, GROUP);
-            return opt;
-          })(),
-        )
-        .addOption(
-          (() => {
-            const opt = plugin.createPluginDynamicOption(
-              cli,
-              '-g, --globs <string>',
-              (_bag, cfg) =>
-                `space-delimited globs from root path (default: ${JSON.stringify(
-                  cfg.globs || '*',
-                )})`,
-            );
-            cli.setOptionGroup(opt, GROUP);
-            return opt;
-          })(),
-        )
-        .option(
-          '-c, --command <string>',
-          'command executed according to the base shell resolution',
-        )
-        .option(
-          '-l, --list',
-          'list working directories without executing command',
-        )
-        .option(
-          '-e, --ignore-errors',
-          'ignore errors and continue with next path',
-        )
-        .argument('[command...]');
+      batchCmd.description(
+        'Batch command execution across multiple working directories.',
+      );
+      attachBatchOptions(plugin, batchCmd);
 
       // Default subcommand `cmd` (mounted as batch default subcommand)
       attachBatchCmdSubcommand(plugin, cli, batchCmd, opts);

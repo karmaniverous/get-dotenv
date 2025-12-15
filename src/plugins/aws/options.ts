@@ -26,9 +26,7 @@ export function attachAwsOptions(
 ) {
   return (
     cli
-      .description(
-        'Establish an AWS session and optionally forward to the AWS CLI',
-      )
+      // Description is owned by the plugin index (src/plugins/aws/index.ts).
       .enablePositionalOptions()
       .passThroughOptions()
       .allowUnknownOption(true)

@@ -5,11 +5,11 @@ import type { GetDotenvCliPublic } from '@/src/cliHost';
  *
  * Reads `SECRET_IDENTITY` from the resolved get-dotenv context (`cli.getCtx().dotenv`).
  *
- * @param whoami - The `whoami` command mount.
+ * @param cli - The `whoami` command mount.
  * @returns Nothing.
  */
-export function attachWhoamiReallyAction(whoami: GetDotenvCliPublic): void {
-  const really = whoami
+export function attachWhoamiReallyAction(cli: GetDotenvCliPublic): void {
+  const really = cli
     .ns('really')
     .description('Print SECRET_IDENTITY from the resolved dotenv context');
 

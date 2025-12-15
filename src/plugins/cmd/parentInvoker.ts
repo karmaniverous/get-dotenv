@@ -25,7 +25,6 @@ import type { CmdPluginOptions } from './types';
 export const attachCmdParentInvoker = (
   cli: GetDotenvCliPublic,
   options: CmdPluginOptions,
-  _cmd: CommandUnknownOpts,
   plugin: PluginWithInstanceHelpers,
 ) => {
   const dbg = (...args: unknown[]) => {

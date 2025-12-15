@@ -19,6 +19,9 @@ export const initPlugin = () =>
   definePlugin({
     ns: 'init',
     setup(cli) {
+      cli.description(
+        'Scaffold getdotenv config files and a host-based CLI skeleton.',
+      );
       const initCmd = attachInitOptions(cli);
       attachInitDefaultAction(initCmd);
       return undefined;

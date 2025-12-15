@@ -7,11 +7,11 @@ import type { GetDotenvCliPublic } from '@/src/cliHost';
  *
  * This behavior executes only when `aws whoami` is invoked without a subcommand.
  *
- * @param whoami - The `whoami` command mount.
+ * @param cli - The `whoami` command mount.
  * @returns Nothing.
  */
-export function attachWhoamiDefaultAction(whoami: GetDotenvCliPublic): void {
-  whoami.action(async () => {
+export function attachWhoamiDefaultAction(cli: GetDotenvCliPublic): void {
+  cli.action(async () => {
     // The AWS SDK default providers will read credentials from process.env,
     // which the aws parent has already populated.
     const client = new STSClient();
