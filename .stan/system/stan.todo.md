@@ -6,6 +6,7 @@
 - Docs/templates: fix `createCli` examples everywhere (runner function; no `.run()`).
 - Public API: export `shouldCapture` from `@karmaniverous/get-dotenv/cliHost` (and re-export from root), and make diagnostics helpers reachable from the root entrypoint for copy/paste-friendly examples.
 - Deprecations: soft-deprecate the `z` re-export (JSDoc + a short Guides callout) and ensure docs/templates import `{ z }` from `zod`.
+- Verify: Windows SSO login-on-demand (`aws --profile … --login-on-demand whoami`) from a fresh terminal with AWS CLI 2.x.
 - Verification: run typecheck, lint, tests, verify:types, verify:package, verify:bundle, verify:tarball.
 
 ## Completed (recent)
@@ -242,5 +243,7 @@
 
 - Lint: fix aws subcommand flags test async mocks.
 
-- Fix: aws whoami SSO creds on older AWS CLI (support non-json export-credentials formats; detect legacy sso_start_url for login-on-demand; set AWS_PROFILE/AWS_SDK_LOAD_CONFIG for AWS SDK v3)
-- Lint: remove require-await violations in aws service test mocks (return Promise explicitly instead of `async` with no `await`)
+- Fix: aws whoami SSO creds on older AWS CLI (support non-json export-credentials formats; detect legacy sso_start_url for login-on-demand; set AWS_PROFILE/AWS_SDK_LOAD_CONFIG for AWS SDK v3)
+
+- Lint: remove require-await violations in aws service test mocks (return Promise explicitly instead of `async` with no `await`)
+- Amendment: AWS SSO login-on-demand now runs `aws sso login` with no timeout, prefers `export-credentials --format process`, makes profile resolution win over ambient env creds, and ensures profile vs static creds are mutually exclusive in `process.env`.

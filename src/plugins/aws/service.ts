@@ -1,9 +1,9 @@
-import { runCommandResult } from '@/src/cliHost';
+import { runCommand, runCommandResult } from '@/src/cliHost';
 
 import type { AwsContext, AwsCredentials } from './types';
 import type { ResolveAwsContextOptions } from './types';
 
-const DEFAULT_TIMEOUT_MS = 15_000;
+const AWS_CLI_TIMEOUT_MS = 15_000;
 
 const trim = (s: unknown) => (typeof s === 'string' ? s.trim() : '');
 const unquote = (s: string) =>
@@ -102,7 +102,7 @@ export const parseExportCredentialsEnv = (
 const getAwsConfigure = async (
   key: string,
   profile: string,
-  timeoutMs = DEFAULT_TIMEOUT_MS,
+  timeoutMs = AWS_CLI_TIMEOUT_MS,
 ): Promise<string | undefined> => {
   const r = await runCommandResult(
     ['aws', 'configure', 'get', key, '--profile', profile],
@@ -124,7 +124,7 @@ const getAwsConfigure = async (
 
 const exportCredentials = async (
   profile: string,
-  timeoutMs = DEFAULT_TIMEOUT_MS,
+  timeoutMs = AWS_CLI_TIMEOUT_MS,
 ): Promise<AwsCredentials | undefined> => {
   const tryExport = async (
     format?: string,
@@ -148,10 +148,9 @@ const exportCredentials = async (
     return parseExportCredentialsJson(out) ?? parseExportCredentialsEnv(out);
   };
 
-  // Prefer JSON-like formats first; then fall back to shell-specific env outputs.
-  // Note: some AWS CLI versions do not support "--format json"; tolerate and try others.
+  // Prefer the default/JSON "process" format first; then fall back to shell env outputs.
+  // Note: AWS CLI v2 supports: process | env | env-no-export | powershell | windows-cmd
   const formats: string[] = [
-    'json',
     'process',
     ...(process.platform === 'win32'
       ? ['powershell', 'windows-cmd', 'env', 'env-no-export']
@@ -198,18 +197,11 @@ export const resolveAwsContext = async ({
     if (region !== undefined) out.region = region;
     return out;
   }
-  // Env-first credentials.
+
   let credentials: AwsCredentials | undefined;
-  const envId = trim(process.env.AWS_ACCESS_KEY_ID);
-  const envSecret = trim(process.env.AWS_SECRET_ACCESS_KEY);
-  const envToken = trim(process.env.AWS_SESSION_TOKEN);
-  if (envId && envSecret) {
-    credentials = {
-      accessKeyId: envId,
-      secretAccessKey: envSecret,
-      ...(envToken ? { sessionToken: envToken } : {}),
-    };
-  } else if (profile) {
+
+  // Profile wins over ambient env creds when present (from flags/config/dotenv).
+  if (profile) {
     // Try export-credentials
     credentials = await exportCredentials(profile);
 
@@ -222,15 +214,20 @@ export const resolveAwsContext = async ({
         (typeof ssoSession === 'string' && ssoSession.length > 0) ||
         (typeof ssoStartUrl === 'string' && ssoStartUrl.length > 0);
       if (looksSSO && cfg.loginOnDemand) {
-        // Best-effort login, then retry export once.
-        await runCommandResult(
+        // Interactive login (no timeout by default), then retry export once.
+        const exit = await runCommand(
           ['aws', 'sso', 'login', '--profile', profile],
           false,
           {
             env: process.env,
-            timeoutMs: DEFAULT_TIMEOUT_MS,
+            stdio: 'inherit',
           },
         );
+        if (exit !== 0) {
+          throw new Error(
+            `aws sso login failed for profile '${profile}' (exit ${String(exit)})`,
+          );
+        }
         credentials = await exportCredentials(profile);
       }
     }
@@ -247,6 +244,18 @@ export const resolveAwsContext = async ({
           ...(token ? { sessionToken: token } : {}),
         };
       }
+    }
+  } else {
+    // Env-first credentials when no profile is present.
+    const envId = trim(process.env.AWS_ACCESS_KEY_ID);
+    const envSecret = trim(process.env.AWS_SECRET_ACCESS_KEY);
+    const envToken = trim(process.env.AWS_SESSION_TOKEN);
+    if (envId && envSecret) {
+      credentials = {
+        accessKeyId: envId,
+        secretAccessKey: envSecret,
+        ...(envToken ? { sessionToken: envToken } : {}),
+      };
     }
   }
 

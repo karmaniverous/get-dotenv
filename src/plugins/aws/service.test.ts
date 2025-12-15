@@ -19,12 +19,25 @@ const runCommandResultMock = vi.fn<
     stderr: string;
   }>
 >();
+const runCommandMock =
+  vi.fn<
+    (
+      cmd: string | readonly string[],
+      shell: string | boolean | URL,
+      opts?: Record<string, unknown>,
+    ) => Promise<number>
+  >();
 vi.mock('../../cliHost/exec', () => ({
   runCommandResult: (
     cmd: string | string[],
     shell: string | boolean | URL,
     opts?: Record<string, unknown>,
   ) => runCommandResultMock(cmd, shell, opts ?? {}),
+  runCommand: (
+    cmd: string | readonly string[],
+    shell: string | boolean | URL,
+    opts?: Record<string, unknown>,
+  ) => runCommandMock(cmd, shell, opts ?? {}).then((exitCode) => exitCode),
 }));
 
 const baseCfg: AwsPluginConfig = {
@@ -101,6 +114,7 @@ set AWS_SESSION_TOKEN=TOKEN`;
 describe('plugins/aws/service.resolveAwsContext', () => {
   beforeEach(() => {
     runCommandResultMock.mockReset();
+    runCommandMock.mockReset().mockResolvedValue(0);
     delete process.env.AWS_ACCESS_KEY_ID;
     delete process.env.AWS_SECRET_ACCESS_KEY;
     delete process.env.AWS_SESSION_TOKEN;
@@ -120,7 +134,7 @@ describe('plugins/aws/service.resolveAwsContext', () => {
     expect(runCommandResultMock).not.toHaveBeenCalled();
   });
 
-  it('export-credentials (JSON path)', async () => {
+  it('export-credentials (process/JSON path)', async () => {
     const json = JSON.stringify({
       AccessKeyId: 'A',
       SecretAccessKey: 'S',
@@ -134,7 +148,7 @@ describe('plugins/aws/service.resolveAwsContext', () => {
         args[2] === 'export-credentials';
       const fmtIdx = args.indexOf('--format');
       const fmt = fmtIdx >= 0 ? args[fmtIdx + 1] : undefined;
-      if (isExport && fmt === 'json') {
+      if (isExport && fmt === 'process') {
         return Promise.resolve({ exitCode: 0, stdout: json, stderr: '' });
       }
       return Promise.resolve({ exitCode: 1, stdout: '', stderr: '' });
@@ -161,7 +175,7 @@ describe('plugins/aws/service.resolveAwsContext', () => {
       const fmt = fmtIdx >= 0 ? args[fmtIdx + 1] : undefined;
       if (!isExport)
         return Promise.resolve({ exitCode: 1, stdout: '', stderr: '' });
-      if (fmt === 'json')
+      if (fmt === 'process')
         return Promise.resolve({ exitCode: 1, stdout: '', stderr: 'no json' });
       return Promise.resolve({
         exitCode: 0,
@@ -255,13 +269,17 @@ describe('plugins/aws/service.resolveAwsContext', () => {
           return Promise.resolve({ exitCode: 0, stdout: '', stderr: '' });
         return Promise.resolve({ exitCode: 0, stdout: '', stderr: '' });
       }
+      return Promise.resolve({ exitCode: 1, stdout: '', stderr: '' });
+    });
+    runCommandMock.mockImplementation((cmd) => {
+      const args = Array.isArray(cmd) ? cmd : String(cmd).split(/\s+/);
       const isLogin =
         args[0] === 'aws' && args[1] === 'sso' && args[2] === 'login';
       if (isLogin) {
         loggedIn = true;
-        return Promise.resolve({ exitCode: 0, stdout: '', stderr: '' });
+        return Promise.resolve(0);
       }
-      return Promise.resolve({ exitCode: 1, stdout: '', stderr: '' });
+      return Promise.resolve(1);
     });
     const out = await resolveAwsContext({
       dotenv: { AWS_PROFILE: 'dev' },
@@ -304,18 +322,51 @@ describe('plugins/aws/service.resolveAwsContext', () => {
           });
         return Promise.resolve({ exitCode: 0, stdout: '', stderr: '' });
       }
+      return Promise.resolve({ exitCode: 1, stdout: '', stderr: '' });
+    });
+    runCommandMock.mockImplementation((cmd) => {
+      const args = Array.isArray(cmd) ? cmd : String(cmd).split(/\s+/);
       const isLogin =
         args[0] === 'aws' && args[1] === 'sso' && args[2] === 'login';
       if (isLogin) {
         loggedIn = true;
-        return Promise.resolve({ exitCode: 0, stdout: '', stderr: '' });
+        return Promise.resolve(0);
       }
-      return Promise.resolve({ exitCode: 1, stdout: '', stderr: '' });
+      return Promise.resolve(1);
     });
     const out = await resolveAwsContext({
       dotenv: { AWS_PROFILE: 'dev' },
       cfg: { ...baseCfg, loginOnDemand: true },
     });
     expect(out.credentials).toEqual({ accessKeyId: 'A', secretAccessKey: 'S' });
+  });
+
+  it('profile wins over ambient env credentials when present', async () => {
+    process.env.AWS_ACCESS_KEY_ID = 'ENV_AKIA';
+    process.env.AWS_SECRET_ACCESS_KEY = 'ENV_SECRET';
+
+    runCommandResultMock.mockImplementation((cmd) => {
+      const args = Array.isArray(cmd) ? cmd : cmd.split(/\s+/);
+      const isExport =
+        args[0] === 'aws' &&
+        args[1] === 'configure' &&
+        args[2] === 'export-credentials';
+      const fmtIdx = args.indexOf('--format');
+      const fmt = fmtIdx >= 0 ? args[fmtIdx + 1] : undefined;
+      if (isExport && fmt === 'process') {
+        return Promise.resolve({
+          exitCode: 0,
+          stdout: JSON.stringify({ AccessKeyId: 'P', SecretAccessKey: 'S' }),
+          stderr: '',
+        });
+      }
+      return Promise.resolve({ exitCode: 1, stdout: '', stderr: '' });
+    });
+
+    const out = await resolveAwsContext({
+      dotenv: {},
+      cfg: { ...baseCfg, profile: 'dev' },
+    });
+    expect(out.credentials).toEqual({ accessKeyId: 'P', secretAccessKey: 'S' });
   });
 });
