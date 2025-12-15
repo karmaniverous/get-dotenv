@@ -247,3 +247,5 @@
 
 - Lint: remove require-await violations in aws service test mocks (return Promise explicitly instead of `async` with no `await`)
 - Amendment: AWS SSO login-on-demand now runs `aws sso login` with no timeout, prefers `export-credentials --format process`, makes profile resolution win over ambient env creds, and ensures profile vs static creds are mutually exclusive in `process.env`.
+- Plugins: refactor aws/batch/cmd/init internals to a consistent attach-module layout (defaultAction.ts, *Action.ts, *Hook.ts) with plugin-prefixed `attach*` function names.
+

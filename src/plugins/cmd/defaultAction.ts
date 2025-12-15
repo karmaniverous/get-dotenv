@@ -5,10 +5,10 @@ import { type GetDotenvCliPublic, readMergedOptions } from '@/src/cliHost';
 import { runCmdWithContext } from './runner';
 
 /**
- * Attach the default "cmd" subcommand action (unified name).
+ * Attach the default "cmd" subcommand action.
  * Mirrors the prior inline implementation in cmd/index.ts.
  */
-export const attachDefaultCmdAction = (
+export const attachCmdDefaultAction = (
   cli: GetDotenvCliPublic,
   cmd: CommandUnknownOpts,
   aliasKey?: string,

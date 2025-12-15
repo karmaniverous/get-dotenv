@@ -6,8 +6,8 @@
 
 import { definePlugin } from '@/src/cliHost';
 
-import { attachDefaultCmdAction } from './defaultCmdAction';
-import { attachParentInvoker } from './parentInvoker';
+import { attachCmdDefaultAction } from './defaultAction';
+import { attachCmdParentInvoker } from './parentInvoker';
 import { CmdConfigSchema, type CmdPluginOptions } from './types';
 export type { RunCmdWithContextOptions } from './types';
 
@@ -42,11 +42,11 @@ export const cmdPlugin = (options: CmdPluginOptions = {}) => {
         // Accept payload tokens as positional arguments for the default subcommand.
         .argument('[command...]');
 
-      attachDefaultCmdAction(cli, cli, aliasKey);
+      attachCmdDefaultAction(cli, cli, aliasKey);
 
       // Parent-attached option alias (optional, unified naming).
       if (aliasSpec !== undefined) {
-        attachParentInvoker(cli, options, cli, plugin);
+        attachCmdParentInvoker(cli, options, cli, plugin);
       }
       return undefined;
     },

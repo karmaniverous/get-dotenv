@@ -16,7 +16,7 @@ import type { BatchCmdSubcommandOptions } from './types';
 /**
  * Attach the default "cmd" subcommand action with contextual typing.
  */
-export const attachDefaultCmdAction = (
+export const attachBatchCmdAction = (
   plugin: ReturnType<typeof definePlugin>,
   cli: GetDotenvCliPublic,
   batchCmd: CommandUnknownOpts,

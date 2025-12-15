@@ -22,7 +22,7 @@ import type { CmdPluginOptions } from './types';
  * Install the parent-level invoker (alias) for the cmd plugin.
  * Unifies naming with batch attachParentInvoker; behavior unchanged.
  */
-export const attachParentInvoker = (
+export const attachCmdParentInvoker = (
   cli: GetDotenvCliPublic,
   options: CmdPluginOptions,
   _cmd: CommandUnknownOpts,

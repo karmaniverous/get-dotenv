@@ -5,8 +5,6 @@
  * mode and script‑aware shell resolution.
  */
 
-import { Command } from '@commander-js/extra-typings';
-
 export type {
   BatchCmdSubcommandOptions,
   BatchGlobPathsOptions,
@@ -16,8 +14,8 @@ export type {
 
 import { definePlugin } from '@/src/cliHost';
 
-import { attachDefaultCmdAction } from './defaultCmdAction';
-import { attachParentInvoker } from './parentInvoker';
+import { attachBatchCmdSubcommand } from './cmdSubcommand';
+import { attachBatchDefaultAction } from './defaultAction';
 import { BatchConfigSchema, type BatchPluginOptions } from './types';
 
 /**
@@ -98,20 +96,12 @@ export const batchPlugin = (opts: BatchPluginOptions = {}) => {
         )
         .argument('[command...]');
 
-      // Default subcommand "cmd" with contextual typing for args/opts
-      const cmdSub = new Command()
-        .name('cmd')
-        .description(
-          'execute command, conflicts with --command option (default subcommand)',
-        )
-        .enablePositionalOptions()
-        .passThroughOptions()
-        .argument('[command...]');
-      attachDefaultCmdAction(plugin, cli, batchCmd, opts, cmdSub);
-      batchCmd.addCommand(cmdSub, { isDefault: true });
+      // Default subcommand `cmd` (mounted as batch default subcommand)
+      attachBatchCmdSubcommand(plugin, cli, batchCmd, opts);
 
-      // Parent invoker (unified naming)
-      attachParentInvoker(plugin, cli, opts, batchCmd);
+      // Default action for the batch command mount (parent flags and positional form)
+      attachBatchDefaultAction(plugin, cli, opts, batchCmd);
+
       return undefined;
     },
   });
