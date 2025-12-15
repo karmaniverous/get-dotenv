@@ -38,7 +38,7 @@ export function attachAwsDefaultAction(
   plugin: AwsPluginInstance,
   awsCmd: AwsCommand,
 ): void {
-  awsCmd.action(async (args, _opts, thisCommand) => {
+  awsCmd.action(async (args, opts, thisCommand) => {
     // Access merged root CLI options (installed by root hooks).
     const bag = readMergedOptions(thisCommand);
     const capture = shouldCapture(bag.capture);
@@ -51,7 +51,7 @@ export function attachAwsDefaultAction(
     const cfgBase = plugin.readConfig(cli);
     const cfg: AwsPluginConfig = {
       ...cfgBase,
-      ...awsConfigOverridesFromCommandOpts(thisCommand.opts()),
+      ...awsConfigOverridesFromCommandOpts(opts),
     };
 
     // Resolve current context with overrides
@@ -64,7 +64,7 @@ export function attachAwsDefaultAction(
     applyAwsContext(out, ctx, true);
 
     // Forward when positional args are present; otherwise session-only.
-    if (Array.isArray(args) && args.length > 0) {
+    if (args.length > 0) {
       const argv = ['aws', ...args];
       const shellSetting = resolveShell(bag.scripts, 'aws', bag.shell);
       const exit = await runCommand(argv, shellSetting, {

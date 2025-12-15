@@ -250,3 +250,4 @@
 - Plugins: refactor aws/batch/cmd/init internals to a consistent attach-module layout (defaultAction.ts, *Action.ts, *Hook.ts) with plugin-prefixed `attach*` function names.
 
 - Plugins: use typed `.action((...args: [...Args, Opts, this]))` wiring by returning the `Command` from `attach*Options()` (avoids variadic `unknown[]` handlers in aws/init default actions).
+- Fix: ensure `attachAwsOptions()` does not declare a return type of `unknown`, otherwise `AwsCommand = ReturnType<typeof attachAwsOptions>` becomes `unknown` and breaks typed `.action()` (typecheck + lint).

@@ -23,7 +23,7 @@ type AwsPluginInstance = PluginWithInstanceHelpers<
 export function attachAwsOptions(
   cli: GetDotenvCliPublic,
   plugin: AwsPluginInstance,
-): unknown {
+) {
   return (
     cli
       .description(
