@@ -4,7 +4,6 @@ import {
   baseGetDotenvCliOptions,
   type GetDotenvCliOptions,
   type GetDotenvCliPublic,
-  type PluginWithInstanceHelpers,
   resolveCliOptions,
   type RootOptionsShape,
   type ScriptsTable,
@@ -15,6 +14,7 @@ import {
 } from '@/src/core';
 import { dotenvExpandFromProcessEnv } from '@/src/dotenv';
 
+import type { CmdPlugin } from '.';
 import { runCmdWithContext } from './runner';
 import type { CmdPluginOptions } from './types';
 
@@ -25,7 +25,7 @@ import type { CmdPluginOptions } from './types';
 export const attachCmdParentInvoker = (
   cli: GetDotenvCliPublic,
   options: CmdPluginOptions,
-  plugin: PluginWithInstanceHelpers,
+  plugin: CmdPlugin,
 ) => {
   const dbg = (...args: unknown[]) => {
     if (process.env.GETDOTENV_DEBUG) {

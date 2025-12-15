@@ -32,5 +32,8 @@ export const tarballTemplates = [
   'templates/config/js/getdotenv.config.js',
   'templates/config/ts/getdotenv.config.ts',
   'templates/cli/index.ts',
-  'templates/cli/plugins/hello.ts',
+  'templates/cli/plugins/hello/index.ts',
+  'templates/cli/plugins/hello/options.ts',
+  'templates/cli/plugins/hello/defaultAction.ts',
+  'templates/cli/plugins/hello/schema.ts',
 ];

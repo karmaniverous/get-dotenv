@@ -1,16 +1,16 @@
 import type { CommandUnknownOpts } from '@commander-js/extra-typings';
 
 import {
-  type definePlugin,
   type GetDotenvCliPublic,
   readMergedOptions,
   resolveCommand,
   resolveShell,
 } from '@/src/cliHost';
 
+import type { BatchPlugin } from '.';
 import { execShellCommandBatch } from './execShellCommandBatch';
 import type { BatchPluginOptions } from './types';
-import type { BatchConfig } from './types';
+import type { BatchPluginConfig } from './types';
 import type { BatchParentInvokerFlags } from './types';
 
 /**
@@ -18,7 +18,7 @@ import type { BatchParentInvokerFlags } from './types';
  * Handles parent flags (e.g. `getdotenv batch -l`) and delegates to the batch executor.
  */
 export const attachBatchDefaultAction = (
-  plugin: ReturnType<typeof definePlugin>,
+  plugin: BatchPlugin,
   cli: GetDotenvCliPublic,
   pluginOpts: BatchPluginOptions,
   parent: CommandUnknownOpts,
@@ -36,7 +36,7 @@ export const attachBatchDefaultAction = (
 
     // Ensure context exists (host preSubcommand on root creates if missing).
     const dotenvEnv = cli.getCtx().dotenv;
-    const cfg = plugin.readConfig<BatchConfig>(cli);
+    const cfg = plugin.readConfig<BatchPluginConfig>(cli);
 
     const commandOpt =
       typeof opts.command === 'string' ? opts.command : undefined;

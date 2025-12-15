@@ -1,6 +1,7 @@
-import type { definePlugin, GetDotenvCliPublic } from '@/src/cliHost';
+import type { GetDotenvCliPublic } from '@/src/cliHost';
 
-import type { BatchConfig } from './types';
+import type { BatchPlugin } from '.';
+import type { BatchPluginConfig } from './types';
 
 /**
  * Attach options/arguments for the batch plugin mount.
@@ -15,7 +16,7 @@ import type { BatchConfig } from './types';
  * @internal
  */
 export function attachBatchOptions(
-  plugin: ReturnType<typeof definePlugin>,
+  plugin: BatchPlugin,
   cli: GetDotenvCliPublic,
 ) {
   const GROUP = `plugin:${cli.name()}`;
@@ -30,7 +31,7 @@ export function attachBatchOptions(
           const opt = plugin.createPluginDynamicOption(
             cli,
             '-p, --pkg-cwd',
-            (_bag, cfg: Readonly<BatchConfig>) =>
+            (_bag, cfg: Readonly<BatchPluginConfig>) =>
               `use nearest package directory as current working directory${cfg.pkgCwd ? ' (default)' : ''}`,
           );
           cli.setOptionGroup(opt, GROUP);
@@ -42,7 +43,7 @@ export function attachBatchOptions(
           const opt = plugin.createPluginDynamicOption(
             cli,
             '-r, --root-path <string>',
-            (_bag, cfg: Readonly<BatchConfig>) =>
+            (_bag, cfg: Readonly<BatchPluginConfig>) =>
               `path to batch root directory from current working directory (default: ${JSON.stringify(
                 cfg.rootPath || './',
               )})`,
@@ -56,7 +57,7 @@ export function attachBatchOptions(
           const opt = plugin.createPluginDynamicOption(
             cli,
             '-g, --globs <string>',
-            (_bag, cfg: Readonly<BatchConfig>) =>
+            (_bag, cfg: Readonly<BatchPluginConfig>) =>
               `space-delimited globs from root path (default: ${JSON.stringify(
                 cfg.globs || '*',
               )})`,
@@ -80,6 +81,3 @@ export function attachBatchOptions(
       .argument('[command...]')
   );
 }
-
-/** @internal */
-export type BatchCommand = ReturnType<typeof attachBatchOptions>;

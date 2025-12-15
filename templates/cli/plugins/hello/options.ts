@@ -1,16 +1,31 @@
-import type { definePlugin, GetDotenvCliPublic } from '@/src/cliHost';
+import type { GetDotenvCliPublic } from '@karmaniverous/get-dotenv/cliHost';
+
+import type { HelloPlugin } from '.';
+import type { HelloPluginConfig } from './types';
 
 export function attachHelloOptions(
   cli: GetDotenvCliPublic,
-  plugin: ReturnType<typeof definePlugin>,
+  plugin: HelloPlugin,
 ) {
-  cli.addOption(
-    plugin.createPluginDynamicOption(
+  const loudOn = plugin
+    .createPluginDynamicOption(
       cli,
-      '--loud',
-      (_bag, pluginCfg: Readonly<{ loud: boolean }>) =>
+      '-l, --loud',
+      (_bag, pluginCfg: Readonly<HelloPluginConfig>) =>
         `print greeting in ALL CAPS${pluginCfg.loud ? ' (default)' : ''}`,
-    ),
-  );
-  return cli;
+    )
+    .conflicts('loudOff');
+
+  const loudOff = plugin
+    .createPluginDynamicOption(
+      cli,
+      '-L, --loud-off',
+      (_bag, pluginCfg: Readonly<HelloPluginConfig>) =>
+        `print greeting in normal case${pluginCfg.loud ? '' : ' (default)'}`,
+    )
+    .conflicts('loud');
+
+  return cli.addOption(loudOn).addOption(loudOff);
 }
+
+export type HelloCommand = ReturnType<typeof attachHelloOptions>;

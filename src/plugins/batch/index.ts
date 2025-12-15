@@ -17,7 +17,7 @@ import { definePlugin } from '@/src/cliHost';
 import { attachBatchCmdSubcommand } from './cmdSubcommand';
 import { attachBatchDefaultAction } from './defaultAction';
 import { attachBatchOptions } from './options';
-import { BatchConfigSchema, type BatchPluginOptions } from './types';
+import { batchPluginConfigSchema, type BatchPluginOptions } from './types';
 
 /**
  * Batch plugin for the GetDotenv CLI host.
@@ -31,7 +31,7 @@ export const batchPlugin = (opts: BatchPluginOptions = {}) => {
     ns: 'batch',
     // Host validates this when config-loader is enabled; plugins may also
     // re-validate at action time as a safety belt.
-    configSchema: BatchConfigSchema,
+    configSchema: batchPluginConfigSchema,
     setup(cli) {
       const batchCmd = cli; // mount provided by host
       batchCmd.description(
@@ -51,3 +51,5 @@ export const batchPlugin = (opts: BatchPluginOptions = {}) => {
 
   return plugin;
 };
+
+export type BatchPlugin = ReturnType<typeof batchPlugin>;

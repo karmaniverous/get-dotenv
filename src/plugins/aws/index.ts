@@ -11,7 +11,7 @@ import { attachAwsAfterResolveHook } from './afterResolveHook';
 import { attachAwsDefaultAction } from './defaultAction';
 import { attachAwsOptions } from './options';
 import { attachAwsPreSubcommandHook } from './preSubcommandHook';
-import { AwsPluginConfigSchema } from './types';
+import { awsPluginConfigSchema } from './types';
 
 /**
  * AWS plugin: establishes an AWS session (credentials/region) based on dotenv configuration.
@@ -21,7 +21,7 @@ import { AwsPluginConfigSchema } from './types';
 export const awsPlugin = () => {
   const plugin = definePlugin({
     ns: 'aws',
-    configSchema: AwsPluginConfigSchema,
+    configSchema: awsPluginConfigSchema,
     setup(cli) {
       cli.description(
         'Establish an AWS session and optionally forward to the AWS CLI',
@@ -36,3 +36,5 @@ export const awsPlugin = () => {
   plugin.afterResolve = attachAwsAfterResolveHook(plugin);
   return plugin;
 };
+
+export type AwsPlugin = ReturnType<typeof awsPlugin>;

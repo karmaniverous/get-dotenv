@@ -1,25 +1,18 @@
 import {
   buildSpawnEnv,
   type GetDotenvCliPublic,
-  type PluginWithInstanceHelpers,
   readMergedOptions,
   resolveShell,
   runCommand,
 } from '@/src/cliHost';
 import { shouldCapture } from '@/src/cliHost/exec';
-import type { GetDotenvOptions } from '@/src/core';
 
+import type { AwsPlugin } from '.';
 import { applyAwsContext } from './common';
 import { awsConfigOverridesFromCommandOpts } from './configOverrides';
 import type { AwsCommand } from './options';
 import { resolveAwsContext } from './service';
 import type { AwsPluginConfig } from './types';
-
-/** @internal */
-type AwsPluginInstance = PluginWithInstanceHelpers<
-  GetDotenvOptions,
-  AwsPluginConfig
->;
 
 /**
  * Attach the default action for the AWS plugin mount.
@@ -35,7 +28,7 @@ type AwsPluginInstance = PluginWithInstanceHelpers<
  */
 export function attachAwsDefaultAction(
   cli: GetDotenvCliPublic,
-  plugin: AwsPluginInstance,
+  plugin: AwsPlugin,
   awsCmd: AwsCommand,
 ): void {
   awsCmd.action(async (args, opts, thisCommand) => {

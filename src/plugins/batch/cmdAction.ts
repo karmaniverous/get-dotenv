@@ -1,7 +1,6 @@
 import type { Command, CommandUnknownOpts } from '@commander-js/extra-typings';
 
 import {
-  type definePlugin,
   type GetDotenvCliPublic,
   maybePreserveNodeEvalArgv,
   readMergedOptions,
@@ -9,15 +8,16 @@ import {
   resolveShell,
 } from '@/src/cliHost';
 
+import type { BatchPlugin } from '.';
 import { execShellCommandBatch } from './execShellCommandBatch';
-import type { BatchConfig, BatchPluginOptions } from './types';
+import type { BatchPluginConfig, BatchPluginOptions } from './types';
 import type { BatchCmdSubcommandOptions } from './types';
 
 /**
  * Attach the default "cmd" subcommand action with contextual typing.
  */
 export const attachBatchCmdAction = (
-  plugin: ReturnType<typeof definePlugin>,
+  plugin: BatchPlugin,
   cli: GetDotenvCliPublic,
   batchCmd: CommandUnknownOpts,
   pluginOpts: BatchPluginOptions,
@@ -36,7 +36,7 @@ export const attachBatchCmdAction = (
       const args = commandParts.map(String);
 
       // Access merged per-plugin config from host context (if any).
-      const cfg = plugin.readConfig<BatchConfig>(cli);
+      const cfg = plugin.readConfig<BatchPluginConfig>(cli);
       const dotenvEnv = cli.getCtx().dotenv;
 
       // Resolve batch flags from the parent (batch) command.

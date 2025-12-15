@@ -144,14 +144,15 @@ export const ScriptSchema = z.union([
 /**
  * Zod schema for batch plugin configuration.
  */
-export const BatchConfigSchema = z.object({
+export const batchPluginConfigSchema = z.object({
   scripts: z.record(z.string(), ScriptSchema).optional(),
   shell: z.union([z.string(), z.boolean()]).optional(),
   rootPath: z.string().optional(),
   globs: z.string().optional(),
   pkgCwd: z.boolean().optional(),
 });
+
 /**
  * Batch plugin configuration object.
  */
-export type BatchConfig = z.infer<typeof BatchConfigSchema>;
+export type BatchPluginConfig = z.infer<typeof batchPluginConfigSchema>;

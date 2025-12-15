@@ -1,21 +1,12 @@
 import type { CommandUnknownOpts } from '@commander-js/extra-typings';
 
-import type {
-  GetDotenvCliPublic,
-  PluginWithInstanceHelpers,
-} from '@/src/cliHost';
-import type { GetDotenvOptions } from '@/src/core';
+import type { GetDotenvCliPublic } from '@/src/cliHost';
 
+import type { AwsPlugin } from '.';
 import { applyAwsContext } from './common';
 import { awsConfigOverridesFromCommandOpts } from './configOverrides';
 import { resolveAwsContext } from './service';
 import type { AwsPluginConfig } from './types';
-
-/** @internal */
-type AwsPluginInstance = PluginWithInstanceHelpers<
-  GetDotenvOptions,
-  AwsPluginConfig
->;
 
 /**
  * Attach the AWS plugin `preSubcommand` hook.
@@ -30,7 +21,7 @@ type AwsPluginInstance = PluginWithInstanceHelpers<
  */
 export function attachAwsPreSubcommandHook(
   cli: GetDotenvCliPublic,
-  plugin: AwsPluginInstance,
+  plugin: AwsPlugin,
 ): void {
   cli.hook('preSubcommand', async (thisCommand: CommandUnknownOpts) => {
     // Avoid side effects for help rendering.

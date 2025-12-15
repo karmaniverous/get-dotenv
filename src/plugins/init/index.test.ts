@@ -43,18 +43,49 @@ describe('plugins/init', () => {
     expect(giTxt).toContain('*.local');
 
     const cliIndex = path.posix.join(dir, 'src', 'cli', 'acme', 'index.ts');
-    const hello = path.posix.join(
+    const helloIndex = path.posix.join(
       dir,
       'src',
       'cli',
       'acme',
       'plugins',
-      'hello.ts',
+      'hello',
+      'index.ts',
+    );
+    const helloOptions = path.posix.join(
+      dir,
+      'src',
+      'cli',
+      'acme',
+      'plugins',
+      'hello',
+      'options.ts',
+    );
+    const helloDefaultAction = path.posix.join(
+      dir,
+      'src',
+      'cli',
+      'acme',
+      'plugins',
+      'hello',
+      'defaultAction.ts',
+    );
+    const helloSchema = path.posix.join(
+      dir,
+      'src',
+      'cli',
+      'acme',
+      'plugins',
+      'hello',
+      'schema.ts',
     );
     expect(await fs.pathExists(cliIndex)).toBe(true);
-    expect(await fs.pathExists(hello)).toBe(true);
+    expect(await fs.pathExists(helloIndex)).toBe(true);
+    expect(await fs.pathExists(helloOptions)).toBe(true);
+    expect(await fs.pathExists(helloDefaultAction)).toBe(true);
+    expect(await fs.pathExists(helloSchema)).toBe(true);
     // validate token substitution coverage across skeleton files
-    const helloTxt = await fs.readFile(hello, 'utf-8');
+    const helloTxt = await fs.readFile(helloIndex, 'utf-8');
     expect(helloTxt).toMatch(/Say hello with current dotenv context/i);
   });
 
@@ -119,16 +150,17 @@ describe('plugins/init', () => {
     expect(txt).toMatch(/dynamic:/);
     // skeleton should also be created with tokens replaced
     const cliIndex = path.posix.join(dir, 'src', 'cli', 'case3', 'index.ts');
-    const hello = path.posix.join(
+    const helloIndex = path.posix.join(
       dir,
       'src',
       'cli',
       'case3',
       'plugins',
-      'hello.ts',
+      'hello',
+      'index.ts',
     );
     expect(await fs.pathExists(cliIndex)).toBe(true);
-    expect(await fs.pathExists(hello)).toBe(true);
+    expect(await fs.pathExists(helloIndex)).toBe(true);
     // Compose-first template with fixed alias; validate wiring and alias.
     await expect(fs.readFile(cliIndex, 'utf-8')).resolves.toMatch(
       /createCli\(/,
@@ -136,7 +168,7 @@ describe('plugins/init', () => {
     await expect(fs.readFile(cliIndex, 'utf-8')).resolves.toMatch(
       /alias:\s*'mycli'/,
     );
-    await expect(fs.readFile(hello, 'utf-8')).resolves.toMatch(
+    await expect(fs.readFile(helloIndex, 'utf-8')).resolves.toMatch(
       /Say hello with current dotenv context/i,
     );
   });

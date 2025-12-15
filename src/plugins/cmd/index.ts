@@ -9,7 +9,7 @@ import { definePlugin } from '@/src/cliHost';
 import { attachCmdDefaultAction } from './defaultAction';
 import { attachCmdOptions } from './options';
 import { attachCmdParentInvoker } from './parentInvoker';
-import { CmdConfigSchema, type CmdPluginOptions } from './types';
+import { cmdPluginConfigSchema, type CmdPluginOptions } from './types';
 export type { RunCmdWithContextOptions } from './types';
 
 /**
@@ -21,7 +21,7 @@ export type { RunCmdWithContextOptions } from './types';
 export const cmdPlugin = (options: CmdPluginOptions = {}) => {
   const plugin = definePlugin({
     ns: 'cmd',
-    configSchema: CmdConfigSchema,
+    configSchema: cmdPluginConfigSchema,
     setup(cli) {
       const aliasSpec =
         typeof options.optionAlias === 'string'
@@ -53,3 +53,5 @@ export const cmdPlugin = (options: CmdPluginOptions = {}) => {
   });
   return plugin;
 };
+
+export type CmdPlugin = ReturnType<typeof cmdPlugin>;

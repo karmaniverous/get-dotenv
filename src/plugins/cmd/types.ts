@@ -34,7 +34,7 @@ export interface CmdPluginOptions {
 /**
  * Zod schema for cmd plugin configuration.
  */
-export const CmdConfigSchema = z
+export const cmdPluginConfigSchema = z
   .object({
     expand: z.boolean().optional(),
   })
@@ -42,7 +42,7 @@ export const CmdConfigSchema = z
 /**
  * Cmd plugin configuration object.
  */
-export type CmdConfig = z.infer<typeof CmdConfigSchema>;
+export type CmdPluginConfig = z.infer<typeof cmdPluginConfigSchema>;
 
 /**
  * Options for the cmd runner helper.

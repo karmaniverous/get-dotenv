@@ -1,19 +1,8 @@
-import type {
-  GetDotenvCliCtx,
-  GetDotenvCliPublic,
-  PluginWithInstanceHelpers,
-} from '@/src/cliHost';
-import type { GetDotenvOptions } from '@/src/core';
+import type { GetDotenvCliCtx, GetDotenvCliPublic } from '@/src/cliHost';
 
+import type { AwsPlugin } from '.';
 import { applyAwsContext } from './common';
 import { resolveAwsContext } from './service';
-import type { AwsPluginConfig } from './types';
-
-/** @internal */
-type AwsPluginInstance = PluginWithInstanceHelpers<
-  GetDotenvOptions,
-  AwsPluginConfig
->;
 
 /**
  * Create the AWS plugin `afterResolve` hook.
@@ -25,7 +14,7 @@ type AwsPluginInstance = PluginWithInstanceHelpers<
  *
  * @internal
  */
-export function attachAwsAfterResolveHook(plugin: AwsPluginInstance) {
+export function attachAwsAfterResolveHook(plugin: AwsPlugin) {
   return async (cli: GetDotenvCliPublic, ctx: GetDotenvCliCtx) => {
     const cfg = plugin.readConfig(cli);
 

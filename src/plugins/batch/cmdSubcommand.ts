@@ -1,7 +1,8 @@
 import { Command } from '@commander-js/extra-typings';
 
-import type { definePlugin, GetDotenvCliPublic } from '@/src/cliHost';
+import type { GetDotenvCliPublic } from '@/src/cliHost';
 
+import type { BatchPlugin } from '.';
 import { attachBatchCmdAction } from './cmdAction';
 import type { BatchPluginOptions } from './types';
 
@@ -21,7 +22,7 @@ import type { BatchPluginOptions } from './types';
  * @internal
  */
 export const attachBatchCmdSubcommand = (
-  plugin: ReturnType<typeof definePlugin>,
+  plugin: BatchPlugin,
   cli: GetDotenvCliPublic,
   batchCmd: GetDotenvCliPublic,
   pluginOpts: BatchPluginOptions,

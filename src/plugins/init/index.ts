@@ -27,3 +27,5 @@ export const initPlugin = () =>
       return undefined;
     },
   });
+
+export type InitPlugin = ReturnType<typeof initPlugin>;

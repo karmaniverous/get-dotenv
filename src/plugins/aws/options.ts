@@ -1,16 +1,6 @@
-import type {
-  GetDotenvCliPublic,
-  PluginWithInstanceHelpers,
-} from '@/src/cliHost';
-import type { GetDotenvOptions } from '@/src/core';
+import type { GetDotenvCliPublic } from '@/src/cliHost';
 
-import type { AwsPluginConfig } from './types';
-
-/** @internal */
-type AwsPluginInstance = PluginWithInstanceHelpers<
-  GetDotenvOptions,
-  AwsPluginConfig
->;
+import type { AwsPlugin } from '.';
 
 /**
  * Attach options/arguments for the AWS plugin mount.
@@ -20,10 +10,7 @@ type AwsPluginInstance = PluginWithInstanceHelpers<
  *
  * @internal
  */
-export function attachAwsOptions(
-  cli: GetDotenvCliPublic,
-  plugin: AwsPluginInstance,
-) {
+export function attachAwsOptions(cli: GetDotenvCliPublic, plugin: AwsPlugin) {
   return (
     cli
       // Description is owned by the plugin index (src/plugins/aws/index.ts).

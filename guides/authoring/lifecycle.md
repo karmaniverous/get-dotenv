@@ -15,12 +15,10 @@ export const helloPlugin = () =>
   definePlugin({
     ns: 'hello',
     setup(cli) {
-      cli
-        .description('Say hello')
-        .action(() => {
-          const ctx = cli.getCtx();
-          console.log('hello', Object.keys(ctx.dotenv).length);
-        });
+      cli.description('Say hello').action(() => {
+        const ctx = cli.getCtx();
+        console.log('hello', Object.keys(ctx.dotenv).length);
+      });
     },
   });
 ```
@@ -80,7 +78,7 @@ export const helloPlugin = () => {
 };
 ```
 
-For a fuller example in context, see the scaffolded template plugin at [templates/cli/plugins/hello.ts](../../templates/cli/plugins/hello.ts).
+For a fuller example in context, see the scaffolded template plugin at [templates/cli/plugins/hello/index.ts](../../templates/cli/plugins/hello/index.ts).
 
 Notes:
 

@@ -136,6 +136,7 @@ export const planCliCopies = ({
 }: PlanCliCopiesOptions): Array<CopyOperation> => {
   const subs = { __CLI_NAME__: cliName };
   const base = path.join(destRoot, 'src', 'cli', cliName);
+  const helloBase = path.join(base, 'plugins', 'hello');
   return [
     {
       src: path.join(TEMPLATES_ROOT, 'cli', 'index.ts'),
@@ -143,8 +144,29 @@ export const planCliCopies = ({
       subs,
     },
     {
-      src: path.join(TEMPLATES_ROOT, 'cli', 'plugins', 'hello.ts'),
-      dest: path.join(base, 'plugins', 'hello.ts'),
+      src: path.join(TEMPLATES_ROOT, 'cli', 'plugins', 'hello', 'index.ts'),
+      dest: path.join(helloBase, 'index.ts'),
+      subs,
+    },
+    {
+      src: path.join(TEMPLATES_ROOT, 'cli', 'plugins', 'hello', 'options.ts'),
+      dest: path.join(helloBase, 'options.ts'),
+      subs,
+    },
+    {
+      src: path.join(
+        TEMPLATES_ROOT,
+        'cli',
+        'plugins',
+        'hello',
+        'defaultAction.ts',
+      ),
+      dest: path.join(helloBase, 'defaultAction.ts'),
+      subs,
+    },
+    {
+      src: path.join(TEMPLATES_ROOT, 'cli', 'plugins', 'hello', 'schema.ts'),
+      dest: path.join(helloBase, 'schema.ts'),
       subs,
     },
   ];
