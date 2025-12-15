@@ -1,7 +1,7 @@
 import { definePlugin } from '@/src/cliHost';
 
 import { attachWhoamiDefaultAction } from './defaultAction';
-import { attachWhoamiReallySubcommand } from './really';
+import { attachWhoamiReallyAction } from './reallyAction';
 
 /**
  * AWS Whoami plugin factory.
@@ -22,7 +22,7 @@ export const awsWhoamiPlugin = () =>
       attachWhoamiDefaultAction(cli);
 
       // Subcommand behavior: `getdotenv aws whoami really`
-      attachWhoamiReallySubcommand(cli);
+      attachWhoamiReallyAction(cli);
 
       return undefined;
     },

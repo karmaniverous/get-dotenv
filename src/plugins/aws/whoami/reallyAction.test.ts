@@ -44,7 +44,7 @@ describe('plugins/aws/whoami really', () => {
       'really',
     ]);
 
-    expect(logSpy).toHaveBeenCalledWith('My secret identity is Batman.');
+    expect(logSpy).toHaveBeenCalledWith('Your secret identity is Batman.');
     expect(sendMock).not.toHaveBeenCalled();
 
     logSpy.mockRestore();

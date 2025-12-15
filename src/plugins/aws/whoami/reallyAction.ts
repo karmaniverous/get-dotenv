@@ -8,13 +8,15 @@ import type { GetDotenvCliPublic } from '@/src/cliHost';
  * @param whoami - The `whoami` command mount.
  * @returns Nothing.
  */
-export function attachWhoamiReallySubcommand(whoami: GetDotenvCliPublic): void {
+export function attachWhoamiReallyAction(whoami: GetDotenvCliPublic): void {
   const really = whoami
     .ns('really')
     .description('Print SECRET_IDENTITY from the resolved dotenv context');
 
   really.action(() => {
     const secretIdentity = really.getCtx().dotenv.SECRET_IDENTITY;
-    console.log(`My secret identity is ${secretIdentity ?? 'still a secret'}.`);
+    console.log(
+      `Your secret identity is ${secretIdentity ?? 'still a secret'}.`,
+    );
   });
 }
