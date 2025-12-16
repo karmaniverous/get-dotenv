@@ -282,7 +282,7 @@ Plugins should rely on the root shell setting unless a command itself requests a
 Recommended precedence (when you support scripts):
 
 ```
-scripts[name].shell (object form) > root bag.shell
+scripts[name].shell (object form; when omitted, currently forces shell-off) > root bag.shell
 ```
 
 ## Child environment composition (required)

@@ -83,17 +83,16 @@ getdotenv batch -r ./services -g "*" --command build
 
 Shell resolution:
 
-- If the resolved script entry is the object form `{ cmd, shell }`, the per-script `shell` overrides the root `--shell` for that script.
-- Otherwise, the root shell setting applies (`--shell` / `--shell-off`).
+- If the resolved script entry is the object form `{ cmd, shell }`, the effective shell is `scripts[name].shell` (and when omitted, the script currently runs with shell OFF rather than inheriting the root shell).
+- If the resolved script entry is the string form, the root shell setting applies (`--shell` / `--shell-off`).
 
 List mode:
-
-```bash
+```bash
 # List only (no command required)
 getdotenv batch -r ./services -g "web api" --list
 ```
 
-Tip: in list mode (with no `--command`), extra positional tokens after `batch` are treated as additional globs and merged with `--globs`.
+Tip: in list mode, pass globs via `--globs` (and quote the space-delimited string). Positional tokens are interpreted as a command payload by the default `batch cmd` subcommand.
 
 ## Examples (end-to-end)
 

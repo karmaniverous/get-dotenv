@@ -105,11 +105,13 @@ Minimal skeleton (DX‑friendly; no explicit types or casts):
 
 ```ts
 #!/usr/bin/env node
-import { GetDotenvCli } from '@karmaniverous/get-dotenv/cliHost';
+import { createCli } from '@karmaniverous/get-dotenv/cli';
 import { helloPlugin } from './plugins/hello';
 
-const program = new GetDotenvCli('__CLI_NAME__').use(helloPlugin());
+const run = createCli({
+  alias: '__CLI_NAME__',
+  compose: (p) => p.use(helloPlugin()),
+});
 
-await program.resolveAndLoad();
-await program.parseAsync();
+await run();
 ```

@@ -7,6 +7,9 @@ stan-core:
     - CHANGELOG.md
     - docs
     - package-lock.json
+    - 'test/**'
+    - 'src/**/*.test.ts'
+    - 'src/e2e/**'
   imports:
     extra-typings:
       - node_modules/@commander-js/extra-typings/index.d.ts
@@ -17,7 +20,7 @@ stan-core:
 stan-cli:
   cliDefaults:
     run:
-      facets: false
+      facets: true
       plan: false
       sequential: true
   patchOpenCommand: code -g {file}

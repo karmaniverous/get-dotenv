@@ -32,7 +32,7 @@ scripts and shell settings using shared helpers and executes the child with:
 
 - Explicit env injection: `{ ...process.env, ...ctx.dotenv }`
 - `stdio`: inherits by default; enable capture with `--capture` or `GETDOTENV_STDIO=pipe`
-- Shell resolution: honors script‑level overrides and the global shell setting
+- Shell resolution: uses the scripts table when present; object-form scripts `{ cmd, shell }` require an explicit `shell` (omission currently results in shell-off rather than inheriting the root shell)
 
 ## Parent alias
 
@@ -79,8 +79,7 @@ and for debugging overlays.
 
 ## Scripts table and shell overrides
 
-Commands may resolve via `scripts[name]`, and `scripts[name].shell` (boolean or
-string) overrides the global shell for that script:
+Commands may resolve via `scripts[name]`. When `scripts[name]` is the object form `{ cmd, shell }`, the effective shell is `scripts[name].shell` (and when omitted, the script currently runs with shell-off rather than inheriting the root shell):
 
 ```json
 {

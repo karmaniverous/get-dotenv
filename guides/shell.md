@@ -15,7 +15,7 @@ This page documents the root shell behavior controlled by the host’s global `-
   - Windows: `powershell.exe`
 - `--shell <string>`: use the provided shell (e.g., `/bin/zsh`)
 - `--shell-off` (or `shell: false`): execute without a shell (plain execa)
-- Scripts table overrides: an individual script may specify `shell` to override the global setting for that script.
+- Scripts table overrides: when a script entry uses the object form `{ cmd, shell }`, the effective shell is `scripts[name].shell` (and when omitted, the script currently runs with shell OFF rather than inheriting the root shell).
 
 ## Plain vs shell mode
 
@@ -27,13 +27,13 @@ This page documents the root shell behavior controlled by the host’s global `-
 Use the default shell:
 
 ```bash
-getdotenv -- env VAR=1
+getdotenv cmd echo OK
 ```
 
 Disable shell parsing entirely:
 
 ```bash
-getdotenv --shell-off cmd echo hello
+getdotenv --shell-off cmd node -e "console.log('hello')"
 ```
 
 Force a specific shell:
@@ -113,7 +113,7 @@ Examples (concise excerpts):
 
 Notes:
 
-- For plugin defaults, set values under `plugins.<id>` in your config; dynamic help callbacks read them from `cfg.plugins.<id>`.
+- For plugin defaults, set values under `plugins.<mount-path>` in your config (for example `plugins.aws/whoami`), and prefer `plugin.createPluginDynamicOption(cli, …)` so the callback receives the validated, instance-bound plugin config slice.
 - Use ON/OFF labels (“(default)”) for boolean toggles and “(default: "...")” for string defaults to keep output concise and consistent.
 
 TypeScript note: Many helper APIs (e.g., env overlay/expansion utilities) accept readonly record inputs, so `as const` maps are fine to pass where appropriate.
