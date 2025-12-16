@@ -50,7 +50,7 @@ const run = createCli({
       .use(helloPlugin()),
 });
 
-await run();
+await run(); // or await run(process.argv.slice(2));
 ```
 
 ### Access the true root command (typed helper)
@@ -80,6 +80,17 @@ export const helloPlugin = () => {
 
 For a fuller example in context, see the scaffolded template plugin at [templates/cli/plugins/hello/index.ts](../../templates/cli/plugins/hello/index.ts).
 
+### Recommended Plugin Structure
+
+For non‑trivial plugins, prefer the structure used by the shipped template (`init` scaffold) to keep setup clean and wiring testable:
+
+- `index.ts` — The plugin factory. Calls `definePlugin` and orchestrates `setup` by calling attach helpers.
+- `options.ts` — Exports `attach*Options(cli)`. Attaches options/arguments and returns the command for chaining.
+- `*Action.ts` — Exports `attach*Action(cli)`. Wires the `.action()` handler.
+- `types.ts` — Exports Zod configuration schemas and inferred types.
+
+This separation (“bucket of subcommands”) scales well as your plugin grows.
+
 Notes:
 
 - The `compose` hook runs before parsing and is the recommended way to assemble your CLI surface. The factory installs root options and hooks so shipped plugins can read the merged options bag with `readMergedOptions()`.
@@ -94,7 +105,7 @@ await createCli({
   alias: 'toolbox',
   branding: 'toolbox v1.0.0', // optional help header
   compose: (p) => p /* ...wire plugins... */,
-}).run(process.argv.slice(2));
+})();
 ```
 
 If you construct a host directly, call `program.brand({ importMetaUrl, description })` before parsing.
@@ -118,8 +129,8 @@ If your plugin accepts option values that may include environment references (fo
 
 See also:
 
-- Config & Validation
-- Executing Shell Commands
+- [Config & Validation](../config.md)
+- [Executing Shell Commands](../shell.md)
 
 ## Dynamic option descriptions
 

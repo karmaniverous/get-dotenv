@@ -15,6 +15,12 @@ stan-core:
     # - ../smoz/.stan/system/stan.todo.md
     # - ../smoz/.stan/interop/get-dotenv/**
 stan-cli:
+  cliDefaults:
+    run:
+      facets: false
+      plan: false
+      sequential: true
+  patchOpenCommand: code -g {file}
   scripts:
     typecheck: npm run typecheck
     lint: npm run lint:fix
@@ -33,9 +39,3 @@ stan-cli:
     verify-package: npm run verify:package
     verify-bundle: npm run verify:bundle
     verify-tarball: npm run verify:tarball
-  cliDefaults:
-    run:
-      facets: true
-      plan: false
-      sequential: true
-  patchOpenCommand: code -g {file}

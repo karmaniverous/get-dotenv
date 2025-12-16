@@ -213,7 +213,7 @@
     "release": "dotenvx run -f .env.local -- release-it",
     "release:pre": "dotenvx run -f .env.local -- release-it --no-git.requireBranch --github.prerelease --preRelease",
     "test": "vitest run",
-    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "typecheck": "tsc",
     "verify:types": "node tools/verify-types.js",
     "verify:package": "node tools/verify-package.js",
     "verify:smoke": "node tools/smoke.js",

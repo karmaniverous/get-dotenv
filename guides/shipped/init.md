@@ -66,7 +66,7 @@ getdotenv init ./apps/toolbox \
 ## Generated files
 
 - `getdotenv.config.*` (public; and `.local` if requested)
-- `src/cli/<name>/index.ts` and `src/cli/<name>/plugins/hello.ts` skeleton
+- `src/cli/<name>/index.ts` and `src/cli/<name>/plugins/hello/` skeleton (index, options, actions, types)
 
 ## Notes
 

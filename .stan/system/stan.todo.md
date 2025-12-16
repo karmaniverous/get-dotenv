@@ -2,8 +2,6 @@
 
 ## Next up (near‑term, actionable)
 
-- Docs/templates: finish mount-semantics audit across authoring and shipped guides (ensure `setup(mount)` examples don’t double-nest).
-- Docs/templates: fix `createCli` examples everywhere (runner function; no `.run()`).
 - Public API: export `shouldCapture` from `@karmaniverous/get-dotenv/cliHost` (and re-export from root), and make diagnostics helpers reachable from the root entrypoint for copy/paste-friendly examples.
 - Deprecations: soft-deprecate the `z` re-export (JSDoc + a short Guides callout) and ensure docs/templates import `{ z }` from `zod`.
 - Verify: Windows SSO login-on-demand (`aws --profile … --login-on-demand whoami`) from a fresh terminal with AWS CLI 2.x.
@@ -257,3 +255,5 @@
 - Templates: add hello --loud-off and tests (no dist copy).
 - Fix: template hello typing + init hello file list
 - Fix: stabilize E2E output-path test
+- Docs: authoring lifecycle guide — fix createCli usage (no .run) and document recommended file structure.
+- Docs: init guide — update generated files list (folder-based hello plugin).

@@ -151,3 +151,7 @@ See [CHANGELOG.md](./CHANGELOG.md)
 ## License
 
 BSD‑3‑Clause — see [LICENSE](./LICENSE)
+
+---
+
+Built for you with ❤️ on Bali! Find more great tools & templates on [my GitHub Profile](https://github.com/karmaniverous).
