@@ -37,6 +37,8 @@ await runCommand([file, ...args], false, {
 });
 ```
 
+Note: the current `runCommand()` helper re-emits buffered stdout only when `stdio: 'pipe'` is used. If you need to reliably print stderr in capture mode, prefer `runCommandResult()` and write `stderr` explicitly.
+
 ## Optional trace / redaction / entropy (best practice)
 
 When your plugin launches a subprocess, you can emit a short diagnostic prelude similar to the cmd plugin’s `--trace`:

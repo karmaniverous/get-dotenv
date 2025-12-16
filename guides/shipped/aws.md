@@ -22,12 +22,17 @@ At a glance:
 - Region resolve:
   - From config (`plugins.aws.region`) → dotenv (`AWS_REGION`) → `aws configure get region --profile <profile>` (best‑effort) → `plugins.aws.defaultRegion`.
 - Credentials resolve (strategy: `cli-export` default):
-  - If `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` exist in the parent env, they are used (no CLI call).
-  - Else try `aws configure export-credentials` (JSON first, then env‑lines).
-  - If export fails and the profile looks like SSO and `loginOnDemand` is true, run `aws sso login --profile <profile>` once and retry export.
-  - As a last resort, fall back to `aws configure get aws_access_key_id`, `aws_secret_access_key`, and optional `aws_session_token`.
+  - If a profile is selected (from flags/config/dotenv), it wins over ambient env credentials: the plugin resolves credentials for that profile via the AWS CLI (`aws configure export-credentials`, with optional SSO login-on-demand) and then applies them to `process.env`.
+  - If no profile is selected, the plugin falls back to ambient credentials from `process.env` (`AWS_ACCESS_KEY_ID` + `AWS_SECRET_ACCESS_KEY` + optional `AWS_SESSION_TOKEN`) when present.
+  - Export-credentials formats: the plugin prefers `aws configure export-credentials --format process` first, then tries platform-appropriate env-like formats (PowerShell / windows-cmd / env / env-no-export), then falls back to the AWS CLI default output when needed.
+  - If export fails and the profile looks like SSO and `loginOnDemand` is true, the plugin runs `aws sso login --profile <profile>` once and retries export.
+  - As a last resort, it falls back to `aws configure get aws_access_key_id`, `aws_secret_access_key`, and optional `aws_session_token`.
 - Effects:
-  - Writes `AWS_REGION` and (when unset) `AWS_DEFAULT_REGION`, plus credentials vars, into `process.env`.
+  - Writes `AWS_REGION` and (when unset) `AWS_DEFAULT_REGION` into `process.env`.
+  - Ensures mutually exclusive AWS credential sources in `process.env`:
+    - When using static/exported credentials: clears `AWS_PROFILE` / `AWS_DEFAULT_PROFILE` / `AWS_SDK_LOAD_CONFIG`.
+    - When using a profile (SSO): clears static credential vars (`AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_SESSION_TOKEN`) and sets `AWS_PROFILE` / `AWS_DEFAULT_PROFILE` / `AWS_SDK_LOAD_CONFIG=1`.
+  - When credentials are resolved, writes `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, and optional `AWS_SESSION_TOKEN` to `process.env`.
   - Mirrors non‑sensitive metadata only (`{ profile?, region? }`) under `ctx.plugins.aws`.
   - Child plugins can rely on `process.env` for AWS SDK default providers and can read profile/region via `ctx.plugins.aws`.
 
@@ -57,7 +62,7 @@ Subcommand flags (map directly to config for effective defaults):
 - `--profile-fallback-key <string>` — override fallback key (`AWS_PROFILE` by default)
 - `--region-key <string>` — override config key name for region (`AWS_REGION` by default)
 
-Note on capture: The shipped host treats `--capture` (or `GETDOTENV_STDIO=pipe`) as a global behavior. The aws subcommand honors it when forwarding to the AWS CLI and in child processes.
+Note on capture: The shipped host treats `--capture` (or `GETDOTENV_STDIO=pipe`) as a global behavior. The aws subcommand honors it when forwarding to the AWS CLI and in child processes; when piped, the current executor re-emits buffered stdout (stderr is not re-emitted by default).
 
 ## Config examples
 
@@ -120,8 +125,8 @@ export const whoamiPlugin = () =>
       cli
         .description('Print AWS caller identity (uses parent aws session)')
         .action(async () => {
-          // The AWS SDK default providers will read credentials from
-          // process.env, which the aws parent has already populated.
+          // The AWS SDK default providers will read credentials from process.env,
+          // which the aws parent has already populated.
           const client = new STSClient();
           const result = await client.send(new GetCallerIdentityCommand());
           console.log(JSON.stringify(result, null, 2));
@@ -134,21 +139,16 @@ Wire the child under the aws parent:
 
 ```ts
 #!/usr/bin/env node
-import { GetDotenvCli } from '@karmaniverous/get-dotenv/cliHost';
+import { createCli } from '@karmaniverous/get-dotenv/cli';
 import { awsPlugin } from '@karmaniverous/get-dotenv/plugins';
 import { whoamiPlugin } from './plugins/aws-whoami';
 
-const program = new GetDotenvCli('mycli');
-
-// Compose aws as parent and whoami as its child.
-program.attachRootOptions().use(awsPlugin().use(whoamiPlugin()));
-
-await program.brand({
-  importMetaUrl: import.meta.url,
-  description: 'mycli',
+const run = createCli({
+  alias: 'mycli',
+  compose: (p) => p.use(awsPlugin().use(whoamiPlugin())),
 });
 
-await program.parseAsync();
+await run();
 ```
 
 Usage:

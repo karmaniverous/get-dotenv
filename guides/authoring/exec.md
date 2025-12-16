@@ -305,10 +305,11 @@ Honor the shared capture contract for CI‑friendly logs:
 
 - Use `stdio: 'pipe'` when `process.env.GETDOTENV_STDIO === 'pipe'` or the merged root options bag sets `capture: true`. Otherwise, inherit stdio for live interaction.
 - Optional, best practice: mirror the cmd plugin’s concise `--trace [keys...]` lines (origin: dotenv | parent | unset) with presentation‑time redaction for secret‑like keys and once‑per‑key entropy warnings. This is not a requirement but provides a consistent DX.
+  - Note: the current `runCommand()` helper re-emits buffered stdout only when `stdio: 'pipe'` is used. If you need to reliably print stderr in capture mode, prefer `runCommandResult()` and write `stderr` explicitly.
 
 ## Quoting and argv vs string
 
-- Shell‑off (plain exec): prefer argv arrays (especially for `node -e "…"`) to avoid lossy re‑tokenization and keep code payloads intact.
+- Shell‑off (plain exec): prefer argv arrays (especially for `node -e/--eval` payloads) to avoid lossy re‑tokenization and keep code payloads intact.
 - Shell‑on: pass a single string to the selected shell and document quoting rules:
   - POSIX and PowerShell both treat single quotes as literal and double quotes as interpolating. Recommend single quotes when users want to prevent outer‑shell expansion.
 
@@ -335,33 +336,38 @@ const argv = maybePreserveNodeEvalArgv(args);
 
 ```ts
 import { buildSpawnEnv } from '@karmaniverous/get-dotenv';
-import { definePlugin, readMergedOptions, runCommand, shouldCapture } from '@karmaniverous/get-dotenv/cliHost';
+import {
+  definePlugin,
+  readMergedOptions,
+  runCommand,
+  shouldCapture,
+} from '@karmaniverous/get-dotenv/cliHost';
 
 export const dockerPlugin = () =>
   definePlugin({
     ns: 'docker',
     setup(cli) {
-      cli
-        .argument('[args...]')
-        .action(async (args, _opts, thisCommand) => {
-          const bag = readMergedOptions(thisCommand);
-          const ctx = cli.getCtx();
-          const env = buildSpawnEnv(process.env, ctx.dotenv);
+      cli.argument('[args...]').action(async (args, _opts, thisCommand) => {
+        const bag = readMergedOptions(thisCommand);
+        const ctx = cli.getCtx();
+        const env = buildSpawnEnv(process.env, ctx.dotenv);
 
-          // Choose shell behavior: explicit false (plain), or inherit the normalized root shell
-          const shell = bag.shell ?? false;
-          const capture = shouldCapture(bag.capture);
+        // Choose shell behavior: explicit false (plain), or inherit the normalized root shell
+        const shell = bag.shell ?? false;
+        const capture = shouldCapture(bag.capture);
 
-          // Shell-off: prefer argv arrays to preserve payloads
-          const argv = [
-            'docker',
-            ...(Array.isArray(args) ? args.map(String) : []),
-          ];
-          await runCommand(argv, shell === false ? false : shell, {
-            env,
-            stdio: capture ? 'pipe' : 'inherit',
-          });
+        // Shell-off: prefer argv arrays to preserve payloads
+        const argv = [
+          'docker',
+          ...(Array.isArray(args) ? args.map(String) : []),
+        ];
+        const commandArg = shell === false ? argv : argv.join(' ');
+
+        await runCommand(commandArg, shell === false ? false : shell, {
+          env,
+          stdio: capture ? 'pipe' : 'inherit',
         });
+      });
     },
   });
 ```
@@ -418,7 +424,9 @@ export const runPlugin = () => {
           const capture = shouldCapture(bag.capture);
 
           // Preserve argv only when shell-off and the command wasn't remapped by scripts.
-          const argvIn = Array.isArray(commandParts) ? commandParts.map(String) : [];
+          const argvIn = Array.isArray(commandParts)
+            ? commandParts.map(String)
+            : [];
           const commandArg =
             shell === false && resolvedCmd === input
               ? maybePreserveNodeEvalArgv(argvIn)

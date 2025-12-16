@@ -19,7 +19,7 @@ This page documents the root shell behavior controlled by the host’s global `-
 
 ## Plain vs shell mode
 
-- Plain (no shell): safer for simple commands; execa parses arguments as JS. Pipes, redirects, and globbing are not available unless the command itself implements them.
+- Plain (no shell): safer for simple commands; pipes, redirects, and globbing are not available unless the command itself implements them. When `get-dotenv` is given a *string* command in shell-off mode, it tokenizes it using a minimal tokenizer; for complex quoting or `node -e/--eval` payloads, prefer passing argv tokens (or use the `cmd`/`batch` positional token forms) so payloads are preserved precisely.
 - Shell mode: the specified shell parses the command string, enabling pipes, redirects, aliases, and shell builtins. Quoting and escaping must follow the shell’s rules.
 
 ## Examples
@@ -86,7 +86,7 @@ By default, child process output is streamed live (`stdio: 'inherit'`). For dete
 - Flag: `--capture`
 - Env: `GETDOTENV_STDIO=pipe`
 
-When capture is enabled, stdout/stderr are buffered and re‑emitted after the child completes. Batch and AWS forwarding also honor capture, ensuring stable output ordering in automated environments. Live streaming remains available by omitting the flag/env (the default).
+When capture is enabled, commands run with `stdio: 'pipe'` and the host re‑emits buffered stdout after the child completes. Note: the current `runCommand()` helper re‑emits stdout only; stderr is captured for programmatic callers via `runCommandResult()`, but it is not re‑emitted by default. Live streaming remains available by omitting the flag/env (the default).
 
 ## Dynamic help defaults
 

@@ -4,9 +4,7 @@ title: cmd
 
 # Shipped Plugins: cmd
 
-Execute a single command under the current dotenv context. Includes a convenient
-parent‑level `-c, --cmd <command...>` alias so npm script flags apply to
-getdotenv rather than the inner shell command.
+Execute a single command under the current dotenv context. Includes a convenient parent‑level `-c, --cmd <command...>` alias so npm script flags apply to getdotenv rather than the inner shell command.
 
 ## Import paths
 
@@ -27,12 +25,13 @@ import { cmdPlugin } from '@karmaniverous/get-dotenv/plugins/cmd';
 getdotenv cmd [command...]
 ```
 
-Positional tokens are joined into a single command string. The plugin resolves
-scripts and shell settings using shared helpers and executes the child with:
+Positional tokens are used as the command payload. The plugin resolves scripts and shell settings using shared helpers and executes the child with:
 
 - Explicit env injection: `{ ...process.env, ...ctx.dotenv }`
 - `stdio`: inherits by default; enable capture with `--capture` or `GETDOTENV_STDIO=pipe`
 - Shell resolution: uses the scripts table when present; object-form scripts `{ cmd, shell }` require an explicit `shell` (omission currently results in shell-off rather than inheriting the root shell)
+
+Shell-off note: when `--shell-off` is active and you run `node -e/--eval`, the runner preserves argv tokens (and normalizes one layer of outer quotes on the code argument) to avoid lossy re-tokenization across platforms.
 
 ## Parent alias
 
@@ -54,15 +53,13 @@ Then:
 npm run print -- -e dev
 ```
 
-Conflict guard: Supplying both the alias and the `cmd` subcommand in the same
-invocation is disallowed and exits with a helpful message.
+Conflict guard: Supplying both the alias and the `cmd` subcommand in the same invocation is disallowed and exits with a helpful message.
 
 ## Quoting and eval snippets
 
 - On POSIX, prefer single quotes around `$VAR` to avoid outer‑shell expansion.
 - On PowerShell, single quotes are literal; use double quotes for interpolation.
-- For Node eval snippets, quote the entire payload so Commander doesn’t treat
-  `-e/--eval` as getdotenv’s `--env`.
+- For Node eval snippets, quote the entire payload so Commander doesn’t treat `-e/--eval` as getdotenv’s `--env`.
 
 Examples:
 
@@ -73,9 +70,7 @@ getdotenv --shell-off cmd node -e "console.log(process.env.APP_SETTING ?? '')"
 
 ## Diagnostics
 
-Use `--trace [keys...]` to print concise lines to stderr before spawning the
-child, indicating the origin and value composition for each key. Useful in CI
-and for debugging overlays.
+Use `--trace [keys...]` to print concise lines to stderr before spawning the child, indicating the origin and value composition for each key. Useful in CI and for debugging overlays.
 
 ## Scripts table and shell overrides
 

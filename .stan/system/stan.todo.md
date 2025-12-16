@@ -257,5 +257,6 @@
 - Fix: stabilize E2E output-path test
 - Docs: authoring lifecycle guide — fix createCli usage (no .run) and document recommended file structure.
 - Docs: authoring lifecycle guide — match plugin config Zod pattern and inferred types.
+- Docs: align capture wording (stdout-only re-emit), clarify shell-off tokenization/argv guidance, and fix aws guide credential precedence + host wiring example to match current implementation.
 - Docs: init guide — update generated files list (folder-based hello plugin).
-- Docs: align shell/scripts/batch examples with current CLI behavior (cmd default subcommand, list mode, and object-form script shell semantics).- Docs: fix remaining config/help drift (validation timing, scripts shape, and no `help <cmd>` subcommand).
+- Docs: align shell/scripts/batch examples with current CLI behavior (cmd default subcommand, list mode, and object-form script shell semantics).- Docs: fix remaining config/help drift (validation timing, scripts shape, and no `help <cmd>` subcommand).
