@@ -258,4 +258,4 @@
 - Docs: authoring lifecycle guide — fix createCli usage (no .run) and document recommended file structure.
 - Docs: authoring lifecycle guide — match plugin config Zod pattern and inferred types.
 - Docs: init guide — update generated files list (folder-based hello plugin).
-- Docs: align shell/scripts/batch examples with current CLI behavior (cmd default subcommand, list mode, and object-form script shell semantics).
+- Docs: align shell/scripts/batch examples with current CLI behavior (cmd default subcommand, list mode, and object-form script shell semantics).- Docs: fix remaining config/help drift (validation timing, scripts shape, and no `help <cmd>` subcommand).

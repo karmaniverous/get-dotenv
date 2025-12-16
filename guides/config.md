@@ -41,7 +41,7 @@ JSON/YAML (data only, always-on; no-op when no files are present):
 - Allowed keys:
   - rootOptionDefaults?: Partial<RootOptionsShape> — collapsed, CLI‑like flags and strings (families, singles). Prefer this to set help‑time/runtime defaults for root options.
   - rootOptionVisibility?: Partial<Record<keyof RootOptionsShape, boolean>> — help‑time visibility (false hides a flag).
-  - scripts?: Record<string, unknown>
+  - scripts?: Record<string, string | { cmd: string; shell?: string | boolean }>
   - vars?: Record<string, string> (global, public)
   - envVars?: Record<string, Record<string, string>> (per‑env, public)
   - plugins?: Record<string, unknown>
@@ -97,7 +97,7 @@ There are three distinct expansion stages:
 
 Notes:
 
-- `getDotenv()` (programmatic API) expands `outputPath` against the composed variables (it can reference other dotenv keys). The CLI’s `--output-path` is expanded against `process.env` only.
+- `getDotenv()` (programmatic API) expands `outputPath` against the composed variables (it can reference other dotenv keys). In the CLI, argv-provided values (like `--output-path`) are expanded against `process.env` at parse time, but values coming from `rootOptionDefaults` are not automatically expanded.
 
 ## Validation (requiredKeys, schema, and --strict)
 
@@ -108,7 +108,7 @@ You can validate the final composed environment via config:
 
 Behavior:
 
-- Validation runs once against the composed env (host/generator paths), after overlays and Phase C interpolation.
+- Validation runs once against the composed env (host/generator paths), after overlays and dynamic variables are applied.
 - By default, issues are printed as warnings. Set --strict (or strict: true in options) to fail with a non‑zero exit when issues are detected.
 
 Examples:
@@ -187,7 +187,7 @@ Presentation‑only diagnostics help audit values without altering runtime behav
 
 ## Scripts table (optional)
 
-You can define a scripts table in config. Script strings are resolved by the `cmd` and `batch` commands; object-form scripts `{ cmd, shell }` use `shell` as the effective shell for that entry (and when omitted, the script currently runs with shell-off rather than inheriting the root shell):
+You can define a scripts table in config. Script strings are resolved by the `cmd` and `batch` commands. If you want a named script to inherit the root shell behavior, use the string form; the object form `{ cmd, shell }` uses `shell` as the effective shell for that entry (and when omitted, the script currently runs with shell-off rather than inheriting the root shell):
 
 ```json
 {

@@ -93,7 +93,7 @@ When capture is enabled, stdout/stderr are buffered and re‑emitted after the c
 Root and plugin flags display effective defaults derived from the same resolved configuration (overlays + dynamic), evaluated safely at help time:
 
 - Top‑level `-h/--help` computes a read‑only resolved config and evaluates dynamic descriptions (no logging; no `process.env` mutation).
-- `help <cmd>` refreshes dynamic descriptions after normal parsing; both paths render the same text.
+- Subcommand help is rendered with `getdotenv <cmd> -h` / `--help`. Only top-level `-h/--help` is guaranteed to run with side effects suppressed.
 
 Examples (concise excerpts):
 
@@ -105,7 +105,7 @@ Examples (concise excerpts):
 ```
 
 ```text
-# getdotenv help batch
+# getdotenv batch -h
   -r, --root-path <string>  path to batch root directory from current working directory (default: "./")
   -g, --globs <string>      space-delimited globs from root path (default: "*")
   -p, --pkg-cwd             use nearest package directory as current working directory (default)
