@@ -46,14 +46,13 @@ Batch supports two equivalent ways to provide a command payload:
 - Positional tokens (`[command...]`) (the default behavior)
 - `--command <string>` (a string payload; scripts-aware)
 
-Do not provide both in the same invocation; use one or the other.
+Prefer providing exactly one of these. If both are provided, the current implementation treats positional tokens as the command payload (when not in list mode).
 
 ### 1) Positional command tokens (default)
 
 This is the most direct form and is the easiest way to avoid shell quoting issues, especially for `node -e` snippets when running with `--shell-off`.
 
-```bash
-# Run "echo OK" in each matched directory
+```bash# Run "echo OK" in each matched directory
 getdotenv batch -r ./services -g "web api" echo OK
 ```
 
@@ -87,12 +86,17 @@ Shell resolution:
 - If the resolved script entry is the string form, the root shell setting applies (`--shell` / `--shell-off`).
 
 List mode:
-```bash
+
+```bash
 # List only (no command required)
 getdotenv batch -r ./services -g "web api" --list
 ```
 
-Tip: in list mode, pass globs via `--globs` (and quote the space-delimited string). Positional tokens are interpreted as a command payload by the default `batch cmd` subcommand.
+Tip: in list mode, prefer `--globs "<space-delimited globs>"`. If you omit `--command`, extra positional tokens after `--list` are treated as additional globs (not as a command), for example:
+
+```bash
+getdotenv batch -r ./services -l web api
+```
 
 ## Examples (end-to-end)
 

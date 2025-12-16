@@ -260,3 +260,6 @@
 - Docs: align capture wording (stdout-only re-emit), clarify shell-off tokenization/argv guidance, and fix aws guide credential precedence + host wiring example to match current implementation.
 - Docs: init guide — update generated files list (folder-based hello plugin).
 - Docs: align shell/scripts/batch examples with current CLI behavior (cmd default subcommand, list mode, and object-form script shell semantics).- Docs: fix remaining config/help drift (validation timing, scripts shape, and no `help <cmd>` subcommand).
+
+- Docs: fix CRLF artifacts in shell/diagnostics docs and document batch list-mode token precedence to match implementation.
+- Amendment: a prior Completed entry near the end appears to have two bullets merged onto one line; treat it as two separate bullets (“Docs: align shell/scripts/batch…” and “Docs: fix remaining config/help drift…”).

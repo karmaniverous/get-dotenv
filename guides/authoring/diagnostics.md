@@ -14,7 +14,7 @@ Throw on subprocess failures by default. Only continue on error when the option 
 
 Honor the global capture contract:
 
-- If `process.env.GETDOTENV_STDIO === 'pipe'` or the merged options bag has `capture: true`, run your subprocess with `stdio: 'pipe'` and re‑emit buffered outputs after completion.
+- If `process.env.GETDOTENV_STDIO === 'pipe'` or the merged options bag has `capture: true`, run your subprocess with `stdio: 'pipe'`.
 - Otherwise, inherit stdio for live interaction.
 
 ```ts
