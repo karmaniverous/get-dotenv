@@ -118,7 +118,7 @@ Inside actions, prefer the structural helpers:
 import { readMergedOptions } from '@karmaniverous/get-dotenv/cliHost';
 
 cli.ns('print').action((_args, _opts, thisCommand) => {
-  const bag = readMergedOptions(thisCommand) ?? {};
+  const bag = readMergedOptions(thisCommand);
   const ctx = cli.getCtx();
   // bag contains merged root options (scripts, shell, capture, trace, etc.)
   // ctx.dotenv contains the final merged env (after overlays and dynamics)
@@ -145,26 +145,34 @@ Key points:
 Example (plugin flag with ON/OFF default label using instance‑bound config):
 
 ```ts
+import { z } from 'zod';
 import { definePlugin } from '@karmaniverous/get-dotenv/cliHost';
 
-type HelloConfig = { loud?: boolean };
+const helloConfigSchema = z.object({
+  loud: z.boolean().optional().default(false),
+});
+type HelloConfig = z.infer<typeof helloConfigSchema>;
 
 export const helloPlugin = () => {
   const plugin = definePlugin({
     ns: 'hello',
+    configSchema: helloConfigSchema,
     setup(cli) {
       cli
         .description('Say hello with current dotenv context')
         .addOption(
-          plugin.createPluginDynamicOption<HelloConfig>(
+          // Helper infers config type from plugin instance
+          plugin.createPluginDynamicOption(
             cli,
             '--loud',
-            (_bag, cfg) =>
-              `print greeting in ALL CAPS${cfg.loud ? ' (default)' : ''}`,
+            (
+              _bag,
+              cfg, // cfg is inferred as Readonly<HelloConfig>
+            ) => `print greeting in ALL CAPS${cfg.loud ? ' (default)' : ''}`,
           ),
         )
         .action(() => {
-          const cfg = plugin.readConfig<HelloConfig>(cli);
+          const cfg = plugin.readConfig(cli); // cfg is inferred
           // use cfg.loud at runtime
         });
     },
@@ -176,10 +184,10 @@ export const helloPlugin = () => {
 Or build the Option first:
 
 ```ts
-const opt = plugin.createPluginDynamicOption<{ color?: string }>(
+const opt = plugin.createPluginDynamicOption(
   cli,
-  '--color <string>',
-  (_bag, cfg) => `text color (default: ${JSON.stringify(cfg.color ?? 'blue')})`,
+  '--loud',
+  (_bag, cfg) => `print greeting in ALL CAPS${cfg.loud ? ' (default)' : ''}`,
 );
 cli.addOption(opt);
 ```

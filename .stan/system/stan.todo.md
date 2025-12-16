@@ -256,4 +256,5 @@
 - Fix: template hello typing + init hello file list
 - Fix: stabilize E2E output-path test
 - Docs: authoring lifecycle guide — fix createCli usage (no .run) and document recommended file structure.
-- Docs: init guide — update generated files list (folder-based hello plugin).
+- Docs: authoring lifecycle guide — match plugin config Zod pattern and inferred types.
+- Docs: init guide — update generated files list (folder-based hello plugin).
