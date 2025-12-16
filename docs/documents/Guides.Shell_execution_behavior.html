@@ -9,18 +9,18 @@
 </li>
 <li><code>--shell &lt;string&gt;</code>: use the provided shell (e.g., <code>/bin/zsh</code>)</li>
 <li><code>--shell-off</code> (or <code>shell: false</code>): execute without a shell (plain execa)</li>
-<li>Scripts table overrides: an individual script may specify <code>shell</code> to override the global setting for that script.</li>
+<li>Scripts table overrides: when a script entry uses the object form <code>{ cmd, shell }</code>, the effective shell is <code>scripts[name].shell</code> (and when omitted, the script currently runs with shell OFF rather than inheriting the root shell).</li>
 </ul>
 <h2 id="plain-vs-shell-mode" class="tsd-anchor-link">Plain vs shell mode<a href="#plain-vs-shell-mode" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h2><ul>
-<li>Plain (no shell): safer for simple commands; execa parses arguments as JS. Pipes, redirects, and globbing are not available unless the command itself implements them.</li>
+<li>Plain (no shell): safer for simple commands; pipes, redirects, and globbing are not available unless the command itself implements them. When <code>get-dotenv</code> is given a <em>string</em> command in shell-off mode, it tokenizes it using a minimal tokenizer; for complex quoting or <code>node -e/--eval</code> payloads, prefer passing argv tokens (or use the <code>cmd</code>/<code>batch</code> positional token forms) so payloads are preserved precisely.</li>
 <li>Shell mode: the specified shell parses the command string, enabling pipes, redirects, aliases, and shell builtins. Quoting and escaping must follow the shell’s rules.</li>
 </ul>
 <h2 id="examples" class="tsd-anchor-link">Examples<a href="#examples" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h2><p>Use the default shell:</p>
-<pre><code class="bash"><span class="hl-0">getdotenv</span><span class="hl-1"> </span><span class="hl-3">--</span><span class="hl-1"> </span><span class="hl-2">env</span><span class="hl-1"> </span><span class="hl-2">VAR=</span><span class="hl-8">1</span>
+<pre><code class="bash"><span class="hl-0">getdotenv</span><span class="hl-1"> </span><span class="hl-2">cmd</span><span class="hl-1"> </span><span class="hl-2">echo</span><span class="hl-1"> </span><span class="hl-2">OK</span>
 </code><button type="button">Copy</button></pre>
 
 <p>Disable shell parsing entirely:</p>
-<pre><code class="bash"><span class="hl-0">getdotenv</span><span class="hl-1"> </span><span class="hl-3">--shell-off</span><span class="hl-1"> </span><span class="hl-2">cmd</span><span class="hl-1"> </span><span class="hl-2">echo</span><span class="hl-1"> </span><span class="hl-2">hello</span>
+<pre><code class="bash"><span class="hl-0">getdotenv</span><span class="hl-1"> </span><span class="hl-3">--shell-off</span><span class="hl-1"> </span><span class="hl-2">cmd</span><span class="hl-1"> </span><span class="hl-2">node</span><span class="hl-1"> </span><span class="hl-3">-e</span><span class="hl-1"> </span><span class="hl-2">&quot;console.log(&#39;hello&#39;)&quot;</span>
 </code><button type="button">Copy</button></pre>
 
 <p>Force a specific shell:</p>
@@ -28,7 +28,7 @@
 </code><button type="button">Copy</button></pre>
 
 <p>Script-level shell override (example <code>getdotenv.config.json</code>):</p>
-<pre><code class="json"><span class="hl-1">{</span><br/><span class="hl-1">  </span><span class="hl-10">&quot;scripts&quot;</span><span class="hl-1">: {</span><br/><span class="hl-1">    </span><span class="hl-10">&quot;bash-only&quot;</span><span class="hl-1">: { </span><span class="hl-10">&quot;cmd&quot;</span><span class="hl-1">: </span><span class="hl-2">&quot;echo $SHELL &amp;&amp; echo OK&quot;</span><span class="hl-1">, </span><span class="hl-10">&quot;shell&quot;</span><span class="hl-1">: </span><span class="hl-2">&quot;/bin/bash&quot;</span><span class="hl-1"> },</span><br/><span class="hl-1">    </span><span class="hl-10">&quot;plain&quot;</span><span class="hl-1">: { </span><span class="hl-10">&quot;cmd&quot;</span><span class="hl-1">: </span><span class="hl-2">&quot;node -v&quot;</span><span class="hl-1">, </span><span class="hl-10">&quot;shell&quot;</span><span class="hl-1">: </span><span class="hl-3">false</span><span class="hl-1"> }</span><br/><span class="hl-1">  }</span><br/><span class="hl-1">}</span>
+<pre><code class="json"><span class="hl-1">{</span><br/><span class="hl-1">  </span><span class="hl-9">&quot;scripts&quot;</span><span class="hl-1">: {</span><br/><span class="hl-1">    </span><span class="hl-9">&quot;bash-only&quot;</span><span class="hl-1">: { </span><span class="hl-9">&quot;cmd&quot;</span><span class="hl-1">: </span><span class="hl-2">&quot;echo $SHELL &amp;&amp; echo OK&quot;</span><span class="hl-1">, </span><span class="hl-9">&quot;shell&quot;</span><span class="hl-1">: </span><span class="hl-2">&quot;/bin/bash&quot;</span><span class="hl-1"> },</span><br/><span class="hl-1">    </span><span class="hl-9">&quot;plain&quot;</span><span class="hl-1">: { </span><span class="hl-9">&quot;cmd&quot;</span><span class="hl-1">: </span><span class="hl-2">&quot;node -v&quot;</span><span class="hl-1">, </span><span class="hl-9">&quot;shell&quot;</span><span class="hl-1">: </span><span class="hl-3">false</span><span class="hl-1"> }</span><br/><span class="hl-1">  }</span><br/><span class="hl-1">}</span>
 </code><button type="button">Copy</button></pre>
 
 <p>Then:</p>
@@ -52,11 +52,11 @@
 <li>Flag: <code>--capture</code></li>
 <li>Env: <code>GETDOTENV_STDIO=pipe</code></li>
 </ul>
-<p>When capture is enabled, stdout/stderr are buffered and re‑emitted after the child completes. Batch and AWS forwarding also honor capture, ensuring stable output ordering in automated environments. Live streaming remains available by omitting the flag/env (the default).</p>
+<p>When capture is enabled, commands run with <code>stdio: 'pipe'</code> and the host re‑emits buffered stdout after the child completes. Note: the current <code>runCommand()</code> helper re‑emits stdout only; stderr is captured for programmatic callers via <code>runCommandResult()</code>, but it is not re‑emitted by default. Live streaming remains available by omitting the flag/env (the default).</p>
 <h2 id="dynamic-help-defaults" class="tsd-anchor-link">Dynamic help defaults<a href="#dynamic-help-defaults" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h2><p>Root and plugin flags display effective defaults derived from the same resolved configuration (overlays + dynamic), evaluated safely at help time:</p>
 <ul>
 <li>Top‑level <code>-h/--help</code> computes a read‑only resolved config and evaluates dynamic descriptions (no logging; no <code>process.env</code> mutation).</li>
-<li><code>help &lt;cmd&gt;</code> refreshes dynamic descriptions after normal parsing; both paths render the same text.</li>
+<li>Subcommand help is rendered with <code>getdotenv &lt;cmd&gt; -h</code> / <code>--help</code>. Only top-level <code>-h/--help</code> is guaranteed to run with side effects suppressed.</li>
 </ul>
 <p>Examples (concise excerpts):</p>
 <pre><code class="text"># getdotenv -h
@@ -65,7 +65,7 @@
   -L, --log-off                       console log loaded variables OFF (default)
 </code><button type="button">Copy</button></pre>
 
-<pre><code class="text"># getdotenv help batch
+<pre><code class="text"># getdotenv batch -h
   -r, --root-path &lt;string&gt;  path to batch root directory from current working directory (default: &quot;./&quot;)
   -g, --globs &lt;string&gt;      space-delimited globs from root path (default: &quot;*&quot;)
   -p, --pkg-cwd             use nearest package directory as current working directory (default)
@@ -73,7 +73,7 @@
 
 <p>Notes:</p>
 <ul>
-<li>For plugin defaults, set values under <code>plugins.&lt;id&gt;</code> in your config; dynamic help callbacks read them from <code>cfg.plugins.&lt;id&gt;</code>.</li>
+<li>For plugin defaults, set values under <code>plugins.&lt;mount-path&gt;</code> in your config (for example <code>plugins.aws/whoami</code>), and prefer <code>plugin.createPluginDynamicOption(cli, …)</code> so the callback receives the validated, instance-bound plugin config slice.</li>
 <li>Use ON/OFF labels (“(default)”) for boolean toggles and “(default: &quot;...&quot;)” for string defaults to keep output concise and consistent.</li>
 </ul>
 <p>TypeScript note: Many helper APIs (e.g., env overlay/expansion utilities) accept readonly record inputs, so <code>as const</code> maps are fine to pass where appropriate.</p>
