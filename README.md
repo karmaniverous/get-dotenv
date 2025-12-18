@@ -1,3 +1,5 @@
+![This is how.](./assets/contributions.png)
+
 > Load, expand, and compose environment variables from a deterministic dotenv cascade, then execute commands under that context. Use get‑dotenv as a library, a CLI, or a plugin‑first host to build dotenv‑aware tooling with cross‑platform shell control, CI‑friendly capture, and clear diagnostics.
 
 # get-dotenv
