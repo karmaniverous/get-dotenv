@@ -5,6 +5,7 @@
     "tsBuildInfoFile": ".tsbuild/tsconfig.tsbuildinfo"
   },
   "exclude": [
+    "docs/**",
     "node_modules/**",
     "dist/**",
     "esm/**",

@@ -1,6 +1,7 @@
 {
   "entryPoints": ["./src"],
   "entryPointStrategy": "expand",
+  "tsconfig": "./tsconfig.base.json",
   "exclude": ["**/*.test.ts"],
   "excludeInternal": false,
   "externalSymbolLinkMappings": {
