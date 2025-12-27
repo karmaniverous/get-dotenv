@@ -36,8 +36,7 @@ export const getDotenvOptionsSchemaRaw = z.object({
   dotenvToken: z.string().optional(),
   /** Path to a dynamic variables module (JS/TS) to load and apply. */
   dynamicPath: z.string().optional(),
-  // Dynamic map is intentionally wide for now; refine once sources are normalized.
-  /** Programmatic dynamic variable map (advanced). */
+  /** Dynamic map is intentionally wide for now; refine once sources are normalized.  */
   dynamic: z.record(z.string(), z.unknown()).optional(),
   /** Selected environment name for this invocation (for env-scoped files and overlays). */
   env: z.string().optional(),

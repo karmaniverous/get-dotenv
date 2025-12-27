@@ -99,7 +99,7 @@ export function attachAwsOptions(cli: GetDotenvCliPublic, plugin: AwsPlugin) {
 }
 
 /**
- * Command type returned by {@link attachAwsOptions}.
+ * Command type returned by `attachAwsOptions`.
  *
  * @internal
  */

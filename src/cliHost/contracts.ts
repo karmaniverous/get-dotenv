@@ -105,7 +105,7 @@ export interface GetDotenvCliPublic<
     parser?: (value: string, previous?: unknown) => unknown,
     defaultValue?: unknown,
   ): Option<Usage>;
-  /** {@inheritdoc} */
+  /** {@inheritDoc} */
   createDynamicOption<Usage extends string, TValue = unknown>(
     flags: Usage,
     desc: (cfg: ResolvedHelpConfig) => string,

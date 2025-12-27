@@ -20,7 +20,7 @@ export function attachCmdOptions(cli: GetDotenvCliPublic) {
 }
 
 /**
- * Command type returned by {@link attachCmdOptions}.
+ * Command type returned by `attachCmdOptions`.
  *
  * @internal
  */

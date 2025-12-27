@@ -3,12 +3,13 @@ import { z } from 'zod';
 import type { ProcessEnv } from '@/src/core';
 
 /**
- * Zod schema for AWS plugin configuration.
- */
-/**
  * AWS plugin configuration schema.
  *
+ * @remarks
+ * This Zod schema is used by the host to validate the `plugins.aws` config slice.
+ *
  * @public
+ * @hidden
  */
 export const awsPluginConfigSchema = z.object({
   /** Preferred AWS profile name (overrides dotenv-derived profile keys when set). */

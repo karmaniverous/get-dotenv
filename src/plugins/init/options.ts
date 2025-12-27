@@ -27,7 +27,7 @@ export function attachInitOptions(cli: GetDotenvCliPublic) {
 }
 
 /**
- * Command type returned by {@link attachInitOptions}.
+ * Command type returned by `attachInitOptions`.
  *
  * @internal
  */

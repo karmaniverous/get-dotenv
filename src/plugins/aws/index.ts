@@ -37,10 +37,9 @@ export const awsPlugin = () => {
   return plugin;
 };
 
-export type AwsPlugin = ReturnType<typeof awsPlugin>;
-
 /**
  * AWS plugin instance type returned by {@link awsPlugin}.
  *
  * @public
  */
+export type AwsPlugin = ReturnType<typeof awsPlugin>;

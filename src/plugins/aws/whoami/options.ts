@@ -20,7 +20,7 @@ export function attachWhoamiOptions(cli: GetDotenvCliPublic) {
 }
 
 /**
- * Command type returned by {@link attachWhoamiOptions}.
+ * Command type returned by `attachWhoamiOptions`.
  *
  * @internal
  */
