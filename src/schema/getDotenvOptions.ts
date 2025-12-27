@@ -36,7 +36,7 @@ export const getDotenvOptionsSchemaRaw = z.object({
   dotenvToken: z.string().optional(),
   /** Path to a dynamic variables module (JS/TS) to load and apply. */
   dynamicPath: z.string().optional(),
-  // Dynamic map is intentionally wide for now; refine once sources are normalized.
+  /** Dynamic map is intentionally wide for now; refine once sources are normalized. */
   dynamic: z.record(z.string(), z.unknown()).optional(),
   /** Selected environment name for this invocation (for env-scoped files and overlays). */
   env: z.string().optional(),
@@ -54,7 +54,7 @@ export const getDotenvOptionsSchemaRaw = z.object({
   loadProcess: z.boolean().optional(),
   /** When true, log the final environment map via `logger`. */
   log: z.boolean().optional(),
-  // Logger used when `log` is enabled (console-compatible).
+  /** Logger used when `log` is enabled (console-compatible). */
   logger: z.unknown().default(console),
   /** Optional output dotenv file path to write after composition. */
   outputPath: z.string().optional(),

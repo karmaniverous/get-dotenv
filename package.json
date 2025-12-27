@@ -192,8 +192,7 @@
       ]
     },
     "npm": {
-      "publish": false,
-      "skipChecks": true
+      "publish": false
     }
   },
   "repository": {

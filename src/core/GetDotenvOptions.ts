@@ -82,8 +82,9 @@ export type Logger =
  * Canonical programmatic options type (schema-derived).
  * This type is the single source of truth for programmatic options.
  */
-export type GetDotenvOptions = z.output<
-  typeof getDotenvOptionsSchemaResolved
+export type GetDotenvOptions = Omit<
+  z.output<typeof getDotenvOptionsSchemaResolved>,
+  'logger' | 'dynamic'
 > & {
   /**
    * Compile-time overlay: narrowed logger for DX (schema stores unknown).
@@ -207,7 +208,7 @@ export function defineGetDotenvConfig<
  *
  * @internal
  */
-interface GetDotenvConfigWithVars<V extends ProcessEnv = ProcessEnv> {
+export interface GetDotenvConfigWithVars<V extends ProcessEnv = ProcessEnv> {
   /**
    * Variables declared on a typed getdotenv config document.
    */

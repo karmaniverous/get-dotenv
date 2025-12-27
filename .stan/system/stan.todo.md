@@ -270,3 +270,4 @@
 - Docs: add missing TypeDoc comments to fix warnings
 - Docs: add missing TypeDoc comments to satisfy typedoc validation
 - Docs: eliminate TypeDoc warnings in docs run (schemas/types)
+- Docs: fix remaining TypeDoc schema/type warnings

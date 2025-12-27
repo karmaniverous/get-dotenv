@@ -1,6 +1,6 @@
 import type { z } from 'zod';
 
-import type { Logger } from '@/src/core';
+import type { GetDotenvDynamic, Logger } from '@/src/core';
 import { baseRootOptionDefaults } from '@/src/defaults';
 import type { getDotenvCliOptionsSchemaResolved } from '@/src/schema';
 
@@ -17,13 +17,18 @@ export type Scripts = ScriptsTable;
  * stringly paths/vars, and inherited programmatic fields (minus normalized
  * shapes that are handled by resolution).
  */
-export type GetDotenvCliOptions = z.output<
-  typeof getDotenvCliOptionsSchemaResolved
+export type GetDotenvCliOptions = Omit<
+  z.output<typeof getDotenvCliOptionsSchemaResolved>,
+  'logger' | 'dynamic' | 'scripts'
 > & {
   /**
    * Compile-only overlay for DX: logger narrowed from unknown.
    */
   logger: Logger;
+  /**
+   * Compile-only overlay for DX: dynamic map narrowed from unknown.
+   */
+  dynamic?: GetDotenvDynamic;
   /**
    * Compile-only overlay for DX: scripts narrowed from Record\<string, unknown\>.
    */
