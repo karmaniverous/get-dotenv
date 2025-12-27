@@ -15,6 +15,7 @@ export {
   type GetDotenvCliOptions,
   type GetDotenvCliPlugin,
   type GetDotenvCliPublic,
+  groupPlugins,
   type InferPluginConfig,
   type PluginWithInstanceHelpers,
   readMergedOptions,

@@ -25,6 +25,7 @@ export {
   type Scripts,
 } from './GetDotenvCliOptions';
 export { getRootCommand } from './getRootCommand';
+export { groupPlugins, type GroupPluginsOptions } from './groupPlugins';
 export { type ResolvedHelpConfig, toHelpConfig } from './helpConfig';
 export {
   composeNestedEnv,

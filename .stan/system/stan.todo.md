@@ -265,3 +265,4 @@
 - Amendment: a prior Completed entry near the end appears to have two bullets merged onto one line; treat it as two separate bullets (“Docs: align shell/scripts/batch…” and “Docs: fix remaining config/help drift…”).
 - Fix: TypeDoc builds now use tsconfig.base.json and tsconfig.json excludes docs/\*\* to prevent stale docs TS files (e.g., docs/media/index.ts) from breaking docs/typecheck.
 - Docs: add guides/stan-assistant-guide.md for STAN assistants
+- CLI host: add groupPlugins() namespace helper
