@@ -8,6 +8,22 @@ import {
 import type { RootOptionsShape, ScriptsTable } from './types';
 
 /**
+ * Minimal shape accepted by {@link resolveCliOptions}.
+ *
+ * This exists to document the `scripts` property used for nesting and to avoid
+ * undocumented inline intersections in generated TypeDoc output.
+ *
+ * @public
+ */
+export interface ResolveCliOptionsShape extends Partial<RootOptionsShape> {
+  /**
+   * Optional scripts table, typically injected from configuration sources and/or
+   * inherited from a parent invocation via `process.env.getDotenvCliOptions`.
+   */
+  scripts?: ScriptsTable;
+}
+
+/**
  * Result of CLI option resolution.
  */
 export interface ResolveCliOptionsResult<T> {
@@ -29,9 +45,7 @@ export interface ResolveCliOptionsResult<T> {
  * into a GetDotenvCliOptions-like object. Types are intentionally wide to
  * avoid cross-layer coupling; callers may cast as needed.
  */
-export const resolveCliOptions = <
-  T extends Partial<RootOptionsShape> & { scripts?: ScriptsTable },
->(
+export const resolveCliOptions = <T extends ResolveCliOptionsShape>(
   rawCliOptions: unknown,
   defaults: Partial<T>,
   parentJson?: string,

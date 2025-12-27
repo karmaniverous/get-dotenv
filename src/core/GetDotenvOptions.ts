@@ -104,6 +104,11 @@ export type DynamicFn<Vars extends Record<string, string | undefined>> = (
   env?: string,
 ) => string | undefined;
 
+/**
+ * Vars-aware dynamic map type used by {@link defineDynamic} and JS/TS configs.
+ *
+ * @typeParam Vars - The env var bag shape passed to dynamic functions.
+ */
 export type DynamicMap<Vars extends Record<string, string | undefined>> =
   Record<string, DynamicFn<Vars> | ReturnType<DynamicFn<Vars>>>;
 

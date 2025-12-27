@@ -8,6 +8,16 @@ import type { Command, Option } from '@commander-js/extra-typings';
 import type { GetDotenvCli } from './GetDotenvCli';
 import { GROUP_TAG } from './groups';
 
+/**
+ * Initialize a {@link GetDotenvCli} instance with help configuration and safe defaults.
+ *
+ * @remarks
+ * This is a low-level initializer used by the host constructor to keep `GetDotenvCli.ts`
+ * small and to centralize help/output behavior.
+ *
+ * @param cli - The CLI instance to initialize.
+ * @param headerGetter - Callback returning an optional help header string.
+ */
 export function initializeInstance(
   cli: GetDotenvCli,
   headerGetter: () => string | undefined,

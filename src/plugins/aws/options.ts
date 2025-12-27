@@ -10,6 +10,7 @@ import type { AwsPlugin } from '.';
  *
  * @internal
  */
+/** @hidden */
 export function attachAwsOptions(cli: GetDotenvCliPublic, plugin: AwsPlugin) {
   return (
     cli
@@ -99,3 +100,9 @@ export function attachAwsOptions(cli: GetDotenvCliPublic, plugin: AwsPlugin) {
 
 /** @internal */
 export type AwsCommand = ReturnType<typeof attachAwsOptions>;
+
+/**
+ * Command type returned by {@link attachAwsOptions}.
+ *
+ * @internal
+ */

@@ -7,6 +7,7 @@ import type { GetDotenvCliPublic } from '@/src/cliHost';
  *
  * @internal
  */
+/** @hidden */
 export function attachInitOptions(cli: GetDotenvCliPublic) {
   return (
     cli
@@ -27,3 +28,9 @@ export function attachInitOptions(cli: GetDotenvCliPublic) {
 
 /** @internal */
 export type InitCommand = ReturnType<typeof attachInitOptions>;
+
+/**
+ * Command type returned by {@link attachInitOptions}.
+ *
+ * @internal
+ */

@@ -149,9 +149,21 @@ export type CommandWithOptions<TOptions> = Command & {
 export interface GetDotenvCliCtx<
   TOptions extends GetDotenvOptions = GetDotenvOptions,
 > {
+  /**
+   * Fully resolved option bag used to compute this context.
+   */
   optionsResolved: TOptions;
+  /**
+   * Final composed dotenv environment for this invocation.
+   */
   dotenv: ProcessEnv;
+  /**
+   * Optional runtime plugin state bag. Plugins may publish non-sensitive metadata here.
+   */
   plugins?: Record<string, unknown>;
+  /**
+   * Per-plugin validated configuration slices keyed by realized mount path.
+   */
   pluginConfigs?: Record<string, unknown>;
 }
 

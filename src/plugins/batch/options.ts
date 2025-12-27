@@ -15,6 +15,7 @@ import type { BatchPluginConfig } from './types';
  *
  * @internal
  */
+/** @hidden */
 export function attachBatchOptions(
   plugin: BatchPlugin,
   cli: GetDotenvCliPublic,

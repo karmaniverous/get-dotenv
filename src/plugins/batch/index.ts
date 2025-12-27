@@ -53,3 +53,9 @@ export const batchPlugin = (opts: BatchPluginOptions = {}) => {
 };
 
 export type BatchPlugin = ReturnType<typeof batchPlugin>;
+
+/**
+ * Batch plugin instance type returned by {@link batchPlugin}.
+ *
+ * @public
+ */

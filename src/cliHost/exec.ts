@@ -17,6 +17,28 @@ export const shouldCapture = (bagCapture?: boolean): boolean =>
   process.env.GETDOTENV_STDIO === 'pipe' || Boolean(bagCapture);
 
 /**
+ * Result object returned by {@link runCommandResult}.
+ *
+ * @public
+ */
+export interface RunCommandResult {
+  /**
+   * Exit code of the child process.
+   *
+   * Conventionally, `0` indicates success.
+   */
+  exitCode: number;
+  /**
+   * Captured standard output (stdout) as UTF-8 text.
+   */
+  stdout: string;
+  /**
+   * Captured standard error (stderr) as UTF-8 text.
+   */
+  stderr: string;
+}
+
+/**
  * Options for runCommandResult (buffered execution).
  *
  * @public
@@ -111,7 +133,7 @@ async function _execNormalized(
   command: string | readonly string[],
   shell: string | boolean | URL,
   opts: ExecNormalizedOptions = {},
-): Promise<{ exitCode: number; stdout: string; stderr: string }> {
+): Promise<RunCommandResult> {
   const envSan = sanitizeEnv(opts.env);
   const timeoutBits =
     typeof opts.timeoutMs === 'number'
@@ -188,17 +210,33 @@ export function runCommandResult(
   command: readonly string[],
   shell: false,
   opts?: RunCommandResultOptions,
-): Promise<{ exitCode: number; stdout: string; stderr: string }>;
+): Promise<RunCommandResult>;
+/**
+ * Execute a command and capture stdout/stderr (buffered).
+ *
+ * @param command - Command string (shell) or argv array (shell-off supported).
+ * @param shell - Shell setting (false for plain execution).
+ * @param opts - Execution options (cwd/env/timeout).
+ * @returns A promise resolving to the captured result.
+ */
 export function runCommandResult(
   command: string | readonly string[],
   shell: string | boolean | URL,
   opts?: RunCommandResultOptions,
-): Promise<{ exitCode: number; stdout: string; stderr: string }>;
+): Promise<RunCommandResult>;
+/**
+ * Execute a command and capture stdout/stderr (buffered).
+ *
+ * @param command - Command string (shell) or argv array (shell-off supported).
+ * @param shell - Shell setting (false for plain execution).
+ * @param opts - Execution options (cwd/env/timeout).
+ * @returns A promise resolving to the captured result.
+ */
 export async function runCommandResult(
   command: string | readonly string[],
   shell: string | boolean | URL,
   opts: RunCommandResultOptions = {},
-): Promise<{ exitCode: number; stdout: string; stderr: string }> {
+): Promise<RunCommandResult> {
   // Build opts without injecting undefined (exactOptionalPropertyTypes-safe)
   const coreOpts: {
     stdio: 'pipe';
@@ -219,16 +257,40 @@ export async function runCommandResult(
   return _execNormalized(command, shell, coreOpts);
 }
 
+/**
+ * Execute a command and return its exit code.
+ *
+ * @param command - Command string (shell) or argv array (shell-off supported).
+ * @param shell - Shell setting (false for plain execution).
+ * @param opts - Execution options (cwd/env/stdio).
+ * @returns A promise resolving to the process exit code.
+ */
 export function runCommand(
   command: readonly string[],
   shell: false,
   opts: RunCommandOptions,
 ): Promise<number>;
+/**
+ * Execute a command and return its exit code.
+ *
+ * @param command - Command string (shell) or argv array (shell-off supported).
+ * @param shell - Shell setting (false for plain execution).
+ * @param opts - Execution options (cwd/env/stdio).
+ * @returns A promise resolving to the process exit code.
+ */
 export function runCommand(
   command: string | readonly string[],
   shell: string | boolean | URL,
   opts: RunCommandOptions,
 ): Promise<number>;
+/**
+ * Execute a command and return its exit code.
+ *
+ * @param command - Command string (shell) or argv array (shell-off supported).
+ * @param shell - Shell setting (false for plain execution).
+ * @param opts - Execution options (cwd/env/stdio).
+ * @returns A promise resolving to the process exit code.
+ */
 export async function runCommand(
   command: string | readonly string[],
   shell: string | boolean | URL,

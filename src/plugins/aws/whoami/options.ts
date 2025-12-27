@@ -14,9 +14,16 @@ import type { GetDotenvCliPublic } from '@/src/cliHost';
  *
  * @internal
  */
+/** @hidden */
 export function attachWhoamiOptions(cli: GetDotenvCliPublic) {
   return cli;
 }
 
 /** @internal */
 export type WhoamiCommand = ReturnType<typeof attachWhoamiOptions>;
+
+/**
+ * Command type returned by {@link attachWhoamiOptions}.
+ *
+ * @internal
+ */
