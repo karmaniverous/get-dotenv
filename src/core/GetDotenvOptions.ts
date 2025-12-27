@@ -205,8 +205,6 @@ export function defineGetDotenvConfig<
  * conditional type, avoiding anonymous `__type` warnings.
  *
  * @typeParam V - The `vars` bag shape declared on the config.
- *
- * @internal
  */
 export interface GetDotenvConfigWithVars<V extends ProcessEnv = ProcessEnv> {
   /**
