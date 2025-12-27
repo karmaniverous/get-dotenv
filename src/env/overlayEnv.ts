@@ -75,6 +75,9 @@ export interface OverlayEnvOptionsWithProgrammatic<
     | Record<string, string | undefined>
     | Readonly<Record<string, string | undefined>>,
 > extends OverlayEnvOptionsBase<B> {
+  /**
+   * Explicit programmatic variables applied at the highest precedence tier.
+   */
   programmaticVars: P;
 }
 

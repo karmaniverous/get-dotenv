@@ -164,6 +164,14 @@ export const loadConfigFile = async (
 
   return getDotenvConfigSchemaResolved.parse(parsed.data);
 };
+
+/**
+ * Loaded configuration sources keyed by origin scope and privacy.
+ *
+ * This is the primary output of {@link resolveGetDotenvConfigSources}.
+ *
+ * @public
+ */
 export interface ResolvedConfigSources {
   /** Configuration from the package root (public only). */
   packaged?: GetDotenvConfigResolved;

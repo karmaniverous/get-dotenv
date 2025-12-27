@@ -267,4 +267,6 @@
 - Docs: add guides/stan-assistant-guide.md for STAN assistants
 - CLI host: add groupPlugins() namespace helper
 - Docs: document groupPlugins() in Guides
-- Docs: add missing TypeDoc comments to fix warnings- Docs: add missing TypeDoc comments to satisfy typedoc validation
+- Docs: add missing TypeDoc comments to fix warnings
+- Docs: add missing TypeDoc comments to satisfy typedoc validation
+- Docs: eliminate TypeDoc warnings in docs run (schemas/types)

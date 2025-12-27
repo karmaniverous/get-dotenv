@@ -68,18 +68,41 @@ export const redactObject = (
 };
 
 /**
+ * Triple of related values used by trace diagnostics:
+ * - `parent`: value from the parent process environment
+ * - `dotenv`: value from the composed dotenv map
+ * - `final`: effective value for the child process
+ *
+ * @public
+ */
+export interface RedactTripleValues {
+  /**
+   * Value from the parent process environment.
+   */
+  parent?: string;
+  /**
+   * Value from the composed dotenv map.
+   */
+  dotenv?: string;
+  /**
+   * Effective final value for the child process.
+   */
+  final?: string;
+}
+
+/**
  * Utility to redact three related displayed values (parent/dotenv/final)
  * consistently for trace lines.
  */
 export const redactTriple = (
   key: string,
-  triple: { parent?: string; dotenv?: string; final?: string },
+  triple: RedactTripleValues,
   opts?: RedactOptions,
-): { parent?: string; dotenv?: string; final?: string } => {
+): RedactTripleValues => {
   if (!opts?.redact) return triple;
   const regs = compile(opts.redactPatterns);
   const maskIf = (v?: string) => (v && shouldRedactKey(key, regs) ? MASK : v);
-  const out: { parent?: string; dotenv?: string; final?: string } = {};
+  const out: RedactTripleValues = {};
   const p = maskIf(triple.parent);
   const d = maskIf(triple.dotenv);
   const f = maskIf(triple.final);

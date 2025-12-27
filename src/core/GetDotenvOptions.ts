@@ -198,15 +198,31 @@ export function defineGetDotenvConfig<
 }
 
 /**
+ * Internal helper type used by {@link InferGetDotenvVarsFromConfig}.
+ *
+ * This exists to give TypeDoc a stable symbol for the `vars` probe used in the
+ * conditional type, avoiding anonymous `__type` warnings.
+ *
+ * @typeParam V - The `vars` bag shape declared on the config.
+ *
+ * @internal
+ */
+interface GetDotenvConfigWithVars<V extends ProcessEnv = ProcessEnv> {
+  /**
+   * Variables declared on a typed getdotenv config document.
+   */
+  vars?: V;
+}
+
+/**
  * Compile-time helper to derive the Vars shape from a typed getdotenv config document.
  */
-export type InferGetDotenvVarsFromConfig<T> = T extends {
-  vars?: infer V;
-}
-  ? V extends Record<string, string | undefined>
-    ? V
-    : never
-  : never;
+export type InferGetDotenvVarsFromConfig<T> =
+  T extends GetDotenvConfigWithVars<infer V>
+    ? V extends Record<string, string | undefined>
+      ? V
+      : never
+    : never;
 /**
  * Converts programmatic CLI options to `getDotenv` options.
  *
@@ -296,7 +312,7 @@ export const getDotenvCliOptions2Options = ({
  */
 export const resolveGetDotenvOptions = (
   customOptions: Partial<GetDotenvOptions>,
-) => {
+): Promise<GetDotenvOptions> => {
   // Programmatic callers use neutral defaults only. Do not read local packaged
   // getdotenv.config.json here; the host path applies packaged/project configs
   // via the dedicated loader/overlay pipeline.
@@ -306,10 +322,7 @@ export const resolveGetDotenvOptions = (
     mergedDefaults as unknown as RootOptionsShapeCompat,
   );
 
-  const result = defaultsDeep(
-    defaultsFromCli as Partial<GetDotenvOptions>,
-    customOptions,
-  );
+  const result = defaultsDeep(defaultsFromCli, customOptions);
 
   return Promise.resolve({
     ...result, // Keep explicit empty strings/zeros; drop only undefined
