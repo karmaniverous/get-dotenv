@@ -266,3 +266,4 @@
 - Fix: TypeDoc builds now use tsconfig.base.json and tsconfig.json excludes docs/\*\* to prevent stale docs TS files (e.g., docs/media/index.ts) from breaking docs/typecheck.
 - Docs: add guides/stan-assistant-guide.md for STAN assistants
 - CLI host: add groupPlugins() namespace helper
+- Docs: document groupPlugins() in Guides

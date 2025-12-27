@@ -53,6 +53,46 @@ const run = createCli({
 await run(); // or await run(process.argv.slice(2));
 ```
 
+### Grouping plugins under a namespace (groupPlugins)
+
+If you want to expose shipped (or third-party) plugins under a non-root “group” command without forking or “calling” another plugin, use the namespace-only parent helper `groupPlugins`. This is useful for patterns like:
+
+- `smoz init` (your SMOZ init plugin)
+- `smoz getdotenv init` (delegate to get-dotenv’s init plugin under a group namespace)
+
+Example:
+
+```ts
+#!/usr/bin/env node
+import { createCli } from '@karmaniverous/get-dotenv/cli';
+import { groupPlugins } from '@karmaniverous/get-dotenv/cliHost';
+import { initPlugin } from '@karmaniverous/get-dotenv/plugins';
+import { smozInitPlugin } from './plugins/init';
+
+const run = createCli({
+  alias: 'smoz',
+  compose: (p) =>
+    p
+      .use(smozInitPlugin())
+      .use(
+        groupPlugins({
+          ns: 'getdotenv',
+          description: 'getdotenv utility functions',
+          aliases: ['gd'],
+          helpGroup: 'Utilities',
+        }).use(initPlugin()),
+      ),
+});
+
+await run();
+```
+
+Notes:
+
+- Root flags (like `-e`, `--paths`, `--shell-off`, `--capture`) are global and are typically specified before the subcommand token (e.g., `smoz -e dev getdotenv init ...`).
+- Plugin config keys follow the realized mount path, so mounting under `getdotenv` changes keys (for example `plugins['getdotenv/init']` rather than `plugins['init']`).
+- If you mount `cmdPlugin({ optionAlias: ... })` under the group, the parent alias is attached to the group command (so `smoz getdotenv -c 'echo OK'` works, but `smoz -c 'echo OK'` does not).
+
 ### Access the true root command (typed helper)
 
 When you need the real root command (for branding, alias labels, or reading root‑level metadata) from inside a plugin mount or action, use the small typed helper exported by the host:
