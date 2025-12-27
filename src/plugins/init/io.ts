@@ -49,6 +49,18 @@ export const copyTextFile = async (
 };
 
 /**
+ * Result returned by {@link ensureLines}.
+ *
+ * @public
+ */
+export interface EnsureLinesResult {
+  /** True when the target file did not previously exist. */
+  created: boolean;
+  /** True when the file was created or modified by this call. */
+  changed: boolean;
+}
+
+/**
  * Ensure a set of lines exist (exact match) in a file. Creates the file
  * when missing. Returns whether it was created or changed.
  *
@@ -59,7 +71,7 @@ export const copyTextFile = async (
 export const ensureLines = async (
   filePath: string,
   lines: string[],
-): Promise<{ created: boolean; changed: boolean }> => {
+): Promise<EnsureLinesResult> => {
   const exists = await fs.pathExists(filePath);
   const current = exists ? await fs.readFile(filePath, 'utf-8') : '';
   const curLines = current.split(/\r?\n/);

@@ -26,11 +26,9 @@ export function attachInitOptions(cli: GetDotenvCliPublic) {
   );
 }
 
-/** @internal */
-export type InitCommand = ReturnType<typeof attachInitOptions>;
-
 /**
  * Command type returned by {@link attachInitOptions}.
  *
  * @internal
- */
+ */
+export type InitCommand = ReturnType<typeof attachInitOptions>;

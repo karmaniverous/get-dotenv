@@ -19,11 +19,9 @@ export function attachWhoamiOptions(cli: GetDotenvCliPublic) {
   return cli;
 }
 
-/** @internal */
-export type WhoamiCommand = ReturnType<typeof attachWhoamiOptions>;
-
 /**
  * Command type returned by {@link attachWhoamiOptions}.
  *
  * @internal
- */
+ */
+export type WhoamiCommand = ReturnType<typeof attachWhoamiOptions>;

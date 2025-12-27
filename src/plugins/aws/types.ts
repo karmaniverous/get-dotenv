@@ -5,14 +5,27 @@ import type { ProcessEnv } from '@/src/core';
 /**
  * Zod schema for AWS plugin configuration.
  */
+/**
+ * AWS plugin configuration schema.
+ *
+ * @public
+ */
 export const awsPluginConfigSchema = z.object({
+  /** Preferred AWS profile name (overrides dotenv-derived profile keys when set). */
   profile: z.string().optional(),
+  /** Preferred AWS region (overrides dotenv-derived region key when set). */
   region: z.string().optional(),
+  /** Fallback region when region cannot be resolved from config/dotenv/AWS CLI. */
   defaultRegion: z.string().optional(),
+  /** Dotenv/config key for local profile lookup (default `AWS_LOCAL_PROFILE`). */
   profileKey: z.string().default('AWS_LOCAL_PROFILE').optional(),
+  /** Dotenv/config fallback key for profile lookup (default `AWS_PROFILE`). */
   profileFallbackKey: z.string().default('AWS_PROFILE').optional(),
+  /** Dotenv/config key for region lookup (default `AWS_REGION`). */
   regionKey: z.string().default('AWS_REGION').optional(),
+  /** Credential acquisition strategy (`cli-export` to resolve via AWS CLI, or `none` to skip). */
   strategy: z.enum(['cli-export', 'none']).default('cli-export').optional(),
+  /** When true, attempt `aws sso login` on-demand when credential export fails for an SSO profile. */
   loginOnDemand: z.boolean().default(false).optional(),
 });
 

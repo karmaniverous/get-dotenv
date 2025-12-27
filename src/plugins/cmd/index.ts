@@ -55,9 +55,8 @@ export const cmdPlugin = (options: CmdPluginOptions = {}) => {
 };
 
 export type CmdPlugin = ReturnType<typeof cmdPlugin>;
-
 /**
  * Cmd plugin instance type returned by {@link cmdPlugin}.
  *
  * @public
- */
+ */

@@ -27,17 +27,34 @@ const envStringMap = z.record(z.string(), stringMap);
  * Raw configuration schema for get‑dotenv config files (JSON/YAML/JS/TS).
  * Validates allowed top‑level keys without performing path normalization.
  */
+/**
+ * Config schema for discovered get-dotenv configuration documents (raw).
+ *
+ * This schema validates the allowed top-level keys for configuration files.
+ * It does not normalize paths or coerce types beyond Zod’s parsing.
+ *
+ * @public
+ */
 export const getDotenvConfigSchemaRaw = z.object({
+  /** Root option defaults applied by the host (CLI-like, collapsed families). */
   rootOptionDefaults: getDotenvCliOptionsSchemaRaw.optional(),
+  /** Help-time visibility map for root flags (false hides). */
   rootOptionVisibility: visibilityMap.optional(),
-  scripts: z.record(z.string(), z.unknown()).optional(), // Scripts validation left wide; generator validates elsewhere
+  /** Scripts table used by cmd/batch resolution (validation intentionally permissive here). */
+  scripts: z.record(z.string(), z.unknown()).optional(),
+  /** Keys required to be present in the final composed environment. */
   requiredKeys: z.array(z.string()).optional(),
+  /** Validation schema (JS/TS only; JSON/YAML loader rejects). */
   schema: z.unknown().optional(), // JS/TS-only; loader rejects in JSON/YAML
+  /** Public global variables (string-only). */
   vars: stringMap.optional(), // public, global
+  /** Public per-environment variables (string-only). */
   envVars: envStringMap.optional(), // public, per-env
   // Dynamic in config (JS/TS only). JSON/YAML loader will reject if set.
+  /** Dynamic variable definitions (JS/TS only). */
   dynamic: z.unknown().optional(),
   // Per-plugin config bag; validated by plugins/host when used.
+  /** Per-plugin config slices keyed by realized mount path (for example, `aws/whoami`). */
   plugins: z.record(z.string(), z.unknown()).optional(),
 });
 
@@ -53,6 +70,11 @@ export const getDotenvConfigSchemaResolved = getDotenvConfigSchemaRaw.transform(
   (raw) => raw as GetDotenvConfigResolved,
 );
 
+/**
+ * Resolved configuration object type returned by {@link getDotenvConfigSchemaResolved}.
+ *
+ * @public
+ */
 export type GetDotenvConfigResolved = {
   /**
    * Help-time/runtime root defaults applied by the host (collapsed families; CLI‑like).

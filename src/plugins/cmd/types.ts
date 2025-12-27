@@ -36,6 +36,7 @@ export interface CmdPluginOptions {
  */
 export const cmdPluginConfigSchema = z
   .object({
+    /** When true, expand the alias value before execution (default behavior when omitted). */
     expand: z.boolean().optional(),
   })
   .strict();

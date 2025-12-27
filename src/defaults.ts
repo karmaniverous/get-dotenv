@@ -2,14 +2,6 @@
  * Base root CLI defaults (shared; kept untyped here to avoid cross-layer deps).
  * Used as the bottom layer for CLI option resolution.
  */
-/**
- * Default values for root CLI options used by the host and helpers as the
- * baseline layer during option resolution.
- *
- * These defaults correspond to the "stringly" root surface (see `RootOptionsShape`)
- * and are merged by precedence with create-time overrides and any discovered
- * configuration `rootOptionDefaults` before CLI flags are applied.
- */
 
 /**
  * Script entry shape used by {@link baseRootOptionDefaults}.
@@ -72,6 +64,16 @@ const baseScripts: Record<string, BaseRootOptionDefaultsScript> = {
   },
 };
 
+/**
+ * Default values for root CLI options used by the host and helpers as the baseline layer during option resolution.
+ *
+ * These defaults correspond to the “stringly” root surface (see `RootOptionsShape`) and are merged by precedence with:
+ * - create-time overrides
+ * - any discovered configuration `rootOptionDefaults`
+ * - and finally CLI flags at runtime
+ *
+ * @public
+ */
 export const baseRootOptionDefaults: BaseRootOptionDefaults = {
   dotenvToken: '.env',
   loadProcess: true,

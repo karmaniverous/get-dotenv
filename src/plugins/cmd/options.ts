@@ -19,11 +19,9 @@ export function attachCmdOptions(cli: GetDotenvCliPublic) {
     .argument('[command...]');
 }
 
-/** @internal */
-export type CmdCommand = ReturnType<typeof attachCmdOptions>;
-
 /**
  * Command type returned by {@link attachCmdOptions}.
  *
  * @internal
- */
+ */
+export type CmdCommand = ReturnType<typeof attachCmdOptions>;

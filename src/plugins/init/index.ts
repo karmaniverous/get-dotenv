@@ -29,9 +29,8 @@ export const initPlugin = () =>
   });
 
 export type InitPlugin = ReturnType<typeof initPlugin>;
-
 /**
  * Init plugin instance type returned by {@link initPlugin}.
  *
  * @public
- */
+ */

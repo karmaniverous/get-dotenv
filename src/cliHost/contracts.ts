@@ -65,16 +65,39 @@ export interface GetDotenvCliPublic<
   /** Check whether a context has been resolved (non-throwing). */
   hasCtx(): boolean;
 
+  /**
+   * Resolve options and compute the dotenv context for this invocation.
+   *
+   * @param customOptions - Partial options to overlay for this invocation.
+   * @param opts - Optional resolver behavior switches (for example, whether to run `afterResolve`).
+   * @returns A promise resolving to the computed invocation context.
+   */
   resolveAndLoad(
     customOptions?: Partial<TOptions>,
     opts?: ResolveAndLoadOptions,
   ): Promise<GetDotenvCliCtx<TOptions>>;
 
+  /**
+   * Tag an option with a help group identifier for grouped root help rendering.
+   *
+   * @param opt - The Commander option to tag.
+   * @param group - Group identifier (for example, `base`, `app`, or `plugin:<name>`).
+   * @returns Nothing.
+   */
   setOptionGroup(opt: Option, group: string): void;
 
   /**
    * Create a dynamic option whose description is computed at help time
    * from the resolved configuration.
+   */
+  /**
+   * Create a dynamic option whose description is computed at help time from the resolved configuration.
+   *
+   * @param flags - Commander option flags usage string.
+   * @param desc - Description builder called during help rendering with the resolved help config.
+   * @param parser - Optional argument parser.
+   * @param defaultValue - Optional default value.
+   * @returns A Commander `Option` instance with a dynamic description.
    */
   createDynamicOption<Usage extends string>(
     flags: Usage,
@@ -82,6 +105,7 @@ export interface GetDotenvCliPublic<
     parser?: (value: string, previous?: unknown) => unknown,
     defaultValue?: unknown,
   ): Option<Usage>;
+  /** {@inheritdoc} */
   createDynamicOption<Usage extends string, TValue = unknown>(
     flags: Usage,
     desc: (cfg: ResolvedHelpConfig) => string,
@@ -183,10 +207,30 @@ export interface PluginWithInstanceHelpers<
   TGlobal extends OptionValues = {},
 > extends GetDotenvCliPlugin<TOptions, TArgs, TOpts, TGlobal> {
   // Instance-bound helpers preserve plugin identity and inject validated slices.
+  /**
+   * Read the validated (and interpolated) configuration slice for this plugin instance.
+   *
+   * @param cli - The plugin mount (or any command under this mount) used to resolve the invocation context.
+   * @returns The plugin configuration slice, typed as `TCfg`.
+   * @throws Error when called before the host has resolved the invocation context.
+   */
   readConfig<TCfg = TConfig>(
     cli: GetDotenvCliPublic<TOptions, unknown[], OptionValues, OptionValues>,
   ): Readonly<TCfg>;
 
+  /**
+   * Create a Commander option whose help-time description receives the resolved root help config
+   * and this plugin instance’s validated configuration slice.
+   *
+   * @typeParam TCfg - The plugin configuration slice type.
+   * @typeParam Usage - The Commander usage string for the option flags.
+   * @param cli - The plugin mount used to associate the option with a realized mount path.
+   * @param flags - Commander option flags usage string.
+   * @param desc - Description builder receiving the resolved help config and the plugin config slice.
+   * @param parser - Optional argument parser.
+   * @param defaultValue - Optional default value.
+   * @returns A Commander `Option` instance with a dynamic description.
+   */
   createPluginDynamicOption<TCfg = TConfig, Usage extends string = string>(
     cli: GetDotenvCliPublic<TOptions, unknown[], OptionValues, OptionValues>,
     flags: Usage,
@@ -213,6 +257,14 @@ export type DefineSpec<
    * passes it into setup; return void | Promise<void>.
    */
   ns: string;
+  /**
+   * Plugin setup hook.
+   *
+   * Called by the host during installation to attach commands/options/hooks to the provided mount.
+   *
+   * @param cli - The command mount created by the host for this plugin instance.
+   * @returns Nothing (or a promise resolving to nothing) after setup completes.
+   */
   setup: (
     cli: GetDotenvCliPublic<TOptions, TArgs, TOpts, TGlobal>,
   ) => void | Promise<void>;

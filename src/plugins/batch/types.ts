@@ -136,7 +136,9 @@ export interface BatchCmdSubcommandOptions {}
 export const ScriptSchema = z.union([
   z.string(),
   z.object({
+    /** Command string to execute. */
     cmd: z.string(),
+    /** Optional shell override for this script entry. */
     shell: z.union([z.string(), z.boolean()]).optional(),
   }),
 ]);
@@ -145,10 +147,15 @@ export const ScriptSchema = z.union([
  * Zod schema for batch plugin configuration.
  */
 export const batchPluginConfigSchema = z.object({
+  /** Optional scripts table scoped to the batch plugin. */
   scripts: z.record(z.string(), ScriptSchema).optional(),
+  /** Optional default shell for batch execution (overridden by per-script shell when present). */
   shell: z.union([z.string(), z.boolean()]).optional(),
+  /** Root path for discovery, relative to CWD (or package root when pkgCwd is true). */
   rootPath: z.string().optional(),
+  /** Space-delimited glob patterns used to discover directories. */
   globs: z.string().optional(),
+  /** When true, resolve the batch root from the nearest package directory. */
   pkgCwd: z.boolean().optional(),
 });
 

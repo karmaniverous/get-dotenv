@@ -98,11 +98,9 @@ export function attachAwsOptions(cli: GetDotenvCliPublic, plugin: AwsPlugin) {
   );
 }
 
-/** @internal */
-export type AwsCommand = ReturnType<typeof attachAwsOptions>;
-
 /**
  * Command type returned by {@link attachAwsOptions}.
  *
  * @internal
- */
+ */
+export type AwsCommand = ReturnType<typeof attachAwsOptions>;
