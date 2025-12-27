@@ -7,7 +7,6 @@ import type { GetDotenvCliPublic } from '@/src/cliHost';
  *
  * @internal
  */
-/** @hidden */
 export function attachInitOptions(cli: GetDotenvCliPublic) {
   return (
     cli

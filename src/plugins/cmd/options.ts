@@ -11,7 +11,6 @@ import type { GetDotenvCliPublic } from '@/src/cliHost';
  *
  * @internal
  */
-/** @hidden */
 export function attachCmdOptions(cli: GetDotenvCliPublic) {
   return cli
     .enablePositionalOptions()

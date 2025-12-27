@@ -10,7 +10,6 @@ import type { AwsPlugin } from '.';
  *
  * @internal
  */
-/** @hidden */
 export function attachAwsOptions(cli: GetDotenvCliPublic, plugin: AwsPlugin) {
   return (
     cli
