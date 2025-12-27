@@ -11,12 +11,10 @@ stan-core:
     - 'src/**/*.test.ts'
     - 'src/e2e/**'
   imports:
-    extra-typings:
+    '@commander-js/extra-typings':
       - node_modules/@commander-js/extra-typings/index.d.ts
-    # smoz:
-    # - ../smoz/.stan/system/stan.requirements.md
-    # - ../smoz/.stan/system/stan.todo.md
-    # - ../smoz/.stan/interop/get-dotenv/**
+    '@karmaniverous/smoz':
+      - ../smoz/.stan/interop/get-dotenv/**
 stan-cli:
   cliDefaults:
     run:
