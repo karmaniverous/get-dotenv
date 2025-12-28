@@ -23,8 +23,16 @@ export const awsPluginConfigSchema = z.object({
   profileFallbackKey: z.string().default('AWS_PROFILE').optional(),
   /** Dotenv/config key for region lookup (default `AWS_REGION`). */
   regionKey: z.string().default('AWS_REGION').optional(),
-  /** Credential acquisition strategy (`cli-export` to resolve via AWS CLI, or `none` to skip). */
-  strategy: z.enum(['cli-export', 'none']).default('cli-export').optional(),
+  /**
+   * Credential acquisition strategy.
+   *
+   * - `'cli-export'`: resolve via AWS CLI
+   * - `'none'`: skip credential resolution
+   */
+  strategy: z
+    .union([z.literal('cli-export'), z.literal('none')])
+    .default('cli-export')
+    .optional(),
   /** When true, attempt `aws sso login` on-demand when credential export fails for an SSO profile. */
   loginOnDemand: z.boolean().default(false).optional(),
 });

@@ -1,6 +1,64 @@
+import type { Command, OptionValues } from '@commander-js/extra-typings';
+
 import type { GetDotenvCliPublic } from '@/src/cliHost';
 
 import type { AwsPlugin } from '.';
+
+/**
+ * Option values parsed for the `aws` command mount.
+ *
+ * This interface exists to keep TypeDoc output stable and fully documented (avoids inferred `__type.*` warnings).
+ *
+ * @public
+ */
+export interface AwsCommandOptionValues extends OptionValues {
+  /**
+   * Attempt AWS SSO login on-demand when exporting credentials fails and the profile looks SSO.
+   */
+  loginOnDemand?: boolean;
+  /**
+   * AWS profile name to use for this invocation.
+   */
+  profile?: string;
+  /**
+   * AWS region to use for this invocation.
+   */
+  region?: string;
+  /**
+   * Fallback region when no region can be resolved.
+   */
+  defaultRegion?: string;
+  /**
+   * Credential acquisition strategy.
+   *
+   * - `'cli-export'`: resolve credentials via AWS CLI
+   * - `'none'`: skip credential resolution
+   */
+  strategy?: 'cli-export' | 'none';
+  /**
+   * Dotenv/config key for local profile lookup.
+   */
+  profileKey?: string;
+  /**
+   * Dotenv/config fallback key for profile lookup.
+   */
+  profileFallbackKey?: string;
+  /**
+   * Dotenv/config key for region lookup.
+   */
+  regionKey?: string;
+}
+
+/**
+ * Commander command type returned by {@link attachAwsOptions}.
+ *
+ * @public
+ */
+export type AwsCommand = Command<
+  [string[]],
+  AwsCommandOptionValues,
+  OptionValues
+>;
 
 /**
  * Attach options/arguments for the AWS plugin mount.
@@ -10,7 +68,10 @@ import type { AwsPlugin } from '.';
  *
  * @internal
  */
-export function attachAwsOptions(cli: GetDotenvCliPublic, plugin: AwsPlugin) {
+export function attachAwsOptions(
+  cli: GetDotenvCliPublic,
+  plugin: AwsPlugin,
+): AwsCommand {
   return (
     cli
       // Description is owned by the plugin index (src/plugins/aws/index.ts).
@@ -93,13 +154,6 @@ export function attachAwsOptions(cli: GetDotenvCliPublic, plugin: AwsPlugin) {
         ),
       )
       // Accept any extra operands so Commander does not error when tokens appear after "--".
-      .argument('[args...]')
+      .argument('[args...]') as unknown as AwsCommand
   );
 }
-
-/**
- * Command type returned by `attachAwsOptions`.
- *
- * @internal
- */
-export type AwsCommand = ReturnType<typeof attachAwsOptions>;

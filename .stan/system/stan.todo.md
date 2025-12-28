@@ -273,4 +273,4 @@
 - Docs: eliminate TypeDoc warnings in docs run (schemas/types)
 - Docs: fix remaining TypeDoc schema/type warnings
 - Build: switch Rollup ESM outputs to a single multi-entry graph with shared chunks so subpath entrypoints (`/cli`, `/cliHost`, `/plugins`) share internal singleton identity (fixes plugin.readConfig crash across entrypoints).
-- Build/init/aws/docs: stop copying templates into dist; resolve init templates from package root; bound AWS CLI probing to prevent smoke timeouts; hide internal attach* helpers from TypeDoc; update Knip to include build/** so Rollup deps are recognized.
+- Build/init/aws/docs: stop copying templates into dist; resolve init templates from package root; bound AWS CLI probing to prevent smoke timeouts; hide internal attach* helpers from TypeDoc; update Knip to include build/** so Rollup deps are recognized.- Amendment: do not use `@hidden`; instead, define explicit documented option-value interfaces for `attach*Options` helpers and avoid Zod enum internals in exported schema types to eliminate TypeDoc `__type.*` warnings.

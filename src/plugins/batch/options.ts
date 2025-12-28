@@ -1,7 +1,54 @@
+import type { OptionValues } from '@commander-js/extra-typings';
+
 import type { GetDotenvCliPublic } from '@/src/cliHost';
+import type { GetDotenvOptions } from '@/src/core';
 
 import type { BatchPlugin } from '.';
 import type { BatchPluginConfig } from './types';
+
+/**
+ * Option values parsed for the `batch` command mount.
+ *
+ * @public
+ */
+export interface BatchCommandOptionValues {
+  /**
+   * When true, resolve the batch root from the nearest package directory instead of `process.cwd()`.
+   */
+  pkgCwd?: boolean;
+  /**
+   * Root path (relative to CWD or package directory) for resolving globs.
+   */
+  rootPath?: string;
+  /**
+   * Space-delimited glob patterns relative to {@link BatchCommandOptionValues.rootPath}.
+   */
+  globs?: string;
+  /**
+   * Command string executed according to the resolved shell preference.
+   */
+  command?: string;
+  /**
+   * When true, list matched working directories without executing a command.
+   */
+  list?: boolean;
+  /**
+   * When true, ignore errors and continue with the next matched directory.
+   */
+  ignoreErrors?: boolean;
+}
+
+/**
+ * Command type returned by {@link attachBatchOptions}.
+ *
+ * @public
+ */
+export type BatchCommand = GetDotenvCliPublic<
+  GetDotenvOptions,
+  [string[]],
+  BatchCommandOptionValues,
+  OptionValues
+>;
 
 /**
  * Attach options/arguments for the batch plugin mount.
@@ -18,7 +65,7 @@ import type { BatchPluginConfig } from './types';
 export function attachBatchOptions(
   plugin: BatchPlugin,
   cli: GetDotenvCliPublic,
-) {
+): BatchCommand {
   const GROUP = `plugin:${cli.name()}`;
 
   return (
