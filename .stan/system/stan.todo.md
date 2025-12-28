@@ -3,6 +3,7 @@
 ## Next up (near‑term, actionable)
 
 - Public API: export `shouldCapture` from `@karmaniverous/get-dotenv/cliHost` (and re-export from root), and make diagnostics helpers reachable from the root entrypoint for copy/paste-friendly examples.
+- Interop: verify shared-chunk dist fixes cross-entrypoint plugin config (SMOZ).
 - Deprecations: soft-deprecate the `z` re-export (JSDoc + a short Guides callout) and ensure docs/templates import `{ z }` from `zod`.
 - Verify: Windows SSO login-on-demand (`aws --profile … --login-on-demand whoami`) from a fresh terminal with AWS CLI 2.x.
 - Verification: run typecheck, lint, tests, verify:types, verify:package, verify:bundle, verify:tarball.
@@ -270,4 +271,5 @@
 - Docs: add missing TypeDoc comments to fix warnings
 - Docs: add missing TypeDoc comments to satisfy typedoc validation
 - Docs: eliminate TypeDoc warnings in docs run (schemas/types)
-- Docs: fix remaining TypeDoc schema/type warnings
+- Docs: fix remaining TypeDoc schema/type warnings
+- Build: switch Rollup ESM outputs to a single multi-entry graph with shared chunks so subpath entrypoints (`/cli`, `/cliHost`, `/plugins`) share internal singleton identity (fixes plugin.readConfig crash across entrypoints).

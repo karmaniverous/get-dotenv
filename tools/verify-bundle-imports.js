@@ -4,7 +4,7 @@
  *
  * Checks representative ESM outputs for explicit import of
  * '@commander-js/extra-typings' and fails when the file is missing or does not
- * reference Commander externally.
+ * reference Commander externally (directly or via shared chunks).
  *
  * Intended coverage:
  *  - dist/cliHost.mjs
@@ -31,6 +31,80 @@ const hasCommanderImport = (txt) =>
   /import\s+['"]@commander-js\/extra-typings['"]/.test(txt);
 const hasCommanderRequire = (txt) =>
   /require\(['"]@commander-js\/extra-typings['"]\)/.test(txt);
+
+const isRelative = (spec) =>
+  typeof spec === 'string' && (spec.startsWith('./') || spec.startsWith('../'));
+
+// Extract static relative import/export specifiers (best-effort, regex-based).
+const extractRelativeDeps = (txt) => {
+  const specs = new Set();
+
+  // import ... from './x'
+  const reImportFrom = /\bimport\s+[^;]*?\s+from\s+['"]([^'"]+)['"]/g;
+  // import './x'
+  const reImportBare = /\bimport\s+['"]([^'"]+)['"]/g;
+  // export ... from './x'
+  const reExportFrom = /\bexport\s+[^;]*?\s+from\s+['"]([^'"]+)['"]/g;
+
+  let m;
+  while ((m = reImportFrom.exec(txt))) {
+    if (isRelative(m[1])) specs.add(m[1]);
+  }
+  while ((m = reImportBare.exec(txt))) {
+    if (isRelative(m[1])) specs.add(m[1]);
+  }
+  while ((m = reExportFrom.exec(txt))) {
+    if (isRelative(m[1])) specs.add(m[1]);
+  }
+
+  return Array.from(specs);
+};
+
+const readUtf8 = async (abs) => {
+  try {
+    return await fs.readFile(abs, 'utf-8');
+  } catch {
+    return '';
+  }
+};
+
+// Resolve a relative spec from a base file to on-disk candidate path(s).
+const resolveRel = (baseFileAbs, spec) => {
+  const baseDir = path.dirname(baseFileAbs);
+  const abs = path.resolve(baseDir, spec);
+
+  // Rollup ESM output typically includes an extension; if not, try ".mjs".
+  if (path.extname(abs)) return [abs];
+  return [abs, `${abs}.mjs`];
+};
+
+// Scan a file and its reachable relative deps for an external commander reference.
+const graphHasCommander = async (entryAbs) => {
+  const queue = [entryAbs];
+  const seen = new Set();
+
+  while (queue.length > 0) {
+    const cur = queue.shift();
+    if (!cur || seen.has(cur)) continue;
+    seen.add(cur);
+
+    const txt = await readUtf8(cur);
+    if (!txt) continue;
+
+    if (hasCommanderImport(txt) || hasCommanderRequire(txt)) {
+      return { ok: true, filesScanned: seen.size };
+    }
+
+    const deps = extractRelativeDeps(txt);
+    for (const spec of deps) {
+      for (const cand of resolveRel(cur, spec)) {
+        if (!seen.has(cand)) queue.push(cand);
+      }
+    }
+  }
+
+  return { ok: false, filesScanned: seen.size };
+};
 
 const err = (msg) => {
   // Keep errors concise and deterministic; exit non-zero.
@@ -59,21 +133,25 @@ const main = async () => {
   const results = [];
   for (const t of targets) {
     const p = path.join(DIST, t.file);
-    let txt = '';
-    try {
-      txt = await fs.readFile(p, 'utf-8');
-    } catch {
-      results.push({ file: t.file, ok: false, reason: 'missing' });
+    const txt = await readUtf8(p);
+    if (!txt) {
+      results.push({ file: t.file, ok: false, reason: 'missing', scanned: 0 });
       continue;
     }
-    const good =
-      t.type === 'esm' ? hasCommanderImport(txt) : hasCommanderRequire(txt);
+
+    // ESM builds may import commander from shared chunks; scan reachable relative deps.
+    const scanned =
+      t.type === 'esm'
+        ? await graphHasCommander(path.resolve(p))
+        : { ok: hasCommanderRequire(txt), filesScanned: 1 };
+
     results.push({
       file: t.file,
-      ok: good,
-      reason: good
+      ok: scanned.ok,
+      reason: scanned.ok
         ? undefined
-        : 'no external @commander-js/extra-typings reference',
+        : 'no external @commander-js/extra-typings reference (in file or reachable chunks)',
+      scanned: scanned.filesScanned,
     });
   }
 
@@ -84,10 +162,13 @@ const main = async () => {
       .join('\n');
     err(`One or more bundles failed sanity checks:\n${lines}`);
   }
+
   const lines = results
     .map(
       (r) =>
-        `- ${r.file}: external commander (@commander-js/extra-typings) reference`,
+        `- ${r.file}: external commander (@commander-js/extra-typings) reference (scanned ${String(
+          r.scanned ?? 1,
+        )} file(s))`,
     )
     .join('\n');
   ok(lines);
