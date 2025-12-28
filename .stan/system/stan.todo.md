@@ -2,8 +2,11 @@
 
 ## Next up (near‑term, actionable)
 
+- Fix: unblock typecheck/build/docs by correcting batch options typing (Commander OptionValues constraint + command return type).
 - Public API: export `shouldCapture` from `@karmaniverous/get-dotenv/cliHost` (and re-export from root), and make diagnostics helpers reachable from the root entrypoint for copy/paste-friendly examples.
 - Interop: verify shared-chunk dist fixes cross-entrypoint plugin config (SMOZ).
+- TypeDoc: rerun `npm run docs` after typecheck is clean; if any warnings remain, eliminate them without `@hidden` by introducing explicit documented option-value interfaces and command types.
+- Interop: re-run `node tools/getdotenv-interop-repro.js` against the shared-chunk dist outputs (Case A/B must pass).
 - Deprecations: soft-deprecate the `z` re-export (JSDoc + a short Guides callout) and ensure docs/templates import `{ z }` from `zod`.
 - Verify: Windows SSO login-on-demand (`aws --profile … --login-on-demand whoami`) from a fresh terminal with AWS CLI 2.x.
 - Verification: run typecheck, lint, tests, verify:types, verify:package, verify:bundle, verify:tarball.
@@ -273,4 +276,6 @@
 - Docs: eliminate TypeDoc warnings in docs run (schemas/types)
 - Docs: fix remaining TypeDoc schema/type warnings
 - Build: switch Rollup ESM outputs to a single multi-entry graph with shared chunks so subpath entrypoints (`/cli`, `/cliHost`, `/plugins`) share internal singleton identity (fixes plugin.readConfig crash across entrypoints).
-- Build/init/aws/docs: stop copying templates into dist; resolve init templates from package root; bound AWS CLI probing to prevent smoke timeouts; hide internal attach* helpers from TypeDoc; update Knip to include build/** so Rollup deps are recognized.- Amendment: do not use `@hidden`; instead, define explicit documented option-value interfaces for `attach*Options` helpers and avoid Zod enum internals in exported schema types to eliminate TypeDoc `__type.*` warnings.
+- Build/init/aws/docs: stop copying templates into dist; resolve init templates from package root; bound AWS CLI probing to prevent smoke timeouts; hide internal attach\* helpers from TypeDoc; update Knip to include build/\*\* so Rollup deps are recognized.
+- Amendment: do not use `@hidden`; instead, define explicit documented option-value interfaces for `attach*Options` helpers and avoid Zod enum internals in exported schema types to eliminate TypeDoc `__type.*` warnings.
+- Fix: batch plugin options typing now satisfies Commander OptionValues and no longer breaks typecheck/build/docs.

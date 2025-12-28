@@ -1,7 +1,6 @@
-import type { OptionValues } from '@commander-js/extra-typings';
+import type { Command, OptionValues } from '@commander-js/extra-typings';
 
 import type { GetDotenvCliPublic } from '@/src/cliHost';
-import type { GetDotenvOptions } from '@/src/core';
 
 import type { BatchPlugin } from '.';
 import type { BatchPluginConfig } from './types';
@@ -11,7 +10,7 @@ import type { BatchPluginConfig } from './types';
  *
  * @public
  */
-export interface BatchCommandOptionValues {
+export interface BatchCommandOptionValues extends OptionValues {
   /**
    * When true, resolve the batch root from the nearest package directory instead of `process.cwd()`.
    */
@@ -39,12 +38,11 @@ export interface BatchCommandOptionValues {
 }
 
 /**
- * Command type returned by {@link attachBatchOptions}.
+ * Commander command type returned by {@link attachBatchOptions}.
  *
  * @public
  */
-export type BatchCommand = GetDotenvCliPublic<
-  GetDotenvOptions,
+export type BatchCommand = Command<
   [string[]],
   BatchCommandOptionValues,
   OptionValues
