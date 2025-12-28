@@ -1,13 +1,33 @@
-import path from 'path';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+import { packageDirectory } from 'package-directory';
 
 /**
- * Absolute path to the shipped templates directory.
+ * Resolve the absolute path to the shipped templates directory.
  *
- * Used by the init scaffolder to locate files under `templates/` at runtime.
+ * This must be anchored to the get-dotenv package root, not the current working directory,
+ * because init is typically executed from within a consumer project.
  *
  * @remarks
- * This path is resolved relative to the current working directory. It assumes
- * the `templates/` folder is present alongside the installed package (or in the
- * repository when running from source).
+ * Resolution strategy:
+ * - Determine the nearest package root relative to the current module (`import.meta.url`).
+ * - Return `<packageRoot>/templates`.
+ *
+ * This works for:
+ * - local source runs (repo root),
+ * - installed package runs (node_modules/\@karmaniverous/get-dotenv),
+ * - shared-chunk dist outputs (modules may live under `dist/chunks/`).
  */
-export const TEMPLATES_ROOT = path.resolve('templates');
+export async function resolveTemplatesRoot(
+  importMetaUrl: string,
+): Promise<string> {
+  const fromUrl = fileURLToPath(importMetaUrl);
+  const pkgRoot = await packageDirectory({ cwd: fromUrl });
+  if (!pkgRoot) {
+    throw new Error(
+      `Unable to resolve get-dotenv package root from ${fromUrl}.`,
+    );
+  }
+  return path.join(pkgRoot, 'templates');
+}

@@ -8,7 +8,7 @@
     "src/config/index.ts",
     "src/env/index.ts"
   ],
-  "project": ["src/**/*.ts"],
+  "project": ["src/**/*.ts", "build/**/*.ts", "rollup.config.ts"],
   "ignore": ["**/*.infer.ts"],
   "ignoreBinaries": ["Write-Output"],
   "ignoreDependencies": ["cross-env", "esbuild"],

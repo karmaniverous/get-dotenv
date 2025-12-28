@@ -28,7 +28,6 @@ const dtsTargets: DtsTarget[] = [
  * - Shared chunks are not needed for type bundles; the runtime interop issue is solved by ESM build chunking.
  */
 export async function buildDtsConfigs(): Promise<RollupOptions[]> {
-  const outputPath = 'dist';
   const external = await computeExternal();
 
   return dtsTargets.map<RollupOptions>((t) => ({
@@ -37,8 +36,6 @@ export async function buildDtsConfigs(): Promise<RollupOptions[]> {
     plugins: [
       ...createCommonPlugins({
         aliases: commonAliases,
-        outputPath,
-        includeCopy: true,
       }),
       dtsPlugin({ tsconfig: './tsconfig.base.json' }),
     ],

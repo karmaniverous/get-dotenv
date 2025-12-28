@@ -3,7 +3,18 @@ import { runCommand, runCommandResult } from '@/src/cliHost';
 import type { AwsContext, AwsCredentials } from './types';
 import type { ResolveAwsContextOptions } from './types';
 
-const AWS_CLI_TIMEOUT_MS = 15_000;
+// Keep AWS CLI probing bounded so the aws plugin does not stall unrelated commands.
+// This is especially important when a profile is present but SSO refresh/export
+// is slow or blocked (common on Windows).
+const AWS_CLI_TIMEOUT_MS = 3_000;
+const AWS_CLI_BUDGET_MS = 9_000;
+
+const pickTimeoutMs = (deadlineMs?: number): number => {
+  if (typeof deadlineMs !== 'number') return AWS_CLI_TIMEOUT_MS;
+  const remaining = deadlineMs - Date.now();
+  if (remaining <= 0) return 0;
+  return Math.min(AWS_CLI_TIMEOUT_MS, remaining);
+};
 
 const trim = (s: unknown) => (typeof s === 'string' ? s.trim() : '');
 const unquote = (s: string) =>
@@ -102,8 +113,10 @@ export const parseExportCredentialsEnv = (
 const getAwsConfigure = async (
   key: string,
   profile: string,
-  timeoutMs = AWS_CLI_TIMEOUT_MS,
+  deadlineMs?: number,
 ): Promise<string | undefined> => {
+  const timeoutMs = pickTimeoutMs(deadlineMs);
+  if (timeoutMs <= 0) return undefined;
   const r = await runCommandResult(
     ['aws', 'configure', 'get', key, '--profile', profile],
     false,
@@ -124,11 +137,13 @@ const getAwsConfigure = async (
 
 const exportCredentials = async (
   profile: string,
-  timeoutMs = AWS_CLI_TIMEOUT_MS,
+  deadlineMs?: number,
 ): Promise<AwsCredentials | undefined> => {
   const tryExport = async (
     format?: string,
   ): Promise<AwsCredentials | undefined> => {
+    const timeoutMs = pickTimeoutMs(deadlineMs);
+    if (timeoutMs <= 0) return undefined;
     const argv = [
       'aws',
       'configure',
@@ -148,19 +163,13 @@ const exportCredentials = async (
     return parseExportCredentialsJson(out) ?? parseExportCredentialsEnv(out);
   };
 
-  // Prefer the default/JSON "process" format first; then fall back to shell env outputs.
-  // Note: AWS CLI v2 supports: process | env | env-no-export | powershell | windows-cmd
-  const formats: string[] = [
-    'process',
-    ...(process.platform === 'win32'
-      ? ['powershell', 'windows-cmd', 'env', 'env-no-export']
-      : ['env', 'env-no-export']),
-  ];
-  for (const f of formats) {
-    const creds = await tryExport(f);
-    if (creds) return creds;
-  }
-  // Final fallback: no --format (AWS CLI default output)
+  // Keep the probe set small; budgeted calls above prevent long hangs.
+  const primary = await tryExport('process');
+  if (primary) return primary;
+  const secondary = await tryExport(
+    process.platform === 'win32' ? 'powershell' : 'env',
+  );
+  if (secondary) return secondary;
   return tryExport(undefined);
 };
 
@@ -179,6 +188,9 @@ export const resolveAwsContext = async ({
   const profileFallbackKey = cfg.profileFallbackKey ?? 'AWS_PROFILE';
   const regionKey = cfg.regionKey ?? 'AWS_REGION';
 
+  const deadlineMs =
+    cfg.strategy !== 'none' ? Date.now() + AWS_CLI_BUDGET_MS : undefined;
+
   const profile =
     cfg.profile ??
     dotenv[profileKey] ??
@@ -190,7 +202,12 @@ export const resolveAwsContext = async ({
   // Short-circuit when strategy is disabled.
   if (cfg.strategy === 'none') {
     // If region is still missing and we have a profile, try best-effort region resolve.
-    if (!region && profile) region = await getAwsConfigure('region', profile);
+    if (!region && profile)
+      region = await getAwsConfigure(
+        'region',
+        profile,
+        Date.now() + AWS_CLI_BUDGET_MS,
+      );
     if (!region && cfg.defaultRegion) region = cfg.defaultRegion;
     const out: AwsContext = {};
     if (profile !== undefined) out.profile = profile;
@@ -203,13 +220,21 @@ export const resolveAwsContext = async ({
   // Profile wins over ambient env creds when present (from flags/config/dotenv).
   if (profile) {
     // Try export-credentials
-    credentials = await exportCredentials(profile);
+    credentials = await exportCredentials(profile, deadlineMs);
 
     // On failure, detect SSO and optionally login then retry
     if (!credentials) {
-      const ssoSession = await getAwsConfigure('sso_session', profile);
+      const ssoSession = await getAwsConfigure(
+        'sso_session',
+        profile,
+        deadlineMs,
+      );
       // Legacy SSO profiles use sso_start_url/sso_region rather than sso_session.
-      const ssoStartUrl = await getAwsConfigure('sso_start_url', profile);
+      const ssoStartUrl = await getAwsConfigure(
+        'sso_start_url',
+        profile,
+        deadlineMs,
+      );
       const looksSSO =
         (typeof ssoSession === 'string' && ssoSession.length > 0) ||
         (typeof ssoStartUrl === 'string' && ssoStartUrl.length > 0);
@@ -228,15 +253,27 @@ export const resolveAwsContext = async ({
             `aws sso login failed for profile '${profile}' (exit ${String(exit)})`,
           );
         }
-        credentials = await exportCredentials(profile);
+        credentials = await exportCredentials(profile, deadlineMs);
       }
     }
 
     // Static fallback if still missing.
     if (!credentials) {
-      const id = await getAwsConfigure('aws_access_key_id', profile);
-      const secret = await getAwsConfigure('aws_secret_access_key', profile);
-      const token = await getAwsConfigure('aws_session_token', profile);
+      const id = await getAwsConfigure(
+        'aws_access_key_id',
+        profile,
+        deadlineMs,
+      );
+      const secret = await getAwsConfigure(
+        'aws_secret_access_key',
+        profile,
+        deadlineMs,
+      );
+      const token = await getAwsConfigure(
+        'aws_session_token',
+        profile,
+        deadlineMs,
+      );
       if (id && secret) {
         credentials = {
           accessKeyId: id,
@@ -260,7 +297,8 @@ export const resolveAwsContext = async ({
   }
 
   // Final region resolution
-  if (!region && profile) region = await getAwsConfigure('region', profile);
+  if (!region && profile)
+    region = await getAwsConfigure('region', profile, deadlineMs);
   if (!region && cfg.defaultRegion) region = cfg.defaultRegion;
 
   const out: AwsContext = {};

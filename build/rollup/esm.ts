@@ -25,8 +25,6 @@ export async function buildEsmConfig(): Promise<RollupOptions> {
     external,
     plugins: createCommonPlugins({
       aliases: commonAliases,
-      outputPath,
-      includeCopy: true,
     }),
     output: {
       dir: outputPath,

@@ -8,6 +8,7 @@ import { createInterface } from 'readline/promises';
 
 import { readMergedOptions } from '@/src/cliHost';
 
+import { resolveTemplatesRoot } from './constants';
 import { copyTextFile, ensureLines } from './io';
 import type { InitCommand } from './options';
 import { type CopyOperation, planCliCopies, planConfigCopies } from './plan';
@@ -54,9 +55,17 @@ export function attachInitDefaultAction(cli: InitCommand): void {
     const force = Boolean(opts['force']);
     const yes = Boolean(opts['yes']) || (!force && isNonInteractive());
 
+    // Templates live under the get-dotenv package root, not the consumer's CWD.
+    const templatesRoot = await resolveTemplatesRoot(import.meta.url);
+
     // Build copy plan
-    const cfgCopies = planConfigCopies({ format, withLocal, destRoot });
-    const cliCopies = planCliCopies({ cliName, destRoot });
+    const cfgCopies = planConfigCopies({
+      format,
+      templatesRoot,
+      withLocal,
+      destRoot,
+    });
+    const cliCopies = planCliCopies({ cliName, templatesRoot, destRoot });
     const copies: Array<CopyOperation> = [...cfgCopies, ...cliCopies];
 
     // Interactive state

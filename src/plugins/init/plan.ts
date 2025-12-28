@@ -1,7 +1,5 @@
 import path from 'path';
 
-import { TEMPLATES_ROOT } from './constants';
-
 /**
  * Represents a file copy operation during scaffolding.
  *
@@ -27,6 +25,10 @@ export interface PlanConfigCopiesOptions {
    */
   format: 'json' | 'yaml' | 'js' | 'ts';
   /**
+   * Absolute path to the shipped templates root directory.
+   */
+  templatesRoot: string;
+  /**
    * Whether to include a private .local variant (JSON/YAML only).
    */
   withLocal: boolean;
@@ -44,6 +46,7 @@ export interface PlanConfigCopiesOptions {
  */
 export const planConfigCopies = ({
   format,
+  templatesRoot,
   withLocal,
   destRoot,
 }: PlanConfigCopiesOptions): Array<CopyOperation> => {
@@ -51,7 +54,7 @@ export const planConfigCopies = ({
   if (format === 'json') {
     copies.push({
       src: path.join(
-        TEMPLATES_ROOT,
+        templatesRoot,
         'config',
         'json',
         'public',
@@ -62,7 +65,7 @@ export const planConfigCopies = ({
     if (withLocal) {
       copies.push({
         src: path.join(
-          TEMPLATES_ROOT,
+          templatesRoot,
           'config',
           'json',
           'local',
@@ -74,7 +77,7 @@ export const planConfigCopies = ({
   } else if (format === 'yaml') {
     copies.push({
       src: path.join(
-        TEMPLATES_ROOT,
+        templatesRoot,
         'config',
         'yaml',
         'public',
@@ -85,7 +88,7 @@ export const planConfigCopies = ({
     if (withLocal) {
       copies.push({
         src: path.join(
-          TEMPLATES_ROOT,
+          templatesRoot,
           'config',
           'yaml',
           'local',
@@ -96,12 +99,12 @@ export const planConfigCopies = ({
     }
   } else if (format === 'js') {
     copies.push({
-      src: path.join(TEMPLATES_ROOT, 'config', 'js', 'getdotenv.config.js'),
+      src: path.join(templatesRoot, 'config', 'js', 'getdotenv.config.js'),
       dest: path.join(destRoot, 'getdotenv.config.js'),
     });
   } else {
     copies.push({
-      src: path.join(TEMPLATES_ROOT, 'config', 'ts', 'getdotenv.config.ts'),
+      src: path.join(templatesRoot, 'config', 'ts', 'getdotenv.config.ts'),
       dest: path.join(destRoot, 'getdotenv.config.ts'),
     });
   }
@@ -119,6 +122,10 @@ export interface PlanCliCopiesOptions {
    */
   cliName: string;
   /**
+   * Absolute path to the shipped templates root directory.
+   */
+  templatesRoot: string;
+  /**
    * Absolute destination project root.
    */
   destRoot: string;
@@ -132,6 +139,7 @@ export interface PlanCliCopiesOptions {
  */
 export const planCliCopies = ({
   cliName,
+  templatesRoot,
   destRoot,
 }: PlanCliCopiesOptions): Array<CopyOperation> => {
   const subs = { __CLI_NAME__: cliName };
@@ -139,23 +147,23 @@ export const planCliCopies = ({
   const helloBase = path.join(base, 'plugins', 'hello');
   return [
     {
-      src: path.join(TEMPLATES_ROOT, 'cli', 'index.ts'),
+      src: path.join(templatesRoot, 'cli', 'index.ts'),
       dest: path.join(base, 'index.ts'),
       subs,
     },
     {
-      src: path.join(TEMPLATES_ROOT, 'cli', 'plugins', 'hello', 'index.ts'),
+      src: path.join(templatesRoot, 'cli', 'plugins', 'hello', 'index.ts'),
       dest: path.join(helloBase, 'index.ts'),
       subs,
     },
     {
-      src: path.join(TEMPLATES_ROOT, 'cli', 'plugins', 'hello', 'options.ts'),
+      src: path.join(templatesRoot, 'cli', 'plugins', 'hello', 'options.ts'),
       dest: path.join(helloBase, 'options.ts'),
       subs,
     },
     {
       src: path.join(
-        TEMPLATES_ROOT,
+        templatesRoot,
         'cli',
         'plugins',
         'hello',
@@ -166,7 +174,7 @@ export const planCliCopies = ({
     },
     {
       src: path.join(
-        TEMPLATES_ROOT,
+        templatesRoot,
         'cli',
         'plugins',
         'hello',
@@ -176,7 +184,7 @@ export const planCliCopies = ({
       subs,
     },
     {
-      src: path.join(TEMPLATES_ROOT, 'cli', 'plugins', 'hello', 'types.ts'),
+      src: path.join(templatesRoot, 'cli', 'plugins', 'hello', 'types.ts'),
       dest: path.join(helloBase, 'types.ts'),
       subs,
     },

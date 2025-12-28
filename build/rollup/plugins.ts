@@ -5,7 +5,6 @@ import jsonPlugin from '@rollup/plugin-json';
 import { nodeResolve } from '@rollup/plugin-node-resolve';
 import typescriptPlugin from '@rollup/plugin-typescript';
 import type { Plugin } from 'rollup';
-import copy from 'rollup-plugin-copy';
 
 /**
  * Create the shared TypeScript plugin used by Rollup library builds.
@@ -35,30 +34,14 @@ export function createLibraryTsPlugin(): Plugin {
 /**
  * Create the shared Rollup plugin list for library builds.
  */
-export function createCommonPlugins(options: {
-  aliases: Alias[];
-  outputPath: string;
-  includeCopy?: boolean;
-}): Plugin[] {
-  const { aliases, outputPath, includeCopy = true } = options;
+export function createCommonPlugins(options: { aliases: Alias[] }): Plugin[] {
+  const { aliases } = options;
 
-  const plugins: Plugin[] = [
+  return [
     aliasPlugin({ entries: aliases }),
     commonjsPlugin(),
     jsonPlugin(),
     nodeResolve(),
     createLibraryTsPlugin(),
   ];
-
-  if (includeCopy) {
-    plugins.push(
-      copy({
-        targets: [{ src: 'templates/**/*', dest: `${outputPath}/templates` }],
-        copyOnce: true,
-        verbose: true,
-      }) as unknown as Plugin,
-    );
-  }
-
-  return plugins;
 }
