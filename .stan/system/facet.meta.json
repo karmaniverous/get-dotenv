@@ -10,7 +10,7 @@
   },
   "docs": {
     "exclude": ["guides/**"],
-    "include": ["guides/index.md"]
+    "include": ["guides/stan-assistant-guide.md"]
   },
   "dotenv": {
     "exclude": [
