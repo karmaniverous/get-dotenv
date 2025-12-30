@@ -7,14 +7,14 @@ stan-core:
     - CHANGELOG.md
     - docs
     - package-lock.json
-    - 'test/**'
-    - 'src/**/*.test.ts'
-    - 'src/e2e/**'
   imports:
     '@commander-js/extra-typings':
       - node_modules/@commander-js/extra-typings/index.d.ts
     '@karmaniverous/smoz':
       - ../smoz/.stan/interop/get-dotenv/**
+    '@veterancrowd/aws-cli':
+      - ../../veterancrowd/aws-cli/lib/updateDotenv.js
+  includes: []
 stan-cli:
   cliDefaults:
     run:

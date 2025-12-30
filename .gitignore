@@ -7,9 +7,12 @@ coverage/
 dist/
 esm/
 node_modules/
-.stan/output/
+
+# STAN
 .stan/diff/
-.stan/dist/
+.stan/imports/
+.stan/output/
 .stan/patch/
-.stan/system/facet.state.json
 .stan/system/.docs.meta.json
+.stan/system/facet.state.json
+.stan/dist/

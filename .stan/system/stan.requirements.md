@@ -539,11 +539,11 @@ Goal: thread Commander’s generics `Command<Args, Opts, GlobalOpts>` end‑to�
 
   ```ts
   export class GetDotenvCli<
-      TOptions extends GetDotenvOptions = GetDotenvOptions,
-      TArgs extends any[] = [],
-      TOpts extends OptionValues = {},
-      TGlobal extends OptionValues = {},
-    >
+    TOptions extends GetDotenvOptions = GetDotenvOptions,
+    TArgs extends any[] = [],
+    TOpts extends OptionValues = {},
+    TGlobal extends OptionValues = {},
+  >
     extends Command<TArgs, TOpts, TGlobal>
     implements GetDotenvCliPublic<TOptions, TArgs, TOpts, TGlobal>
   {
@@ -793,6 +793,104 @@ Per‑plugin config keyed by realized path
 - Author guidance:
   - Stabilize namespaces in compositions to avoid churn in config keys over time.
   - Use leaf‑only names in help displays; rely on the realized path for config keys and internal lookups.
+
+## Dotenv file editing utility (format-preserving)
+
+The library MUST provide utilities to update a dotenv-style file in place while preserving comments, whitespace, ordering, and non-assignment content.
+
+Primary use cases:
+
+- Bootstrap: reconstruct missing gitignored private files (e.g., `.env.dev.local`) from a committed template and a JSON payload (e.g., fetched from a secrets store).
+- Sync: update existing dotenv files in place while preserving developer formatting and comments.
+- General updates: update a public or private file for either global scope or a specific environment.
+
+### Target selection (deterministic; paths-only)
+
+Given an available getdotenv context and explicit selector options, the utility MUST be able to determine the exact file to edit by searching `paths` only (no separate directory parameter).
+
+Selector axes (mutually exclusive):
+
+- Scope: `global` or `env` (never both).
+- Privacy: `public` or `private` (never both).
+
+Filename construction (from context + selector):
+
+- Base token: `dotenvToken` (default `.env`).
+- Environment segment:
+  - If scope is `env`, use `env` (or `defaultEnv`) and include `.<env>` in the filename.
+  - If no effective env is available when scope is `env`, throw.
+- Private token:
+  - If privacy is `private`, append `.<privateToken>` (default `local`).
+  - If privacy is `public`, do not append a private token.
+
+The resulting filename MUST be exactly one of:
+
+- Public/global: `<dotenvToken>`
+- Public/env: `<dotenvToken>.<env>`
+- Private/global: `<dotenvToken>.<privateToken>`
+- Private/env: `<dotenvToken>.<env>.<privateToken>`
+
+Search order across `paths` MUST be configurable:
+
+- Default: reverse order (highest precedence path wins, consistent with overlay precedence).
+- Optional: forward order.
+
+Resolution rules:
+
+- If the target file exists at any searched path, edit the first match and stop.
+- If the target file does not exist anywhere, but a template file exists, copy the template to create the target file as a sibling of the template and then edit it.
+  - Template extension MUST default to `template` (e.g., `.env.local.template`).
+- If neither the target file nor its template exists anywhere under `paths`, the utility MUST throw (cannot determine destination).
+
+### Format-preserving edits (state-machine parsing)
+
+The utility MUST implement a small state-machine parser (not regex-only parsing) to preserve formatting.
+
+Preservation guarantees:
+
+- Preserve comments (full-line and inline).
+- Preserve blank lines.
+- Preserve unknown/unparsed lines verbatim.
+- Preserve indentation and separator spacing around `=` (and any supported alternative separators).
+- Preserve existing quote style where possible (single vs double vs unquoted).
+- Preserve per-line EOL tokens when `eol: preserve` is selected.
+- Preserve trailing newline presence/absence.
+
+### Editing semantics
+
+The editor MUST support:
+
+- Mode:
+  - Default `merge`: update/add keys from the input object without deleting unrelated keys.
+  - Optional `sync`: remove assignment lines for keys not present in the input object.
+- Duplicate key handling:
+  - Configurable strategy: `all | first | last`.
+  - Default: `all` (update all occurrences).
+- Null/undefined handling (configurable):
+  - Default: `undefined` skips (no change).
+  - Default: `null` deletes the key assignment line(s) (subject to duplicate strategy).
+  - Additional behaviors may be supported (e.g., set empty string) without breaking defaults.
+- JSON value normalization:
+  - Objects and arrays MUST be supported by stringifying (e.g., `JSON.stringify`) before writing.
+
+Sync + undefined safety:
+
+- In `sync` mode, a key present in the update object with value `undefined` and `undefinedBehavior: skip` MUST NOT be treated as “missing” for deletion purposes.
+
+### Quoting and correctness
+
+The editor MUST prefer correctness and compatibility with dotenv parsers while still preserving formatting when feasible.
+
+- Preserve the original quote style for updated keys when the new value can be safely represented with that style.
+- Upgrade quoting as needed to represent the new value correctly (for example, multiline values or values that would otherwise be truncated by inline comments).
+- When updating a template placeholder line that contains only a bare key (no separator/value), the editor MUST insert a default separator (`=`) when applying a value.
+
+### EOL policy
+
+EOL normalization MUST be configurable:
+
+- Default: `preserve` (detect and preserve existing EOL style; inserted lines follow the detected file EOL).
+- Options: force `lf` or `crlf`.
 
 ## Prioritized roadmap (requirements)
 
