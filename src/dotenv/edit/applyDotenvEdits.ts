@@ -210,9 +210,6 @@ export function applyDotenvEdits(
   const mode: DotenvEditMode = opts?.mode ?? 'merge';
   const duplicateKeys: DotenvDuplicateKeyStrategy =
     opts?.duplicateKeys ?? 'all';
-  const undefinedBehavior: DotenvUndefinedBehavior =
-    opts?.undefinedBehavior ?? 'skip';
-  const nullBehavior: DotenvNullBehavior = opts?.nullBehavior ?? 'delete';
   const defaultSeparator = opts?.defaultSeparator ?? '=';
 
   const segs = doc.segments.slice();
@@ -246,12 +243,12 @@ export function applyDotenvEdits(
     const v = updates[key];
     const idxsAll = byKey.get(key) ?? [];
 
-    if (v === null && nullBehavior === 'delete') {
+    if (v === null) {
       for (const i of pickIndexes(idxsAll, duplicateKeys)) deleteIdx.add(i);
       continue;
     }
 
-    if (v === undefined && undefinedBehavior === 'skip') {
+    if (v === undefined) {
       // Note: in sync mode, this key counts as present (do not delete); replacements are skipped.
       continue;
     }

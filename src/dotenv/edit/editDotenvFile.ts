@@ -48,13 +48,15 @@ const buildTargetFilename = (opts: {
   envName?: string;
 }): string => {
   const { dotenvToken, privateToken, scope, privacy, envName } = opts;
-  if (scope === 'env' && !envName) {
-    throw new Error(
-      `Unable to resolve env-scoped dotenv filename: env is required.`,
-    );
-  }
   const parts = [dotenvToken];
-  if (scope === 'env') parts.push(envName);
+  if (scope === 'env') {
+    if (!envName) {
+      throw new Error(
+        `Unable to resolve env-scoped dotenv filename: env is required.`,
+      );
+    }
+    parts.push(envName);
+  }
   if (privacy === 'private') parts.push(privateToken);
   return parts.join('.');
 };
