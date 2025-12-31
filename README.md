@@ -22,6 +22,7 @@ See full guides:
 
 - [Getting started](./guides/getting-started.md)
 - [Config and overlays](./guides/config.md) (dynamic, validation, defaults):
+- [Dotenv editor (format-preserving)](./guides/dotenv-editor.md)
 - [Shell execution behavior, quoting, capture](./guides/shell.md)
 - [Shipped plugins](./guides/shipped/index.md)
 - [Authoring plugins](./guides/authoring/index.md) (host, lifecycle, exec, diagnostics)

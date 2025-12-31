@@ -61,7 +61,7 @@ import { dotenvExpand, dotenvExpandAll } from '@karmaniverous/get-dotenv';
 
 ## Dotenv file editing (format-preserving)
 
-Use the dotenv edit utilities when you need to update a `.env*` file in place without destroying comments, spacing, ordering, or unknown lines.
+Use the dotenv edit utilities when you need to update a `.env*` file in place without destroying comments, spacing, ordering, unknown lines, or line endings.
 
 Pure text (no filesystem):
 
@@ -94,9 +94,33 @@ await editDotenvFile(
 
 Notes:
 
-- `null` deletes key assignment lines (default).
-- `undefined` skips (default); in `mode: 'sync'` an own key with `undefined` counts as present (so it is not deleted).
-- Template bootstrap: if the target is missing but `<target>.template` exists, it is copied first and then edited.
+- Dedicated guide: see [Dotenv editor (format-preserving)](./dotenv-editor.md) for the full contract, examples, and edge cases.
+- Update map semantics:
+  - `null` deletes key assignment lines (default).
+  - `undefined` skips (default); in `mode: 'sync'` an own key with `undefined` counts as present (so it is not deleted).
+  - Objects/arrays are supported and are written via `JSON.stringify`.
+- Duplicate keys: `duplicateKeys: 'all' | 'first' | 'last'` (default: `'all'`).
+- EOL: `eol: 'preserve' | 'lf' | 'crlf'` (default: `'preserve'`), and trailing newline presence/absence is preserved.
+- Target selection (`editDotenvFile`) is deterministic and uses `paths` only (directories), matching get-dotenv’s precedence model by default:
+  - `searchOrder: 'reverse'` (default): last path wins (highest precedence).
+  - `searchOrder: 'forward'`: first path wins.
+- Template bootstrap: if the selected target is missing but `<target>.<templateExtension>` exists (default extension: `template`), the template is copied first and then edited in place.
+- Return shape: `editDotenvFile` returns `{ path, createdFromTemplate, changed }` where `path` is absolute.
+
+Selector mapping (filename construction):
+
+- `scope: 'global'`, `privacy: 'public'` → `<dotenvToken>`
+- `scope: 'env'`, `privacy: 'public'` → `<dotenvToken>.<env>`
+- `scope: 'global'`, `privacy: 'private'` → `<dotenvToken>.<privateToken>`
+- `scope: 'env'`, `privacy: 'private'` → `<dotenvToken>.<env>.<privateToken>`
+
+If `scope: 'env'` and neither `env` nor `defaultEnv` can be resolved, `editDotenvFile` throws with an `env is required`-style message.
+
+Low-level building blocks (advanced use):
+
+- `parseDotenvDocument(text)` → parse into a format-preserving segment model.
+- `applyDotenvEdits(doc, updates, opts?)` → apply merge/sync edits while preserving formatting.
+- `renderDotenvDocument(doc, eolMode?)` → render back to text with EOL policy.
 
 ## Programmatic API: `getDotenv()`
 
