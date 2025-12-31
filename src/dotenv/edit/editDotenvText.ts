@@ -29,11 +29,15 @@ export function editDotenvText(
 ): string {
   const doc = parseDotenvDocument(text);
   const edited = applyDotenvEdits(doc, updates, {
-    mode: options.mode,
-    duplicateKeys: options.duplicateKeys,
-    undefinedBehavior: options.undefinedBehavior,
-    nullBehavior: options.nullBehavior,
-    defaultSeparator: options.defaultSeparator,
+    ...(options.mode ? { mode: options.mode } : {}),
+    ...(options.duplicateKeys ? { duplicateKeys: options.duplicateKeys } : {}),
+    ...(options.undefinedBehavior
+      ? { undefinedBehavior: options.undefinedBehavior }
+      : {}),
+    ...(options.nullBehavior ? { nullBehavior: options.nullBehavior } : {}),
+    ...(typeof options.defaultSeparator === 'string'
+      ? { defaultSeparator: options.defaultSeparator }
+      : {}),
   });
   return renderDotenvDocument(edited, options.eol ?? 'preserve');
 }

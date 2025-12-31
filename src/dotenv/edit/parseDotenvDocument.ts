@@ -126,7 +126,9 @@ const tryParseQuotedValueAcrossLines = (
     if (idx >= lines.length) break;
     // If the file ended without a newline, we still treat the join as a newline inside the quoted value.
     valueOut += '\n';
-    rhs = lines[idx]!.line;
+    const next = lines[idx];
+    if (!next) break;
+    rhs = next.line;
     cursor = 0;
     escaped = false;
   }
@@ -164,7 +166,8 @@ export function parseDotenvDocument(text: string): DotenvDocument {
   const segments: DotenvSegment[] = [];
 
   for (let i = 0; i < lines.length; i++) {
-    const cur = lines[i]!;
+    const cur = lines[i];
+    if (!cur) continue;
     const line = cur.line;
     const eol = cur.eol;
 
@@ -188,7 +191,7 @@ export function parseDotenvDocument(text: string): DotenvDocument {
 
       // Try quoted parsing first (single-line or multiline).
       if (tokenStart === '"' || tokenStart === "'") {
-        const quote = tokenStart;
+        const quote: '"' | "'" = tokenStart === '"' ? '"' : "'";
         const parsedQuoted = tryParseQuotedValueAcrossLines(
           lines,
           i,
@@ -201,7 +204,7 @@ export function parseDotenvDocument(text: string): DotenvDocument {
             .slice(i, endIndex + 1)
             .map((l) => l.line + l.eol)
             .join('');
-          const endEol = lines[endIndex]!.eol;
+          const endEol = lines[endIndex]?.eol ?? '';
 
           const seg: DotenvAssignmentSegment = {
             kind: 'assignment',

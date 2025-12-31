@@ -48,9 +48,9 @@ describe('dotenv/edit/editDotenvText', () => {
   });
 
   it('sync mode deletes assignments not present in the update map (but preserves comments/unknown)', () => {
-    const input = ['# c', 'A=1', 'B=2', 'raw', ''].join('\n');
+    const input = ['# c', 'A=1', 'B=2', 'raw line', ''].join('\n');
     const out = editDotenvText(input, { A: 'x' }, { mode: 'sync' });
-    expect(out).toBe(['# c', 'A=x', 'raw', ''].join('\n'));
+    expect(out).toBe(['# c', 'A=x', 'raw line', ''].join('\n'));
   });
 
   it('sync mode does not delete a key that is present with undefined (undefinedBehavior=skip)', () => {

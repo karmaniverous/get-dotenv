@@ -87,8 +87,14 @@ const pickIndexes = (
   strategy: DotenvDuplicateKeyStrategy,
 ): number[] => {
   if (idxs.length === 0) return [];
-  if (strategy === 'first') return [idxs[0]!];
-  if (strategy === 'last') return [idxs[idxs.length - 1]!];
+  if (strategy === 'first') {
+    const first = idxs[0];
+    return first === undefined ? [] : [first];
+  }
+  if (strategy === 'last') {
+    const last = idxs[idxs.length - 1];
+    return last === undefined ? [] : [last];
+  }
   return idxs.slice();
 };
 
@@ -214,7 +220,8 @@ export function applyDotenvEdits(
   // Index key-bearing segments.
   const byKey = new Map<string, number[]>();
   for (let i = 0; i < segs.length; i++) {
-    const s = segs[i]!;
+    const s = segs[i];
+    if (!s) continue;
     if (s.kind === 'assignment' || s.kind === 'bare') {
       const list = byKey.get(s.key) ?? [];
       list.push(i);
@@ -251,7 +258,8 @@ export function applyDotenvEdits(
 
     const valueLf = coerceToString(v);
     for (const i of pickIndexes(idxsAll, duplicateKeys)) {
-      const seg = segs[i]!;
+      const seg = segs[i];
+      if (!seg) continue;
       if (seg.kind === 'assignment') {
         replace.set(
           i,
@@ -276,7 +284,9 @@ export function applyDotenvEdits(
   for (let i = 0; i < segs.length; i++) {
     if (deleteIdx.has(i)) continue;
     const repl = replace.get(i);
-    out.push(repl ?? segs[i]!);
+    const original = segs[i];
+    if (repl) out.push(repl);
+    else if (original) out.push(original);
   }
 
   // Merge mode: append missing keys (only when provided with a concrete value).
@@ -291,9 +301,8 @@ export function applyDotenvEdits(
     for (const key of Object.keys(updates)) {
       if (existingKeys.has(key)) continue;
       const v = updates[key];
-      if (v === undefined && (opts?.undefinedBehavior ?? 'skip') === 'skip')
-        continue;
-      if (v === null && (opts?.nullBehavior ?? 'delete') === 'delete') continue;
+      if (v === undefined) continue;
+      if (v === null) continue;
       const valueLf = coerceToString(v);
       out.push(
         buildNewAssignmentAtEnd({

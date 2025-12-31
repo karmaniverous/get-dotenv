@@ -10,4 +10,4 @@
 ## Completed (recent)
 
 - Defined requirements and plan for a format-preserving dotenv edit utility with deterministic multi-path target resolution and template bootstrap.
-- Implemented a format-preserving dotenv editor (text + FS) and documented the public API in the assistant guide.
+- Implemented a format-preserving dotenv editor (text + FS) and documented the public API in the assistant guide.- Fixed dotenv editor typing/lint and stabilized test timeouts.

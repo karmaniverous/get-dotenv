@@ -18,6 +18,7 @@ import { editDotenvText } from './editDotenvText';
 import type {
   DotenvFs,
   DotenvPathSearchOrder,
+  DotenvUpdateMap,
   EditDotenvFileOptions,
   EditDotenvFileResult,
 } from './types';
@@ -53,7 +54,7 @@ const buildTargetFilename = (opts: {
     );
   }
   const parts = [dotenvToken];
-  if (scope === 'env') parts.push(envName!);
+  if (scope === 'env') parts.push(envName);
   if (privacy === 'private') parts.push(privateToken);
   return parts.join('.');
 };
@@ -107,7 +108,7 @@ const resolveTargetAcrossPaths = async (
  * @public
  */
 export async function editDotenvFile(
-  updates: Record<string, unknown>,
+  updates: DotenvUpdateMap,
   options: EditDotenvFileOptions,
 ): Promise<EditDotenvFileResult> {
   const fsPort = options.fs ?? defaultFs;
@@ -122,7 +123,7 @@ export async function editDotenvFile(
     privateToken,
     scope: options.scope,
     privacy: options.privacy,
-    envName,
+    ...(envName ? { envName } : {}),
   });
 
   const resolved = await resolveTargetAcrossPaths(fsPort, {
@@ -142,14 +143,18 @@ export async function editDotenvFile(
     }
   }
 
-  const before = (await fsPort.readFile(resolved.targetPath)) ?? '';
-  const after = editDotenvText(before, updates as Record<string, any>, {
-    mode: options.mode,
-    duplicateKeys: options.duplicateKeys,
-    undefinedBehavior: options.undefinedBehavior,
-    nullBehavior: options.nullBehavior,
-    eol: options.eol,
-    defaultSeparator: options.defaultSeparator,
+  const before = await fsPort.readFile(resolved.targetPath);
+  const after = editDotenvText(before, updates, {
+    ...(options.mode ? { mode: options.mode } : {}),
+    ...(options.duplicateKeys ? { duplicateKeys: options.duplicateKeys } : {}),
+    ...(options.undefinedBehavior
+      ? { undefinedBehavior: options.undefinedBehavior }
+      : {}),
+    ...(options.nullBehavior ? { nullBehavior: options.nullBehavior } : {}),
+    ...(options.eol ? { eol: options.eol } : {}),
+    ...(typeof options.defaultSeparator === 'string'
+      ? { defaultSeparator: options.defaultSeparator }
+      : {}),
   });
 
   const changed = before !== after;
