@@ -71,4 +71,22 @@ describe('dotenv/edit/editDotenvText', () => {
     const out = editDotenvText(input, { B: 'x' }, { eol: 'crlf' });
     expect(out).toBe('A=1\r\nB=x\r\n');
   });
+
+  it('preserves an unterminated quoted value line verbatim (raw) and still edits other keys', () => {
+    const input = ['A="unterminated', 'B=2', ''].join('\n');
+    const out = editDotenvText(input, { B: 'x' });
+    expect(out).toBe(['A="unterminated', 'B=x', ''].join('\n'));
+  });
+
+  it('preserves export prefix and separator spacing when updating', () => {
+    const input = ['export FOO = 1  # c', ''].join('\n');
+    const out = editDotenvText(input, { FOO: '2' });
+    expect(out).toBe(['export FOO = 2  # c', ''].join('\n'));
+  });
+
+  it('quotes values containing # when an inline comment suffix exists', () => {
+    const input = ['FOO=1 # keep', ''].join('\n');
+    const out = editDotenvText(input, { FOO: 'a#b' });
+    expect(out).toBe(['FOO="a#b" # keep', ''].join('\n'));
+  });
 });

@@ -222,7 +222,11 @@ export function parseDotenvDocument(text: string): DotenvDocument {
           i = endIndex;
           continue;
         }
-        // Fall through: if quote is unclosed, treat as raw to preserve verbatim.
+        // If quote is unclosed, preserve the line verbatim as raw.
+        // This avoids accidentally “parsing” malformed lines and losing formatting.
+        const rawSeg: DotenvRawSegment = { kind: 'raw', raw: line + eol };
+        segments.push(rawSeg);
+        continue;
       }
 
       // Unquoted single-line value: split inline comments.
