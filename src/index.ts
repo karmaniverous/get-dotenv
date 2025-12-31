@@ -45,10 +45,33 @@ export {
   traceChildEnv,
   type TraceChildEnvOptions,
 } from './diagnostics';
+export type {
+  DotenvAssignmentSegment,
+  DotenvBareKeySegment,
+  DotenvDocument,
+  DotenvDuplicateKeyStrategy,
+  DotenvEditMode,
+  DotenvEditOptions,
+  DotenvEolMode,
+  DotenvFs,
+  DotenvPathSearchOrder,
+  DotenvSegment,
+  DotenvTargetPrivacy,
+  DotenvTargetScope,
+  DotenvUpdateMap,
+  DotenvUpdateValue,
+  EditDotenvFileOptions,
+  EditDotenvFileResult,
+} from './dotenv';
 export {
+  applyDotenvEdits,
   dotenvExpand,
   dotenvExpandAll,
   dotenvExpandFromProcessEnv,
+  editDotenvFile,
+  editDotenvText,
+  parseDotenvDocument,
+  renderDotenvDocument,
 } from './dotenv';
 export { interpolateDeep } from './util';
 /** @deprecated Import \{ z \} from 'zod' directly. Will be removed in v7. */

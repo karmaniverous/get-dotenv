@@ -16,25 +16,22 @@
     "exclude": [
       "src/config/**",
       "src/diagnostics/**",
+      "src/dotenv/**",
       "src/e2e/**",
       "src/env/**",
       "src/schema/**"
     ],
-    "include": ["src/config/index.ts"]
+    "include": [
+      "src/config/index.ts",
+      "src/diagnostics/index.ts",
+      "src/dotenv/index.ts",
+      "src/env/index.ts",
+      "src/schema/index.ts"
+    ]
   },
   "plugins": {
     "exclude": ["src/plugins/**"],
-    "include": [
-      "src/plugins/index.ts",
-      "src/plugins/aws/index.ts",
-      "src/plugins/batch/index.ts",
-      "src/plugins/cmd/index.ts",
-      "src/plugins/demo/index.ts",
-      "src/plugins/init/index.ts",
-      "src/plugins/aws/whoami/index.ts",
-      "src/plugins/aws/whoami/defaultAction.ts",
-      "src/plugins/aws/whoami/really.ts"
-    ]
+    "include": ["src/plugins/index.ts"]
   },
   "templates": {
     "exclude": ["templates/**"],

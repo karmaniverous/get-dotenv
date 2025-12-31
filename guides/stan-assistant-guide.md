@@ -59,6 +59,45 @@ Use helpers when you need the exact semantics:
 import { dotenvExpand, dotenvExpandAll } from '@karmaniverous/get-dotenv';
 ```
 
+## Dotenv file editing (format-preserving)
+
+Use the dotenv edit utilities when you need to update a `.env*` file in place without destroying comments, spacing, ordering, or unknown lines.
+
+Pure text (no filesystem):
+
+```ts
+import { editDotenvText } from '@karmaniverous/get-dotenv';
+
+const next = editDotenvText(
+  'A=1\n# keep\nB=2\n',
+  { A: 'updated', UNUSED: null },
+);
+```
+
+FS-level (deterministic target selection across `paths`, optional template bootstrap):
+
+```ts
+import { editDotenvFile } from '@karmaniverous/get-dotenv';
+
+await editDotenvFile(
+  { API_URL: 'https://example.com', UNUSED: null },
+  {
+    paths: ['./'],
+    scope: 'env',
+    privacy: 'private',
+    env: 'dev',
+    dotenvToken: '.env',
+    privateToken: 'local',
+  },
+);
+```
+
+Notes:
+
+- `null` deletes key assignment lines (default).
+- `undefined` skips (default); in `mode: 'sync'` an own key with `undefined` counts as present (so it is not deleted).
+- Template bootstrap: if the target is missing but `<target>.template` exists, it is copied first and then edited.
+
 ## Programmatic API: `getDotenv()`
 
 Use `getDotenv()` when you want “compose an env map” without the CLI host/plugin system.
@@ -378,6 +417,7 @@ Use this section when you need a “what do I import?” answer quickly.
   - Env composition: `getDotenv`, `defineDynamic`, `defineGetDotenvConfig`
   - Defaults: `baseRootOptionDefaults`
   - Expansion: `dotenvExpand`, `dotenvExpandAll`, `dotenvExpandFromProcessEnv`
+  - Dotenv editing: `editDotenvText`, `editDotenvFile` (format-preserving)
   - Diagnostics: `traceChildEnv`, `redactDisplay`, `redactObject`, `maybeWarnEntropy`
   - Utilities: `interpolateDeep` (deep string-leaf interpolation), `writeDotenvFile`, `defaultsDeep`, `tokenize`
 - CLI factory (`@karmaniverous/get-dotenv/cli`):
