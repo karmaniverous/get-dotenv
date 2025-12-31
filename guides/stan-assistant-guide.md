@@ -68,10 +68,10 @@ Pure text (no filesystem):
 ```ts
 import { editDotenvText } from '@karmaniverous/get-dotenv';
 
-const next = editDotenvText(
-  'A=1\n# keep\nB=2\n',
-  { A: 'updated', UNUSED: null },
-);
+const next = editDotenvText('A=1\n# keep\nB=2\n', {
+  A: 'updated',
+  UNUSED: null,
+});
 ```
 
 FS-level (deterministic target selection across `paths`, optional template bootstrap):
@@ -432,6 +432,60 @@ From the root export:
 - `batch`: discovers directories by globs and runs a command sequentially; honors `--list` and `--ignore-errors`.
 - `aws`: establishes a session once per invocation and writes AWS env vars to `process.env`; publishes minimal metadata under `ctx.plugins.aws`; supports `strategy: none` to disable credential export.
 - `init`: scaffolds config files and a CLI skeleton under `src/cli/<name>/...`; collision handling supports overwrite/example/skip plus CI heuristics.
+
+## Shipped plugin interop contracts (composition + runtime state)
+
+This section exists to answer common “can I depend on this?” questions when authoring third-party plugins intended to interoperate with the shipped plugins.
+
+### Nested composition: `parentPlugin().use(childPlugin())`
+
+- Any plugin created with `definePlugin()` can be nested under another plugin via `.use(childPlugin())`; the shipped plugins follow this model.
+- `awsPlugin()` is explicitly designed to act as a parent for AWS-dependent child plugins. Prefer mounting your plugin under `aws` so session/region/credential resolution happens before your code runs.
+
+Canonical wiring example (child plugin mounted under `aws`):
+
+```ts
+#!/usr/bin/env node
+import { createCli } from '@karmaniverous/get-dotenv/cli';
+import { awsPlugin } from '@karmaniverous/get-dotenv/plugins';
+
+import { secretsPlugin } from '@acme/aws-secrets-plugin'; // example third-party plugin
+
+await createCli({
+  alias: 'toolbox',
+  compose: (program) => program.use(awsPlugin().use(secretsPlugin())),
+})();
+```
+
+Notes:
+
+- The realized mount path is the config key (root alias excluded). For a child plugin mounted as `aws secrets`, the config key is `plugins['aws/secrets']`.
+- The `cmd` plugin’s parent alias (`-c, --cmd <command...>`) is attached to the command it is mounted under. If you mount `cmdPlugin()` under a group/namespace command, the alias attaches to that group (not the root).
+
+### Stable `ctx.plugins.*` shapes (what is safe to depend on)
+
+- Only the `aws` plugin currently publishes a stable, documented entry under `ctx.plugins`: `ctx.plugins.aws`.
+- Contract: `ctx.plugins.aws` contains non-sensitive metadata only. Treat this as the stable surface:
+  - `profile?: string`
+  - `region?: string`
+- Credentials are intentionally not mirrored under `ctx.plugins`. If your child plugin needs credentials, rely on the standard AWS SDK v3 provider chain reading from `process.env` after the `aws` parent runs.
+
+Other shipped plugins (`cmd`, `batch`, `init`) do not currently publish stable `ctx.plugins.*` entries. If you observe additional fields in `ctx.plugins`, treat them as internal/unstable unless they are documented as part of a stable contract.
+
+### Dotenv editor “winner path” guidance (plugins that write `.env*`)
+
+If your plugin edits dotenv files (e.g., syncing secrets into `.env.<env>.<privateToken>`), prefer selecting and editing a single target using `editDotenvFile(...)` rather than writing to every path:
+
+- `editDotenvFile` deterministically selects the first match across `paths` and edits only that file (or bootstraps from a sibling template when needed).
+- Default precedence matches get-dotenv overlay semantics: `searchOrder: 'reverse'` (last path wins).
+- Only implement a “write all paths” mode as an explicit opt-in, since it diverges from get-dotenv’s precedence model and surprises users in multi-path cascades.
+
+### Optional AWS X-Ray SDK integration (guarded import)
+
+Some X-Ray SDK integrations throw if `AWS_XRAY_DAEMON_ADDRESS` is not set. Do not import or enable X-Ray capture unconditionally:
+
+- Only enable X-Ray capture when `AWS_XRAY_DAEMON_ADDRESS` is present, or when an explicit “xray on” option is enabled and you validate required env up front.
+- Prefer dynamic import so environments without X-Ray dependencies (or without daemon config) do not crash at module load time.
 
 ## API index (quick lookup)
 

@@ -10,6 +10,8 @@ stan-core:
   imports:
     '@commander-js/extra-typings':
       - node_modules/@commander-js/extra-typings/index.d.ts
+    '@karmaniverous/aws-secrets-manager-tools':
+      - ../aws-secrets-manager-tools/.stan/interop/get-dotenv/**
     '@karmaniverous/smoz':
       - ../smoz/.stan/interop/get-dotenv/**
     '@veterancrowd/aws-cli':
