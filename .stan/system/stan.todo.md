@@ -3,7 +3,6 @@
 ## Next up (near‑term, actionable)
 
 - Dotenv editor follow-ups:
-  - Add a few more parser/edit regression cases (unclosed quotes, `export KEY=...`, inline `#` edge cases) and ensure behavior matches requirements.
   - Consider whether to expose a small “resolve target path” helper for reuse in future plugins/tools (keep the FS port boundary).
 - Deprecations: soft-deprecate the `z` re-export (JSDoc + a short Guides callout) and ensure docs/templates import `{ z }` from `zod`.
 
