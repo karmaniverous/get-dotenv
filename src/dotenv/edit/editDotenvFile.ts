@@ -52,8 +52,12 @@ export async function editDotenvFile(
     paths: options.paths,
     dotenvToken,
     privateToken,
-    env: options.env,
-    defaultEnv: options.defaultEnv,
+    ...(typeof options.env === 'string' && options.env.length > 0
+      ? { env: options.env }
+      : {}),
+    ...(typeof options.defaultEnv === 'string' && options.defaultEnv.length > 0
+      ? { defaultEnv: options.defaultEnv }
+      : {}),
     scope: options.scope,
     privacy: options.privacy,
     templateExtension,
