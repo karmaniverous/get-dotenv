@@ -10,6 +10,11 @@ export { editDotenvFile } from './editDotenvFile';
 export { editDotenvText } from './editDotenvText';
 export { parseDotenvDocument } from './parseDotenvDocument';
 export { renderDotenvDocument } from './renderDotenvDocument';
+export {
+  buildDotenvTargetFilename,
+  resolveDotenvTarget,
+  type ResolveDotenvTargetResult,
+} from './resolveDotenvTarget';
 export type {
   DotenvAssignmentSegment,
   DotenvBareKeySegment,

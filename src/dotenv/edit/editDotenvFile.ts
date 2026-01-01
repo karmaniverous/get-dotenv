@@ -10,14 +10,12 @@
  * @packageDocumentation
  */
 
-import path from 'node:path';
-
 import fs from 'fs-extra';
 
 import { editDotenvText } from './editDotenvText';
+import { resolveDotenvTarget } from './resolveDotenvTarget';
 import type {
   DotenvFs,
-  DotenvPathSearchOrder,
   DotenvUpdateMap,
   EditDotenvFileOptions,
   EditDotenvFileResult,
@@ -28,76 +26,6 @@ const defaultFs: DotenvFs = {
   readFile: async (p) => fs.readFile(p, 'utf-8'),
   writeFile: async (p, contents) => fs.writeFile(p, contents, 'utf-8'),
   copyFile: async (src, dest) => fs.copyFile(src, dest),
-};
-
-const resolveEnvName = (
-  env?: string,
-  defaultEnv?: string,
-): string | undefined =>
-  typeof env === 'string' && env.length > 0
-    ? env
-    : typeof defaultEnv === 'string' && defaultEnv.length > 0
-      ? defaultEnv
-      : undefined;
-
-const buildTargetFilename = (opts: {
-  dotenvToken: string;
-  privateToken: string;
-  scope: 'global' | 'env';
-  privacy: 'public' | 'private';
-  envName?: string;
-}): string => {
-  const { dotenvToken, privateToken, scope, privacy, envName } = opts;
-  const parts = [dotenvToken];
-  if (scope === 'env') {
-    if (!envName) {
-      throw new Error(
-        `Unable to resolve env-scoped dotenv filename: env is required.`,
-      );
-    }
-    parts.push(envName);
-  }
-  if (privacy === 'private') parts.push(privateToken);
-  return parts.join('.');
-};
-
-const orderedPaths = (
-  pathsIn: string[],
-  order: DotenvPathSearchOrder,
-): string[] => {
-  const list = pathsIn.slice();
-  return order === 'forward' ? list : list.reverse();
-};
-
-type ResolvedTarget = {
-  targetPath: string;
-  templatePath?: string;
-};
-
-const resolveTargetAcrossPaths = async (
-  fsPort: DotenvFs,
-  opts: {
-    paths: string[];
-    filename: string;
-    templateExtension: string;
-    searchOrder: DotenvPathSearchOrder;
-  },
-): Promise<ResolvedTarget> => {
-  const { filename, templateExtension, searchOrder } = opts;
-  const pathsOrdered = orderedPaths(opts.paths, searchOrder);
-
-  for (const dir of pathsOrdered) {
-    const targetPath = path.resolve(dir, filename);
-    if (await fsPort.pathExists(targetPath)) return { targetPath };
-
-    const templatePath = `${targetPath}.${templateExtension}`;
-    if (await fsPort.pathExists(templatePath))
-      return { targetPath, templatePath };
-  }
-
-  throw new Error(
-    `Unable to locate dotenv target "${filename}" under provided paths, and no template was found.`,
-  );
 };
 
 /**
@@ -119,18 +47,15 @@ export async function editDotenvFile(
   const templateExtension = options.templateExtension ?? 'template';
   const searchOrder = options.searchOrder ?? 'reverse';
 
-  const envName = resolveEnvName(options.env, options.defaultEnv);
-  const filename = buildTargetFilename({
+  const resolved = await resolveDotenvTarget({
+    fs: fsPort,
+    paths: options.paths,
     dotenvToken,
     privateToken,
+    env: options.env,
+    defaultEnv: options.defaultEnv,
     scope: options.scope,
     privacy: options.privacy,
-    ...(envName ? { envName } : {}),
-  });
-
-  const resolved = await resolveTargetAcrossPaths(fsPort, {
-    paths: options.paths,
-    filename,
     templateExtension,
     searchOrder,
   });

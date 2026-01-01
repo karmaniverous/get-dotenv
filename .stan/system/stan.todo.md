@@ -2,8 +2,6 @@
 
 ## Next up (near‑term, actionable)
 
-- Dotenv editor follow-ups:
-  - Consider whether to expose a small “resolve target path” helper for reuse in future plugins/tools (keep the FS port boundary).
 - Deprecations: soft-deprecate the `z` re-export (JSDoc a short Guides callout) and ensure docs/templates import `{ z }` from `zod`.
 
 ## Completed (recent)
@@ -22,3 +20,4 @@
 - Added tests asserting dynamic provenance ordering and unset semantics.
 - Added test asserting file provenance stacks across multiple paths.
 - Recorded file provenance op=unset for empty file values (KEY=).
+- Exposed a reusable dotenv target resolver for multi-path editing.
