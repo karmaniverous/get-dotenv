@@ -88,7 +88,12 @@ const recordFileLayer = (
   entry: Omit<DotenvFileProvenanceEntry, 'kind' | 'op'>,
 ): void => {
   for (const key of Object.keys(vars)) {
-    pushDotenvProvenance(prov, key, { kind: 'file', op: 'set', ...entry });
+    const v = vars[key];
+    // Record empty-string values as an explicit unset to align with dotenvExpand semantics
+    // (empty string expands to `undefined` in the final progressive expansion step).
+    const op: DotenvFileProvenanceEntry['op'] =
+      typeof v === 'string' && v.length > 0 ? 'set' : 'unset';
+    pushDotenvProvenance(prov, key, { kind: 'file', op, ...entry });
   }
 };
 

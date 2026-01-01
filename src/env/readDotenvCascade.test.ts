@@ -90,4 +90,43 @@ describe('env/readDotenvCascadeWithProvenance', () => {
       await fs.remove(base);
     }
   });
+
+  it('records op=unset for empty string file assignments (KEY=)', async () => {
+    const base = path.posix.join(ROOT, 'empty');
+    const p = path.posix.join(base, 'p');
+
+    await fs.remove(base);
+    await fs.ensureDir(p);
+
+    await fs.writeFile(path.posix.join(p, '.testenv'), 'EMPTY=\n', {
+      encoding: 'utf-8',
+    });
+
+    try {
+      const res = await readDotenvCascadeWithProvenance({
+        dotenvToken: '.testenv',
+        paths: [p],
+      });
+
+      expect(res.dotenv.EMPTY).toBeUndefined();
+
+      const hist = res.provenance.EMPTY ?? [];
+      expect(hist.length).toBe(1);
+
+      const first = hist[0];
+      expect(first).toBeDefined();
+      if (!first) throw new Error('Expected provenance entry for EMPTY.');
+
+      expect(first.kind).toBe('file');
+      if (first.kind !== 'file') {
+        throw new Error(`Expected kind='file' for EMPTY provenance.`);
+      }
+
+      expect(first.op).toBe('unset');
+      expect(first.path).toBe(p);
+      expect(first.file).toBe('.testenv');
+    } finally {
+      await fs.remove(base);
+    }
+  });
 });

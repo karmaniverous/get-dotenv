@@ -2,9 +2,6 @@
 
 ## Next up (near‑term, actionable)
 
-- Reconcile provenance descriptor completeness vs current semantics:
-  - Decide whether to represent empty-string expansions as `op: 'unset'` across file layers (currently applied for config/vars layers).
-  - Ensure provenance includes keys later overridden by higher-precedence layers across multi-path cascades.
 - Dotenv editor follow-ups:
   - Consider whether to expose a small “resolve target path” helper for reuse in future plugins/tools (keep the FS port boundary).
 - Deprecations: soft-deprecate the `z` re-export (JSDoc a short Guides callout) and ensure docs/templates import `{ z }` from `zod`.
@@ -23,4 +20,5 @@
 - Fixed typecheck/lint regressions in provenance plumbing (exactOptionalPropertyTypes-safe args, provenance entry narrowing in tests).
 - Resolved Rollup circular dependency warnings (remove internal barrel import cycle; suppress node_modules AWS SDK cycles).
 - Added tests asserting dynamic provenance ordering and unset semantics.
-- Added test asserting file provenance stacks across multiple paths.
+- Added test asserting file provenance stacks across multiple paths.
+- Recorded file provenance op=unset for empty file values (KEY=).
