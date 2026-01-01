@@ -26,6 +26,22 @@ export async function buildEsmConfig(): Promise<RollupOptions> {
     plugins: createCommonPlugins({
       aliases: commonAliases,
     }),
+    onwarn(warning, warn) {
+      // Suppress known circular dependency warnings in third-party deps.
+      // Keep reporting cycles in our own source.
+      if (warning.code === 'CIRCULAR_DEPENDENCY') {
+        const ids = (warning as { ids?: unknown }).ids;
+        if (
+          Array.isArray(ids) &&
+          ids.some(
+            (id) => typeof id === 'string' && id.includes('node_modules'),
+          )
+        ) {
+          return;
+        }
+      }
+      warn(warning);
+    },
     output: {
       dir: outputPath,
       format: 'esm',

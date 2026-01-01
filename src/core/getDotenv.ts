@@ -8,7 +8,7 @@ import {
   type RedactOptions,
 } from '@/src/diagnostics';
 import { dotenvExpandAll } from '@/src/dotenv';
-import { applyDynamicMap, loadAndApplyDynamic } from '@/src/env';
+import { applyDynamicMap, loadAndApplyDynamic } from '@/src/env/dynamic';
 import { writeDotenvFile } from '@/src/util';
 
 import type { GetDotenvOptions, ProcessEnv } from './GetDotenvOptions';

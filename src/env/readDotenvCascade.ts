@@ -9,8 +9,8 @@
 
 import path from 'node:path';
 
-import type { ProcessEnv } from '@/src/core';
-import { readDotenv } from '@/src/core';
+import type { ProcessEnv } from '@/src/core/GetDotenvOptions';
+import { readDotenv } from '@/src/core/readDotenv';
 import { dotenvExpandAll } from '@/src/dotenv';
 
 import {
