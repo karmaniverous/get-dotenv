@@ -112,15 +112,21 @@ export const computeContext = async <
   // Base dotenv from files (with file provenance; no dynamics; no programmatic vars; no side effects).
   const envName = validated.env ?? validated.defaultEnv;
   const fileRes = await readDotenvCascadeWithProvenance({
-    dotenvToken: validated.dotenvToken,
-    privateToken: validated.privateToken,
     paths: Array.isArray(validated.paths) ? validated.paths : [],
-    env: validated.env,
-    defaultEnv: validated.defaultEnv,
-    excludeEnv: validated.excludeEnv,
-    excludeGlobal: validated.excludeGlobal,
-    excludePrivate: validated.excludePrivate,
-    excludePublic: validated.excludePublic,
+    ...(typeof validated.dotenvToken === 'string'
+      ? { dotenvToken: validated.dotenvToken }
+      : {}),
+    ...(typeof validated.privateToken === 'string'
+      ? { privateToken: validated.privateToken }
+      : {}),
+    ...(typeof validated.env === 'string' ? { env: validated.env } : {}),
+    ...(typeof validated.defaultEnv === 'string'
+      ? { defaultEnv: validated.defaultEnv }
+      : {}),
+    ...(validated.excludeEnv === true ? { excludeEnv: true } : {}),
+    ...(validated.excludeGlobal === true ? { excludeGlobal: true } : {}),
+    ...(validated.excludePrivate === true ? { excludePrivate: true } : {}),
+    ...(validated.excludePublic === true ? { excludePublic: true } : {}),
   });
 
   // Overlay configs + vars with provenance.
@@ -128,7 +134,7 @@ export const computeContext = async <
     base: fileRes.dotenv,
     env: envName,
     configs: sources,
-    programmaticVars: validated.vars,
+    programmaticVars: validated.vars ?? {},
     provenance: fileRes.provenance,
   });
 

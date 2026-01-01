@@ -12,10 +12,7 @@ import { applyDynamicMap, loadAndApplyDynamic } from '@/src/env';
 import { writeDotenvFile } from '@/src/util';
 
 import type { GetDotenvOptions, ProcessEnv } from './GetDotenvOptions';
-import {
-  type GetDotenvDynamic,
-  resolveGetDotenvOptions,
-} from './GetDotenvOptions';
+import { resolveGetDotenvOptions } from './GetDotenvOptions';
 import { readDotenv } from './readDotenv';
 
 /**

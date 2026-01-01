@@ -20,8 +20,14 @@ describe('env/readDotenvCascadeWithProvenance', () => {
     // Provenance: at least one entry per key
     const a = res.provenance.APP_SETTING ?? [];
     expect(a.length).toBe(1);
-    expect(a[0]?.kind).toBe('file');
-    expect(a[0]?.path).toBe('./test/full'); // as provided
-    expect(a[0]?.file).toBe('.testenv'); // global public token
+    const first = a[0];
+    expect(first).toBeDefined();
+    if (!first) throw new Error('Expected provenance entry for APP_SETTING.');
+    expect(first.kind).toBe('file');
+    if (first.kind !== 'file') {
+      throw new Error(`Expected kind='file' for APP_SETTING provenance.`);
+    }
+    expect(first.path).toBe('./test/full'); // as provided
+    expect(first.file).toBe('.testenv'); // global public token
   });
 });

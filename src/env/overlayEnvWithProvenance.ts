@@ -61,8 +61,8 @@ const applyConfigSlice = (
     current = next;
   }
 
-  {
-    const envKv = env && cfg.envVars ? cfg.envVars[env] : undefined;
+  if (env && cfg.envVars) {
+    const envKv = cfg.envVars[env];
     const { env: next, expanded } = applyKv(current, envKv);
     for (const key of Object.keys(expanded)) {
       pushDotenvProvenance(prov, key, {
@@ -171,7 +171,7 @@ export function overlayEnvWithProvenance(
 
   for (const [k, v] of Object.entries(pv)) {
     if (typeof v === 'string') varsKv[k] = v;
-    else if (v === undefined) unsetKeys.push(k);
+    else unsetKeys.push(k);
   }
 
   if (Object.keys(varsKv).length > 0) {
