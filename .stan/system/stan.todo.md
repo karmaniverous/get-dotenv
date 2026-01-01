@@ -2,12 +2,11 @@
 
 ## Next up (near‑term, actionable)
 
-- Add higher-signal provenance assertions:
-  - Verify dynamic provenance ordering across config/programmatic/dynamicPath when configured.
-  - Verify unset provenance behavior for dynamic functions returning `undefined`.
 - Reconcile provenance descriptor completeness vs current semantics:
   - Decide whether to represent empty-string expansions as `op: 'unset'` across file layers (currently applied for config/vars layers).
   - Ensure provenance includes keys later overridden by higher-precedence layers across multi-path cascades.
+- Add higher-signal provenance assertions for multi-path file layering:
+  - Add a targeted test where the same key is set in two different `paths[]` entries and provenance shows both file layers (ascending precedence).
 - Dotenv editor follow-ups:
   - Consider whether to expose a small “resolve target path” helper for reuse in future plugins/tools (keep the FS port boundary).
 - Deprecations: soft-deprecate the `z` re-export (JSDoc a short Guides callout) and ensure docs/templates import `{ z }` from `zod`.
@@ -23,4 +22,6 @@
 - Clarified shipped plugin interop contracts in the STAN assistant guide (aws child mounting, `ctx.plugins.aws` shape, dotenv editor winner-path selection, guarded X-Ray enablement, and cmd/batch/init interop notes).
 - Documented ctx provenance dynamic precedence (A2) requirements and plan.
 - Expanded ctx provenance requirements and plan details (entry shape, ordering, and A2 semantics everywhere).
-- Fixed typecheck/lint regressions in provenance plumbing (exactOptionalPropertyTypes-safe args, provenance entry narrowing in tests).- Resolved Rollup circular dependency warnings (remove internal barrel import cycle; suppress node_modules AWS SDK cycles).
+- Fixed typecheck/lint regressions in provenance plumbing (exactOptionalPropertyTypes-safe args, provenance entry narrowing in tests).
+- Resolved Rollup circular dependency warnings (remove internal barrel import cycle; suppress node_modules AWS SDK cycles).
+- Added tests asserting dynamic provenance ordering and unset semantics.
