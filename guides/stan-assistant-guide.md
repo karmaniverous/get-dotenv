@@ -308,6 +308,15 @@ await run();
 - Host ctx includes dotenv provenance metadata at `ctx.dotenvProvenance`:
   - Mapping: `Record<string, DotenvProvenanceEntry[]>` ordered in ascending precedence (last entry is effective).
   - Descriptor-only: entries do not include value payloads (safe to log).
+  - Entries:
+    - `kind: 'file'`: path, scope (global/env), privacy (public/private).
+    - `kind: 'config'`: scope, privacy, configScope (packaged/project).
+    - `kind: 'vars'`: explicit CLI/programmatic overrides.
+    - `kind: 'dynamic'`: `dynamicSource` (config | programmatic | dynamicPath).
+  - Unsets: `op: 'unset'` is recorded when a layer returns `undefined` or explicitly unsets a key.
+  - Ordering matches overlay precedence:
+    - Files < Configs < Programmatic Dynamic < File DynamicPath.
+    - Within files/configs: Global < Env; Public < Private.
 
 ### Grouping plugins under a namespace: `groupPlugins(...)`
 

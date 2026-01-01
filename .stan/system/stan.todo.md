@@ -20,4 +20,6 @@
 - Added tests asserting dynamic provenance ordering and unset semantics.
 - Added test asserting file provenance stacks across multiple paths.
 - Recorded file provenance op=unset for empty file values (KEY=).
-- Exposed a reusable dotenv target resolver for multi-path editing.- Fixed editDotenvFile target resolution call to omit undefined env/defaultEnv under exactOptionalPropertyTypes.
+- Exposed a reusable dotenv target resolver for multi-path editing.
+- Fixed editDotenvFile target resolution call to omit undefined env/defaultEnv under exactOptionalPropertyTypes.
+- Documented provenance functionality in a dedicated guide and updated the STAN assistant guide.
