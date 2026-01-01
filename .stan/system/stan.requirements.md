@@ -98,19 +98,55 @@ Behavior:
 - Functions evaluate progressively (later keys can depend on earlier).
 - Dynamic precedence (A2): config dynamic \< programmatic dynamic \< `dynamicPath`, with last-writer-wins on key collisions.
 - When `dynamicPath` is provided, it MUST be evaluated even when programmatic `dynamic` is also provided.
+- `excludeDynamic` MUST disable all dynamic sources (config dynamic, programmatic `dynamic`, and `dynamicPath`).
 - Backward compatibility: JS modules remain the simplest path.
 - Optional TypeScript support:
   - If a TS loader is not present, auto-bundle with esbuild when available; otherwise attempt a simple transpile fallback for single-file modules without imports; otherwise error with clear guidance.
 
 ### 6) Dotenv provenance metadata (host ctx)
 
-- The host invocation context (`GetDotenvCliCtx`) MUST include a dotenv provenance mapping describing the provenance of each key in `ctx.dotenv`.
+- The host invocation context (`GetDotenvCliCtx`) MUST carry a dotenv provenance mapping describing the provenance of keys in `ctx.dotenv`.
 - Provenance MUST be descriptor-only (no value payloads).
 - Provenance MUST preserve override history per key (including cases where a value from a lower-precedence source is later overridden by a higher-precedence source).
 - Provenance MUST include keys that were observed in lower layers but later explicitly unset by a higher-precedence layer.
 - Provenance MUST NOT include origins from the parent `process.env` (parent env is not part of dotenv provenance).
-- Provenance entries MUST include `kind: 'file' | 'config' | 'vars' | 'dynamic'` and an operation field `op: 'set' | 'unset'` to represent explicit unsets without storing values.
 - Provenance collection MUST be a first-class concern during overlay/dynamic application (no post-hoc reconstruction).
+
+Provenance structure:
+
+- Provenance MUST be represented as a mapping: `Record<string, DotenvProvenanceEntry[]>`.
+- The array value for a key MUST be ordered in ascending precedence (lower to higher); the effective provenance is the last entry in the array.
+- Each entry MUST include:
+  - `kind: 'file' | 'config' | 'vars' | 'dynamic'`
+  - `op: 'set' | 'unset'` (explicit unsets are represented without storing values)
+
+Unset behavior:
+
+- When a higher-precedence layer unsets a key, the provenance MUST record an `op: 'unset'` entry for that key.
+- When a key is explicitly unset, runtime behavior MUST remain unchanged (the key may remain present with value `undefined`; it is not required to be deleted from the object).
+
+Minimum descriptor fields:
+
+- For `kind: 'file'`, provenance entries MUST include:
+  - `scope: 'global' | 'env'`
+  - `privacy: 'public' | 'private'`
+  - `env?: string` (required when `scope === 'env'`)
+  - `path: string` (the corresponding `paths[]` entry as provided by the user/CLI)
+  - `file: string` (computed dotenv filename token, e.g., `.env`, `.env.dev`, `.env.local`, `.env.dev.local`)
+- For `kind: 'config'`, provenance entries MUST include:
+  - `scope: 'global' | 'env'` (global = config `vars`; env = config `envVars[env]`)
+  - `privacy: 'public' | 'private'` (config `local` MUST be represented as `privacy: 'private'` on this axis)
+  - `env?: string` (required when `scope === 'env'`)
+  - `configScope: 'packaged' | 'project'`
+  - `configPrivacy: 'public' | 'local'`
+- For `kind: 'vars'`, provenance entries MUST represent explicit programmatic/CLI vars overrides, and MUST be ordered by the same overall precedence model as other layers.
+- For `kind: 'dynamic'`, provenance entries MUST include:
+  - `dynamicSource: 'config' | 'programmatic' | 'dynamicPath'`
+  - `dynamicPath?: string` (when `dynamicSource === 'dynamicPath'`, record the path as provided by the caller/CLI; do not resolve to an absolute path for provenance)
+
+Descriptor “as provided” policy:
+
+- Provenance MUST prefer “as provided” descriptors over resolved absolute paths wherever applicable (for example, the `path` field for file provenance and the `dynamicPath` field for dynamic-path provenance).
 
 ### 5) CLI execution and nesting
 
