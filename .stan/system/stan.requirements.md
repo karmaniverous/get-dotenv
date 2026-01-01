@@ -96,9 +96,21 @@ Behavior:
   - key → function(dotenv, env?) => value, or
   - key → literal value
 - Functions evaluate progressively (later keys can depend on earlier).
+- Dynamic precedence (A2): config dynamic \< programmatic dynamic \< `dynamicPath`, with last-writer-wins on key collisions.
+- When `dynamicPath` is provided, it MUST be evaluated even when programmatic `dynamic` is also provided.
 - Backward compatibility: JS modules remain the simplest path.
 - Optional TypeScript support:
   - If a TS loader is not present, auto-bundle with esbuild when available; otherwise attempt a simple transpile fallback for single-file modules without imports; otherwise error with clear guidance.
+
+### 6) Dotenv provenance metadata (host ctx)
+
+- The host invocation context (`GetDotenvCliCtx`) MUST include a dotenv provenance mapping describing the provenance of each key in `ctx.dotenv`.
+- Provenance MUST be descriptor-only (no value payloads).
+- Provenance MUST preserve override history per key (including cases where a value from a lower-precedence source is later overridden by a higher-precedence source).
+- Provenance MUST include keys that were observed in lower layers but later explicitly unset by a higher-precedence layer.
+- Provenance MUST NOT include origins from the parent `process.env` (parent env is not part of dotenv provenance).
+- Provenance entries MUST include `kind: 'file' | 'config' | 'vars' | 'dynamic'` and an operation field `op: 'set' | 'unset'` to represent explicit unsets without storing values.
+- Provenance collection MUST be a first-class concern during overlay/dynamic application (no post-hoc reconstruction).
 
 ### 5) CLI execution and nesting
 
@@ -763,9 +775,9 @@ Timing:
 1. Compose base dotenv from files (`excludeDynamic: true`)
 2. Overlay config sources (packaged → project/public → project/local) with progressive interpolation inside each slice
 3. Apply dynamic in order:
-   - programmatic (when provided programmatically)
    - config-level `dynamic` (JS/TS only) in order: packaged → project/public → project/local
-   - file-level `dynamicPath` (lowest dynamic tier)
+   - programmatic `dynamic` (when provided programmatically)
+   - file-level `dynamicPath` (highest dynamic tier; last-writer-wins, evaluated when present)
 4. Effects: optional `outputPath` write; optional logging; optional `process.env` merge
 
 Interpolation model:
