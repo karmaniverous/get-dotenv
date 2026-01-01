@@ -6,3 +6,6 @@
 
 export * from './dynamic';
 export * from './overlayEnv';
+export * from './overlayEnvWithProvenance';
+export * from './provenance';
+export * from './readDotenvCascade';

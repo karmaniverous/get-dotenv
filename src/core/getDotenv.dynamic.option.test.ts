@@ -17,7 +17,7 @@ describe('getDotenv programmatic dynamic', () => {
     expect(vars.PROG_DYNAMIC).toBe('deep_app_setting-P');
   });
 
-  it('programmatic dynamic overrides dynamicPath when both provided', async () => {
+  it('dynamicPath overrides programmatic dynamic when both provided', async () => {
     // Create a temporary JS dynamic module with a conflicting key
     const dir = path.posix.join('.tsbuild', 'getdotenv-tests');
     const dynJs = path.posix.join(dir, 'dynamic.override.js');
@@ -37,7 +37,7 @@ describe('getDotenv programmatic dynamic', () => {
         PROG_DYNAMIC: 'from-programmatic',
       },
     });
-    expect(vars.PROG_DYNAMIC).toBe('from-programmatic');
+    expect(vars.PROG_DYNAMIC).toBe('from-path');
 
     await fs.remove(dynJs);
   });

@@ -1,6 +1,7 @@
 import type { Command } from '@commander-js/extra-typings';
 
 import type { GetDotenvOptions, ProcessEnv } from '@/src/core';
+import type { DotenvProvenance } from '@/src/env';
 
 /**
  * Minimal root options shape shared by CLI and generator layers.
@@ -157,6 +158,12 @@ export interface GetDotenvCliCtx<
    * Final composed dotenv environment for this invocation.
    */
   dotenv: ProcessEnv;
+  /**
+   * Dotenv provenance history for {@link GetDotenvCliCtx.dotenv}.
+   *
+   * Descriptor-only: does not include value payloads.
+   */
+  dotenvProvenance: DotenvProvenance;
   /**
    * Optional runtime plugin state bag. Plugins may publish non-sensitive metadata here.
    */

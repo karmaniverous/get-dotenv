@@ -3,21 +3,16 @@ import type { OptionValues } from '@commander-js/extra-typings';
 import path from 'path';
 
 import { resolveGetDotenvConfigSources } from '@/src/config';
-import { overlayEnv, applyDynamicMap, loadAndApplyDynamic } from '@/src/env';
+import type { GetDotenvDynamic, GetDotenvOptions, Logger } from '@/src/core';
+import { resolveGetDotenvOptions } from '@/src/core';
 import {
-  getDotenv,
-  type GetDotenvDynamic,
-  type GetDotenvOptions,
-  type Logger,
-  resolveGetDotenvOptions,
-} from '@/src/core';
+  applyDynamicMapWithProvenance,
+  loadDynamicModuleDefault,
+  overlayEnvWithProvenance,
+  readDotenvCascadeWithProvenance,
+} from '@/src/env';
 import { getDotenvOptionsSchemaResolved } from '@/src/schema';
-import {
-  defaultsDeep,
-  interpolateDeep,
-  omitUndefined,
-  writeDotenvFile,
-} from '@/src/util';
+import { defaultsDeep, interpolateDeep, writeDotenvFile } from '@/src/util';
 
 import type { GetDotenvCliPlugin } from './contracts';
 import type { GetDotenvCliCtx } from './types';
@@ -111,59 +106,91 @@ export const computeContext = async <
     optionsResolved,
   ) as GetDotenvOptions;
 
-  // Build a pure base without side effects or logging (no dynamics, no programmatic vars).
-  const cleanedValidated: Partial<GetDotenvOptions> = omitUndefined(validated);
-
-  const base = await getDotenv({
-    ...cleanedValidated,
-    excludeDynamic: true,
-    vars: {},
-    log: false,
-    loadProcess: false,
-  });
-
-  // Discover config sources and overlay with progressive expansion per slice.
+  // Discover config sources.
   const sources = await resolveGetDotenvConfigSources(hostMetaUrl);
-  const dotenvOverlaid = overlayEnv({
-    base,
-    env: validated.env ?? validated.defaultEnv,
-    configs: sources,
-    ...(validated.vars ? { programmaticVars: validated.vars } : {}),
+
+  // Base dotenv from files (with file provenance; no dynamics; no programmatic vars; no side effects).
+  const envName = validated.env ?? validated.defaultEnv;
+  const fileRes = await readDotenvCascadeWithProvenance({
+    dotenvToken: validated.dotenvToken,
+    privateToken: validated.privateToken,
+    paths: Array.isArray(validated.paths) ? validated.paths : [],
+    env: validated.env,
+    defaultEnv: validated.defaultEnv,
+    excludeEnv: validated.excludeEnv,
+    excludeGlobal: validated.excludeGlobal,
+    excludePrivate: validated.excludePrivate,
+    excludePublic: validated.excludePublic,
   });
 
-  const dotenv: Record<string, string | undefined> = { ...dotenvOverlaid };
+  // Overlay configs + vars with provenance.
+  const overlaid = overlayEnvWithProvenance({
+    base: fileRes.dotenv,
+    env: envName,
+    configs: sources,
+    programmaticVars: validated.vars,
+    provenance: fileRes.provenance,
+  });
 
-  // Programmatic dynamic variables (when provided)
-  applyDynamicMap(
-    dotenv,
-    (validated as { dynamic?: GetDotenvDynamic }).dynamic,
-    validated.env ?? validated.defaultEnv,
-  );
+  const dotenv: Record<string, string | undefined> = { ...overlaid.env };
+  const dotenvProvenance = overlaid.provenance;
 
-  // Packaged/project dynamics
-  const packagedDyn = (sources.packaged?.dynamic ?? undefined) as
-    | GetDotenvDynamic
-    | undefined;
-  const publicDyn = (sources.project?.public?.dynamic ?? undefined) as
-    | GetDotenvDynamic
-    | undefined;
-  const localDyn = (sources.project?.local?.dynamic ?? undefined) as
-    | GetDotenvDynamic
-    | undefined;
+  // Dynamic precedence (A2): config dynamic < programmatic dynamic < dynamicPath
+  if (!validated.excludeDynamic) {
+    // Config dynamics (JS/TS configs only), ordered by source precedence.
+    const packagedDyn = (sources.packaged?.dynamic ?? undefined) as
+      | GetDotenvDynamic
+      | undefined;
+    const publicDyn = (sources.project?.public?.dynamic ?? undefined) as
+      | GetDotenvDynamic
+      | undefined;
+    const localDyn = (sources.project?.local?.dynamic ?? undefined) as
+      | GetDotenvDynamic
+      | undefined;
 
-  applyDynamicMap(dotenv, packagedDyn, validated.env ?? validated.defaultEnv);
-  applyDynamicMap(dotenv, publicDyn, validated.env ?? validated.defaultEnv);
-  applyDynamicMap(dotenv, localDyn, validated.env ?? validated.defaultEnv);
-
-  // file dynamicPath (lowest)
-  if (validated.dynamicPath) {
-    const absDynamicPath = path.resolve(validated.dynamicPath);
-    await loadAndApplyDynamic(
+    applyDynamicMapWithProvenance(
       dotenv,
-      absDynamicPath,
-      validated.env ?? validated.defaultEnv,
-      'getdotenv-dynamic-host',
+      packagedDyn,
+      envName,
+      dotenvProvenance,
+      {
+        dynamicSource: 'config',
+      },
     );
+    applyDynamicMapWithProvenance(
+      dotenv,
+      publicDyn,
+      envName,
+      dotenvProvenance,
+      {
+        dynamicSource: 'config',
+      },
+    );
+    applyDynamicMapWithProvenance(dotenv, localDyn, envName, dotenvProvenance, {
+      dynamicSource: 'config',
+    });
+
+    // Programmatic dynamic (overrides config dynamic)
+    applyDynamicMapWithProvenance(
+      dotenv,
+      validated.dynamic as GetDotenvDynamic | undefined,
+      envName,
+      dotenvProvenance,
+      { dynamicSource: 'programmatic' },
+    );
+
+    // dynamicPath (highest dynamic tier; always evaluated when present)
+    if (validated.dynamicPath) {
+      const absDynamicPath = path.resolve(validated.dynamicPath);
+      const dyn = await loadDynamicModuleDefault(
+        absDynamicPath,
+        'getdotenv-dynamic-host',
+      );
+      applyDynamicMapWithProvenance(dotenv, dyn, envName, dotenvProvenance, {
+        dynamicSource: 'dynamicPath',
+        dynamicPath: validated.dynamicPath,
+      });
+    }
   }
 
   // Effects:
@@ -249,6 +276,7 @@ export const computeContext = async <
   return {
     optionsResolved: validated as TOptions,
     dotenv,
+    dotenvProvenance,
     plugins: {},
     pluginConfigs: mergedPluginConfigsByPath,
   };

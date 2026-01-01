@@ -28,6 +28,16 @@ describe('GetDotenvCli host (skeleton)', () => {
       ENV_SECRET: 'deep_test_secret',
     });
 
+    // Provenance is always present (descriptor-only).
+    expect(Object.keys(ctx.dotenvProvenance).length).toBeGreaterThan(0);
+    const app = ctx.dotenvProvenance.APP_SETTING ?? [];
+    expect(app.length).toBe(1);
+    expect(app[0]?.kind).toBe('file');
+    if (app[0]?.kind === 'file') {
+      expect(app[0].path).toBe('./test/full');
+      expect(app[0].file).toBe('.testenv');
+    }
+
     // Accessor should return the same context instance
     expect(cli.getCtx()).toBe(ctx);
   });

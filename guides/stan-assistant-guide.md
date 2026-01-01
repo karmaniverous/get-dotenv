@@ -305,6 +305,9 @@ await run();
 - Host resolves dotenv context once per invocation: `await program.resolveAndLoad(...)`.
 - Resolved context is available via `cli.getCtx()` inside any plugin mount/action.
 - Root hooks in the shipped factory also persist a merged “root options bag” for actions: use `readMergedOptions(thisCommand)` to retrieve it.
+- Host ctx includes dotenv provenance metadata at `ctx.dotenvProvenance`:
+  - Mapping: `Record<string, DotenvProvenanceEntry[]>` ordered in ascending precedence (last entry is effective).
+  - Descriptor-only: entries do not include value payloads (safe to log).
 
 ### Grouping plugins under a namespace: `groupPlugins(...)`
 

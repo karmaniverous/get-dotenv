@@ -150,10 +150,16 @@ export async function getDotenv(
 
   // Process dynamic variables. Programmatic option takes precedence over path.
   if (!excludeDynamic) {
-    let dynamic: GetDotenvDynamic | undefined = undefined;
+    // A2 precedence: programmatic dynamic < dynamicPath (dynamicPath wins when present)
     if (options.dynamic && Object.keys(options.dynamic).length > 0) {
-      dynamic = options.dynamic;
-    } else if (dynamicPath) {
+      try {
+        applyDynamicMap(dotenv, options.dynamic, env ?? defaultEnv);
+      } catch {
+        throw new Error(`Unable to evaluate dynamic variables.`);
+      }
+    }
+    // dynamicPath is evaluated even when programmatic `dynamic` is present.
+    if (dynamicPath) {
       const absDynamicPath = path.resolve(dynamicPath);
       await loadAndApplyDynamic(
         dotenv,
@@ -161,13 +167,6 @@ export async function getDotenv(
         env ?? defaultEnv,
         'getdotenv-dynamic',
       );
-    }
-    if (dynamic) {
-      try {
-        applyDynamicMap(dotenv, dynamic, env ?? defaultEnv);
-      } catch {
-        throw new Error(`Unable to evaluate dynamic variables.`);
-      }
     }
   }
   // Write output file.
