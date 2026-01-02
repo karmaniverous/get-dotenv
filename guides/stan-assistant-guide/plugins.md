@@ -9,6 +9,13 @@ title: 'Shipped Plugins'
 - `aws`: establishes a session once per invocation and writes AWS env vars to `process.env`; publishes minimal metadata under `ctx.plugins.aws`; supports `strategy: none`.
 - `init`: scaffolds config files and a CLI skeleton; collision handling supports overwrite/example/skip plus CI heuristics.
 
+## Plugin Configuration Keys
+
+- **aws** (`plugins.aws`): `profile`, `region`, `defaultRegion`, `strategy` ("cli-export"|"none"), `loginOnDemand` (boolean), `profileKey`, `profileFallbackKey`, `regionKey`.
+- **batch** (`plugins.batch`): `rootPath`, `globs`, `pkgCwd`, `shell`, `scripts`.
+- **cmd** (`plugins.cmd`): `expand` (boolean; parent alias expansion).
+- **init** (`plugins.init`): None (flag-driven).
+
 ## Interop contracts
 
 ### Nested composition

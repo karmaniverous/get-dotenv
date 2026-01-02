@@ -68,6 +68,14 @@ getdotenv --cmd 'node -e "console.log(process.env.APP_SETTING ?? \"\")"'
 getdotenv --shell-off cmd node -e "console.log(process.env.APP_SETTING ?? '')"
 ```
 
+## Configuration
+
+You can configure the `cmd` plugin in `getdotenv.config.*` under `plugins.cmd`.
+
+- `expand?: boolean` — Whether to expand the parent alias value (`--cmd ...`) against the process environment. Default: `true`.
+
+Note: The `expand` option applies only to the parent alias; positional arguments to the `cmd` subcommand are never expanded by the plugin (the shell governs them).
+
 ## Diagnostics
 
 Use `--trace [keys...]` to print concise lines to stderr before spawning the child, indicating the origin and value composition for each key. Useful in CI and for debugging overlays.

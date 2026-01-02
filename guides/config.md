@@ -39,7 +39,15 @@ Notes:
 JSON/YAML (data only, always-on; no-op when no files are present):
 
 - Allowed keys:
-  - rootOptionDefaults?: Partial<RootOptionsShape> — collapsed, CLI‑like flags and strings (families, singles). Prefer this to set help‑time/runtime defaults for root options.
+  - rootOptionDefaults?: Partial<RootOptionsShape> — collapsed, CLI‑like flags and strings. Supported keys:
+    - Targeting: `env`, `defaultEnv`, `paths`, `pathsDelimiter`, `pathsDelimiterPattern`, `dotenvToken`, `privateToken`.
+    - Output/Vars: `vars`, `varsAssignor`, `varsAssignorPattern`, `varsDelimiter`, `varsDelimiterPattern`, `outputPath`.
+    - Loading: `loadProcess`, `dynamicPath`.
+    - Exclusions: `excludeAll`, `excludeDynamic`, `excludeEnv`, `excludeGlobal`, `excludePrivate`, `excludePublic`.
+    - Execution: `shell`, `capture`.
+    - Diagnostics: `log`, `debug`, `trace`, `strict`.
+    - Redaction: `redact`, `redactPatterns`.
+    - Entropy: `warnEntropy`, `entropyThreshold`, `entropyMinLength`, `entropyWhitelist`.
   - rootOptionVisibility?: Partial<Record<keyof RootOptionsShape, boolean>> — help‑time visibility (false hides a flag).
   - scripts?: Record<string, string | { cmd: string; shell?: string | boolean }>
   - vars?: Record<string, string> (global, public)

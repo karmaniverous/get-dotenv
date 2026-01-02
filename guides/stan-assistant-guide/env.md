@@ -81,7 +81,16 @@ When using the shipped CLI host (or embedding it via `createCli`/`GetDotenvCli`)
 
 ### Allowed top-level config keys
 
-- `rootOptionDefaults?: { ... }` (root CLI defaults; collapsed families)
+- `rootOptionDefaults?: { ... }` (root CLI defaults; collapsed families). Keys:
+  - `env`, `defaultEnv`, `paths`, `dotenvToken`, `privateToken`, `dynamicPath`
+  - `shell`, `loadProcess`, `capture`
+  - `excludeAll`, `excludeDynamic`, `excludeEnv`, `excludeGlobal`, `excludePrivate`, `excludePublic`
+  - `log`, `debug`, `trace`, `strict`
+  - `outputPath`
+  - `vars`, `varsAssignor`, `varsAssignorPattern`, `varsDelimiter`, `varsDelimiterPattern`
+  - `pathsDelimiter`, `pathsDelimiterPattern`
+  - `redact`, `redactPatterns`
+  - `warnEntropy`, `entropyThreshold`, `entropyMinLength`, `entropyWhitelist`
 - `rootOptionVisibility?: { [rootKey]: boolean }`
 - `scripts?: Record<string, string | { cmd: string; shell?: string | boolean }>`
 - `vars?: Record<string, string>` (global/public vars)
