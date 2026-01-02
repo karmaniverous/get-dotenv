@@ -47,7 +47,19 @@
 </li>
 </ul>
 <h3 id="allowed-top-level-config-keys" class="tsd-anchor-link">Allowed top-level config keys<a href="#allowed-top-level-config-keys" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3><ul>
-<li><code>rootOptionDefaults?: { ... }</code> (root CLI defaults; collapsed families)</li>
+<li><code>rootOptionDefaults?: { ... }</code> (root CLI defaults; collapsed families). Keys:
+<ul>
+<li><code>env</code>, <code>defaultEnv</code>, <code>paths</code>, <code>dotenvToken</code>, <code>privateToken</code>, <code>dynamicPath</code></li>
+<li><code>shell</code>, <code>loadProcess</code>, <code>capture</code></li>
+<li><code>excludeAll</code>, <code>excludeDynamic</code>, <code>excludeEnv</code>, <code>excludeGlobal</code>, <code>excludePrivate</code>, <code>excludePublic</code></li>
+<li><code>log</code>, <code>debug</code>, <code>trace</code>, <code>strict</code></li>
+<li><code>outputPath</code></li>
+<li><code>vars</code>, <code>varsAssignor</code>, <code>varsAssignorPattern</code>, <code>varsDelimiter</code>, <code>varsDelimiterPattern</code></li>
+<li><code>pathsDelimiter</code>, <code>pathsDelimiterPattern</code></li>
+<li><code>redact</code>, <code>redactPatterns</code></li>
+<li><code>warnEntropy</code>, <code>entropyThreshold</code>, <code>entropyMinLength</code>, <code>entropyWhitelist</code></li>
+</ul>
+</li>
 <li><code>rootOptionVisibility?: { [rootKey]: boolean }</code></li>
 <li><code>scripts?: Record&lt;string, string | { cmd: string; shell?: string | boolean }&gt;</code></li>
 <li><code>vars?: Record&lt;string, string&gt;</code> (global/public vars)</li>

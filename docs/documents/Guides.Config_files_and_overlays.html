@@ -40,7 +40,18 @@
 <ul>
 <li>Allowed keys:
 <ul>
-<li>rootOptionDefaults?: Partial<RootOptionsShape> — collapsed, CLI‑like flags and strings (families, singles). Prefer this to set help‑time/runtime defaults for root options.</li>
+<li>rootOptionDefaults?: Partial<RootOptionsShape> — collapsed, CLI‑like flags and strings. Supported keys:
+<ul>
+<li>Targeting: <code>env</code>, <code>defaultEnv</code>, <code>paths</code>, <code>pathsDelimiter</code>, <code>pathsDelimiterPattern</code>, <code>dotenvToken</code>, <code>privateToken</code>.</li>
+<li>Output/Vars: <code>vars</code>, <code>varsAssignor</code>, <code>varsAssignorPattern</code>, <code>varsDelimiter</code>, <code>varsDelimiterPattern</code>, <code>outputPath</code>.</li>
+<li>Loading: <code>loadProcess</code>, <code>dynamicPath</code>.</li>
+<li>Exclusions: <code>excludeAll</code>, <code>excludeDynamic</code>, <code>excludeEnv</code>, <code>excludeGlobal</code>, <code>excludePrivate</code>, <code>excludePublic</code>.</li>
+<li>Execution: <code>shell</code>, <code>capture</code>.</li>
+<li>Diagnostics: <code>log</code>, <code>debug</code>, <code>trace</code>, <code>strict</code>.</li>
+<li>Redaction: <code>redact</code>, <code>redactPatterns</code>.</li>
+<li>Entropy: <code>warnEntropy</code>, <code>entropyThreshold</code>, <code>entropyMinLength</code>, <code>entropyWhitelist</code>.</li>
+</ul>
+</li>
 <li>rootOptionVisibility?: Partial&lt;Record&lt;keyof RootOptionsShape, boolean&gt;&gt; — help‑time visibility (false hides a flag).</li>
 <li>scripts?: Record&lt;string, string | { cmd: string; shell?: string | boolean }&gt;</li>
 <li>vars?: Record&lt;string, string&gt; (global, public)</li>
