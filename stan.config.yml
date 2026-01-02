@@ -12,6 +12,8 @@ stan-core:
       - node_modules/@commander-js/extra-typings/index.d.ts
     '@karmaniverous/aws-secrets-manager-tools':
       - ../aws-secrets-manager-tools/.stan/interop/get-dotenv/**
+    '@karmaniverous/entity-client-dynamodb':
+      - ../entity-client-dynamodb/.stan/interop/get-dotenv/**
     '@karmaniverous/smoz':
       - ../smoz/.stan/interop/get-dotenv/**
     '@veterancrowd/aws-cli':

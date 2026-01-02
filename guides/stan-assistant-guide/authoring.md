@@ -97,6 +97,26 @@ sub.addOption(
 );
 ```
 
+## Complex Plugins (Subcommands & Resolvers)
+
+For plugins with multiple subcommands (e.g. `aws dynamodb create`), follow the **Resolver Pattern**.
+
+1.  **Schema**: Model defaults as nested objects in the plugin schema (e.g. `create: { version: ... }`).
+2.  **Registration**: `action` handler simply calls a resolver, then a service. Keep it thin.
+3.  **Resolver**: Pure function `(flags, config, envRef) => ServiceInput`.
+    - Handles precedence: Flags > Config > Defaults.
+    - Handles expansion (see below).
+
+### Expansion Rules
+
+- **Config Strings**: The host interpolates these _before_ your plugin runs. Do not re-expand `pluginCfg` values.
+- **Flag Values**: You must expand these manually if you want `${VAR}` support. Use `dotenvExpand(val, { ...process.env, ...ctx.dotenv })`.
+
+### Testing
+
+- **Wiring Tests**: Use `cli.install()` to verify commands/options exist (smoke test).
+- **Resolver Tests**: Unit test the resolver function for precedence and logic.
+
 ## Running subprocesses safely
 
 Always build a normalized child env:

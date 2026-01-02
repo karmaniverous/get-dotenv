@@ -141,6 +141,12 @@ Location and shape:
 {
   "plugins": {
     "batch": {
+      "rootPath": "./packages"
+    },
+    "aws/dynamodb": {
+      "create": { "version": "v1" }
+    },
+    "my-plugin": {
       "scripts": {
         "build": { "cmd": "npm run build", "shell": "/bin/bash" }
       },
@@ -205,4 +211,4 @@ getdotenv cmd bash-only
 getdotenv cmd plain
 ```
 
-For help‑time visibility of root flags (e.g., hiding `--capture` or an entire family like `--shell`/`--shell-off`), set `rootOptionVisibility` in JSON/YAML/JS/TS config. Precedence matches root defaults: createCli < packaged/public < project/public < project/local.
+For help‑time visibility of root flags (e.g., hiding `--capture` or an entire family like `--shell`/`--shell-off`), set `rootOptionVisibility` in JSON/YAML/JS/TS config. Precedence matches root defaults: createCli < packaged/public < project/public < project/local.

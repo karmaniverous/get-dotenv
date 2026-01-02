@@ -10,9 +10,10 @@ To help you debug overrides and audit where values come from, the host maintains
 
 ## What is provenance?
 
-Provenance is a metadata map describing the history of every key in the resolved environment. It records *where* a value was defined (e.g., "set in .env.local", "overridden by config", "unset by dynamic logic") without recording the value itself (descriptor-only).
+Provenance is a metadata map describing the history of every key in the resolved environment. It records _where_ a value was defined (e.g., "set in .env.local", "overridden by config", "unset by dynamic logic") without recording the value itself (descriptor-only).
 
 This allows you to:
+
 - Debug why a variable has a specific value.
 - Audit which files or config layers contributed to the final environment.
 - build tooling that visualizes the composition stack.
@@ -35,11 +36,14 @@ Each key maps to an array of entries ordered by **ascending precedence**. The la
 ### Entry shape
 
 All entries share:
+
 - `kind`: The source type (`file`, `config`, `vars`, `dynamic`).
 - `op`: The operation (`set` or `unset`).
 
 #### `kind: 'file'`
+
 Sourced from a dotenv file in the cascade.
+
 - `path`: The search path directory (as provided).
 - `file`: The filename token (e.g., `.env`, `.env.local`).
 - `scope`: `global` | `env`.
@@ -47,17 +51,22 @@ Sourced from a dotenv file in the cascade.
 - `env`: The environment name (if scope is `env`).
 
 #### `kind: 'config'`
+
 Sourced from `getdotenv.config.*` overlays.
+
 - `configScope`: `packaged` | `project`.
 - `configPrivacy`: `public` | `local`.
 - `scope`: `global` | `env`.
 - `privacy`: `public` | `private` (matches `configPrivacy`).
 
 #### `kind: 'vars'`
+
 Sourced from explicit variable overrides (`--vars` or programmatic `vars`).
 
 #### `kind: 'dynamic'`
+
 Sourced from dynamic computation.
+
 - `dynamicSource`: `config` (JS/TS config) | `programmatic` (options) | `dynamicPath` (file).
 - `dynamicPath`: The path to the dynamic module (when source is `dynamicPath`).
 
@@ -82,12 +91,20 @@ If `APP_SETTING` is defined in `.env` and overridden in `.env.local`, the proven
 ```json
 [
   {
-    "kind": "file", "op": "set",
-    "scope": "global", "privacy": "public", "file": ".env", "path": "./"
+    "kind": "file",
+    "op": "set",
+    "scope": "global",
+    "privacy": "public",
+    "file": ".env",
+    "path": "./"
   },
   {
-    "kind": "file", "op": "set",
-    "scope": "global", "privacy": "private", "file": ".env.local", "path": "./"
+    "kind": "file",
+    "op": "set",
+    "scope": "global",
+    "privacy": "private",
+    "file": ".env.local",
+    "path": "./"
   }
 ]
 ```
