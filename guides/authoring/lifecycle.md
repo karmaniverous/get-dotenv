@@ -207,13 +207,13 @@ export const helloPlugin = () => {
             '--loud',
             (
               _bag,
-              cfg, // cfg is inferred as Readonly<HelloConfig>
-            ) => `print greeting in ALL CAPS${cfg.loud ? ' (default)' : ''}`,
+              pluginCfg, // inferred as Readonly<HelloConfig>
+            ) => `print greeting in ALL CAPS${pluginCfg.loud ? ' (default)' : ''}`,
           ),
         )
         .action(() => {
-          const cfg = plugin.readConfig(cli); // cfg is inferred
-          // use cfg.loud at runtime
+          const pluginCfg = plugin.readConfig(cli); // inferred
+          // use pluginCfg.loud at runtime
         });
     },
   });
@@ -227,7 +227,7 @@ Or build the Option first:
 const opt = plugin.createPluginDynamicOption(
   cli,
   '--loud',
-  (_bag, cfg) => `print greeting in ALL CAPS${cfg.loud ? ' (default)' : ''}`,
+  (_bag, pluginCfg) => `print greeting in ALL CAPS${pluginCfg.loud ? ' (default)' : ''}`,
 );
 cli.addOption(opt);
 ```

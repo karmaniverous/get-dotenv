@@ -1,0 +1,456 @@
+<!DOCTYPE html><html class="default" lang="en" data-base="../"><head><meta charset="utf-8"/><meta http-equiv="x-ua-compatible" content="IE=edge"/><title>STAN assistant guide (get-dotenv) | @karmaniverous/get-dotenv</title><meta name="description" content="Documentation for @karmaniverous/get-dotenv"/><meta name="viewport" content="width=device-width, initial-scale=1"/><link rel="stylesheet" href="../assets/style.css"/><link rel="stylesheet" href="../assets/highlight.css"/><script defer src="../assets/main.js"></script><script async src="../assets/icons.js" id="tsd-icons-script"></script><script async src="../assets/search.js" id="tsd-search-script"></script><script async src="../assets/navigation.js" id="tsd-nav-script"></script><script async src="../assets/hierarchy.js" id="tsd-hierarchy-script"></script></head><body><script>document.documentElement.dataset.theme = localStorage.getItem("tsd-theme") || "os";document.body.style.display="none";setTimeout(() => window.app?app.showPage():document.body.style.removeProperty("display"),500)</script><header class="tsd-page-toolbar"><div class="tsd-toolbar-contents container"><a href="../index.html" class="title">@karmaniverous/get-dotenv</a><div id="tsd-toolbar-links"><a href="https://github.com/karmaniverous/get-dotenv">GitHub</a></div><button id="tsd-search-trigger" class="tsd-widget" aria-label="Search"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><use href="../assets/icons.svg#icon-search"></use></svg></button><dialog id="tsd-search" aria-label="Search"><input role="combobox" id="tsd-search-input" aria-controls="tsd-search-results" aria-autocomplete="list" aria-expanded="true" autocapitalize="off" autocomplete="off" placeholder="Search the docs" maxLength="100"/><ul role="listbox" id="tsd-search-results"></ul><div id="tsd-search-status" aria-live="polite" aria-atomic="true"><div>Preparing search index...</div></div></dialog><a href="#" class="tsd-widget menu" id="tsd-toolbar-menu-trigger" data-toggle="menu" aria-label="Menu"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><use href="../assets/icons.svg#icon-menu"></use></svg></a></div></header><div class="container container-main"><div class="col-content"><div class="tsd-page-title"><ul class="tsd-breadcrumb" aria-label="Breadcrumb"><li><a href="Guides.html">Guides</a></li><li><a href="" aria-current="page">STAN assistant guide (get-dotenv)</a></li></ul></div><div class="tsd-panel tsd-typography"><h1 id="stan-assistant-guide-karmaniverousget-dotenv" class="tsd-anchor-link">STAN assistant guide: @karmaniverous/get-dotenv<a href="#stan-assistant-guide-karmaniverousget-dotenv" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h1><p>This is a compact, self-contained guide for STAN assistants to use <code>@karmaniverous/get-dotenv</code> effectively (library + CLI host + plugins) without consulting type definition files or other project documentation.</p>
+<h2 id="what-this-library-does-mental-model" class="tsd-anchor-link">What this library does (mental model)<a href="#what-this-library-does-mental-model" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h2><p><code>get-dotenv</code> composes an environment (<code>Record&lt;string, string | undefined&gt;</code>) from multiple sources deterministically, expands references recursively, optionally applies dynamic variables, and then lets you (a) use the final map programmatically, (b) run commands under it via a cross-platform CLI, or (c) build your own plugin-based CLI host that resolves env once per invocation.</p>
+<p>Key idea: treat the “resolved dotenv context” (<code>ctx.dotenv</code>) as the source of truth, and do not rely on <code>process.env</code> being mutated unless you explicitly enable it.</p>
+<h2 id="install-import-rules" class="tsd-anchor-link">Install + import rules<a href="#install-import-rules" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h2><ul>
+<li>Node: &gt;= 20</li>
+<li>Package is ESM-only (CommonJS must use dynamic <code>import()</code>).</li>
+<li>Recommended imports (public API):
+<ul>
+<li>Programmatic core: <code>import { getDotenv } from '@karmaniverous/get-dotenv'</code></li>
+<li>CLI factory (shipped plugins): <code>import { createCli } from '@karmaniverous/get-dotenv/cli'</code></li>
+<li>CLI host + plugin authoring: <code>import { GetDotenvCli, definePlugin } from '@karmaniverous/get-dotenv/cliHost'</code></li>
+<li>Shipped plugins: <code>import { cmdPlugin, batchPlugin, awsPlugin, awsWhoamiPlugin, initPlugin } from '@karmaniverous/get-dotenv/plugins'</code></li>
+<li>Config loader helpers: <code>import { resolveGetDotenvConfigSources } from '@karmaniverous/get-dotenv/config'</code></li>
+<li>Overlay helper: <code>import { overlayEnv } from '@karmaniverous/get-dotenv/env/overlay'</code></li>
+</ul>
+</li>
+</ul>
+<h2 id="topic-guides" class="tsd-anchor-link">Topic Guides<a href="#topic-guides" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h2><p>This guide is split into focused topics:</p>
+<ul>
+<li><a href="Guides.STAN_assistant_guide_(get-dotenv).env.html">Environment &amp; Config</a> (Cascade, Expansion, Config files, Dynamic variables)</li>
+<li><a href="Guides.STAN_assistant_guide_(get-dotenv).editing.html">Dotenv Editor</a> (Format-preserving editing)</li>
+<li><a href="Guides.STAN_assistant_guide_(get-dotenv).cli.html">CLI &amp; Embedding</a> (Using the CLI, <code>createCli</code>)</li>
+<li><a href="Guides.STAN_assistant_guide_(get-dotenv).authoring.html">Authoring Plugins</a> (Host lifecycle, Subprocesses, Diagnostics)</li>
+<li><a href="Guides.STAN_assistant_guide_(get-dotenv).plugins.html">Shipped Plugins</a> (Contracts and interop)</li>
+</ul>
+<h2 id="api-index-quick-lookup" class="tsd-anchor-link">API index (quick lookup)<a href="#api-index-quick-lookup" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h2><p>Use this section when you need a “what do I import?” answer quickly.</p>
+<ul>
+<li>Root (<code>@karmaniverous/get-dotenv</code>):
+<ul>
+<li>Env composition: <code>getDotenv</code>, <code>defineDynamic</code>, <code>defineGetDotenvConfig</code></li>
+<li>Defaults: <code>baseRootOptionDefaults</code></li>
+<li>Expansion: <code>dotenvExpand</code>, <code>dotenvExpandAll</code>, <code>dotenvExpandFromProcessEnv</code></li>
+<li>Dotenv editing: <code>editDotenvText</code>, <code>editDotenvFile</code> (format-preserving)</li>
+<li>Diagnostics: <code>traceChildEnv</code>, <code>redactDisplay</code>, <code>redactObject</code>, <code>maybeWarnEntropy</code></li>
+<li>Utilities: <code>interpolateDeep</code> (deep string-leaf interpolation), <code>writeDotenvFile</code>, <code>defaultsDeep</code>, <code>tokenize</code></li>
+</ul>
+</li>
+<li>CLI factory (<code>@karmaniverous/get-dotenv/cli</code>):
+<ul>
+<li><code>createCli({ alias, branding?, compose?, rootOptionDefaults?, rootOptionVisibility? }) -&gt; (argv?) =&gt; Promise&lt;void&gt;</code></li>
+</ul>
+</li>
+<li>CLI host (<code>@karmaniverous/get-dotenv/cliHost</code>):
+<ul>
+<li>Host class: <code>GetDotenvCli</code></li>
+<li>Plugin authoring: <code>definePlugin</code> (returns a plugin with <code>readConfig</code> and <code>createPluginDynamicOption</code>)</li>
+<li>Execution: <code>runCommand</code>, <code>runCommandResult</code>, <code>shouldCapture</code>, <code>buildSpawnEnv</code></li>
+<li>Option bag: <code>readMergedOptions</code></li>
+<li>Shell/scripting: <code>resolveCommand</code>, <code>resolveShell</code>, <code>defineScripts</code></li>
+<li>Helpers: <code>getRootCommand</code>, <code>composeNestedEnv</code>, <code>maybePreserveNodeEvalArgv</code></li>
+</ul>
+</li>
+<li>Config (<code>@karmaniverous/get-dotenv/config</code>):
+<ul>
+<li><code>resolveGetDotenvConfigSources(...)</code> and validation helpers</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h2 id="title-stan-assistant-guide-get-dotenv" class="tsd-anchor-link">title: STAN assistant guide (get-dotenv)<a href="#title-stan-assistant-guide-get-dotenv" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h2><h1 id="stan-assistant-guide-karmaniverousget-dotenv-1" class="tsd-anchor-link">STAN assistant guide: @karmaniverous/get-dotenv<a href="#stan-assistant-guide-karmaniverousget-dotenv-1" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h1><p>This is a compact, self-contained guide for STAN assistants to use <code>@karmaniverous/get-dotenv</code> effectively (library + CLI host + plugins) without consulting type definition files or other project documentation.</p>
+<h2 id="what-this-library-does-mental-model-1" class="tsd-anchor-link">What this library does (mental model)<a href="#what-this-library-does-mental-model-1" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h2><p><code>get-dotenv</code> composes an environment (<code>Record&lt;string, string | undefined&gt;</code>) from multiple sources deterministically, expands references recursively, optionally applies dynamic variables, and then lets you (a) use the final map programmatically, (b) run commands under it via a cross-platform CLI, or (c) build your own plugin-based CLI host that resolves env once per invocation.</p>
+<p>Key idea: treat the “resolved dotenv context” (<code>ctx.dotenv</code>) as the source of truth, and do not rely on <code>process.env</code> being mutated unless you explicitly enable it.</p>
+<h2 id="install-import-rules-1" class="tsd-anchor-link">Install + import rules<a href="#install-import-rules-1" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h2><ul>
+<li>Node: &gt;= 20</li>
+<li>Package is ESM-only (CommonJS must use dynamic <code>import()</code>).</li>
+<li>Recommended imports (public API):
+<ul>
+<li>Programmatic core: <code>import { getDotenv } from '@karmaniverous/get-dotenv'</code></li>
+<li>CLI factory (shipped plugins): <code>import { createCli } from '@karmaniverous/get-dotenv/cli'</code></li>
+<li>CLI host + plugin authoring: <code>import { GetDotenvCli, definePlugin } from '@karmaniverous/get-dotenv/cliHost'</code></li>
+<li>Shipped plugins: <code>import { cmdPlugin, batchPlugin, awsPlugin, awsWhoamiPlugin, initPlugin } from '@karmaniverous/get-dotenv/plugins'</code></li>
+<li>Config loader helpers: <code>import { resolveGetDotenvConfigSources } from '@karmaniverous/get-dotenv/config'</code></li>
+<li>Overlay helper: <code>import { overlayEnv } from '@karmaniverous/get-dotenv/env/overlay'</code></li>
+</ul>
+</li>
+</ul>
+<h2 id="vocabulary-align-your-reasoning-and-docs" class="tsd-anchor-link">Vocabulary (align your reasoning and docs)<a href="#vocabulary-align-your-reasoning-and-docs" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h2><ul>
+<li><code>dotenvToken</code>: base dotenv filename token (default <code>.env</code>).</li>
+<li><code>privateToken</code>: private suffix token (default <code>local</code>).</li>
+<li><code>env</code>: selected environment string (e.g. <code>dev</code>, <code>test</code>).</li>
+<li><code>paths</code>: ordered list of directories to search (later paths override earlier).</li>
+<li>“public” vs “private”: public is <code>.env*</code>, private is <code>.env.&lt;privateToken&gt;*</code>.</li>
+<li>“config overlay”: values from <code>getdotenv.config.*</code> and <code>getdotenv.config.local.*</code> layered on top of file-derived dotenv.</li>
+</ul>
+<h2 id="dotenv-cascade-deterministic-file-naming" class="tsd-anchor-link">Dotenv cascade (deterministic file naming)<a href="#dotenv-cascade-deterministic-file-naming" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h2><p>For each path, up to four files are merged in this order (later wins):</p>
+<ol>
+<li>Public global: <code>&lt;dotenvToken&gt;</code> (e.g. <code>.env</code>)</li>
+<li>Public env: <code>&lt;dotenvToken&gt;.&lt;env&gt;</code> (e.g. <code>.env.dev</code>)</li>
+<li>Private global: <code>&lt;dotenvToken&gt;.&lt;privateToken&gt;</code> (e.g. <code>.env.local</code>)</li>
+<li>Private env: <code>&lt;dotenvToken&gt;.&lt;env&gt;.&lt;privateToken&gt;</code> (e.g. <code>.env.dev.local</code>)</li>
+</ol>
+<p>Missing files are silently ignored.</p>
+<h2 id="expansion-syntax-recursive-with-defaults" class="tsd-anchor-link">Expansion syntax (recursive, with defaults)<a href="#expansion-syntax-recursive-with-defaults" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h2><p>Expansion happens recursively in strings:</p>
+<ul>
+<li><code>$VAR[:default]</code></li>
+<li><code>${VAR[:default]}</code></li>
+</ul>
+<p>Unknown vars become empty string unless a default is provided. Escaped dollar signs (<code>\$</code>) remain literal.</p>
+<p>Use helpers when you need the exact semantics:</p>
+<pre><code class="ts"><span class="hl-4">import</span><span class="hl-1"> { </span><span class="hl-5">dotenvExpand</span><span class="hl-1">, </span><span class="hl-5">dotenvExpandAll</span><span class="hl-1"> } </span><span class="hl-4">from</span><span class="hl-1"> </span><span class="hl-2">&#39;@karmaniverous/get-dotenv&#39;</span><span class="hl-1">;</span>
+</code><button type="button">Copy</button></pre>
+
+<h2 id="dotenv-file-editing-format-preserving" class="tsd-anchor-link">Dotenv file editing (format-preserving)<a href="#dotenv-file-editing-format-preserving" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h2><p>Use the dotenv edit utilities when you need to update a <code>.env*</code> file in place without destroying comments, spacing, ordering, unknown lines, or line endings.</p>
+<p>Pure text (no filesystem):</p>
+<pre><code class="ts"><span class="hl-4">import</span><span class="hl-1"> { </span><span class="hl-5">editDotenvText</span><span class="hl-1"> } </span><span class="hl-4">from</span><span class="hl-1"> </span><span class="hl-2">&#39;@karmaniverous/get-dotenv&#39;</span><span class="hl-1">;</span><br/><br/><span class="hl-3">const</span><span class="hl-1"> </span><span class="hl-6">next</span><span class="hl-1"> = </span><span class="hl-0">editDotenvText</span><span class="hl-1">(</span><span class="hl-2">&#39;A=1</span><span class="hl-8">\n</span><span class="hl-2"># keep</span><span class="hl-8">\n</span><span class="hl-2">B=2</span><span class="hl-8">\n</span><span class="hl-2">&#39;</span><span class="hl-1">, {</span><br/><span class="hl-1">  </span><span class="hl-5">A:</span><span class="hl-1"> </span><span class="hl-2">&#39;updated&#39;</span><span class="hl-1">,</span><br/><span class="hl-1">  </span><span class="hl-5">UNUSED:</span><span class="hl-1"> </span><span class="hl-3">null</span><span class="hl-1">,</span><br/><span class="hl-1">});</span>
+</code><button type="button">Copy</button></pre>
+
+<p>FS-level (deterministic target selection across <code>paths</code>, optional template bootstrap):</p>
+<pre><code class="ts"><span class="hl-4">import</span><span class="hl-1"> { </span><span class="hl-5">editDotenvFile</span><span class="hl-1"> } </span><span class="hl-4">from</span><span class="hl-1"> </span><span class="hl-2">&#39;@karmaniverous/get-dotenv&#39;</span><span class="hl-1">;</span><br/><br/><span class="hl-4">await</span><span class="hl-1"> </span><span class="hl-0">editDotenvFile</span><span class="hl-1">(</span><br/><span class="hl-1">  { </span><span class="hl-5">API_URL:</span><span class="hl-1"> </span><span class="hl-2">&#39;https://example.com&#39;</span><span class="hl-1">, </span><span class="hl-5">UNUSED:</span><span class="hl-1"> </span><span class="hl-3">null</span><span class="hl-1"> },</span><br/><span class="hl-1">  {</span><br/><span class="hl-1">    </span><span class="hl-5">paths:</span><span class="hl-1"> [</span><span class="hl-2">&#39;./&#39;</span><span class="hl-1">],</span><br/><span class="hl-1">    </span><span class="hl-5">scope:</span><span class="hl-1"> </span><span class="hl-2">&#39;env&#39;</span><span class="hl-1">,</span><br/><span class="hl-1">    </span><span class="hl-5">privacy:</span><span class="hl-1"> </span><span class="hl-2">&#39;private&#39;</span><span class="hl-1">,</span><br/><span class="hl-1">    </span><span class="hl-5">env:</span><span class="hl-1"> </span><span class="hl-2">&#39;dev&#39;</span><span class="hl-1">,</span><br/><span class="hl-1">    </span><span class="hl-5">dotenvToken:</span><span class="hl-1"> </span><span class="hl-2">&#39;.env&#39;</span><span class="hl-1">,</span><br/><span class="hl-1">    </span><span class="hl-5">privateToken:</span><span class="hl-1"> </span><span class="hl-2">&#39;local&#39;</span><span class="hl-1">,</span><br/><span class="hl-1">  },</span><br/><span class="hl-1">);</span>
+</code><button type="button">Copy</button></pre>
+
+<p>Notes:</p>
+<ul>
+<li>Dedicated guide: see <a href="Guides.Dotenv_editor_(format-preserving).html">Dotenv editor (format-preserving)</a> for the full contract, examples, and edge cases.</li>
+<li>Update map semantics:
+<ul>
+<li><code>null</code> deletes key assignment lines (default).</li>
+<li><code>undefined</code> skips (default); in <code>mode: 'sync'</code> an own key with <code>undefined</code> counts as present (so it is not deleted).</li>
+<li>Objects/arrays are supported and are written via <code>JSON.stringify</code>.</li>
+</ul>
+</li>
+<li>Duplicate keys: <code>duplicateKeys: 'all' | 'first' | 'last'</code> (default: <code>'all'</code>).</li>
+<li>EOL: <code>eol: 'preserve' | 'lf' | 'crlf'</code> (default: <code>'preserve'</code>), and trailing newline presence/absence is preserved.</li>
+<li>Target selection (<code>editDotenvFile</code>) is deterministic and uses <code>paths</code> only (directories), matching get-dotenv’s precedence model by default:
+<ul>
+<li><code>searchOrder: 'reverse'</code> (default): last path wins (highest precedence).</li>
+<li><code>searchOrder: 'forward'</code>: first path wins.</li>
+</ul>
+</li>
+<li>Template bootstrap: if the selected target is missing but <code>&lt;target&gt;.&lt;templateExtension&gt;</code> exists (default extension: <code>template</code>), the template is copied first and then edited in place.</li>
+<li>Return shape: <code>editDotenvFile</code> returns <code>{ path, createdFromTemplate, changed }</code> where <code>path</code> is absolute.</li>
+</ul>
+<p>Selector mapping (filename construction):</p>
+<ul>
+<li><code>scope: 'global'</code>, <code>privacy: 'public'</code> → <code>&lt;dotenvToken&gt;</code></li>
+<li><code>scope: 'env'</code>, <code>privacy: 'public'</code> → <code>&lt;dotenvToken&gt;.&lt;env&gt;</code></li>
+<li><code>scope: 'global'</code>, <code>privacy: 'private'</code> → <code>&lt;dotenvToken&gt;.&lt;privateToken&gt;</code></li>
+<li><code>scope: 'env'</code>, <code>privacy: 'private'</code> → <code>&lt;dotenvToken&gt;.&lt;env&gt;.&lt;privateToken&gt;</code></li>
+</ul>
+<p>If <code>scope: 'env'</code> and neither <code>env</code> nor <code>defaultEnv</code> can be resolved, <code>editDotenvFile</code> throws with an <code>env is required</code>-style message.</p>
+<p>Low-level building blocks (advanced use):</p>
+<ul>
+<li><code>parseDotenvDocument(text)</code> → parse into a format-preserving segment model.</li>
+<li><code>applyDotenvEdits(doc, updates, opts?)</code> → apply merge/sync edits while preserving formatting.</li>
+<li><code>renderDotenvDocument(doc, eolMode?)</code> → render back to text with EOL policy.</li>
+</ul>
+<h2 id="programmatic-api" class="tsd-anchor-link">Programmatic API: <code>getDotenv()</code><a href="#programmatic-api" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h2><p>Use <code>getDotenv()</code> when you want “compose an env map” without the CLI host/plugin system.</p>
+<pre><code class="ts"><span class="hl-4">import</span><span class="hl-1"> { </span><span class="hl-5">getDotenv</span><span class="hl-1"> } </span><span class="hl-4">from</span><span class="hl-1"> </span><span class="hl-2">&#39;@karmaniverous/get-dotenv&#39;</span><span class="hl-1">;</span><br/><br/><span class="hl-3">const</span><span class="hl-1"> </span><span class="hl-6">env</span><span class="hl-1"> = </span><span class="hl-4">await</span><span class="hl-1"> </span><span class="hl-0">getDotenv</span><span class="hl-1">({</span><br/><span class="hl-1">  </span><span class="hl-5">env:</span><span class="hl-1"> </span><span class="hl-2">&#39;dev&#39;</span><span class="hl-1">,</span><br/><span class="hl-1">  </span><span class="hl-5">paths:</span><span class="hl-1"> [</span><span class="hl-2">&#39;./&#39;</span><span class="hl-1">],</span><br/><span class="hl-1">});</span><br/><span class="hl-5">console</span><span class="hl-1">.</span><span class="hl-0">log</span><span class="hl-1">(</span><span class="hl-5">env</span><span class="hl-1">.</span><span class="hl-6">APP_SETTING</span><span class="hl-1">);</span>
+</code><button type="button">Copy</button></pre>
+
+<h3 id="options-what-matters" class="tsd-anchor-link"><code>getDotenv()</code> options (what matters)<a href="#options-what-matters" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3><p>All options are optional; important ones:</p>
+<ul>
+<li>Selection:
+<ul>
+<li><code>env?: string</code> and/or <code>defaultEnv?: string</code> (used when <code>env</code> not provided)</li>
+<li><code>paths?: string[]</code> (ordered)</li>
+<li><code>dotenvToken?: string</code> (default <code>.env</code>)</li>
+<li><code>privateToken?: string</code> (default <code>local</code>)</li>
+</ul>
+</li>
+<li>Variable injection:
+<ul>
+<li><code>vars?: Record&lt;string, string | undefined&gt;</code> (explicit vars merged into the composed map)</li>
+<li><code>loadProcess?: boolean</code> (default false for programmatic use; when true merges into <code>process.env</code>)</li>
+</ul>
+</li>
+<li>Dynamic variables:
+<ul>
+<li><code>dynamic?: Record&lt;string, string | ((vars, env) =&gt; string | undefined)&gt;</code> (programmatic map; takes precedence over <code>dynamicPath</code>)</li>
+<li><code>dynamicPath?: string</code> (path to JS/TS module default-exporting the same dynamic map)</li>
+<li><code>excludeDynamic?: boolean</code> (skip dynamic evaluation)</li>
+</ul>
+</li>
+<li>Exclusions:
+<ul>
+<li><code>excludePublic|excludePrivate|excludeGlobal|excludeEnv?: boolean</code></li>
+</ul>
+</li>
+<li>Output + logging:
+<ul>
+<li><code>outputPath?: string</code> (writes a consolidated dotenv file; multiline values are quoted)</li>
+<li><code>log?: boolean</code> and <code>logger?: console-like</code> (logs final map; can be combined with redaction/entropy options)</li>
+</ul>
+</li>
+<li>Diagnostics for log output (presentation-only):
+<ul>
+<li><code>redact?: boolean</code>, <code>redactPatterns?: Array&lt;string | RegExp&gt;</code></li>
+<li><code>warnEntropy?: boolean</code>, <code>entropyThreshold?: number</code>, <code>entropyMinLength?: number</code>, <code>entropyWhitelist?: Array&lt;string | RegExp&gt;</code></li>
+</ul>
+</li>
+</ul>
+<h3 id="dynamic-variables-programmatic-without-casts" class="tsd-anchor-link">Dynamic variables (programmatic) without casts<a href="#dynamic-variables-programmatic-without-casts" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3><p>Use <code>defineDynamic()</code> to get strong inference for your vars bag in TS:</p>
+<pre><code class="ts"><span class="hl-4">import</span><span class="hl-1"> { </span><span class="hl-5">defineDynamic</span><span class="hl-1">, </span><span class="hl-5">getDotenv</span><span class="hl-1"> } </span><span class="hl-4">from</span><span class="hl-1"> </span><span class="hl-2">&#39;@karmaniverous/get-dotenv&#39;</span><span class="hl-1">;</span><br/><br/><span class="hl-3">type</span><span class="hl-1"> </span><span class="hl-14">Vars</span><span class="hl-1"> = { </span><span class="hl-5">APP_SETTING</span><span class="hl-1">?: </span><span class="hl-14">string</span><span class="hl-1">; </span><span class="hl-5">ENV_SETTING</span><span class="hl-1">?: </span><span class="hl-14">string</span><span class="hl-1"> };</span><br/><br/><span class="hl-3">const</span><span class="hl-1"> </span><span class="hl-6">dynamic</span><span class="hl-1"> = </span><span class="hl-0">defineDynamic</span><span class="hl-1">&lt;</span><span class="hl-14">Vars</span><span class="hl-1">, { </span><span class="hl-0">GREETING</span><span class="hl-1">: (</span><span class="hl-5">v</span><span class="hl-1">: </span><span class="hl-14">Vars</span><span class="hl-1">) </span><span class="hl-3">=&gt;</span><span class="hl-1"> </span><span class="hl-14">string</span><span class="hl-1"> }&gt;({</span><br/><span class="hl-1">  </span><span class="hl-0">GREETING</span><span class="hl-5">:</span><span class="hl-1"> ({ </span><span class="hl-5">APP_SETTING</span><span class="hl-1"> = </span><span class="hl-2">&#39;&#39;</span><span class="hl-1"> }) </span><span class="hl-3">=&gt;</span><span class="hl-1"> </span><span class="hl-2">`Hello </span><span class="hl-3">${</span><span class="hl-6">APP_SETTING</span><span class="hl-3">}</span><span class="hl-2">`</span><span class="hl-1">,</span><br/><span class="hl-1">});</span><br/><br/><span class="hl-3">const</span><span class="hl-1"> </span><span class="hl-6">env</span><span class="hl-1"> = </span><span class="hl-4">await</span><span class="hl-1"> </span><span class="hl-0">getDotenv</span><span class="hl-1">&lt;</span><span class="hl-14">Vars</span><span class="hl-1">&gt;({ </span><span class="hl-5">env:</span><span class="hl-1"> </span><span class="hl-2">&#39;dev&#39;</span><span class="hl-1">, </span><span class="hl-5">paths:</span><span class="hl-1"> [</span><span class="hl-2">&#39;./&#39;</span><span class="hl-1">], </span><span class="hl-5">dynamic</span><span class="hl-1"> });</span>
+</code><button type="button">Copy</button></pre>
+
+<p>Dynamic function signature:</p>
+<ul>
+<li><code>(vars: Record&lt;string, string | undefined&gt;, env?: string) =&gt; string | undefined</code></li>
+</ul>
+<p>Return <code>undefined</code> to “unset/omit”.</p>
+<h2 id="config-files-and-overlays-host-path-always-on-there" class="tsd-anchor-link">Config files and overlays (host path; always-on there)<a href="#config-files-and-overlays-host-path-always-on-there" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h2><p>When using the shipped CLI host (or embedding it via <code>createCli</code>/<code>GetDotenvCli</code>), config discovery + overlays are always active (and a no-op if no config exists).</p>
+<h3 id="files-discovered-order" class="tsd-anchor-link">Files discovered (order)<a href="#files-discovered-order" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3><ul>
+<li>Packaged (library) root: first matching public config:
+<ul>
+<li><code>getdotenv.config.json|yaml|yml|js|mjs|cjs|ts|mts|cts</code></li>
+</ul>
+</li>
+<li>Project root (your repo):
+<ul>
+<li>Public: first matching <code>getdotenv.config.*</code> (same extensions)</li>
+<li>Local/private: first matching <code>getdotenv.config.local.*</code> (same extensions)</li>
+</ul>
+</li>
+</ul>
+<h3 id="allowed-top-level-config-keys-contract" class="tsd-anchor-link">Allowed top-level config keys (contract)<a href="#allowed-top-level-config-keys-contract" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3><p>JSON/YAML configs are data-only. JS/TS configs may include dynamic + schema.</p>
+<ul>
+<li><code>rootOptionDefaults?: { ... }</code> (root CLI defaults; collapsed families; see below)</li>
+<li><code>rootOptionVisibility?: { [rootKey]: boolean }</code> (help-time only; false hides options)</li>
+<li><code>scripts?: Record&lt;string, string | { cmd: string; shell?: string | boolean }&gt;</code></li>
+<li><code>vars?: Record&lt;string, string&gt;</code> (global/public vars)</li>
+<li><code>envVars?: Record&lt;string, Record&lt;string, string&gt;&gt;</code> (per-env/public vars)</li>
+<li><code>plugins?: Record&lt;string, unknown&gt;</code> (per-plugin config slices keyed by realized mount path, e.g. <code>aws/whoami</code>)</li>
+<li><code>requiredKeys?: string[]</code> (post-compose validation)</li>
+<li>JS/TS only:
+<ul>
+<li><code>dynamic?: Record&lt;string, string | ((vars, env?) =&gt; string | undefined)&gt;</code></li>
+<li><code>schema?: unknown</code> (if it exposes <code>safeParse(finalEnv)</code>, host runs it once post-compose)</li>
+</ul>
+</li>
+</ul>
+<p>Do not put operational root flags (like <code>shell</code>, <code>loadProcess</code>, <code>paths</code>) at top level; they belong under <code>rootOptionDefaults</code>.</p>
+<h3 id="root-defaults-precedence-runtime-help-labels" class="tsd-anchor-link">Root defaults precedence (runtime + help labels)<a href="#root-defaults-precedence-runtime-help-labels" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3><p>Higher wins:</p>
+<ul>
+<li>CLI flags</li>
+<li>project local <code>rootOptionDefaults</code></li>
+<li>project public <code>rootOptionDefaults</code></li>
+<li>packaged public <code>rootOptionDefaults</code></li>
+<li><code>createCli({ rootOptionDefaults })</code></li>
+<li><code>baseRootOptionDefaults</code></li>
+</ul>
+<p>Visibility precedence is similar (but no CLI flags for visibility):</p>
+<ul>
+<li>project local <code>rootOptionVisibility</code></li>
+<li>project public <code>rootOptionVisibility</code></li>
+<li>packaged public <code>rootOptionVisibility</code></li>
+<li><code>createCli({ rootOptionVisibility })</code></li>
+</ul>
+<h3 id="plugin-config-slices-keyed-by-realized-mount-path" class="tsd-anchor-link">Plugin config slices (keyed by realized mount path)<a href="#plugin-config-slices-keyed-by-realized-mount-path" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3><p>Config location:</p>
+<ul>
+<li><code>plugins.&lt;mountPath&gt;</code> where <code>&lt;mountPath&gt;</code> is the command path without the root alias, e.g.:
+<ul>
+<li><code>plugins.aws</code></li>
+<li><code>plugins['aws/whoami']</code></li>
+</ul>
+</li>
+</ul>
+<p>Host behavior:</p>
+<ul>
+<li>Merges packaged/public &lt; project/public &lt; project/local.</li>
+<li>Interpolates string leaves once against <code>{ ...ctx.dotenv, ...process.env }</code> (process.env wins for plugin slices).</li>
+<li>Validates against a plugin’s Zod <code>configSchema</code> (if provided).</li>
+<li>Stores per-plugin-instance slices and exposes them via <code>plugin.readConfig(cli)</code> (do not look up by id).</li>
+</ul>
+<h2 id="cli-usage-shipped-host" class="tsd-anchor-link">CLI usage (shipped host)<a href="#cli-usage-shipped-host" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h2><p>The shipped CLI is plugin-first and includes: <code>cmd</code>, <code>batch</code>, <code>aws</code> (+ <code>aws whoami</code>), <code>init</code>.</p>
+<p>Quick run:</p>
+<pre><code class="bash"><span class="hl-0">npx</span><span class="hl-1"> </span><span class="hl-2">@karmaniverous/get-dotenv</span><span class="hl-1"> </span><span class="hl-3">-c</span><span class="hl-1"> </span><span class="hl-2">&#39;echo $APP_SETTING&#39;</span>
+</code><button type="button">Copy</button></pre>
+
+<p>Key root flags (behavioral intent):</p>
+<ul>
+<li><code>-e, --env &lt;string&gt;</code> select environment</li>
+<li><code>--paths &lt;string&gt;</code> (delimited list) and delimiter options</li>
+<li><code>--dotenv-token &lt;string&gt;</code>, <code>--private-token &lt;string&gt;</code></li>
+<li><code>-s, --shell [string]</code> (default OS shell when enabled), <code>-S, --shell-off</code></li>
+<li><code>--capture</code> or <code>GETDOTENV_STDIO=pipe</code> for deterministic CI output</li>
+<li><code>--trace [keys...]</code> print child env diagnostics to stderr before spawning</li>
+<li><code>--redact</code> / <code>--redact-off</code>, plus <code>--redact-pattern &lt;pattern...&gt;</code></li>
+<li><code>--entropy-warn</code> / <code>--entropy-warn-off</code> + threshold/min-length/whitelist</li>
+</ul>
+<p>Important: the root “-c” behavior is owned by the <code>cmd</code> plugin (parent alias), not a root “--command” flag.</p>
+<h2 id="embedding-the-shipped-cli" class="tsd-anchor-link">Embedding the shipped CLI: <code>createCli()</code><a href="#embedding-the-shipped-cli" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h2><p>Use <code>createCli</code> to embed a ready-to-run CLI host and optionally customize composition.</p>
+<pre><code class="ts"><span class="hl-7">#!/usr/bin/env node</span><br/><span class="hl-4">import</span><span class="hl-1"> { </span><span class="hl-5">createCli</span><span class="hl-1"> } </span><span class="hl-4">from</span><span class="hl-1"> </span><span class="hl-2">&#39;@karmaniverous/get-dotenv/cli&#39;</span><span class="hl-1">;</span><br/><br/><span class="hl-4">await</span><span class="hl-1"> </span><span class="hl-0">createCli</span><span class="hl-1">({ </span><span class="hl-5">alias:</span><span class="hl-1"> </span><span class="hl-2">&#39;toolbox&#39;</span><span class="hl-1"> })();</span>
+</code><button type="button">Copy</button></pre>
+
+<p>Customize installed plugins:</p>
+<pre><code class="ts"><span class="hl-4">import</span><span class="hl-1"> { </span><span class="hl-5">createCli</span><span class="hl-1"> } </span><span class="hl-4">from</span><span class="hl-1"> </span><span class="hl-2">&#39;@karmaniverous/get-dotenv/cli&#39;</span><span class="hl-1">;</span><br/><span class="hl-4">import</span><span class="hl-1"> { </span><span class="hl-5">cmdPlugin</span><span class="hl-1">, </span><span class="hl-5">batchPlugin</span><span class="hl-1"> } </span><span class="hl-4">from</span><span class="hl-1"> </span><span class="hl-2">&#39;@karmaniverous/get-dotenv/plugins&#39;</span><span class="hl-1">;</span><br/><br/><span class="hl-3">const</span><span class="hl-1"> </span><span class="hl-6">run</span><span class="hl-1"> = </span><span class="hl-0">createCli</span><span class="hl-1">({</span><br/><span class="hl-1">  </span><span class="hl-5">alias:</span><span class="hl-1"> </span><span class="hl-2">&#39;toolbox&#39;</span><span class="hl-1">,</span><br/><span class="hl-1">  </span><span class="hl-0">compose</span><span class="hl-5">:</span><span class="hl-1"> (</span><span class="hl-5">p</span><span class="hl-1">) </span><span class="hl-3">=&gt;</span><br/><span class="hl-1">    </span><span class="hl-5">p</span><br/><span class="hl-1">      .</span><span class="hl-0">use</span><span class="hl-1">(</span><br/><span class="hl-1">        </span><span class="hl-0">cmdPlugin</span><span class="hl-1">({ </span><span class="hl-5">asDefault:</span><span class="hl-1"> </span><span class="hl-3">true</span><span class="hl-1">, </span><span class="hl-5">optionAlias:</span><span class="hl-1"> </span><span class="hl-2">&#39;-c, --cmd &lt;command...&gt;&#39;</span><span class="hl-1"> }),</span><br/><span class="hl-1">      )</span><br/><span class="hl-1">      .</span><span class="hl-0">use</span><span class="hl-1">(</span><span class="hl-0">batchPlugin</span><span class="hl-1">()),</span><br/><span class="hl-1">});</span><br/><br/><span class="hl-4">await</span><span class="hl-1"> </span><span class="hl-0">run</span><span class="hl-1">();</span>
+</code><button type="button">Copy</button></pre>
+
+<h2 id="building-your-own-host-plugins--and" class="tsd-anchor-link">Building your own host + plugins: <code>GetDotenvCli</code> and <code>definePlugin()</code><a href="#building-your-own-host-plugins--and" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h2><h3 id="the-host-lifecycle-what-to-assume" class="tsd-anchor-link">The host lifecycle (what to assume)<a href="#the-host-lifecycle-what-to-assume" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3><ul>
+<li>Host resolves dotenv context once per invocation: <code>await program.resolveAndLoad(...)</code>.</li>
+<li>Resolved context is available via <code>cli.getCtx()</code> inside any plugin mount/action.</li>
+<li>Root hooks in the shipped factory also persist a merged “root options bag” for actions: use <code>readMergedOptions(thisCommand)</code> to retrieve it.</li>
+<li>Host ctx includes dotenv provenance metadata at <code>ctx.dotenvProvenance</code>:
+<ul>
+<li>Mapping: <code>Record&lt;string, DotenvProvenanceEntry[]&gt;</code> ordered in ascending precedence (last entry is effective).</li>
+<li>Descriptor-only: entries do not include value payloads (safe to log).</li>
+<li>Entries:
+<ul>
+<li><code>kind: 'file'</code>: path, scope (global/env), privacy (public/private).</li>
+<li><code>kind: 'config'</code>: scope, privacy, configScope (packaged/project).</li>
+<li><code>kind: 'vars'</code>: explicit CLI/programmatic overrides.</li>
+<li><code>kind: 'dynamic'</code>: <code>dynamicSource</code> (config | programmatic | dynamicPath).</li>
+</ul>
+</li>
+<li>Unsets: <code>op: 'unset'</code> is recorded when a layer returns <code>undefined</code> or explicitly unsets a key.</li>
+<li>Ordering matches overlay precedence:
+<ul>
+<li>Files &lt; Configs &lt; Programmatic Dynamic &lt; File DynamicPath.</li>
+<li>Within files/configs: Global &lt; Env; Public &lt; Private.</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="grouping-plugins-under-a-namespace" class="tsd-anchor-link">Grouping plugins under a namespace: <code>groupPlugins(...)</code><a href="#grouping-plugins-under-a-namespace" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3><p>If you want a namespace-only parent command to group plugins under a shared prefix (for example, <code>smoz getdotenv init</code>), use <code>groupPlugins</code> rather than trying to “call” another plugin or inventing alias command names like <code>getdotenv-init</code>.</p>
+<pre><code class="ts"><span class="hl-4">import</span><span class="hl-1"> { </span><span class="hl-5">groupPlugins</span><span class="hl-1"> } </span><span class="hl-4">from</span><span class="hl-1"> </span><span class="hl-2">&#39;@karmaniverous/get-dotenv/cliHost&#39;</span><span class="hl-1">;</span><br/><span class="hl-4">import</span><span class="hl-1"> { </span><span class="hl-5">initPlugin</span><span class="hl-1"> } </span><span class="hl-4">from</span><span class="hl-1"> </span><span class="hl-2">&#39;@karmaniverous/get-dotenv/plugins&#39;</span><span class="hl-1">;</span><br/><br/><span class="hl-5">program</span><span class="hl-1">.</span><span class="hl-0">use</span><span class="hl-1">(</span><br/><span class="hl-1">  </span><span class="hl-0">groupPlugins</span><span class="hl-1">({ </span><span class="hl-5">ns:</span><span class="hl-1"> </span><span class="hl-2">&#39;getdotenv&#39;</span><span class="hl-1">, </span><span class="hl-5">description:</span><span class="hl-1"> </span><span class="hl-2">&#39;getdotenv tools&#39;</span><span class="hl-1"> }).</span><span class="hl-0">use</span><span class="hl-1">(</span><br/><span class="hl-1">    </span><span class="hl-0">initPlugin</span><span class="hl-1">(),</span><br/><span class="hl-1">  ),</span><br/><span class="hl-1">);</span>
+</code><button type="button">Copy</button></pre>
+
+<p>Notes:</p>
+<ul>
+<li>Config keys for children follow the realized mount path (e.g., <code>plugins['getdotenv/init']</code>).</li>
+<li>If you mount <code>cmdPlugin({ optionAlias: ... })</code> under the group, the alias attaches to the group command (e.g., <code>smoz getdotenv -c ...</code>), not the root.</li>
+</ul>
+<h3 id="minimal-plugin-pattern" class="tsd-anchor-link">Minimal plugin pattern<a href="#minimal-plugin-pattern" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3><pre><code class="ts"><span class="hl-4">import</span><span class="hl-1"> { </span><span class="hl-5">definePlugin</span><span class="hl-1"> } </span><span class="hl-4">from</span><span class="hl-1"> </span><span class="hl-2">&#39;@karmaniverous/get-dotenv/cliHost&#39;</span><span class="hl-1">;</span><br/><br/><span class="hl-4">export</span><span class="hl-1"> </span><span class="hl-3">const</span><span class="hl-1"> </span><span class="hl-0">helloPlugin</span><span class="hl-1"> = () </span><span class="hl-3">=&gt;</span><br/><span class="hl-1">  </span><span class="hl-0">definePlugin</span><span class="hl-1">({</span><br/><span class="hl-1">    </span><span class="hl-5">ns:</span><span class="hl-1"> </span><span class="hl-2">&#39;hello&#39;</span><span class="hl-1">,</span><br/><span class="hl-1">    </span><span class="hl-0">setup</span><span class="hl-1">(</span><span class="hl-5">cli</span><span class="hl-1">) {</span><br/><span class="hl-1">      </span><span class="hl-5">cli</span><span class="hl-1">.</span><span class="hl-0">description</span><span class="hl-1">(</span><span class="hl-2">&#39;Say hello&#39;</span><span class="hl-1">).</span><span class="hl-0">action</span><span class="hl-1">(() </span><span class="hl-3">=&gt;</span><span class="hl-1"> {</span><br/><span class="hl-1">        </span><span class="hl-3">const</span><span class="hl-1"> </span><span class="hl-6">ctx</span><span class="hl-1"> = </span><span class="hl-5">cli</span><span class="hl-1">.</span><span class="hl-0">getCtx</span><span class="hl-1">();</span><br/><span class="hl-1">        </span><span class="hl-5">console</span><span class="hl-1">.</span><span class="hl-0">log</span><span class="hl-1">(</span><span class="hl-2">&#39;dotenv keys:&#39;</span><span class="hl-1">, </span><span class="hl-5">Object</span><span class="hl-1">.</span><span class="hl-0">keys</span><span class="hl-1">(</span><span class="hl-5">ctx</span><span class="hl-1">.</span><span class="hl-5">dotenv</span><span class="hl-1">).</span><span class="hl-5">length</span><span class="hl-1">);</span><br/><span class="hl-1">      });</span><br/><span class="hl-1">    },</span><br/><span class="hl-1">  });</span>
+</code><button type="button">Copy</button></pre>
+
+<h3 id="composition-model-namespaces-are-the-contract" class="tsd-anchor-link">Composition model (namespaces are the contract)<a href="#composition-model-namespaces-are-the-contract" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3><ul>
+<li>Every plugin declares <code>ns</code> (command name).</li>
+<li>Mounts are created by the host; plugin <code>setup(cli)</code> receives the mount and returns void.</li>
+<li>You can override a child namespace at composition time: <code>.use(child, { ns: 'whoami2' })</code>.</li>
+<li>Config keys follow the realized mount path (rename changes config key intentionally).</li>
+</ul>
+<h3 id="plugin-config-dynamic-help-recommended" class="tsd-anchor-link">Plugin config + dynamic help (recommended)<a href="#plugin-config-dynamic-help-recommended" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3><p>If a plugin has config, attach <code>configSchema</code> and use instance-bound helpers:</p>
+<ul>
+<li><code>plugin.readConfig(cli)</code> to read the validated, interpolated slice.</li>
+<li><code>plugin.createPluginDynamicOption(cli, flags, (helpCfg, pluginCfg) =&gt; string)</code> to render “effective default” help strings.</li>
+</ul>
+<h2 id="running-subprocesses-safely-portable-patterns" class="tsd-anchor-link">Running subprocesses safely (portable patterns)<a href="#running-subprocesses-safely-portable-patterns" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h2><h3 id="always-build-a-normalized-child-env" class="tsd-anchor-link">Always build a normalized child env<a href="#always-build-a-normalized-child-env" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3><pre><code class="ts"><span class="hl-4">import</span><span class="hl-1"> { </span><span class="hl-5">buildSpawnEnv</span><span class="hl-1"> } </span><span class="hl-4">from</span><span class="hl-1"> </span><span class="hl-2">&#39;@karmaniverous/get-dotenv&#39;</span><span class="hl-1">;</span><br/><br/><span class="hl-3">const</span><span class="hl-1"> </span><span class="hl-6">env</span><span class="hl-1"> = </span><span class="hl-0">buildSpawnEnv</span><span class="hl-1">(</span><span class="hl-5">process</span><span class="hl-1">.</span><span class="hl-5">env</span><span class="hl-1">, </span><span class="hl-5">ctx</span><span class="hl-1">.</span><span class="hl-5">dotenv</span><span class="hl-1">);</span>
+</code><button type="button">Copy</button></pre>
+
+<h3 id="honor-capture-contract" class="tsd-anchor-link">Honor capture contract<a href="#honor-capture-contract" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3><pre><code class="ts"><span class="hl-4">import</span><span class="hl-1"> {</span><br/><span class="hl-1">  </span><span class="hl-5">readMergedOptions</span><span class="hl-1">,</span><br/><span class="hl-1">  </span><span class="hl-5">runCommand</span><span class="hl-1">,</span><br/><span class="hl-1">  </span><span class="hl-5">shouldCapture</span><span class="hl-1">,</span><br/><span class="hl-1">} </span><span class="hl-4">from</span><span class="hl-1"> </span><span class="hl-2">&#39;@karmaniverous/get-dotenv/cliHost&#39;</span><span class="hl-1">;</span><br/><br/><span class="hl-3">const</span><span class="hl-1"> </span><span class="hl-6">bag</span><span class="hl-1"> = </span><span class="hl-0">readMergedOptions</span><span class="hl-1">(</span><span class="hl-5">thisCommand</span><span class="hl-1">);</span><br/><span class="hl-3">const</span><span class="hl-1"> </span><span class="hl-6">capture</span><span class="hl-1"> = </span><span class="hl-0">shouldCapture</span><span class="hl-1">(</span><span class="hl-5">bag</span><span class="hl-1">.</span><span class="hl-5">capture</span><span class="hl-1">);</span><br/><br/><span class="hl-4">await</span><span class="hl-1"> </span><span class="hl-0">runCommand</span><span class="hl-1">(</span><span class="hl-2">&#39;echo OK&#39;</span><span class="hl-1">, </span><span class="hl-5">bag</span><span class="hl-1">.</span><span class="hl-5">shell</span><span class="hl-1"> ?? </span><span class="hl-3">false</span><span class="hl-1">, {</span><br/><span class="hl-1">  </span><span class="hl-5">env</span><span class="hl-1">,</span><br/><span class="hl-1">  </span><span class="hl-5">stdio:</span><span class="hl-1"> </span><span class="hl-5">capture</span><span class="hl-1"> ? </span><span class="hl-2">&#39;pipe&#39;</span><span class="hl-1"> : </span><span class="hl-2">&#39;inherit&#39;</span><span class="hl-1">,</span><br/><span class="hl-1">});</span>
+</code><button type="button">Copy</button></pre>
+
+<p>Note: <code>runCommand()</code> re-emits buffered stdout when using <code>stdio: 'pipe'</code>; stderr is not re-emitted by default (use <code>runCommandResult()</code> if you need deterministic stderr handling).</p>
+<h3 id="script-resolution-shell-resolution-cmdbatch-like-plugins" class="tsd-anchor-link">Script resolution + shell resolution (cmd/batch-like plugins)<a href="#script-resolution-shell-resolution-cmdbatch-like-plugins" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3><p>Use shared helpers:</p>
+<ul>
+<li><code>resolveCommand(scripts, input)</code> resolves <code>scripts[input]</code> (string or <code>{ cmd }</code>) or returns <code>input</code>.</li>
+<li><code>resolveShell(scripts, input, rootShell)</code> uses <code>scripts[input].shell</code> if object form, else uses <code>rootShell</code> (or false when absent).</li>
+</ul>
+<h3 id="shell-off-avoid-lossy-tokenization" class="tsd-anchor-link">Shell-off + <code>node -e</code> (avoid lossy tokenization)<a href="#shell-off-avoid-lossy-tokenization" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3><p>When running shell-off and passing a Node eval snippet, preserve argv:</p>
+<pre><code class="ts"><span class="hl-4">import</span><span class="hl-1"> { </span><span class="hl-5">maybePreserveNodeEvalArgv</span><span class="hl-1"> } </span><span class="hl-4">from</span><span class="hl-1"> </span><span class="hl-2">&#39;@karmaniverous/get-dotenv/cliHost&#39;</span><span class="hl-1">;</span><br/><br/><span class="hl-3">const</span><span class="hl-1"> </span><span class="hl-6">argv</span><span class="hl-1"> = </span><span class="hl-0">maybePreserveNodeEvalArgv</span><span class="hl-1">([</span><span class="hl-2">&#39;node&#39;</span><span class="hl-1">, </span><span class="hl-2">&#39;-e&#39;</span><span class="hl-1">, </span><span class="hl-2">&#39;console.log(&quot;ok&quot;)&#39;</span><span class="hl-1">]);</span>
+</code><button type="button">Copy</button></pre>
+
+<h2 id="expanding-plugin-flag-values-ctx-aware-avoid-parse-time-traps" class="tsd-anchor-link">Expanding plugin flag values (ctx-aware; avoid parse-time traps)<a href="#expanding-plugin-flag-values-ctx-aware-avoid-parse-time-traps" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h2><p>Commander option parsers run before ctx exists, so they can only expand against <code>process.env</code>. If you want <code>${NAME}</code> expansion based on the resolved dotenv context, expand at action-time against <code>{ ...process.env, ...ctx.dotenv }</code>:</p>
+<pre><code class="ts"><span class="hl-4">import</span><span class="hl-1"> { </span><span class="hl-5">dotenvExpand</span><span class="hl-1"> } </span><span class="hl-4">from</span><span class="hl-1"> </span><span class="hl-2">&#39;@karmaniverous/get-dotenv&#39;</span><span class="hl-1">;</span><br/><br/><span class="hl-3">const</span><span class="hl-1"> </span><span class="hl-6">raw</span><span class="hl-1"> = </span><span class="hl-0">String</span><span class="hl-1">(</span><span class="hl-5">opts</span><span class="hl-1">.</span><span class="hl-5">tableName</span><span class="hl-1"> ?? </span><span class="hl-2">&#39;&#39;</span><span class="hl-1">);</span><br/><span class="hl-3">const</span><span class="hl-1"> </span><span class="hl-6">envRef</span><span class="hl-1"> = { ...</span><span class="hl-5">process</span><span class="hl-1">.</span><span class="hl-5">env</span><span class="hl-1">, ...</span><span class="hl-5">cli</span><span class="hl-1">.</span><span class="hl-0">getCtx</span><span class="hl-1">().</span><span class="hl-5">dotenv</span><span class="hl-1"> };</span><br/><span class="hl-3">const</span><span class="hl-1"> </span><span class="hl-6">expanded</span><span class="hl-1"> = </span><span class="hl-0">dotenvExpand</span><span class="hl-1">(</span><span class="hl-5">raw</span><span class="hl-1">, </span><span class="hl-5">envRef</span><span class="hl-1">) ?? </span><span class="hl-5">raw</span><span class="hl-1">;</span>
+</code><button type="button">Copy</button></pre>
+
+<p>This keeps behavior independent of <code>loadProcess</code>.</p>
+<h2 id="diagnostics-helpers-when-you-need-parity-with-shipped-behavior" class="tsd-anchor-link">Diagnostics helpers (when you need parity with shipped behavior)<a href="#diagnostics-helpers-when-you-need-parity-with-shipped-behavior" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h2><p>From the root export:</p>
+<ul>
+<li><code>traceChildEnv({ parentEnv, dotenv, keys?, redact?, redactPatterns?, warnEntropy?, ... })</code> prints origin/value diagnostics for child env composition.</li>
+<li><code>redactDisplay(value, { redact?, redactPatterns? })</code> and <code>redactObject(record, opts)</code> mask values for logs/traces (presentation-only).</li>
+<li><code>maybeWarnEntropy(key, value, origin, opts, write)</code> warns about likely secrets by entropy (presentation-only).</li>
+</ul>
+<h2 id="shipped-plugins-what-to-know-as-a-plugin-author" class="tsd-anchor-link">Shipped plugins: what to know as a plugin author<a href="#shipped-plugins-what-to-know-as-a-plugin-author" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h2><ul>
+<li><code>cmd</code>: executes a command under ctx; provides parent alias <code>-c, --cmd &lt;command...&gt;</code>; detects conflict when both alias and explicit subcommand are used.</li>
+<li><code>batch</code>: discovers directories by globs and runs a command sequentially; honors <code>--list</code> and <code>--ignore-errors</code>.</li>
+<li><code>aws</code>: establishes a session once per invocation and writes AWS env vars to <code>process.env</code>; publishes minimal metadata under <code>ctx.plugins.aws</code>; supports <code>strategy: none</code> to disable credential export.</li>
+<li><code>init</code>: scaffolds config files and a CLI skeleton under <code>src/cli/&lt;name&gt;/...</code>; collision handling supports overwrite/example/skip plus CI heuristics.</li>
+</ul>
+<h2 id="shipped-plugin-interop-contracts-composition-runtime-state" class="tsd-anchor-link">Shipped plugin interop contracts (composition + runtime state)<a href="#shipped-plugin-interop-contracts-composition-runtime-state" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h2><p>This section exists to answer common “can I depend on this?” questions when authoring third-party plugins intended to interoperate with the shipped plugins.</p>
+<h3 id="nested-composition" class="tsd-anchor-link">Nested composition: <code>parentPlugin().use(childPlugin())</code><a href="#nested-composition" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3><ul>
+<li>Any plugin created with <code>definePlugin()</code> can be nested under another plugin via <code>.use(childPlugin())</code>; the shipped plugins follow this model.</li>
+<li><code>awsPlugin()</code> is explicitly designed to act as a parent for AWS-dependent child plugins. Prefer mounting your plugin under <code>aws</code> so session/region/credential resolution happens before your code runs.</li>
+</ul>
+<p>Canonical wiring example (child plugin mounted under <code>aws</code>):</p>
+<pre><code class="ts"><span class="hl-7">#!/usr/bin/env node</span><br/><span class="hl-4">import</span><span class="hl-1"> { </span><span class="hl-5">createCli</span><span class="hl-1"> } </span><span class="hl-4">from</span><span class="hl-1"> </span><span class="hl-2">&#39;@karmaniverous/get-dotenv/cli&#39;</span><span class="hl-1">;</span><br/><span class="hl-4">import</span><span class="hl-1"> { </span><span class="hl-5">awsPlugin</span><span class="hl-1"> } </span><span class="hl-4">from</span><span class="hl-1"> </span><span class="hl-2">&#39;@karmaniverous/get-dotenv/plugins&#39;</span><span class="hl-1">;</span><br/><br/><span class="hl-4">import</span><span class="hl-1"> { </span><span class="hl-5">secretsPlugin</span><span class="hl-1"> } </span><span class="hl-4">from</span><span class="hl-1"> </span><span class="hl-2">&#39;@acme/aws-secrets-plugin&#39;</span><span class="hl-1">; </span><span class="hl-7">// example third-party plugin</span><br/><br/><span class="hl-4">await</span><span class="hl-1"> </span><span class="hl-0">createCli</span><span class="hl-1">({</span><br/><span class="hl-1">  </span><span class="hl-5">alias:</span><span class="hl-1"> </span><span class="hl-2">&#39;toolbox&#39;</span><span class="hl-1">,</span><br/><span class="hl-1">  </span><span class="hl-0">compose</span><span class="hl-5">:</span><span class="hl-1"> (</span><span class="hl-5">program</span><span class="hl-1">) </span><span class="hl-3">=&gt;</span><span class="hl-1"> </span><span class="hl-5">program</span><span class="hl-1">.</span><span class="hl-0">use</span><span class="hl-1">(</span><span class="hl-0">awsPlugin</span><span class="hl-1">().</span><span class="hl-0">use</span><span class="hl-1">(</span><span class="hl-0">secretsPlugin</span><span class="hl-1">())),</span><br/><span class="hl-1">})();</span>
+</code><button type="button">Copy</button></pre>
+
+<p>Notes:</p>
+<ul>
+<li>The realized mount path is the config key (root alias excluded). For a child plugin mounted as <code>aws secrets</code>, the config key is <code>plugins['aws/secrets']</code>.</li>
+<li>The <code>cmd</code> plugin’s parent alias (<code>-c, --cmd &lt;command...&gt;</code>) is attached to the command it is mounted under. If you mount <code>cmdPlugin()</code> under a group/namespace command, the alias attaches to that group (not the root).</li>
+</ul>
+<h3 id="stable-shapes-what-is-safe-to-depend-on" class="tsd-anchor-link">Stable <code>ctx.plugins.*</code> shapes (what is safe to depend on)<a href="#stable-shapes-what-is-safe-to-depend-on" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3><ul>
+<li>Only the <code>aws</code> plugin currently publishes a stable, documented entry under <code>ctx.plugins</code>: <code>ctx.plugins.aws</code>.</li>
+<li>Contract: <code>ctx.plugins.aws</code> contains non-sensitive metadata only. Treat this as the stable surface:
+<ul>
+<li><code>profile?: string</code></li>
+<li><code>region?: string</code></li>
+</ul>
+</li>
+<li>Credentials are intentionally not mirrored under <code>ctx.plugins</code>. If your child plugin needs credentials, rely on the standard AWS SDK v3 provider chain reading from <code>process.env</code> after the <code>aws</code> parent runs.</li>
+</ul>
+<p>Other shipped plugins (<code>cmd</code>, <code>batch</code>, <code>init</code>) do not currently publish stable <code>ctx.plugins.*</code> entries. If you observe additional fields in <code>ctx.plugins</code>, treat them as internal/unstable unless they are documented as part of a stable contract.</p>
+<h3 id="dotenv-editor-winner-path-guidance-plugins-that-write-" class="tsd-anchor-link">Dotenv editor “winner path” guidance (plugins that write <code>.env*</code>)<a href="#dotenv-editor-winner-path-guidance-plugins-that-write-" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3><p>If your plugin edits dotenv files (e.g., syncing secrets into <code>.env.&lt;env&gt;.&lt;privateToken&gt;</code>), prefer selecting and editing a single target using <code>editDotenvFile(...)</code> rather than writing to every path:</p>
+<ul>
+<li><code>editDotenvFile</code> deterministically selects the first match across <code>paths</code> and edits only that file (or bootstraps from a sibling template when needed).</li>
+<li>Default precedence matches get-dotenv overlay semantics: <code>searchOrder: 'reverse'</code> (last path wins).</li>
+<li>Only implement a “write all paths” mode as an explicit opt-in, since it diverges from get-dotenv’s precedence model and surprises users in multi-path cascades.</li>
+</ul>
+<h3 id="optional-aws-x-ray-sdk-integration-guarded-import" class="tsd-anchor-link">Optional AWS X-Ray SDK integration (guarded import)<a href="#optional-aws-x-ray-sdk-integration-guarded-import" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3><p>Some X-Ray SDK integrations throw if <code>AWS_XRAY_DAEMON_ADDRESS</code> is not set. Do not import or enable X-Ray capture unconditionally:</p>
+<ul>
+<li>Only enable X-Ray capture when <code>AWS_XRAY_DAEMON_ADDRESS</code> is present, or when an explicit “xray on” option is enabled and you validate required env up front.</li>
+<li>Prefer dynamic import so environments without X-Ray dependencies (or without daemon config) do not crash at module load time.</li>
+</ul>
+<h2 id="api-index-quick-lookup-1" class="tsd-anchor-link">API index (quick lookup)<a href="#api-index-quick-lookup-1" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h2><p>Use this section when you need a “what do I import?” answer quickly.</p>
+<ul>
+<li>Root (<code>@karmaniverous/get-dotenv</code>):
+<ul>
+<li>Env composition: <code>getDotenv</code>, <code>defineDynamic</code>, <code>defineGetDotenvConfig</code></li>
+<li>Defaults: <code>baseRootOptionDefaults</code></li>
+<li>Expansion: <code>dotenvExpand</code>, <code>dotenvExpandAll</code>, <code>dotenvExpandFromProcessEnv</code></li>
+<li>Dotenv editing: <code>editDotenvText</code>, <code>editDotenvFile</code> (format-preserving)</li>
+<li>Diagnostics: <code>traceChildEnv</code>, <code>redactDisplay</code>, <code>redactObject</code>, <code>maybeWarnEntropy</code></li>
+<li>Utilities: <code>interpolateDeep</code> (deep string-leaf interpolation), <code>writeDotenvFile</code>, <code>defaultsDeep</code>, <code>tokenize</code></li>
+</ul>
+</li>
+<li>CLI factory (<code>@karmaniverous/get-dotenv/cli</code>):
+<ul>
+<li><code>createCli({ alias, branding?, compose?, rootOptionDefaults?, rootOptionVisibility? }) -&gt; (argv?) =&gt; Promise&lt;void&gt;</code></li>
+</ul>
+</li>
+<li>CLI host (<code>@karmaniverous/get-dotenv/cliHost</code>):
+<ul>
+<li>Host class: <code>GetDotenvCli</code></li>
+<li>Plugin authoring: <code>definePlugin</code> (returns a plugin with <code>readConfig</code> and <code>createPluginDynamicOption</code>)</li>
+<li>Execution: <code>runCommand</code>, <code>runCommandResult</code>, <code>shouldCapture</code>, <code>buildSpawnEnv</code></li>
+<li>Option bag: <code>readMergedOptions</code></li>
+<li>Shell/scripting: <code>resolveCommand</code>, <code>resolveShell</code>, <code>defineScripts</code></li>
+<li>Helpers: <code>getRootCommand</code>, <code>composeNestedEnv</code>, <code>maybePreserveNodeEvalArgv</code></li>
+</ul>
+</li>
+<li>Plugins (<code>@karmaniverous/get-dotenv/plugins</code>):
+<ul>
+<li><code>cmdPlugin</code>, <code>batchPlugin</code>, <code>awsPlugin</code>, <code>awsWhoamiPlugin</code>, <code>initPlugin</code></li>
+</ul>
+</li>
+<li>Config (<code>@karmaniverous/get-dotenv/config</code>):
+<ul>
+<li><code>resolveGetDotenvConfigSources(...)</code> and validation helpers used by the host</li>
+</ul>
+</li>
+<li>Env overlay (<code>@karmaniverous/get-dotenv/env/overlay</code>):
+<ul>
+<li><code>overlayEnv({ base, env, configs, programmaticVars? })</code></li>
+</ul>
+</li>
+</ul>
+<h2 id="common-assistant-mistakes-avoid-these" class="tsd-anchor-link">Common “assistant mistakes” (avoid these)<a href="#common-assistant-mistakes-avoid-these" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h2><ul>
+<li>Do not assume <code>process.env</code> contains the resolved dotenv context; use <code>cli.getCtx().dotenv</code> unless you explicitly enabled <code>loadProcess</code>.</li>
+<li>Do not expand plugin option values at parse time if you intend them to see <code>ctx.dotenv</code>; expand at action time.</li>
+<li>In shell-off mode, avoid passing a complex command as a single string unless you understand the tokenizer limitations; prefer argv arrays.</li>
+<li>Do not do id-based plugin config lookups; use <code>plugin.readConfig(cli)</code> and the instance-bound dynamic option helper.</li>
+</ul>
+</div></div><div class="col-sidebar"><div class="page-menu"><div class="tsd-navigation settings"><details class="tsd-accordion"><summary class="tsd-accordion-summary"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="../assets/icons.svg#icon-chevronDown"></use></svg><h3>Settings</h3></summary><div class="tsd-accordion-details"><div class="tsd-filter-visibility"><span class="settings-label">Member Visibility</span><ul id="tsd-filter-options"><li class="tsd-filter-item"><label class="tsd-filter-input"><input type="checkbox" id="tsd-filter-protected" name="protected"/><svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><rect class="tsd-checkbox-background" width="30" height="30" x="1" y="1" rx="6" fill="none"></rect><path class="tsd-checkbox-checkmark" d="M8.35422 16.8214L13.2143 21.75L24.6458 10.25" stroke="none" stroke-width="3.5" stroke-linejoin="round" fill="none"></path></svg><span>Protected</span></label></li><li class="tsd-filter-item"><label class="tsd-filter-input"><input type="checkbox" id="tsd-filter-inherited" name="inherited" checked/><svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><rect class="tsd-checkbox-background" width="30" height="30" x="1" y="1" rx="6" fill="none"></rect><path class="tsd-checkbox-checkmark" d="M8.35422 16.8214L13.2143 21.75L24.6458 10.25" stroke="none" stroke-width="3.5" stroke-linejoin="round" fill="none"></path></svg><span>Inherited</span></label></li><li class="tsd-filter-item"><label class="tsd-filter-input"><input type="checkbox" id="tsd-filter-external" name="external"/><svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><rect class="tsd-checkbox-background" width="30" height="30" x="1" y="1" rx="6" fill="none"></rect><path class="tsd-checkbox-checkmark" d="M8.35422 16.8214L13.2143 21.75L24.6458 10.25" stroke="none" stroke-width="3.5" stroke-linejoin="round" fill="none"></path></svg><span>External</span></label></li></ul></div><div class="tsd-theme-toggle"><label class="settings-label" for="tsd-theme">Theme</label><select id="tsd-theme"><option value="os">OS</option><option value="light">Light</option><option value="dark">Dark</option></select></div></div></details></div><details open class="tsd-accordion tsd-page-navigation"><summary class="tsd-accordion-summary"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="../assets/icons.svg#icon-chevronDown"></use></svg><h3>On This Page</h3></summary><div class="tsd-accordion-details"><a href="#stan-assistant-guide-karmaniverousget-dotenv"><span>STAN assistant guide: @karmaniverous/get-<wbr/>dotenv</span></a><ul><li><a href="#what-this-library-does-mental-model"><span>What this library does (mental model)</span></a></li><li><a href="#install-import-rules"><span>Install + import rules</span></a></li><li><a href="#topic-guides"><span>Topic <wbr/>Guides</span></a></li><li><a href="#api-index-quick-lookup"><span>API index (quick lookup)</span></a></li><li><a href="#title-stan-assistant-guide-get-dotenv"><span>title: <wbr/>STAN assistant guide (get-<wbr/>dotenv)</span></a></li></ul><a href="#stan-assistant-guide-karmaniverousget-dotenv-1"><span>STAN assistant guide: @karmaniverous/get-<wbr/>dotenv</span></a><ul><li><a href="#what-this-library-does-mental-model-1"><span>What this library does (mental model)</span></a></li><li><a href="#install-import-rules-1"><span>Install + import rules</span></a></li><li><a href="#vocabulary-align-your-reasoning-and-docs"><span>Vocabulary (align your reasoning and docs)</span></a></li><li><a href="#dotenv-cascade-deterministic-file-naming"><span>Dotenv cascade (deterministic file naming)</span></a></li><li><a href="#expansion-syntax-recursive-with-defaults"><span>Expansion syntax (recursive, with defaults)</span></a></li><li><a href="#dotenv-file-editing-format-preserving"><span>Dotenv file editing (format-<wbr/>preserving)</span></a></li><li><a href="#programmatic-api"><span>Programmatic <wbr/>API: </span></a></li><li><ul><li><a href="#options-what-matters"><span> options (what matters)</span></a></li><li><a href="#dynamic-variables-programmatic-without-casts"><span>Dynamic variables (programmatic) without casts</span></a></li></ul></li><li><a href="#config-files-and-overlays-host-path-always-on-there"><span>Config files and overlays (host path; always-<wbr/>on there)</span></a></li><li><ul><li><a href="#files-discovered-order"><span>Files discovered (order)</span></a></li><li><a href="#allowed-top-level-config-keys-contract"><span>Allowed top-<wbr/>level config keys (contract)</span></a></li><li><a href="#root-defaults-precedence-runtime-help-labels"><span>Root defaults precedence (runtime + help labels)</span></a></li><li><a href="#plugin-config-slices-keyed-by-realized-mount-path"><span>Plugin config slices (keyed by realized mount path)</span></a></li></ul></li><li><a href="#cli-usage-shipped-host"><span>CLI usage (shipped host)</span></a></li><li><a href="#embedding-the-shipped-cli"><span>Embedding the shipped <wbr/>CLI: </span></a></li><li><a href="#building-your-own-host-plugins--and"><span>Building your own host + plugins:  and </span></a></li><li><ul><li><a href="#the-host-lifecycle-what-to-assume"><span>The host lifecycle (what to assume)</span></a></li><li><a href="#grouping-plugins-under-a-namespace"><span>Grouping plugins under a namespace: </span></a></li><li><a href="#minimal-plugin-pattern"><span>Minimal plugin pattern</span></a></li><li><a href="#composition-model-namespaces-are-the-contract"><span>Composition model (namespaces are the contract)</span></a></li><li><a href="#plugin-config-dynamic-help-recommended"><span>Plugin config + dynamic help (recommended)</span></a></li></ul></li><li><a href="#running-subprocesses-safely-portable-patterns"><span>Running subprocesses safely (portable patterns)</span></a></li><li><ul><li><a href="#always-build-a-normalized-child-env"><span>Always build a normalized child env</span></a></li><li><a href="#honor-capture-contract"><span>Honor capture contract</span></a></li><li><a href="#script-resolution-shell-resolution-cmdbatch-like-plugins"><span>Script resolution + shell resolution (cmd/batch-<wbr/>like plugins)</span></a></li><li><a href="#shell-off-avoid-lossy-tokenization"><span>Shell-<wbr/>off +  (avoid lossy tokenization)</span></a></li></ul></li><li><a href="#expanding-plugin-flag-values-ctx-aware-avoid-parse-time-traps"><span>Expanding plugin flag values (ctx-<wbr/>aware; avoid parse-<wbr/>time traps)</span></a></li><li><a href="#diagnostics-helpers-when-you-need-parity-with-shipped-behavior"><span>Diagnostics helpers (when you need parity with shipped behavior)</span></a></li><li><a href="#shipped-plugins-what-to-know-as-a-plugin-author"><span>Shipped plugins: what to know as a plugin author</span></a></li><li><a href="#shipped-plugin-interop-contracts-composition-runtime-state"><span>Shipped plugin interop contracts (composition + runtime state)</span></a></li><li><ul><li><a href="#nested-composition"><span>Nested composition: </span></a></li><li><a href="#stable-shapes-what-is-safe-to-depend-on"><span>Stable  shapes (what is safe to depend on)</span></a></li><li><a href="#dotenv-editor-winner-path-guidance-plugins-that-write-"><span>Dotenv editor “winner path” guidance (plugins that write )</span></a></li><li><a href="#optional-aws-x-ray-sdk-integration-guarded-import"><span>Optional <wbr/>AWS <wbr/>X-<wbr/>Ray <wbr/>SDK integration (guarded import)</span></a></li></ul></li><li><a href="#api-index-quick-lookup-1"><span>API index (quick lookup)</span></a></li><li><a href="#common-assistant-mistakes-avoid-these"><span>Common “assistant mistakes” (avoid these)</span></a></li></ul></div></details></div><div class="site-menu"><nav id="tsd-sidebar-links" class="tsd-navigation"><a href="https://github.com/karmaniverous/get-dotenv" class="tsd-nav-link">GitHub</a></nav><nav class="tsd-navigation"><a href="../modules.html">@karmaniverous/get-dotenv</a><ul class="tsd-small-nested-navigation" id="tsd-nav-container"><li>Loading...</li></ul></nav></div></div></div><footer><p class="tsd-generator">Generated using <a href="https://typedoc.org/" target="_blank">TypeDoc</a></p></footer><div class="overlay"></div></body></html>

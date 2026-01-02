@@ -1,6 +1,71 @@
 ---
 title: STAN assistant guide (get-dotenv)
+children:
+  - ./env.md
+  - ./editing.md
+  - ./cli.md
+  - ./authoring.md
+  - ./plugins.md
 ---
+
+# STAN assistant guide: @karmaniverous/get-dotenv
+
+This is a compact, self-contained guide for STAN assistants to use `@karmaniverous/get-dotenv` effectively (library + CLI host + plugins) without consulting type definition files or other project documentation.
+
+## What this library does (mental model)
+
+`get-dotenv` composes an environment (`Record<string, string | undefined>`) from multiple sources deterministically, expands references recursively, optionally applies dynamic variables, and then lets you (a) use the final map programmatically, (b) run commands under it via a cross-platform CLI, or (c) build your own plugin-based CLI host that resolves env once per invocation.
+
+Key idea: treat the “resolved dotenv context” (`ctx.dotenv`) as the source of truth, and do not rely on `process.env` being mutated unless you explicitly enable it.
+
+## Install + import rules
+
+- Node: >= 20
+- Package is ESM-only (CommonJS must use dynamic `import()`).
+- Recommended imports (public API):
+  - Programmatic core: `import { getDotenv } from '@karmaniverous/get-dotenv'`
+  - CLI factory (shipped plugins): `import { createCli } from '@karmaniverous/get-dotenv/cli'`
+  - CLI host + plugin authoring: `import { GetDotenvCli, definePlugin } from '@karmaniverous/get-dotenv/cliHost'`
+  - Shipped plugins: `import { cmdPlugin, batchPlugin, awsPlugin, awsWhoamiPlugin, initPlugin } from '@karmaniverous/get-dotenv/plugins'`
+  - Config loader helpers: `import { resolveGetDotenvConfigSources } from '@karmaniverous/get-dotenv/config'`
+  - Overlay helper: `import { overlayEnv } from '@karmaniverous/get-dotenv/env/overlay'`
+
+## Topic Guides
+
+This guide is split into focused topics:
+
+- [Environment & Config](./env.md) (Cascade, Expansion, Config files, Dynamic variables)
+- [Dotenv Editor](./editing.md) (Format-preserving editing)
+- [CLI & Embedding](./cli.md) (Using the CLI, `createCli`)
+- [Authoring Plugins](./authoring.md) (Host lifecycle, Subprocesses, Diagnostics)
+- [Shipped Plugins](./plugins.md) (Contracts and interop)
+
+## API index (quick lookup)
+
+Use this section when you need a “what do I import?” answer quickly.
+
+- Root (`@karmaniverous/get-dotenv`):
+  - Env composition: `getDotenv`, `defineDynamic`, `defineGetDotenvConfig`
+  - Defaults: `baseRootOptionDefaults`
+  - Expansion: `dotenvExpand`, `dotenvExpandAll`, `dotenvExpandFromProcessEnv`
+  - Dotenv editing: `editDotenvText`, `editDotenvFile` (format-preserving)
+  - Diagnostics: `traceChildEnv`, `redactDisplay`, `redactObject`, `maybeWarnEntropy`
+  - Utilities: `interpolateDeep` (deep string-leaf interpolation), `writeDotenvFile`, `defaultsDeep`, `tokenize`
+- CLI factory (`@karmaniverous/get-dotenv/cli`):
+  - `createCli({ alias, branding?, compose?, rootOptionDefaults?, rootOptionVisibility? }) -> (argv?) => Promise<void>`
+- CLI host (`@karmaniverous/get-dotenv/cliHost`):
+  - Host class: `GetDotenvCli`
+  - Plugin authoring: `definePlugin` (returns a plugin with `readConfig` and `createPluginDynamicOption`)
+  - Execution: `runCommand`, `runCommandResult`, `shouldCapture`, `buildSpawnEnv`
+  - Option bag: `readMergedOptions`
+  - Shell/scripting: `resolveCommand`, `resolveShell`, `defineScripts`
+  - Helpers: `getRootCommand`, `composeNestedEnv`, `maybePreserveNodeEvalArgv`
+- Config (`@karmaniverous/get-dotenv/config`):
+  - `resolveGetDotenvConfigSources(...)` and validation helpers
+
+---
+
+## title: STAN assistant guide (get-dotenv)
 
 # STAN assistant guide: @karmaniverous/get-dotenv
 
@@ -94,7 +159,7 @@ await editDotenvFile(
 
 Notes:
 
-- Dedicated guide: see [Dotenv editor (format-preserving)](./dotenv-editor.md) for the full contract, examples, and edge cases.
+- Dedicated guide: see [Dotenv editor (format-preserving)](../dotenv-editor.md) for the full contract, examples, and edge cases.
 - Update map semantics:
   - `null` deletes key assignment lines (default).
   - `undefined` skips (default); in `mode: 'sync'` an own key with `undefined` counts as present (so it is not deleted).

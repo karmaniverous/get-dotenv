@@ -9,6 +9,7 @@ children:
   - ./config.md
   - ./authoring/index.md
   - ./shipped/index.md
+  - ./stan-assistant-guide/index.md
 ---
 
 # Guides
@@ -23,3 +24,4 @@ This section collects practical guides for using `get-dotenv`. Start here:
 - [Config files and overlays](./config.md) - Author JSON/YAML/JS/TS config and apply privacy/source overlays (always‑on).
 - [Authoring Plugins](./authoring/index.md) - Compose CLIs with once‑per‑invoke dotenv context and plugin lifecycles.
 - [Shipped Plugins](./shipped/index.md) - The get‑dotenv host ships a small set of plugins that cover needs.
+- [STAN assistant guide](./stan-assistant-guide/index.md) - Compact, comprehensive reference for `get-dotenv` APIs, concepts, and usage patterns, targeted at STAN assistants.

@@ -14,6 +14,8 @@
 
 import path from 'node:path';
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import type { editDotenvFile } from './editDotenvFile';
 import type {
   DotenvFs,
   DotenvPathSearchOrder,
