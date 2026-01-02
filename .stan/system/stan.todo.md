@@ -25,3 +25,4 @@
 - Documented provenance functionality in a dedicated guide and updated the STAN assistant guide.
 - Refined dynamic option examples in assistant/human guides (canonical naming).
 - Decomposed `guides/stan-assistant-guide.md` into sub-guides (`env`, `editing`, `cli`, `authoring`, `plugins`) to satisfy 300-LOC constraints while maintaining content.
+- Documented single-plugin subcommand dynamic help pattern in assistant and user guides.

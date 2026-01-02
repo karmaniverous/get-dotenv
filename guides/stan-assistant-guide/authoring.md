@@ -1,3 +1,7 @@
+---
+title: 'Authoring Hosts & Plugins'
+---
+
 # Building your own host + plugins
 
 ## The host lifecycle
@@ -31,9 +35,7 @@ Use `groupPlugins` to group child plugins under a shared prefix (e.g. `smoz getd
 import { groupPlugins } from '@karmaniverous/get-dotenv/cliHost';
 import { initPlugin } from '@karmaniverous/get-dotenv/plugins';
 
-program.use(
-  groupPlugins({ ns: 'getdotenv' }).use(initPlugin()),
-);
+program.use(groupPlugins({ ns: 'getdotenv' }).use(initPlugin()));
 ```
 
 ## Dynamic option descriptions
@@ -63,7 +65,8 @@ export const helloPlugin = () => {
             (
               _bag,
               pluginCfg, // inferred as Readonly<HelloConfig>
-            ) => `print greeting in ALL CAPS${pluginCfg.loud ? ' (default)' : ''}`,
+            ) =>
+              `print greeting in ALL CAPS${pluginCfg.loud ? ' (default)' : ''}`,
           ),
         )
         .action(() => {
@@ -74,6 +77,24 @@ export const helloPlugin = () => {
   });
   return plugin;
 };
+```
+
+### Subcommands (single-plugin)
+
+To reflect defaults in subcommand help without creating separate plugins:
+
+1. Model defaults in your plugin schema (nested object).
+2. Pass the _subcommand instance_ to `createPluginDynamicOption`.
+
+```ts
+const sub = cli.command('sub');
+sub.addOption(
+  plugin.createPluginDynamicOption(
+    sub, // target the subcommand
+    '--mode <val>',
+    (_bag, pluginCfg) => `mode (default: ${pluginCfg.sub.mode})`,
+  ),
+);
 ```
 
 ## Running subprocesses safely
@@ -88,7 +109,11 @@ const env = buildSpawnEnv(process.env, ctx.dotenv);
 Honor capture contract:
 
 ```ts
-import { readMergedOptions, runCommand, shouldCapture } from '@karmaniverous/get-dotenv/cliHost';
+import {
+  readMergedOptions,
+  runCommand,
+  shouldCapture,
+} from '@karmaniverous/get-dotenv/cliHost';
 
 const bag = readMergedOptions(thisCommand);
 const capture = shouldCapture(bag.capture);

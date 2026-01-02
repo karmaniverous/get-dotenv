@@ -1,3 +1,7 @@
+---
+title: 'CLI Usage'
+---
+
 # CLI Usage
 
 The shipped CLI is plugin-first and includes: `cmd`, `batch`, `aws` (+ `aws whoami`), `init`.

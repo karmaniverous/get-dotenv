@@ -72,16 +72,14 @@ import { smozInitPlugin } from './plugins/init';
 const run = createCli({
   alias: 'smoz',
   compose: (p) =>
-    p
-      .use(smozInitPlugin())
-      .use(
-        groupPlugins({
-          ns: 'getdotenv',
-          description: 'getdotenv utility functions',
-          aliases: ['gd'],
-          helpGroup: 'Utilities',
-        }).use(initPlugin()),
-      ),
+    p.use(smozInitPlugin()).use(
+      groupPlugins({
+        ns: 'getdotenv',
+        description: 'getdotenv utility functions',
+        aliases: ['gd'],
+        helpGroup: 'Utilities',
+      }).use(initPlugin()),
+    ),
 });
 
 await run();
@@ -208,7 +206,8 @@ export const helloPlugin = () => {
             (
               _bag,
               pluginCfg, // inferred as Readonly<HelloConfig>
-            ) => `print greeting in ALL CAPS${pluginCfg.loud ? ' (default)' : ''}`,
+            ) =>
+              `print greeting in ALL CAPS${pluginCfg.loud ? ' (default)' : ''}`,
           ),
         )
         .action(() => {
@@ -227,9 +226,30 @@ Or build the Option first:
 const opt = plugin.createPluginDynamicOption(
   cli,
   '--loud',
-  (_bag, pluginCfg) => `print greeting in ALL CAPS${pluginCfg.loud ? ' (default)' : ''}`,
+  (_bag, pluginCfg) =>
+    `print greeting in ALL CAPS${pluginCfg.loud ? ' (default)' : ''}`,
 );
 cli.addOption(opt);
+```
+
+### Subcommands within a single plugin
+
+If your plugin defines subcommands and you want their options to reflect defaults from your plugin's config (e.g. `plugins.my.sub.mode`), you do not need to implement them as separate plugins.
+
+1. Model the subcommand defaults in your `configSchema` (e.g. as a nested object).
+2. Pass the _subcommand instance_ (not `cli`) as the first argument to `createPluginDynamicOption`.
+
+```ts
+// Inside setup(cli)
+const sub = cli.command('run-job').description('Run a job');
+
+sub.addOption(
+  plugin.createPluginDynamicOption(
+    sub, // Attach dynamic logic to the subcommand
+    '--mode <string>',
+    (_bag, pluginCfg) => `job mode (default: ${pluginCfg.job.mode})`,
+  ),
+);
 ```
 
 Notes:

@@ -1,3 +1,7 @@
+---
+title: 'Environment & Config'
+---
+
 # Environment & Config
 
 ## Vocabulary (align your reasoning and docs)
@@ -97,6 +101,7 @@ When using the shipped CLI host (or embedding it via `createCli`/`GetDotenvCli`)
 ### Per-plugin config
 
 The `plugins` map is keyed by the realized mount path (root alias excluded). Examples:
+
 - `plugins.aws`
 - `plugins['aws/whoami']`
 

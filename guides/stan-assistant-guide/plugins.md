@@ -1,3 +1,7 @@
+---
+title: 'Shipped Plugins'
+---
+
 # Shipped Plugins: what to know
 
 - `cmd`: executes a command under ctx; provides parent alias `-c, --cmd <command...>`; detects conflict when both alias and explicit subcommand are used.

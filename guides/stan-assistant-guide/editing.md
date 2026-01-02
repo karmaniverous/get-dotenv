@@ -1,3 +1,7 @@
+---
+title: 'Dotenv File Editing'
+---
+
 # Dotenv file editing (format-preserving)
 
 Use the dotenv edit utilities when you need to update a `.env*` file in place without destroying comments, spacing, ordering, unknown lines, or line endings.
