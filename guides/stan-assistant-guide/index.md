@@ -1,5 +1,5 @@
 ---
-title: STAN assistant guide (get-dotenv)
+title: STAN assistant guide
 children:
   - ./env.md
   - ./editing.md
