@@ -73,6 +73,18 @@ export {
   parseDotenvDocument,
   renderDotenvDocument,
 } from './dotenv';
+export type {
+  DotenvConfigProvenanceEntry,
+  DotenvDynamicProvenanceEntry,
+  DotenvDynamicSource,
+  DotenvFileProvenanceEntry,
+  DotenvProvenance,
+  DotenvProvenanceEntry,
+  DotenvProvenanceEntryBase,
+  DotenvProvenanceKind,
+  DotenvProvenanceOp,
+  DotenvVarsProvenanceEntry,
+} from './env';
 export { interpolateDeep } from './util';
 /** @deprecated Import \{ z \} from 'zod' directly. Will be removed in v7. */
 export { z } from 'zod';

@@ -27,4 +27,5 @@
 - Decomposed `guides/stan-assistant-guide.md` into sub-guides (`env`, `editing`, `cli`, `authoring`, `plugins`) to satisfy 300-LOC constraints while maintaining content.
 - Documented single-plugin subcommand dynamic help pattern in assistant and user guides.
 - Documented canonical subcommand/resolver patterns in assistant and user guides (based on entity-client-dynamodb interop).
-- Enumerated all root and plugin options in config guides and assistant guides.
+- Enumerated all root and plugin options in config guides and assistant guides.
+- Exported provenance types from package root to improve DX for GetDotenvCliCtx consumers.
