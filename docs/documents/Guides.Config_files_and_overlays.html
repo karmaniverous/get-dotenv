@@ -66,7 +66,7 @@
 <ul>
 <li>Accepts all JSON/YAML keys and also:
 <ul>
-<li>dynamic?: GetDotenvDynamic — a map where values are either strings or functions of the form (vars: ProcessEnv, env?: string) =&gt; string | undefined.</li>
+<li>dynamic?: GetDotenvDynamic — a map where values are either strings or functions of the form <code>(vars: Record&lt;string, string | undefined&gt;, env?: string) =&gt; string | undefined</code>.</li>
 <li>schema?: unknown — a schema object (e.g., a Zod schema) whose safeParse(finalEnv) will be executed once after overlays.</li>
 </ul>
 </li>
