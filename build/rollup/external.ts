@@ -1,6 +1,7 @@
 import { builtinModules } from 'node:module';
 
 import fs from 'fs-extra';
+import { unique } from 'radash';
 
 type PkgJson = {
   dependencies?: Record<string, string>;
@@ -27,10 +28,5 @@ export async function computeExternal(): Promise<string[]> {
   ];
 
   // Stable de-dupe while preserving first-seen ordering.
-  const seen = new Set<string>();
-  return list.filter((x) => {
-    if (seen.has(x)) return false;
-    seen.add(x);
-    return true;
-  });
+  return unique(list);
 }

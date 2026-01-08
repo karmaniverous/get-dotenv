@@ -2,6 +2,7 @@
 
 ## Next up (near‑term, actionable)
 
+- Refactor: Add `radash` dependency and simplify utilities (omitUndefined, spawnEnv, cmd plugin, build scripts).
 - Deprecations: soft-deprecate the `z` re-export (JSDoc a short Guides callout) and ensure docs/templates import `{ z }` from `zod`.
 
 ## Completed (recent)
@@ -29,3 +30,6 @@
 - Documented canonical subcommand/resolver patterns in assistant and user guides (based on entity-client-dynamodb interop).
 - Enumerated all root and plugin options in config guides and assistant guides.
 - Exported provenance types from package root to improve DX for GetDotenvCliCtx consumers.
+- Refactored codebase to use `radash` for simplification (`omitUndefined`, `spawnEnv`, `cmd` plugin, build scripts).
+- Removed `src/util/omitUndefined.ts` and updated `src/core/GetDotenvOptions.ts` to use `radash.shake` directly.
+- Hoisted utility functions (`silentLogger`, `requireString`, `assertByteLimit`, `toNumber`, `getAwsRegion`, help utils) from downstream to `get-dotenv`.

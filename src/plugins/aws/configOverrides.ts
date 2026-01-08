@@ -1,8 +1,11 @@
+import { isObject } from 'radash';
+
 import type { AwsPluginConfig } from './types';
 
 /** @internal */
-const isRecord = (v: unknown): v is Record<string, unknown> =>
-  v !== null && typeof v === 'object' && !Array.isArray(v);
+const isRecord = (v: unknown): v is Record<string, unknown> => {
+  return isObject(v) && !Array.isArray(v);
+};
 
 /**
  * Create an AWS plugin config overlay from Commander-parsed option values.

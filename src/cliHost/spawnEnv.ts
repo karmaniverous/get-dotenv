@@ -1,11 +1,6 @@
-import type { ProcessEnv } from '@/src/core';
+import { shake } from 'radash';
 
-const dropUndefined = (bag: ProcessEnv): Record<string, string> =>
-  Object.fromEntries(
-    Object.entries(bag).filter(
-      (e): e is [string, string] => typeof e[1] === 'string',
-    ),
-  );
+import type { ProcessEnv } from '@/src/core';
 
 /**
  * Build a sanitized environment object for spawning child processes.
@@ -24,7 +19,8 @@ export const buildSpawnEnv = (
     ...(overlay ?? {}),
   };
   // Drop undefined first
-  const entries = Object.entries(dropUndefined(raw));
+  const clean = shake(raw, (v) => v === undefined) as Record<string, string>;
+  const entries = Object.entries(clean);
 
   if (process.platform === 'win32') {
     // Windows: keys are case-insensitive; collapse duplicates

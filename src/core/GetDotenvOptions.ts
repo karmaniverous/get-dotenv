@@ -8,6 +8,7 @@
  * - Provide Vars-aware defineDynamic and a typed config builder defineGetDotenvConfig\<Vars, Env\>().
  * - Preserve existing behavior for defaults resolution and compat converters.
  */
+import { shake } from 'radash';
 import type { z } from 'zod';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -18,7 +19,7 @@ import type {
 } from '@/src/cliHost/types';
 import { baseRootOptionDefaults } from '@/src/defaults';
 import type { getDotenvOptionsSchemaResolved } from '@/src/schema';
-import { defaultsDeep, omitUndefinedRecord } from '@/src/util';
+import { defaultsDeep } from '@/src/util';
 
 /**
  * Standard filename for a get‑dotenv configuration file discovered by the
@@ -281,7 +282,7 @@ export const getDotenvCliOptions2Options = ({
   // Drop undefined-valued entries at the converter stage to match ProcessEnv
   // expectations and the compat test assertions.
   if (parsedVars) {
-    parsedVars = omitUndefinedRecord(parsedVars);
+    parsedVars = shake(parsedVars, (v) => v === undefined) as ProcessEnv;
   }
 
   // Tolerate paths as either a delimited string or string[]
@@ -327,6 +328,6 @@ export const resolveGetDotenvOptions = (
 
   return Promise.resolve({
     ...result, // Keep explicit empty strings/zeros; drop only undefined
-    vars: omitUndefinedRecord(result.vars ?? {}),
+    vars: shake(result.vars ?? {}, (v) => v === undefined) as ProcessEnv,
   });
 };

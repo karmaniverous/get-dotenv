@@ -6,9 +6,11 @@
  * consumers as needed.
  */
 
+export * from './assertions';
 export * from './defaultsDeep';
 export * from './dotenvFile';
 export * from './interpolateDeep';
 export * from './loadModuleDefault';
-export * from './omitUndefined';
+export * from './logger';
+export * from './parsers';
 export * from './tokenize';

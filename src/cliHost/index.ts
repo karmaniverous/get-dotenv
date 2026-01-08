@@ -27,6 +27,7 @@ export {
 export { getRootCommand } from './getRootCommand';
 export { groupPlugins, type GroupPluginsOptions } from './groupPlugins';
 export { type ResolvedHelpConfig, toHelpConfig } from './helpConfig';
+export { describeConfigKeyListDefaults, describeDefault } from './helpUtils';
 export {
   composeNestedEnv,
   maybePreserveNodeEvalArgv,

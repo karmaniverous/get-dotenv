@@ -4,6 +4,8 @@
  * alias to execute a command within the resolved dotenv context.
  */
 
+import { camel } from 'radash';
+
 import { definePlugin } from '@/src/cliHost';
 
 import { attachCmdDefaultAction } from './defaultAction';
@@ -30,8 +32,7 @@ export const cmdPlugin = (options: CmdPluginOptions = {}) => {
       const deriveKey = (flags: string) => {
         const long =
           flags.split(/[ ,|]+/).find((f) => f.startsWith('--')) ?? '--cmd';
-        const name = long.replace(/^--/, '');
-        return name.replace(/-([a-z])/g, (_m, c: string) => c.toUpperCase());
+        return camel(long.replace(/^--/, ''));
       };
       const aliasKey = aliasSpec ? deriveKey(aliasSpec.flags) : undefined;
 

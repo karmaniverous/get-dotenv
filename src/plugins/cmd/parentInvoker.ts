@@ -1,4 +1,5 @@
 import type { CommandUnknownOpts } from '@commander-js/extra-typings';
+import { camel } from 'radash';
 
 import {
   baseGetDotenvCliOptions,
@@ -52,8 +53,7 @@ export const attachCmdParentInvoker = (
     }
     const long =
       flags.split(/[ ,|]+/).find((f) => f.startsWith('--')) ?? '--cmd';
-    const name = long.replace(/^--/, '');
-    return name.replace(/-([a-z])/g, (_m, c: string) => c.toUpperCase());
+    return camel(long.replace(/^--/, ''));
   };
   const aliasKey = deriveKey(aliasSpec.flags);
 

@@ -6,14 +6,16 @@
  *
  * Merge order: defaultsDeep(base, override1, override2) → override2 wins.
  */
+import { isObject } from 'radash';
+
 /** @internal */
 type AnyRecord = Record<string, unknown>;
 
 /** @internal */
-const isPlainObject = (value: unknown): value is AnyRecord =>
-  value !== null &&
-  typeof value === 'object' &&
-  Object.getPrototypeOf(value) === Object.prototype;
+const isPlainObject = (value: unknown): value is AnyRecord => {
+  return isObject(value) && !Array.isArray(value);
+};
+
 const mergeInto = (target: AnyRecord, source: AnyRecord): AnyRecord => {
   for (const [key, sVal] of Object.entries(source)) {
     if (sVal === undefined) continue; // do not overwrite with undefined

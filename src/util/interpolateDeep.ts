@@ -8,15 +8,15 @@
  * - Phase C option/config interpolation after composing ctx.dotenv.
  * - Per-plugin config slice interpolation before afterResolve.
  */
+import { isObject } from 'radash';
+
 import type { ProcessEnv } from '@/src/core';
 import { dotenvExpand } from '@/src/dotenv';
 
 /** @internal */
-const isPlainObject = (v: unknown): v is Record<string, unknown> =>
-  v !== null &&
-  typeof v === 'object' &&
-  !Array.isArray(v) &&
-  Object.getPrototypeOf(v) === Object.prototype;
+const isPlainObject = (v: unknown): v is Record<string, unknown> => {
+  return isObject(v) && !Array.isArray(v);
+};
 
 /**
  * Deeply interpolate string leaves against envRef.
