@@ -8,5 +8,4 @@ export const silentLogger: Logger = {
   info: () => {},
   warn: () => {},
   error: () => {},
-  log: () => {},
 };

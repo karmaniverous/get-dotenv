@@ -78,7 +78,7 @@ export function attachInitDefaultAction(cli: InitCommand): void {
         if (!exists) {
           const subs = item.subs ?? {};
           await copyTextFile(item.src, item.dest, subs);
-          logger.log(`Created ${path.relative(cwd, item.dest)}`);
+          logger.info(`Created ${path.relative(cwd, item.dest)}`);
           continue;
         }
 
@@ -86,11 +86,11 @@ export function attachInitDefaultAction(cli: InitCommand): void {
         if (force) {
           const subs = item.subs ?? {};
           await copyTextFile(item.src, item.dest, subs);
-          logger.log(`Overwrote ${path.relative(cwd, item.dest)}`);
+          logger.info(`Overwrote ${path.relative(cwd, item.dest)}`);
           continue;
         }
         if (yes) {
-          logger.log(`Skipped ${path.relative(cwd, item.dest)}`);
+          logger.info(`Skipped ${path.relative(cwd, item.dest)}`);
           continue;
         }
 
@@ -114,14 +114,14 @@ export function attachInitDefaultAction(cli: InitCommand): void {
         if (decision === 'overwrite') {
           const subs = item.subs ?? {};
           await copyTextFile(item.src, item.dest, subs);
-          logger.log(`Overwrote ${path.relative(cwd, item.dest)}`);
+          logger.info(`Overwrote ${path.relative(cwd, item.dest)}`);
         } else if (decision === 'example') {
           const destEx = `${item.dest}.example`;
           const subs = item.subs ?? {};
           await copyTextFile(item.src, destEx, subs);
-          logger.log(`Wrote example ${path.relative(cwd, destEx)}`);
+          logger.info(`Wrote example ${path.relative(cwd, destEx)}`);
         } else {
-          logger.log(`Skipped ${path.relative(cwd, item.dest)}`);
+          logger.info(`Skipped ${path.relative(cwd, item.dest)}`);
         }
       }
 
@@ -132,9 +132,9 @@ export function attachInitDefaultAction(cli: InitCommand): void {
         '*.local',
       ]);
       if (created) {
-        logger.log(`Created ${path.relative(cwd, giPath)}`);
+        logger.info(`Created ${path.relative(cwd, giPath)}`);
       } else if (changed) {
-        logger.log(`Updated ${path.relative(cwd, giPath)}`);
+        logger.info(`Updated ${path.relative(cwd, giPath)}`);
       }
     } finally {
       rl.close();

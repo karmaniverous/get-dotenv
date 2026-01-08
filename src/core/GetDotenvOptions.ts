@@ -73,11 +73,33 @@ export type GetDotenvDynamic = Record<
 >;
 
 /**
- * Logger interface compatible with `console` or a subset thereof.
+ * Logger interface compatible with AWS SDK v3 expectations (`debug`, `info`, `warn`, `error`).
+ * Consumers must provide an object that implements these four methods.
+ * Additional methods (like `log`) are allowed but not required or used by this library.
  */
-export type Logger =
-  | Record<string, (...args: unknown[]) => void>
-  | typeof console;
+export type Logger = Pick<Console, 'debug' | 'info' | 'warn' | 'error'>;
+
+/**
+ * Validate that a candidate object satisfies the {@link Logger} contract.
+ * Throws if the candidate is invalid.
+ */
+export const assertLogger = (candidate: unknown): Logger => {
+  if (!candidate || typeof candidate !== 'object') {
+    throw new Error('logger must be an object');
+  }
+  const l = candidate as Partial<Logger>;
+  if (
+    typeof l.debug !== 'function' ||
+    typeof l.info !== 'function' ||
+    typeof l.warn !== 'function' ||
+    typeof l.error !== 'function'
+  ) {
+    throw new Error(
+      'logger must implement debug, info, warn, and error methods',
+    );
+  }
+  return l as Logger;
+};
 
 /**
  * Canonical programmatic options type (schema-derived).
@@ -326,8 +348,13 @@ export const resolveGetDotenvOptions = (
 
   const result = defaultsDeep(defaultsFromCli, customOptions);
 
+  // Validate the logger (defaults to console if missing/merged).
+  // We use the merged result, so if the user didn't provide one, we get the default (console).
+  const validatedLogger = assertLogger(result.logger);
+
   return Promise.resolve({
-    ...result, // Keep explicit empty strings/zeros; drop only undefined
+    ...result,
+    logger: validatedLogger,
     vars: shake(result.vars ?? {}, (v) => v === undefined) as ProcessEnv,
   });
 };

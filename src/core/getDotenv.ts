@@ -73,7 +73,7 @@ export async function getDotenv(
     excludePublic = false,
     loadProcess = false,
     log = false,
-    logger = console,
+    logger,
     outputPath,
     paths = [],
     privateToken = 'local',
@@ -194,7 +194,7 @@ export async function getDotenv(
     const bag = redactFlag
       ? redactObject(resultDotenv, redOpts)
       : { ...resultDotenv };
-    logger.log(bag);
+    logger.info(bag);
     // Entropy warnings: once-per-key-per-run (presentation only)
     const warnEntropyVal =
       (options as { warnEntropy?: boolean }).warnEntropy ?? true;
@@ -223,7 +223,7 @@ export async function getDotenv(
         v !== undefined ? 'dotenv' : 'unset',
         entOpts,
         (line) => {
-          logger.log(line);
+          logger.info(line);
         },
       );
     }

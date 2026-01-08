@@ -30,7 +30,7 @@ export interface BaseRootOptionDefaults {
   /** When true, load composed values into `process.env`. */
   loadProcess: boolean;
   /** Logger used by the host and plugins (console-compatible). */
-  logger: typeof console;
+  logger: Pick<Console, 'debug' | 'info' | 'warn' | 'error'>;
   /** Enable entropy warnings (presentation-only). */
   warnEntropy: boolean;
   /** Entropy threshold (bits/char) used for warnings. */

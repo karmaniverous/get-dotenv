@@ -23,6 +23,7 @@ export {
   shouldCapture,
 } from './cliHost';
 export {
+  assertLogger,
   defineDynamic,
   defineGetDotenvConfig,
   type DynamicFn,
@@ -86,5 +87,3 @@ export type {
   DotenvVarsProvenanceEntry,
 } from './env';
 export * from './util';
-/** @deprecated Import \{ z \} from 'zod' directly. Will be removed in v7. */
-export { z } from 'zod';

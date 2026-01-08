@@ -2,9 +2,6 @@
 
 ## Next up (near‑term, actionable)
 
-- Refactor: Add `radash` dependency and simplify utilities (omitUndefined, spawnEnv, cmd plugin, build scripts).
-- Deprecations: soft-deprecate the `z` re-export (JSDoc a short Guides callout) and ensure docs/templates import `{ z }` from `zod`.
-
 ## Completed (recent)
 
 - Defined requirements and plan for a format-preserving dotenv edit utility with deterministic multi-path target resolution and template bootstrap.
@@ -35,4 +32,7 @@
 - Hoisted utility functions (`silentLogger`, `requireString`, `assertByteLimit`, `toNumber`, `getAwsRegion`, help utils) from downstream to `get-dotenv`.
 - Added tests for new utility functions and fixed TypeDoc comments.
 - Hoisted additional helpers: `ensureForce` (cliHost) and number parsers (`parseFiniteNumber`, `parsePositiveInt`, `parseNonNegativeInt`).
-- Exported `applyIncludeExclude` from package root and added TypeDoc comments.- Updated STAN assistant guides to reflect new utility exports (`ensureForce`, parsers, logger).
+- Exported `applyIncludeExclude` from package root and added TypeDoc comments.
+- Updated STAN assistant guides to reflect new utility exports (`ensureForce`, parsers, logger).
+- Refactored: Unified Logger contract (breaking change) to AWS-compatible subset (`debug|info|warn|error`). Validated during resolution; internals updated to use `.info()`.
+- Verified: `z` export is deprecated in JSDoc/Guides and templates import from `zod` directly.

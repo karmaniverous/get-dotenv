@@ -34,7 +34,7 @@ export const promptDecision = async (
   logger: Logger,
   rl: ReturnType<typeof createInterface>,
 ): Promise<'o' | 'e' | 's' | 'O' | 'E' | 'S'> => {
-  logger.log(
+  logger.info(
     `File exists: ${filePath}\nChoose: [o]verwrite, [e]xample, [s]kip, [O]verwrite All, [E]xample All, [S]kip All`,
   );
 
@@ -44,6 +44,6 @@ export const promptDecision = async (
     const valid = ['o', 'e', 's', 'O', 'E', 'S'] as const;
     if ((valid as readonly string[]).includes(a))
       return a as 'o' | 'e' | 's' | 'O' | 'E' | 'S';
-    logger.log('Please enter one of: o e s O E S');
+    logger.info('Please enter one of: o e s O E S');
   }
 };

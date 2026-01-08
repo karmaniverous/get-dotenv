@@ -209,7 +209,7 @@ export const computeContext = async <
     await writeDotenvFile(validated.outputPath, dotenv);
   }
   const logger: Logger = (validated as GetDotenvOptions).logger!;
-  if (validated.log) logger.log(dotenv);
+  if (validated.log) logger.info(dotenv);
   if (validated.loadProcess) Object.assign(process.env, dotenv);
 
   // Merge and validate per-plugin config keyed by realized path (ns chain).
