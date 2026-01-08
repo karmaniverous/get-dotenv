@@ -31,6 +31,15 @@ compose: (p) => p.use(awsPlugin().use(secretsPlugin())),
 - `ctx.plugins.aws`: `{ profile?, region? }`. Credentials are NOT mirrored here (use `process.env`).
 - Other plugins do not currently publish stable `ctx.plugins` entries.
 
+### Logger Contract
+
+The host validates `options.logger` during resolution. `ctx.optionsResolved.logger` (and `bag.logger`) is guaranteed to implement:
+
+- `debug`, `info`, `warn`, `error`.
+- `.log()` is NOT required (do not rely on it).
+
+Use `assertLogger(unknown)` from package root if you need to validate a logger manually.
+
 ### Dotenv editor “winner path”
 
 If your plugin edits dotenv files, prefer `editDotenvFile(...)` with default reverse search order. Avoid writing to all paths unless explicitly requested.

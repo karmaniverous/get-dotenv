@@ -185,6 +185,15 @@ cli.action((args, opts) => {
 });
 ```
 
+### Logger Validation (`assertLogger`)
+
+Validate that an object satisfies the AWS-compatible logger contract (`debug|info|warn|error`). Throws if invalid.
+
+```ts
+import { assertLogger } from '@karmaniverous/get-dotenv';
+const logger = assertLogger(maybeLogger);
+```
+
 ## Diagnostics helpers
 
 - `traceChildEnv({ parentEnv, dotenv, keys?, redact?, ... })`

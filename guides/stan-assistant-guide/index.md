@@ -50,7 +50,7 @@ Use this section when you need a “what do I import?” answer quickly.
   - Expansion: `dotenvExpand`, `dotenvExpandAll`, `dotenvExpandFromProcessEnv`
   - Dotenv editing: `editDotenvText`, `editDotenvFile` (format-preserving)
   - Diagnostics: `traceChildEnv`, `redactDisplay`, `redactObject`, `maybeWarnEntropy`
-  - Utilities: `interpolateDeep`, `writeDotenvFile`, `defaultsDeep`, `tokenize`, `applyIncludeExclude`, `requireString`, `assertByteLimit`, `silentLogger`, `toNumber`, `parseFiniteNumber`, `parsePositiveInt`, `parseNonNegativeInt`
+  - Utilities: `interpolateDeep`, `writeDotenvFile`, `defaultsDeep`, `tokenize`, `applyIncludeExclude`, `requireString`, `assertByteLimit`, `silentLogger`, `assertLogger`, `toNumber`, `parseFiniteNumber`, `parsePositiveInt`, `parseNonNegativeInt`
 - CLI factory (`@karmaniverous/get-dotenv/cli`):
   - `createCli({ alias, branding?, compose?, rootOptionDefaults?, rootOptionVisibility? }) -> (argv?) => Promise<void>`
 - CLI host (`@karmaniverous/get-dotenv/cliHost`):
@@ -574,7 +574,7 @@ Use this section when you need a “what do I import?” answer quickly.
   - Expansion: `dotenvExpand`, `dotenvExpandAll`, `dotenvExpandFromProcessEnv`
   - Dotenv editing: `editDotenvText`, `editDotenvFile` (format-preserving)
   - Diagnostics: `traceChildEnv`, `redactDisplay`, `redactObject`, `maybeWarnEntropy`
-  - Utilities: `interpolateDeep` (deep string-leaf interpolation), `writeDotenvFile`, `defaultsDeep`, `tokenize`
+  - Utilities: `interpolateDeep` (deep string-leaf interpolation), `writeDotenvFile`, `defaultsDeep`, `tokenize`, `assertLogger`, `silentLogger`
 - CLI factory (`@karmaniverous/get-dotenv/cli`):
   - `createCli({ alias, branding?, compose?, rootOptionDefaults?, rootOptionVisibility? }) -> (argv?) => Promise<void>`
 - CLI host (`@karmaniverous/get-dotenv/cliHost`):

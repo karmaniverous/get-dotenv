@@ -36,3 +36,4 @@
 - Updated STAN assistant guides to reflect new utility exports (`ensureForce`, parsers, logger).
 - Refactored: Unified Logger contract (breaking change) to AWS-compatible subset (`debug|info|warn|error`). Validated during resolution; internals updated to use `.info()`.
 - Verified: `z` export is deprecated in JSDoc/Guides and templates import from `zod` directly.
+- Docs: Updated STAN assistant guides to reflect the new Logger contract (`debug|info|warn|error`) and `assertLogger` utility.
