@@ -6,6 +6,7 @@
  * consumers as needed.
  */
 
+export * from './applyIncludeExclude';
 export * from './assertions';
 export * from './defaultsDeep';
 export * from './dotenvFile';

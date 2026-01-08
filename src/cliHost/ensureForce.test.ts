@@ -27,4 +27,15 @@ describe('cliHost/ensureForce', () => {
     );
     expect(process.exitCode).toBe(2);
   });
+
+  it('uses custom flag name in warning', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    process.exitCode = 0;
+
+    expect(ensureForce(false, 'delete', '--confirm')).toBe(false);
+
+    expect(warn).toHaveBeenCalledWith(
+      expect.stringContaining('Re-run with --confirm to proceed'),
+    );
+  });
 });

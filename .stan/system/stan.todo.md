@@ -35,3 +35,4 @@
 - Hoisted utility functions (`silentLogger`, `requireString`, `assertByteLimit`, `toNumber`, `getAwsRegion`, help utils) from downstream to `get-dotenv`.
 - Added tests for new utility functions and fixed TypeDoc comments.
 - Hoisted additional helpers: `ensureForce` (cliHost) and number parsers (`parseFiniteNumber`, `parsePositiveInt`, `parseNonNegativeInt`).
+- Exported `applyIncludeExclude` from package root and added TypeDoc comments.
