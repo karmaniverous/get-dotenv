@@ -156,6 +156,35 @@ const envRef = { ...process.env, ...cli.getCtx().dotenv };
 const expanded = dotenvExpand(raw, envRef) ?? raw;
 ```
 
+## Common Utilities (Imports)
+
+### Number Parsers (for Commander options)
+
+Use these in your plugin `setup` to validate numeric flags at parse time.
+
+```ts
+import {
+  parseFiniteNumber,
+  parsePositiveInt,
+  parseNonNegativeInt,
+} from '@karmaniverous/get-dotenv';
+
+cli.option('--limit <n>', 'max items', parsePositiveInt('limit'));
+```
+
+### Destructive Operation Guard (`ensureForce`)
+
+Use this helper to protect destructive actions.
+
+```ts
+import { ensureForce } from '@karmaniverous/get-dotenv/cliHost';
+
+cli.action((args, opts) => {
+  if (!ensureForce(opts.force, 'delete table')) return;
+  // proceed...
+});
+```
+
 ## Diagnostics helpers
 
 - `traceChildEnv({ parentEnv, dotenv, keys?, redact?, ... })`

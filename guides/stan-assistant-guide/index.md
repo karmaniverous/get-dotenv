@@ -50,13 +50,13 @@ Use this section when you need a “what do I import?” answer quickly.
   - Expansion: `dotenvExpand`, `dotenvExpandAll`, `dotenvExpandFromProcessEnv`
   - Dotenv editing: `editDotenvText`, `editDotenvFile` (format-preserving)
   - Diagnostics: `traceChildEnv`, `redactDisplay`, `redactObject`, `maybeWarnEntropy`
-  - Utilities: `interpolateDeep` (deep string-leaf interpolation), `writeDotenvFile`, `defaultsDeep`, `tokenize`
+  - Utilities: `interpolateDeep`, `writeDotenvFile`, `defaultsDeep`, `tokenize`, `applyIncludeExclude`, `requireString`, `assertByteLimit`, `silentLogger`, `toNumber`, `parseFiniteNumber`, `parsePositiveInt`, `parseNonNegativeInt`
 - CLI factory (`@karmaniverous/get-dotenv/cli`):
   - `createCli({ alias, branding?, compose?, rootOptionDefaults?, rootOptionVisibility? }) -> (argv?) => Promise<void>`
 - CLI host (`@karmaniverous/get-dotenv/cliHost`):
   - Host class: `GetDotenvCli`
   - Plugin authoring: `definePlugin` (returns a plugin with `readConfig` and `createPluginDynamicOption`)
-  - Execution: `runCommand`, `runCommandResult`, `shouldCapture`, `buildSpawnEnv`
+  - Execution: `runCommand`, `runCommandResult`, `shouldCapture`, `buildSpawnEnv`, `ensureForce`
   - Option bag: `readMergedOptions`
   - Shell/scripting: `resolveCommand`, `resolveShell`, `defineScripts`
   - Helpers: `getRootCommand`, `composeNestedEnv`, `maybePreserveNodeEvalArgv`
