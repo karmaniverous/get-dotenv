@@ -1,4 +1,16 @@
 /**
+ * Return type for {@link describeConfigKeyListDefaults}.
+ *
+ * @public
+ */
+export interface DescribeConfigKeyListDefaultsResult {
+  /** Description for the include list default. */
+  includeDefault: string;
+  /** Description for the exclude list default. */
+  excludeDefault: string;
+}
+
+/**
  * Describe a default value for help text.
  * Handles arrays (joins with space) and strings; returns 'none' if empty/undefined.
  */
@@ -20,7 +32,7 @@ export const describeConfigKeyListDefaults = ({
 }: {
   cfgInclude?: string[];
   cfgExclude?: string[];
-}): { includeDefault: string; excludeDefault: string } => {
+}): DescribeConfigKeyListDefaultsResult => {
   // Avoid throwing in help rendering: show an explicit invalid marker.
   if (cfgInclude?.length && cfgExclude?.length) {
     const msg = '(invalid: both set in config)';

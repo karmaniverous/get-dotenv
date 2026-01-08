@@ -16,6 +16,7 @@ export type {
   ResolveAndLoadOptions,
 } from './contracts';
 export { definePlugin } from './definePlugin';
+export { ensureForce } from './ensureForce';
 export type { RunCommandOptions, RunCommandResultOptions } from './exec';
 export { runCommand, runCommandResult, shouldCapture } from './exec';
 export { GetDotenvCli } from './GetDotenvCli';

@@ -33,3 +33,5 @@
 - Refactored codebase to use `radash` for simplification (`omitUndefined`, `spawnEnv`, `cmd` plugin, build scripts).
 - Removed `src/util/omitUndefined.ts` and updated `src/core/GetDotenvOptions.ts` to use `radash.shake` directly.
 - Hoisted utility functions (`silentLogger`, `requireString`, `assertByteLimit`, `toNumber`, `getAwsRegion`, help utils) from downstream to `get-dotenv`.
+- Added tests for new utility functions and fixed TypeDoc comments.
+- Hoisted additional helpers: `ensureForce` (cliHost) and number parsers (`parseFiniteNumber`, `parsePositiveInt`, `parseNonNegativeInt`).

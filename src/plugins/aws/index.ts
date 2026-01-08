@@ -43,3 +43,5 @@ export const awsPlugin = () => {
  * @public
  */
 export type AwsPlugin = ReturnType<typeof awsPlugin>;
+
+export { getAwsRegion } from './utils';

@@ -6,7 +6,7 @@
  * These plugins are designed to be composed with the CLI host.
  */
 
-export { awsPlugin } from './aws';
+export { awsPlugin, getAwsRegion } from './aws';
 export { awsWhoamiPlugin } from './aws/whoami';
 export { batchPlugin } from './batch';
 export { cmdPlugin } from './cmd';
