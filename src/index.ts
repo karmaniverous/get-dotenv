@@ -34,6 +34,7 @@ export {
   type GetDotenvDynamic,
   type GetDotenvOptions,
   type InferGetDotenvVarsFromConfig,
+  type Logger,
   type ProcessEnv,
 } from './core';
 export { baseRootOptionDefaults } from './defaults';
