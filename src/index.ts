@@ -85,6 +85,12 @@ export type {
   DotenvProvenanceOp,
   DotenvVarsProvenanceEntry,
 } from './env';
-export { applyIncludeExclude, interpolateDeep } from './util';
+export {
+  applyIncludeExclude,
+  interpolateDeep,
+  parseFiniteNumber,
+  parseNonNegativeInt,
+  parsePositiveInt,
+} from './util';
 /** @deprecated Import \{ z \} from 'zod' directly. Will be removed in v7. */
 export { z } from 'zod';
