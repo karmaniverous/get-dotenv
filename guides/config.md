@@ -59,7 +59,7 @@ JSON/YAML (data only, always-on; no-op when no files are present):
 JS/TS (data + dynamic):
 
 - Accepts all JSON/YAML keys and also:
-  - dynamic?: GetDotenvDynamic — a map where values are either strings or functions of the form (vars: ProcessEnv, env?: string) => string | undefined.
+  - dynamic?: GetDotenvDynamic — a map where values are either strings or functions of the form `(vars: Record<string, string | undefined>, env?: string) => string | undefined`.
   - schema?: unknown — a schema object (e.g., a Zod schema) whose safeParse(finalEnv) will be executed once after overlays.
 
 TS support:

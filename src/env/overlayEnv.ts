@@ -48,9 +48,7 @@ const applyConfigSlice = (
  * @public
  */
 export interface OverlayEnvOptionsBase<
-  B extends
-    | Record<string, string | undefined>
-    | Readonly<Record<string, string | undefined>>,
+  B extends ProcessEnv | Readonly<ProcessEnv>,
 > {
   /** Base environment variables. */
   base: B;
@@ -68,12 +66,8 @@ export interface OverlayEnvOptionsBase<
  * @public
  */
 export interface OverlayEnvOptionsWithProgrammatic<
-  B extends
-    | Record<string, string | undefined>
-    | Readonly<Record<string, string | undefined>>,
-  P extends
-    | Record<string, string | undefined>
-    | Readonly<Record<string, string | undefined>>,
+  B extends ProcessEnv | Readonly<ProcessEnv>,
+  P extends ProcessEnv | Readonly<ProcessEnv>,
 > extends OverlayEnvOptionsBase<B> {
   /**
    * Explicit programmatic variables applied at the highest precedence tier.
@@ -90,12 +84,14 @@ export interface OverlayEnvOptionsWithProgrammatic<
  * Programmatic explicit vars (if provided) override all config slices.
  * Progressive expansion is applied within each slice.
  */
+export function overlayEnv<B extends ProcessEnv | Readonly<ProcessEnv>>(args: {
+  base: B;
+  env: string | undefined;
+  configs: OverlayConfigSources;
+}): B;
 export function overlayEnv<
-  B extends ProcessEnv | Readonly<Record<string, string | undefined>>,
->(args: { base: B; env: string | undefined; configs: OverlayConfigSources }): B;
-export function overlayEnv<
-  B extends ProcessEnv | Readonly<Record<string, string | undefined>>,
-  P extends ProcessEnv | Readonly<Record<string, string | undefined>>,
+  B extends ProcessEnv | Readonly<ProcessEnv>,
+  P extends ProcessEnv | Readonly<ProcessEnv>,
 >(args: {
   base: B;
   env: string | undefined;
@@ -104,12 +100,10 @@ export function overlayEnv<
 }): B & P;
 export function overlayEnv(
   args:
-    | OverlayEnvOptionsBase<
-        ProcessEnv | Readonly<Record<string, string | undefined>>
-      >
+    | OverlayEnvOptionsBase<ProcessEnv | Readonly<ProcessEnv>>
     | OverlayEnvOptionsWithProgrammatic<
-        ProcessEnv | Readonly<Record<string, string | undefined>>,
-        ProcessEnv | Readonly<Record<string, string | undefined>>
+        ProcessEnv | Readonly<ProcessEnv>,
+        ProcessEnv | Readonly<ProcessEnv>
       >,
 ): ProcessEnv {
   const { base, env, configs } = args;

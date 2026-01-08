@@ -9,7 +9,7 @@
 
 import path from 'node:path';
 
-import type { ProcessEnv } from '@/src/core/GetDotenvOptions';
+import type { ProcessEnv } from '@/src/core';
 import { readDotenv } from '@/src/core/readDotenv';
 import { dotenvExpandAll } from '@/src/dotenv';
 

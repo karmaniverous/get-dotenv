@@ -331,14 +331,10 @@ Goal: retain key specificity and accept readonly maps at call sites.
 Signature:
 
 ```ts
-export function dotenvExpandAll<
-  T extends
-    | Record<string, string | undefined>
-    | Readonly<Record<string, string | undefined>>,
->(
+export function dotenvExpandAll<T extends ProcessEnv | Readonly<ProcessEnv>>(
   values: T,
-  options?: { ref?: Record<string, string | undefined>; progressive?: boolean },
-): { [K in keyof T]: string | undefined } & Record<string, string | undefined>;
+  options?: { ref?: ProcessEnv; progressive?: boolean },
+): { [K in keyof T]: string | undefined } & ProcessEnv;
 ```
 
 Acceptance:
@@ -411,16 +407,18 @@ Goal: improve inference inside dynamic functions by narrowing the `vars` bag to 
 Types:
 
 ```ts
-export type DynamicFn<Vars extends Record<string, string | undefined>> = (
+export type DynamicFn<Vars extends ProcessEnv> = (
   vars: Vars,
   env?: string,
 ) => string | undefined;
 
-export type DynamicMap<Vars extends Record<string, string | undefined>> =
-  Record<string, DynamicFn<Vars> | string | undefined>;
+export type DynamicMap<Vars extends ProcessEnv> = Record<
+  string,
+  DynamicFn<Vars> | string | undefined
+>;
 
 export function defineDynamic<
-  Vars extends Record<string, string | undefined>,
+  Vars extends ProcessEnv,
   T extends DynamicMap<Vars>,
 >(d: T): T;
 ```
@@ -438,19 +436,15 @@ Goal: preserve the key set from the base plus any programmatic additions at comp
 Signature pattern:
 
 ```ts
-export function overlayEnv<
-  B extends
-    | Record<string, string | undefined>
-    | Readonly<Record<string, string | undefined>>,
->(args: { base: B; env: string | undefined; configs: OverlayConfigSources }): B;
+export function overlayEnv<B extends ProcessEnv | Readonly<ProcessEnv>>(args: {
+  base: B;
+  env: string | undefined;
+  configs: OverlayConfigSources;
+}): B;
 
 export function overlayEnv<
-  B extends
-    | Record<string, string | undefined>
-    | Readonly<Record<string, string | undefined>>,
-  P extends
-    | Record<string, string | undefined>
-    | Readonly<Record<string, string | undefined>>,
+  B extends ProcessEnv | Readonly<ProcessEnv>,
+  P extends ProcessEnv | Readonly<ProcessEnv>,
 >(args: {
   base: B;
   env: string | undefined;

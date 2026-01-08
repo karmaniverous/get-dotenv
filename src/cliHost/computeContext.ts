@@ -3,7 +3,12 @@ import type { OptionValues } from '@commander-js/extra-typings';
 import path from 'path';
 
 import { resolveGetDotenvConfigSources } from '@/src/config';
-import type { GetDotenvDynamic, GetDotenvOptions, Logger } from '@/src/core';
+import type {
+  GetDotenvDynamic,
+  GetDotenvOptions,
+  Logger,
+  ProcessEnv,
+} from '@/src/core';
 import { resolveGetDotenvOptions } from '@/src/core';
 import {
   applyDynamicMapWithProvenance,
@@ -138,7 +143,7 @@ export const computeContext = async <
     provenance: fileRes.provenance,
   });
 
-  const dotenv: Record<string, string | undefined> = { ...overlaid.env };
+  const dotenv: ProcessEnv = { ...overlaid.env };
   const dotenvProvenance = overlaid.provenance;
 
   // Dynamic precedence (A2): config dynamic < programmatic dynamic < dynamicPath
@@ -237,7 +242,7 @@ export const computeContext = async <
     flattenPluginTreeByPath(plugins);
 
   const mergedPluginConfigsByPath: Record<string, unknown> = {};
-  const envRef: Record<string, string | undefined> = {
+  const envRef: ProcessEnv = {
     ...dotenv,
     ...process.env,
   };

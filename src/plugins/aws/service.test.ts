@@ -1,5 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import type { ProcessEnv } from '@/src/core';
+
 import {
   parseExportCredentialsEnv,
   parseExportCredentialsJson,
@@ -124,7 +126,7 @@ describe('plugins/aws/service.resolveAwsContext', () => {
     process.env.AWS_ACCESS_KEY_ID = 'AKIA';
     process.env.AWS_SECRET_ACCESS_KEY = 'SECRET';
     const out = await resolveAwsContext({
-      dotenv: {} as Record<string, string | undefined>,
+      dotenv: {} as ProcessEnv,
       cfg: baseCfg,
     });
     expect(out.credentials).toEqual({

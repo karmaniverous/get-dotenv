@@ -24,7 +24,7 @@ import {
 const applyKv = (
   current: ProcessEnv,
   kv: Record<string, string> | undefined,
-): { env: ProcessEnv; expanded: Record<string, string | undefined> } => {
+): { env: ProcessEnv; expanded: ProcessEnv } => {
   if (!kv || Object.keys(kv).length === 0)
     return { env: current, expanded: {} };
   const expanded = dotenvExpandAll(kv, { ref: current, progressive: true });
@@ -90,7 +90,7 @@ export interface OverlayEnvWithProvenanceArgs {
   /**
    * Base environment variables.
    */
-  base: ProcessEnv | Readonly<Record<string, string | undefined>>;
+  base: ProcessEnv | Readonly<ProcessEnv>;
   /**
    * Target environment name.
    */
@@ -102,7 +102,7 @@ export interface OverlayEnvWithProvenanceArgs {
   /**
    * Explicit vars overlays applied at the highest static precedence tier.
    */
-  programmaticVars?: ProcessEnv | Readonly<Record<string, string | undefined>>;
+  programmaticVars?: ProcessEnv | Readonly<ProcessEnv>;
   /**
    * Existing provenance map to append into. When omitted, a new map is created.
    */

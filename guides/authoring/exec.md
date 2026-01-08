@@ -147,9 +147,8 @@ In short:
 If you have multiple options that should support `${NAME}`-style expansion, consider a tiny helper for your plugin:
 
 ```ts
-import { dotenvExpand } from '@karmaniverous/get-dotenv';
+import { dotenvExpand, type ProcessEnv } from '@karmaniverous/get-dotenv';
 import type { GetDotenvCliPublic } from '@karmaniverous/get-dotenv/cliHost';
-import type { ProcessEnv } from '@karmaniverous/get-dotenv';
 
 type ExpandMode = 'strict' | 'best-effort';
 
@@ -217,7 +216,7 @@ Notes:
 
 For simple scalars, `dotenvExpand` is enough. For more complex data:
 
-- Use `dotenvExpandAll` when you have a flat `Record<string, string | undefined>`, e.g., a small env-like map.
+- Use `dotenvExpandAll` when you have a flat `ProcessEnv`, e.g., a small env-like map.
 - Use `interpolateDeep` when you have nested objects (e.g., plugin config slices) and want to expand only string leaves while preserving non-strings and arrays.
 
 Both are exported from the public API:

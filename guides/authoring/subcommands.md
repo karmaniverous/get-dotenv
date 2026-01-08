@@ -77,7 +77,7 @@ Signature: `(flags, config, envRef) => ServiceInput`
 export function resolveCreateInput(
   flags: Record<string, unknown>,
   config: MyPluginConfig,
-  envRef: Record<string, string | undefined>,
+  envRef: ProcessEnv,
 ): CreateServiceInput {
   // 1. Expand flags (Action-time expansion)
   // Users may pass '${VAR}' in flags; expand them here.

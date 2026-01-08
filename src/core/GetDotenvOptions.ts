@@ -28,6 +28,12 @@ import { defaultsDeep, omitUndefinedRecord } from '@/src/util';
 export const getDotenvOptionsFilename = 'getdotenv.config.json';
 
 /**
+ * A minimal representation of an environment key/value mapping.
+ * Values may be `undefined` to represent "unset".
+ */
+export type ProcessEnv = Record<string, string | undefined>;
+
+/**
  * Compatibility shape for root options allowing string inputs for vars/paths.
  * Used during CLI argument parsing before normalization.
  */
@@ -39,18 +45,12 @@ export type RootOptionsShapeCompat = Omit<
    * Extra variables as either a space‑delimited string of assignments
    * (e.g., `"FOO=1 BAR=2"`) or an object map of `string | undefined` values.
    */
-  vars?: string | Record<string, string | undefined>;
+  vars?: string | ProcessEnv;
   /**
    * Dotenv search paths as a space‑delimited string or a pre‑split string[].
    */
   paths?: string | string[];
 };
-
-/**
- * A minimal representation of an environment key/value mapping.
- * Values may be `undefined` to represent "unset".
- */
-export type ProcessEnv = Record<string, string | undefined>;
 
 /**
  * Dynamic variable function signature. Receives the current expanded variables
@@ -100,7 +100,7 @@ export type GetDotenvOptions = Omit<
  * Vars-aware dynamic helpers (compile-time DX).
  * DynamicFn: receive the current expanded variables and optional env.
  */
-export type DynamicFn<Vars extends Record<string, string | undefined>> = (
+export type DynamicFn<Vars extends ProcessEnv> = (
   vars: Vars,
   env?: string,
 ) => string | undefined;
@@ -110,8 +110,10 @@ export type DynamicFn<Vars extends Record<string, string | undefined>> = (
  *
  * @typeParam Vars - The env var bag shape passed to dynamic functions.
  */
-export type DynamicMap<Vars extends Record<string, string | undefined>> =
-  Record<string, DynamicFn<Vars> | ReturnType<DynamicFn<Vars>>>;
+export type DynamicMap<Vars extends ProcessEnv> = Record<
+  string,
+  DynamicFn<Vars> | ReturnType<DynamicFn<Vars>>
+>;
 
 /**
  * Helper to define a dynamic map with strong inference (Vars-aware).
@@ -120,7 +122,7 @@ export type DynamicMap<Vars extends Record<string, string | undefined>> =
  */
 
 export function defineDynamic<
-  Vars extends Record<string, string | undefined>,
+  Vars extends ProcessEnv,
   T extends DynamicMap<Vars>,
 >(d: T): T;
 
@@ -218,7 +220,7 @@ export interface GetDotenvConfigWithVars<V extends ProcessEnv = ProcessEnv> {
  */
 export type InferGetDotenvVarsFromConfig<T> =
   T extends GetDotenvConfigWithVars<infer V>
-    ? V extends Record<string, string | undefined>
+    ? V extends ProcessEnv
       ? V
       : never
     : never;

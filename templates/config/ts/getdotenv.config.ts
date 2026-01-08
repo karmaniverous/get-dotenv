@@ -1,4 +1,7 @@
-import { defineGetDotenvConfig } from '@karmaniverous/get-dotenv';
+import {
+  defineGetDotenvConfig,
+  type ProcessEnv,
+} from '@karmaniverous/get-dotenv';
 
 type Vars = {
   APP_SETTING?: string;
@@ -22,7 +25,6 @@ export default defineGetDotenvConfig<Vars>({
     // selected environment (if any); tailor behavior per environment.
     // For example, with env='dev' this yields "for-dev"; when env is not
     // provided, this returns an empty string.
-    ENV_TAG: (_vars: Record<string, string | undefined>, env?: string) =>
-      env ? `for-${env}` : '',
+    ENV_TAG: (_vars: ProcessEnv, env?: string) => (env ? `for-${env}` : ''),
   },
 });

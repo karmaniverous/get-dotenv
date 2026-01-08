@@ -26,7 +26,7 @@ const searchLast = (str: string, rgx: RegExp) => {
 const replaceMatch = (
   value: string,
   match: RegExpMatchArray,
-  ref: Record<string, string | undefined>,
+  ref: ProcessEnv,
 ) => {
   /**
    * @internal
@@ -40,10 +40,7 @@ const replaceMatch = (
 
   return interpolate(replacement, ref);
 };
-const interpolate = (
-  value = '',
-  ref: Record<string, string | undefined> = {},
-): string => {
+const interpolate = (value = '', ref: ProcessEnv = {}): string => {
   /**
    * @internal
    */
@@ -110,7 +107,7 @@ export interface DotenvExpandAllOptions {
   /**
    * The reference object to use for expansion (defaults to process.env).
    */
-  ref?: Record<string, string | undefined>;
+  ref?: ProcessEnv;
   /**
    * Whether to progressively add expanded values to the set of reference keys.
    */
@@ -142,32 +139,22 @@ export interface DotenvExpandAllOptions {
  * When `progressive` is true, each expanded key becomes available for
  * subsequent expansions in the same object (left-to-right by object key order).
  */
-export function dotenvExpandAll<
-  T extends
-    | Record<string, string | undefined>
-    | Readonly<Record<string, string | undefined>>,
->(
+export function dotenvExpandAll<T extends ProcessEnv | Readonly<ProcessEnv>>(
   values: T,
   options: DotenvExpandAllOptions = {},
-): Record<string, string | undefined> & {
+): ProcessEnv & {
   [K in keyof T]: string | undefined;
 } {
-  const {
-    ref = process.env as Record<string, string | undefined>,
-    progressive = false,
-  } = options;
-  const out = Object.keys(values).reduce<Record<string, string | undefined>>(
-    (acc, key) => {
-      acc[key] = dotenvExpand(values[key], {
-        ...ref,
-        ...(progressive ? acc : {}),
-      });
-      return acc;
-    },
-    {},
-  );
+  const { ref = process.env as ProcessEnv, progressive = false } = options;
+  const out = Object.keys(values).reduce<ProcessEnv>((acc, key) => {
+    acc[key] = dotenvExpand(values[key], {
+      ...ref,
+      ...(progressive ? acc : {}),
+    });
+    return acc;
+  }, {});
   // Key-preserving return with a permissive index signature to allow later additions.
-  return out as Record<string, string | undefined> & {
+  return out as ProcessEnv & {
     [K in keyof T]: string | undefined;
   };
 }

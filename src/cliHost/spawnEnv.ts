@@ -1,6 +1,6 @@
-const dropUndefined = (
-  bag: Record<string, string | undefined>,
-): Record<string, string> =>
+import type { ProcessEnv } from '@/src/core';
+
+const dropUndefined = (bag: ProcessEnv): Record<string, string> =>
   Object.fromEntries(
     Object.entries(bag).filter(
       (e): e is [string, string] => typeof e[1] === 'string',
@@ -17,9 +17,9 @@ const dropUndefined = (
  */
 export const buildSpawnEnv = (
   base?: NodeJS.ProcessEnv,
-  overlay?: Record<string, string | undefined>,
+  overlay?: ProcessEnv,
 ): NodeJS.ProcessEnv => {
-  const raw: Record<string, string | undefined> = {
+  const raw: ProcessEnv = {
     ...(base ?? {}),
     ...(overlay ?? {}),
   };

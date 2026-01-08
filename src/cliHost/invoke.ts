@@ -1,6 +1,8 @@
 /** src/cliHost/invoke.ts
  * Shared helpers for composing child env overlays and preserving argv for Node -e.
  */
+import type { ProcessEnv } from '@/src/core';
+
 import type { GetDotenvCliOptions } from './GetDotenvCliOptions';
 
 /**
@@ -13,7 +15,7 @@ import type { GetDotenvCliOptions } from './GetDotenvCliOptions';
  */
 export function composeNestedEnv(
   merged: GetDotenvCliOptions | Record<string, unknown>,
-  dotenv: Record<string, string | undefined>,
+  dotenv: ProcessEnv,
 ): Record<string, string> {
   const out: Record<string, string> = {};
   for (const [k, v] of Object.entries(dotenv)) {

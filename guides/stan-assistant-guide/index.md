@@ -14,7 +14,7 @@ This is a compact, self-contained guide for STAN assistants to use `@karmanivero
 
 ## What this library does (mental model)
 
-`get-dotenv` composes an environment (`Record<string, string | undefined>`) from multiple sources deterministically, expands references recursively, optionally applies dynamic variables, and then lets you (a) use the final map programmatically, (b) run commands under it via a cross-platform CLI, or (c) build your own plugin-based CLI host that resolves env once per invocation.
+`get-dotenv` composes an environment (`ProcessEnv`) from multiple sources deterministically, expands references recursively, optionally applies dynamic variables, and then lets you (a) use the final map programmatically, (b) run commands under it via a cross-platform CLI, or (c) build your own plugin-based CLI host that resolves env once per invocation.
 
 Key idea: treat the “resolved dotenv context” (`ctx.dotenv`) as the source of truth, and do not rely on `process.env` being mutated unless you explicitly enable it.
 
@@ -73,7 +73,7 @@ This is a compact, self-contained guide for STAN assistants to use `@karmanivero
 
 ## What this library does (mental model)
 
-`get-dotenv` composes an environment (`Record<string, string | undefined>`) from multiple sources deterministically, expands references recursively, optionally applies dynamic variables, and then lets you (a) use the final map programmatically, (b) run commands under it via a cross-platform CLI, or (c) build your own plugin-based CLI host that resolves env once per invocation.
+`get-dotenv` composes an environment (`ProcessEnv`) from multiple sources deterministically, expands references recursively, optionally applies dynamic variables, and then lets you (a) use the final map programmatically, (b) run commands under it via a cross-platform CLI, or (c) build your own plugin-based CLI host that resolves env once per invocation.
 
 Key idea: treat the “resolved dotenv context” (`ctx.dotenv`) as the source of truth, and do not rely on `process.env` being mutated unless you explicitly enable it.
 
@@ -211,7 +211,7 @@ All options are optional; important ones:
   - `dotenvToken?: string` (default `.env`)
   - `privateToken?: string` (default `local`)
 - Variable injection:
-  - `vars?: Record<string, string | undefined>` (explicit vars merged into the composed map)
+  - `vars?: ProcessEnv` (explicit vars merged into the composed map)
   - `loadProcess?: boolean` (default false for programmatic use; when true merges into `process.env`)
 - Dynamic variables:
   - `dynamic?: Record<string, string | ((vars, env) => string | undefined)>` (programmatic map; takes precedence over `dynamicPath`)
@@ -244,7 +244,7 @@ const env = await getDotenv<Vars>({ env: 'dev', paths: ['./'], dynamic });
 
 Dynamic function signature:
 
-- `(vars: Record<string, string | undefined>, env?: string) => string | undefined`
+- `(vars: ProcessEnv, env?: string) => string | undefined`
 
 Return `undefined` to “unset/omit”.
 

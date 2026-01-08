@@ -57,10 +57,10 @@ export const redactDisplay = (
 export const redactObject = (
   obj: ProcessEnv,
   opts?: RedactOptions,
-): Record<string, string | undefined> => {
+): ProcessEnv => {
   if (!opts?.redact) return { ...obj };
   const regs = compile(opts.redactPatterns);
-  const out: Record<string, string | undefined> = {};
+  const out: ProcessEnv = {};
   for (const [k, v] of Object.entries(obj)) {
     out[k] = v && shouldRedactKey(k, regs) ? MASK : v;
   }

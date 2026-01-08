@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 import type { ScriptsTable } from '@/src/cliHost';
-import type { Logger } from '@/src/core';
+import type { Logger, ProcessEnv } from '@/src/core';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import type { execShellCommandBatch } from './execShellCommandBatch';
@@ -69,7 +69,7 @@ export interface ExecShellCommandBatchOptions {
   /**
    * Composed dotenv environment (string | undefined values) to inject into each child.
    */
-  dotenvEnv?: Record<string, string | undefined>;
+  dotenvEnv?: ProcessEnv;
   /**
    * Space‑delimited patterns used to discover target working directories.
    */
