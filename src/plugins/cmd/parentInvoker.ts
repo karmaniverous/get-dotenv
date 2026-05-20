@@ -117,15 +117,11 @@ export const attachCmdParentInvoker = (
     // Use config-enriched defaults (not bare baseGetDotenvCliOptions) so
     // project rootOptionDefaults (paths, defaultEnv, etc.) are respected.
     const sources = await resolveGetDotenvConfigSources(import.meta.url);
-    const cfgDefaults = defaultsDeep<Partial<RootOptionsShape>>(
-      {},
-      sources.packaged?.rootOptionDefaults ?? {},
-      sources.project?.public?.rootOptionDefaults ?? {},
-      sources.project?.local?.rootOptionDefaults ?? {},
-    );
     const enrichedDefaults = defaultsDeep<Partial<RootOptionsShape>>(
       baseGetDotenvCliOptions as Partial<RootOptionsShape>,
-      cfgDefaults,
+      sources.packaged?.rootOptionDefaults,
+      sources.project?.public?.rootOptionDefaults,
+      sources.project?.local?.rootOptionDefaults,
     );
     const { merged } = resolveCliOptions<
       RootOptionsShape & { scripts?: ScriptsTable }
