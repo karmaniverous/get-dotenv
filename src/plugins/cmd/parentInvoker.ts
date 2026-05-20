@@ -9,11 +9,13 @@ import {
   type RootOptionsShape,
   type ScriptsTable,
 } from '@/src/cliHost';
+import { resolveGetDotenvConfigSources } from '@/src/config';
 import {
   getDotenvCliOptions2Options,
   type RootOptionsShapeCompat,
 } from '@/src/core';
 import { dotenvExpandFromProcessEnv } from '@/src/dotenv';
+import { defaultsDeep } from '@/src/util';
 
 import type { CmdPlugin } from '.';
 import { runCmdWithContext } from './runner';
@@ -112,13 +114,22 @@ export const attachCmdParentInvoker = (
     aliasState.handled = true;
 
     // Merge CLI options and resolve dotenv context for this invocation.
+    // Use config-enriched defaults (not bare baseGetDotenvCliOptions) so
+    // project rootOptionDefaults (paths, defaultEnv, etc.) are respected.
+    const sources = await resolveGetDotenvConfigSources(import.meta.url);
+    const cfgDefaults = defaultsDeep<Partial<RootOptionsShape>>(
+      {},
+      sources.packaged?.rootOptionDefaults ?? {},
+      sources.project?.public?.rootOptionDefaults ?? {},
+      sources.project?.local?.rootOptionDefaults ?? {},
+    );
+    const enrichedDefaults = defaultsDeep<Partial<RootOptionsShape>>(
+      baseGetDotenvCliOptions as Partial<RootOptionsShape>,
+      cfgDefaults,
+    );
     const { merged } = resolveCliOptions<
       RootOptionsShape & { scripts?: ScriptsTable }
-    >(
-      raw,
-      baseGetDotenvCliOptions as Partial<RootOptionsShape>,
-      process.env.getDotenvCliOptions,
-    );
+    >(raw, enrichedDefaults, process.env.getDotenvCliOptions);
     const serviceOptions = getDotenvCliOptions2Options(
       merged as unknown as RootOptionsShapeCompat,
     );

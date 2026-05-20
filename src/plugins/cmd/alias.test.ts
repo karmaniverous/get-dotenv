@@ -57,6 +57,42 @@ describe('plugins/cmd option alias', () => {
     expect(command).toBe('echo BAR');
   });
 
+  it('resolves env-specific vars via rootOptionDefaults in alias path', async () => {
+    // Regression: the cmd alias invoker used bare baseGetDotenvCliOptions
+    // (baseRootOptionDefaults) as defaults, missing project rootOptionDefaults
+    // like paths and defaultEnv. This caused the alias to clobber the
+    // correctly-resolved context from root hooks with incomplete defaults,
+    // losing env-specific variables.
+    const run = createCli({
+      alias: 'test',
+      rootOptionDefaults: {
+        paths: './test/full',
+        dotenvToken: '.testenv',
+        defaultEnv: 'test',
+        loadProcess: true,
+      },
+      compose: (p) =>
+        p.use(
+          cmdPlugin({ asDefault: true, optionAlias: '-c, --cmd <command...>' }),
+        ),
+    });
+
+    await run(['node', 'test', '-c', 'echo', 'OK']);
+
+    expect(execMock).toHaveBeenCalledTimes(1);
+    const [, opts] = execMock.mock.calls[0] as [
+      string,
+      { env?: Record<string, string> },
+    ];
+    // The child env should include ENV_SETTING from .testenv.test
+    // (env-specific file under the custom paths/defaultEnv).
+    // Before the fix, paths defaulted to './' and defaultEnv was absent,
+    // so env-specific files were never loaded.
+    expect(opts.env?.ENV_SETTING).toBe('deep_test_setting');
+    // Global var should also be present.
+    expect(opts.env?.APP_SETTING).toBe('deep_app_setting');
+  });
+
   it('conflicts when alias and cmd subcommand are both provided', async () => {
     // Spy process.exit (defaultCmdAction exits on conflict); do not terminate tests.
     const exitSpy = vi.spyOn(process, 'exit').mockImplementation((() => {
