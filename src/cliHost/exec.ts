@@ -157,12 +157,12 @@ async function _execNormalized(
     dbg('exec (plain)', { file, args, stdio });
     try {
       const ok = pickResult(
-        (await execa(file, args, {
+        await execa(file, args, {
           ...(opts.cwd !== undefined ? { cwd: opts.cwd } : {}),
           ...(envSan !== undefined ? { env: envSan } : {}),
           stdio,
           ...timeoutBits,
-        })) as unknown,
+        }),
       );
       dbg('exit (plain)', { exitCode: ok.exitCode });
       return ok;
@@ -183,13 +183,13 @@ async function _execNormalized(
   });
   try {
     const ok = pickResult(
-      (await execaCommand(commandStr, {
+      await execaCommand(commandStr, {
         shell,
         ...(opts.cwd !== undefined ? { cwd: opts.cwd } : {}),
         ...(envSan !== undefined ? { env: envSan } : {}),
         stdio,
         ...timeoutBits,
-      })) as unknown,
+      }),
     );
     dbg('exit (shell)', { exitCode: ok.exitCode });
     return ok;

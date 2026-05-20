@@ -29,7 +29,7 @@ export function makeDynamicOption<Usage extends string>(
   }
   if (defaultValue !== undefined) opt.default(defaultValue);
   // Commander.Option is structurally compatible; help-time wiring is stored in DYN_DESC.
-  return opt as unknown as Option<Usage>;
+  return opt;
 }
 
 /**

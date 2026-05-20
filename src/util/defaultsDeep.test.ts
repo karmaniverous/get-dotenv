@@ -30,8 +30,8 @@ describe('defaultsDeep', () => {
 
   it('replaces non-objects', () => {
     const result = defaultsDeep(
-      { value: { x: 1 } as unknown },
-      { value: 2 as unknown },
+      { value: { x: 1 } },
+      { value: 2 },
     ) as unknown as { value: number };
     expect(result.value).toBe(2);
   });

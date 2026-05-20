@@ -32,12 +32,7 @@ export function applyDynamicMap(
   if (!map) return;
   for (const key of Object.keys(map)) {
     const val =
-      typeof map[key] === 'function'
-        ? (map[key] as (v: ProcessEnv, e?: string) => string | undefined)(
-            target,
-            env,
-          )
-        : map[key];
+      typeof map[key] === 'function' ? map[key](target, env) : map[key];
     Object.assign(target, { [key]: val });
   }
 }
@@ -98,12 +93,7 @@ export function applyDynamicMapWithProvenance(
   if (!map) return;
   for (const key of Object.keys(map)) {
     const val =
-      typeof map[key] === 'function'
-        ? (map[key] as (v: ProcessEnv, e?: string) => string | undefined)(
-            target,
-            env,
-          )
-        : map[key];
+      typeof map[key] === 'function' ? map[key](target, env) : map[key];
     Object.assign(target, { [key]: val });
     pushDotenvProvenance(prov, key, {
       kind: 'dynamic',

@@ -9,7 +9,7 @@ export default defineConfig({
       // Vitest types expose (log, type); some runtimes also pass a third 'task'.
       // Access via arguments[2] when present to detect failing tasks.
       // eslint-disable-next-line prefer-rest-params
-      const maybeArgs = arguments as unknown as IArguments;
+      const maybeArgs = arguments;
       const task =
         (maybeArgs[2] as { result?: { state?: string } } | undefined) ??
         undefined;

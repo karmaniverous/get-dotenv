@@ -9,9 +9,7 @@ export function tagAppOptionsAround<T>(
   setOptionGroup: (opt: Option, group: string) => void,
   fn: (root: CommandUnknownOpts) => T,
 ): T {
-  const originalAddOption: typeof root.addOption = root.addOption.bind(
-    root,
-  ) as unknown as typeof root.addOption;
+  const originalAddOption: typeof root.addOption = root.addOption.bind(root);
   root.addOption = ((opt: Option) => {
     setOptionGroup(opt, 'app');
     return originalAddOption(opt);

@@ -38,14 +38,7 @@ function runInstall<TOptions extends GetDotenvOptions>(
 ): void | Promise<void> {
   // Create mount and run setup
   const mount = parentCli.ns(plugin.ns);
-  const setupRet = plugin.setup(
-    mount as unknown as GetDotenvCliPublic<
-      TOptions,
-      unknown[],
-      OptionValues,
-      OptionValues
-    >,
-  );
+  const setupRet = plugin.setup(mount);
   const pending: Promise<void>[] = [];
   if (isPromise(setupRet)) pending.push(setupRet.then(() => undefined));
 

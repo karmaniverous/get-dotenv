@@ -86,9 +86,9 @@ export const resolveCliOptions = <T extends ResolveCliOptionsShape>(
   }
 
   const merged = defaultsDeep<Required<T>>(
-    {} as Required<T>,
+    {},
     defaults,
-    parent ?? ({} as Partial<T>),
+    parent ?? {},
     current,
   ) as T;
 

@@ -304,7 +304,7 @@ export const getDotenvCliOptions2Options = ({
   // Drop undefined-valued entries at the converter stage to match ProcessEnv
   // expectations and the compat test assertions.
   if (parsedVars) {
-    parsedVars = shake(parsedVars, (v) => v === undefined) as ProcessEnv;
+    parsedVars = shake(parsedVars, (v) => v === undefined);
   }
 
   // Tolerate paths as either a delimited string or string[]
@@ -316,7 +316,7 @@ export const getDotenvCliOptions2Options = ({
   return {
     // Ensure the required logger property is present. The base CLI defaults
     // specify console as the logger; callers can override upstream if desired.
-    logger: console as Logger,
+    logger: console,
     ...(rest as Partial<GetDotenvOptions>),
     ...(pathsOut.length > 0 ? { paths: pathsOut } : {}),
     ...(parsedVars !== undefined ? { vars: parsedVars } : {}),
@@ -342,9 +342,7 @@ export const resolveGetDotenvOptions = (
   // via the dedicated loader/overlay pipeline.
   const mergedDefaults = baseRootOptionDefaults as Partial<RootOptionsShape>;
 
-  const defaultsFromCli = getDotenvCliOptions2Options(
-    mergedDefaults as unknown as RootOptionsShapeCompat,
-  );
+  const defaultsFromCli = getDotenvCliOptions2Options(mergedDefaults);
 
   const result = defaultsDeep(defaultsFromCli, customOptions);
 

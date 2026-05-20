@@ -70,9 +70,6 @@ export function attachInitOptions(cli: GetDotenvCliPublic): InitCommand {
       .option('--dynamic', 'include dynamic examples (JS/TS configs)')
       .option('--cli-name <string>', 'CLI name for skeleton and tokens')
       .option('--force', 'overwrite all existing files')
-      .option(
-        '--yes',
-        'skip all collisions (no overwrite)',
-      ) as unknown as InitCommand
+      .option('--yes', 'skip all collisions (no overwrite)')
   );
 }

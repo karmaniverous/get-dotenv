@@ -24,9 +24,7 @@ export async function resolveAndComputeContext<
   plugins: GetDotenvCliPlugin<TOptions, TArgs, TOpts, TGlobal>[],
   hostMetaUrl: string,
 ): Promise<GetDotenvCliCtx<TOptions>> {
-  const optionsResolved = await resolveGetDotenvOptions(
-    customOptions as Partial<GetDotenvOptions>,
-  );
+  const optionsResolved = await resolveGetDotenvOptions(customOptions);
   // Strict schema validation
   getDotenvOptionsSchemaResolved.parse(optionsResolved);
 

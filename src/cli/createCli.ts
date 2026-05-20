@@ -158,12 +158,12 @@ export function createCli(
 
   // Declare root flags and resolution hooks once, pre-compose.
   // 1) Declare flags using the internal builder (no public helper).
-  attachRootOptionsBuilder(program as unknown as GetDotenvCli, rootDefaults);
+  attachRootOptionsBuilder(program, rootDefaults);
   // 2) Install resolution hooks (preSubcommand/preAction).
-  installRootHooks(program as unknown as GetDotenvCli, rootDefaults);
+  installRootHooks(program, rootDefaults);
   // Apply visibility (hide selected options) after flags are declared.
   if (Object.keys(visibility).length > 0) {
-    applyRootVisibility(program as unknown as GetDotenvCli, visibility);
+    applyRootVisibility(program, visibility);
   }
 
   // Compose wiring: user-provided composer wins; otherwise apply shipped defaults.
@@ -276,10 +276,7 @@ export function createCli(
               sources.project?.local?.rootOptionVisibility ?? undefined,
             );
             if (Object.keys(mergedVis).length > 0) {
-              applyRootVisibility(
-                program as unknown as GetDotenvCli,
-                mergedVis,
-              );
+              applyRootVisibility(program, mergedVis);
             }
           } catch {
             // best-effort; do not block help

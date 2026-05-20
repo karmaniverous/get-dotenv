@@ -40,4 +40,4 @@ export type GetDotenvCliOptions = Omit<
  * Used for type-safe initialization of CLI options bags.
  */
 export const baseGetDotenvCliOptions: Partial<GetDotenvCliOptions> =
-  baseRootOptionDefaults as unknown as Partial<GetDotenvCliOptions>;
+  baseRootOptionDefaults;

@@ -25,9 +25,9 @@ export async function buildEsmInputs(): Promise<Record<string, string>> {
   };
 
   // Only treat subdirectories in src/cli as CLI binaries (e.g., "getdotenv").
-  const cliEntries: Dirent[] = (await fs.readdir('src/cli', {
+  const cliEntries: Dirent[] = await fs.readdir('src/cli', {
     withFileTypes: true,
-  })) as unknown as Dirent[];
+  });
 
   const cliCommands = cliEntries
     .filter((e) =>

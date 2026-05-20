@@ -145,7 +145,7 @@ export function dotenvExpandAll<T extends ProcessEnv | Readonly<ProcessEnv>>(
 ): ProcessEnv & {
   [K in keyof T]: string | undefined;
 } {
-  const { ref = process.env as ProcessEnv, progressive = false } = options;
+  const { ref = process.env, progressive = false } = options;
   const out = Object.keys(values).reduce<ProcessEnv>((acc, key) => {
     acc[key] = dotenvExpand(values[key], {
       ...ref,
