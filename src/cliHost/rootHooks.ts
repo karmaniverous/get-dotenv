@@ -3,11 +3,7 @@ import {
   resolveGetDotenvConfigSources,
   validateEnvAgainstSources,
 } from '@/src/config';
-import {
-  getDotenvCliOptions2Options,
-  type GetDotenvOptions,
-  type RootOptionsShapeCompat,
-} from '@/src/core';
+import { getDotenvCliOptions2Options, type GetDotenvOptions } from '@/src/core';
 import { baseRootOptionDefaults } from '@/src/defaults';
 import { defaultsDeep } from '@/src/util';
 
@@ -84,7 +80,7 @@ export function installRootHooks<TOptions extends GetDotenvOptions>(
     const { merged } = resolveCliOptions<
       RootOptionsShape & { scripts?: ScriptsTable }
     >(raw, d, process.env.getDotenvCliOptions);
-    dbg('preSubcommand:merged', debugView(merged as Partial<RootOptionsShape>));
+    dbg('preSubcommand:merged', debugView(merged));
 
     // Inject merged scripts from config sources (packaged < project/public < project/local).
     (merged as unknown as Record<string, unknown>).scripts = defaultsDeep(
@@ -109,7 +105,7 @@ export function installRootHooks<TOptions extends GetDotenvOptions>(
 
     // Resolve context for this run via programmatic converter.
     const serviceOptions = getDotenvCliOptions2Options(
-      merged as unknown as RootOptionsShapeCompat,
+      merged,
     ) as unknown as Partial<TOptions>;
     await program.resolveAndLoad(serviceOptions);
 
@@ -156,7 +152,7 @@ export function installRootHooks<TOptions extends GetDotenvOptions>(
     const { merged } = resolveCliOptions<
       RootOptionsShape & { scripts?: ScriptsTable }
     >(raw, d, process.env.getDotenvCliOptions);
-    dbg('preAction:merged', debugView(merged as Partial<RootOptionsShape>));
+    dbg('preAction:merged', debugView(merged));
 
     // Inject merged scripts from config sources (packaged < project/public < project/local).
     (merged as unknown as Record<string, unknown>).scripts = defaultsDeep(
@@ -180,7 +176,7 @@ export function installRootHooks<TOptions extends GetDotenvOptions>(
 
     if (!program.hasCtx()) {
       const serviceOptions = getDotenvCliOptions2Options(
-        merged as unknown as RootOptionsShapeCompat,
+        merged,
       ) as unknown as Partial<TOptions>;
       await program.resolveAndLoad(serviceOptions);
       try {

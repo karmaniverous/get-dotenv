@@ -10,10 +10,7 @@ import {
   type ScriptsTable,
 } from '@/src/cliHost';
 import { resolveGetDotenvConfigSources } from '@/src/config';
-import {
-  getDotenvCliOptions2Options,
-  type RootOptionsShapeCompat,
-} from '@/src/core';
+import { getDotenvCliOptions2Options } from '@/src/core';
 import { dotenvExpandFromProcessEnv } from '@/src/dotenv';
 import { defaultsDeep } from '@/src/util';
 
@@ -60,9 +57,7 @@ export const attachCmdParentInvoker = (
   const aliasKey = deriveKey(aliasSpec.flags);
 
   // Expose the option on the parent (root) command.
-  const parentCmd =
-    (cli.parent as unknown as GetDotenvCliPublic | null) ??
-    (cli as unknown as GetDotenvCliPublic);
+  const parentCmd = (cli.parent as unknown as GetDotenvCliPublic | null) ?? cli;
   const desc =
     aliasSpec.description ??
     'alias of cmd subcommand; provide command tokens (variadic)';
@@ -126,9 +121,7 @@ export const attachCmdParentInvoker = (
     const { merged } = resolveCliOptions<
       RootOptionsShape & { scripts?: ScriptsTable }
     >(raw, enrichedDefaults, process.env.getDotenvCliOptions);
-    const serviceOptions = getDotenvCliOptions2Options(
-      merged as unknown as RootOptionsShapeCompat,
-    );
+    const serviceOptions = getDotenvCliOptions2Options(merged);
     await cli.resolveAndLoad(serviceOptions);
 
     // Build input string and apply optional expansion (by config default).

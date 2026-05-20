@@ -182,12 +182,14 @@ export class GetDotenvCli<
 
   /** Internal: climb to the true root (host) command. */
   private _root(): GetDotenvCli {
-    let node: unknown = this as unknown as CommandUnknownOpts;
+    let node: CommandUnknownOpts | null = this.parent;
 
-    while ((node as CommandUnknownOpts).parent) {
-      node = (node as CommandUnknownOpts).parent as unknown;
+    if (!node) return this as unknown as GetDotenvCli;
+
+    while (node.parent) {
+      node = node.parent;
     }
-    return node as GetDotenvCli;
+    return node as unknown as GetDotenvCli;
   }
 
   /**
@@ -337,12 +339,7 @@ export class GetDotenvCli<
       for (const entry of this._plugins) {
         const p = entry.plugin;
         await setupPluginTree<TOptions>(
-          this as unknown as GetDotenvCliPublic<
-            TOptions,
-            unknown[],
-            OptionValues,
-            OptionValues
-          >,
+          this,
           p as unknown as GetDotenvCliPlugin<
             TOptions,
             unknown[],
