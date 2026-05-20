@@ -140,6 +140,11 @@ export default [
     plugins: {
       vitest: vitestPlugin,
     },
+    settings: {
+      vitest: {
+        typecheck: true,
+      },
+    },
     rules: {
       // Apply Vitest recommended and allow projects to override locally if needed
       ...vitestRecommendedRules,
