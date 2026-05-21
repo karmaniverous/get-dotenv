@@ -199,32 +199,33 @@ export function installRootHooks<TOptions extends GetDotenvOptions>(
         merged,
       ) as unknown as Partial<TOptions>;
       await program.resolveAndLoad(serviceOptions);
+    }
 
-      propagateResolvedEnv(merged);
+    // Always propagate resolved env into the merged bag — even when
+    // preSubcommand already set the context.  preAction unconditionally
+    // builds a fresh `merged` and overwrites the options bag, so the env
+    // propagated by preSubcommand is lost without this call.
+    propagateResolvedEnv(merged);
 
-      try {
-        const ctx = program.getCtx();
-        const helpCfg = toHelpConfig(merged, ctx.pluginConfigs);
-        program.evaluateDynamicOptions(helpCfg);
-      } catch {
-        /* tolerate */
+    try {
+      const ctx = program.getCtx();
+      const helpCfg = toHelpConfig(merged, ctx.pluginConfigs);
+      program.evaluateDynamicOptions(helpCfg);
+    } catch {
+      /* tolerate */
+    }
+    try {
+      const ctx = program.getCtx();
+      const issues = validateEnvAgainstSources(ctx.dotenv, sources);
+      if (Array.isArray(issues) && issues.length > 0) {
+        const logger = (merged as unknown as GetDotenvCliOptions).logger;
+        issues.forEach((m) => {
+          logger.error(m);
+        });
+        if ((merged as unknown as GetDotenvCliOptions).strict) process.exit(1);
       }
-      try {
-        const ctx = program.getCtx();
-        const dotenv = ctx.dotenv;
-        const sources2 = await resolveGetDotenvConfigSources(import.meta.url);
-        const issues = validateEnvAgainstSources(dotenv, sources2);
-        if (Array.isArray(issues) && issues.length > 0) {
-          const logger = (merged as unknown as GetDotenvCliOptions).logger;
-          issues.forEach((m) => {
-            logger.error(m);
-          });
-          if ((merged as unknown as GetDotenvCliOptions).strict)
-            process.exit(1);
-        }
-      } catch {
-        /* tolerate non-strict flows */
-      }
+    } catch {
+      /* tolerate non-strict flows */
     }
   });
   return program;
