@@ -18,6 +18,7 @@ export const attachRootOptions = (
 
   const {
     defaultEnv,
+    defaultEnvKey,
     dotenvToken,
     dynamicPath,
     env,
@@ -299,6 +300,15 @@ export const attachRootOptions = (
     if (defaultEnv !== undefined) o1.default(defaultEnv);
     program.addOption(o1);
     program.setOptionGroup(o1, GROUP);
+
+    const o1b = new Option(
+      '--default-env-key <string>',
+      'env var name in global dotenv files that specifies the default environment (dotenv-expanded)',
+    );
+    o1b.argParser(dotenvExpandFromProcessEnv);
+    if (defaultEnvKey !== undefined) o1b.default(defaultEnvKey);
+    program.addOption(o1b);
+    program.setOptionGroup(o1b, GROUP);
 
     const o2 = new Option(
       '--dotenv-token <string>',

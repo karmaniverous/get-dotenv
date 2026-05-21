@@ -64,6 +64,8 @@ export interface RootOptionsShape {
 
   /** Default target environment when not specified. */
   defaultEnv?: string;
+  /** Env var name in global dotenv files that specifies the default environment. */
+  defaultEnvKey?: string;
   /** Token indicating a dotenv file (default: ".env"). */
   dotenvToken?: string;
   /** Path to dynamic variables module (default: undefined). */
