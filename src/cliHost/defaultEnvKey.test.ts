@@ -4,6 +4,8 @@ import fs from 'fs-extra';
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import { GetDotenvCli } from './GetDotenvCli';
+import type { GetDotenvCliOptions } from './GetDotenvCliOptions';
+import { readMergedOptions } from './readMergedOptions';
 
 const ROOT = path.posix.join('.tsbuild', 'defaultEnvKey.tests');
 
@@ -303,6 +305,63 @@ describe('defaultEnvKey pre-pass resolution', () => {
       });
 
       expect(ctx.dotenv.ENV_SETTING).toBe('from_test');
+    } finally {
+      await fs.remove(base);
+    }
+  });
+
+  it('exposes resolved env on context when defaultEnvKey resolves it', async () => {
+    const base = path.posix.join(ROOT, 'ctx-env');
+    await fs.remove(base);
+    await fs.ensureDir(base);
+
+    // Global public: DEFAULT_ENV=bali
+    await fs.writeFile(
+      path.posix.join(base, '.testenv'),
+      'DEFAULT_ENV=bali\n',
+      { encoding: 'utf-8' },
+    );
+    // Env-scoped for bali
+    await fs.writeFile(
+      path.posix.join(base, '.testenv.bali'),
+      'ENV_SETTING=from_bali\n',
+      { encoding: 'utf-8' },
+    );
+
+    try {
+      const cli = new GetDotenvCli('test');
+      const ctx = await cli.resolveAndLoad({
+        dotenvToken: '.testenv',
+        privateToken: 'secret',
+        paths: [base],
+        defaultEnv: 'dev',
+        loadProcess: false,
+      });
+
+      // ctx.env should reflect the dynamically resolved env, not the static defaultEnv
+      expect(ctx.env).toBe('bali');
+      expect(ctx.dotenv.ENV_SETTING).toBe('from_bali');
+
+      // Simulate rootHooks propagation: set an initial bag with defaultEnv='dev',
+      // then propagate the resolved env back into bag.env.
+      cli._setOptionsBag({
+        defaultEnv: 'dev',
+      } as unknown as GetDotenvCliOptions);
+      if (cli.hasCtx()) {
+        const resolvedCtx = cli.getCtx();
+        if (resolvedCtx.env) {
+          const bag = cli.getOptions();
+          if (bag) {
+            (bag as Record<string, unknown>).env = resolvedCtx.env;
+            cli._setOptionsBag(bag);
+          }
+        }
+      }
+
+      // readMergedOptions should return a bag where bag.env equals the resolved env —
+      // plugins see bag.env = 'bali' even though no -e flag was passed.
+      const mergedBag = readMergedOptions(cli);
+      expect(mergedBag.env).toBe('bali');
     } finally {
       await fs.remove(base);
     }

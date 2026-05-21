@@ -40,7 +40,7 @@ JSON/YAML (data only, always-on; no-op when no files are present):
 
 - Allowed keys:
   - rootOptionDefaults?: Partial<RootOptionsShape> — collapsed, CLI‑like flags and strings. Supported keys:
-    - Targeting: `env`, `defaultEnv`, `paths`, `pathsDelimiter`, `pathsDelimiterPattern`, `dotenvToken`, `privateToken`.
+    - Targeting: `env`, `defaultEnv`, `defaultEnvKey`, `paths`, `pathsDelimiter`, `pathsDelimiterPattern`, `dotenvToken`, `privateToken`.
     - Output/Vars: `vars`, `varsAssignor`, `varsAssignorPattern`, `varsDelimiter`, `varsDelimiterPattern`, `outputPath`.
     - Loading: `loadProcess`, `dynamicPath`.
     - Exclusions: `excludeAll`, `excludeDynamic`, `excludeEnv`, `excludeGlobal`, `excludePrivate`, `excludePublic`.
@@ -94,6 +94,18 @@ The overlay flow:
 2. Overlay config sources in order: packaged (public only) → project public → project local.
 3. Apply dynamic in order: programmatic dynamic (if provided) → config dynamic from JS/TS (packaged → project public → project local) → file dynamicPath (lowest dynamic tier).
 4. Optional effects: outputPath (write consolidated dotenv; quote multiline), log (print final map), loadProcess (merge into process.env).
+
+## Environment resolution order
+
+When no explicit `-e` flag is provided, `get-dotenv` resolves the target environment in three tiers:
+
+1. **Explicit `-e` flag** — highest priority, used as-is.
+2. **`defaultEnvKey` lookup** — a global-only pre-pass loads dotenv files (excluding env-scoped files) and looks up the variable named by `defaultEnvKey` (default: `DEFAULT_ENV`). If found, its value becomes the resolved environment.
+3. **Static `defaultEnv`** — the fallback from config if neither of the above produces a value.
+
+Example: if `.env.local` contains `DEFAULT_ENV=bali` and your config sets `defaultEnv: 'dev'`, the resolved environment is `bali` (tier 2 wins over tier 3).
+
+By the time plugins run, `bag.env` is always the fully resolved environment — plugins never need to handle defaulting themselves.
 
 ## Interpolation and expansion model
 

@@ -306,6 +306,7 @@ export const computeContext = async <
   }
 
   return {
+    ...(typeof envName === 'string' ? { env: envName } : {}),
     optionsResolved: validated as TOptions,
     dotenv,
     dotenvProvenance,
