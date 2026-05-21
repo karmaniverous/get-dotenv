@@ -63,6 +63,24 @@ export function installRootHooks<TOptions extends GetDotenvOptions>(
   program: GetDotenvCli<TOptions>,
   defaults?: Partial<RootOptionsShape>,
 ): GetDotenvCli<TOptions> {
+  // Propagate resolved env into the options bag so plugins always see
+  // the effective environment as bag.env — no defaulting logic needed downstream.
+  const propagateResolvedEnv = (
+    merged: RootOptionsShape & { scripts?: ScriptsTable },
+  ) => {
+    if (program.hasCtx()) {
+      const resolvedCtx = program.getCtx();
+      if (resolvedCtx.env) {
+        merged.env = resolvedCtx.env;
+        (
+          program as unknown as {
+            _setOptionsBag: (b: GetDotenvCliOptions) => void;
+          }
+        )._setOptionsBag(merged as unknown as GetDotenvCliOptions);
+      }
+    }
+  };
+
   // Hook: preSubcommand — always runs for subcommand flows.
   program.hook('preSubcommand', async (thisCommand) => {
     const sources = await resolveGetDotenvConfigSources(import.meta.url);
@@ -109,19 +127,7 @@ export function installRootHooks<TOptions extends GetDotenvOptions>(
     ) as unknown as Partial<TOptions>;
     await program.resolveAndLoad(serviceOptions);
 
-    // Propagate resolved env into the options bag so plugins always see
-    // the effective environment as bag.env — no defaulting logic needed downstream.
-    if (program.hasCtx()) {
-      const resolvedCtx = program.getCtx();
-      if (resolvedCtx.env) {
-        (merged as Record<string, unknown>).env = resolvedCtx.env;
-        (
-          program as unknown as {
-            _setOptionsBag: (b: GetDotenvCliOptions) => void;
-          }
-        )._setOptionsBag(merged as unknown as GetDotenvCliOptions);
-      }
-    }
+    propagateResolvedEnv(merged);
 
     // Refresh dynamic help text using the resolved config slices.
     try {
@@ -194,19 +200,7 @@ export function installRootHooks<TOptions extends GetDotenvOptions>(
       ) as unknown as Partial<TOptions>;
       await program.resolveAndLoad(serviceOptions);
 
-      // Propagate resolved env into the options bag so plugins always see
-      // the effective environment as bag.env — no defaulting logic needed downstream.
-      if (program.hasCtx()) {
-        const resolvedCtx = program.getCtx();
-        if (resolvedCtx.env) {
-          (merged as Record<string, unknown>).env = resolvedCtx.env;
-          (
-            program as unknown as {
-              _setOptionsBag: (b: GetDotenvCliOptions) => void;
-            }
-          )._setOptionsBag(merged as unknown as GetDotenvCliOptions);
-        }
-      }
+      propagateResolvedEnv(merged);
 
       try {
         const ctx = program.getCtx();
