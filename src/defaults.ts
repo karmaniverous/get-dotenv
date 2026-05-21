@@ -39,6 +39,8 @@ export interface BaseRootOptionDefaults {
   entropyMinLength: number;
   /** Regex patterns (as strings) to suppress entropy warnings by key. */
   entropyWhitelist: string[];
+  /** Env var name in global dotenv files that specifies the default environment. */
+  defaultEnvKey: string;
   /** Default dotenv search paths (stringly, CLI-compatible). */
   paths: string;
   /** Paths delimiter used for the `--paths` string. */
@@ -75,6 +77,7 @@ const baseScripts: Record<string, BaseRootOptionDefaultsScript> = {
  * @public
  */
 export const baseRootOptionDefaults: BaseRootOptionDefaults = {
+  defaultEnvKey: 'DEFAULT_ENV',
   dotenvToken: '.env',
   loadProcess: true,
   logger: console,

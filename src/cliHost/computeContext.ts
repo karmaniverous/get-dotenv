@@ -114,8 +114,32 @@ export const computeContext = async <
   // Discover config sources.
   const sources = await resolveGetDotenvConfigSources(hostMetaUrl);
 
+  // Pre-pass: read global-only files to resolve defaultEnvKey (skip when env is explicit).
+  let fileDefaultEnv: string | undefined;
+  if (!validated.env) {
+    const defaultEnvKey = validated.defaultEnvKey ?? 'DEFAULT_ENV';
+    const prePass = await readDotenvCascadeWithProvenance({
+      paths: Array.isArray(validated.paths) ? validated.paths : [],
+      ...(typeof validated.dotenvToken === 'string'
+        ? { dotenvToken: validated.dotenvToken }
+        : {}),
+      ...(typeof validated.privateToken === 'string'
+        ? { privateToken: validated.privateToken }
+        : {}),
+      excludeEnv: true,
+    });
+    fileDefaultEnv = prePass.dotenv[defaultEnvKey];
+  }
+
+  // Resolution: env > fileDefaultEnv > defaultEnv
+  const envName =
+    validated.env
+    ?? (typeof fileDefaultEnv === 'string' && fileDefaultEnv.length > 0
+      ? fileDefaultEnv
+      : undefined)
+    ?? validated.defaultEnv;
+
   // Base dotenv from files (with file provenance; no dynamics; no programmatic vars; no side effects).
-  const envName = validated.env ?? validated.defaultEnv;
   const fileRes = await readDotenvCascadeWithProvenance({
     paths: Array.isArray(validated.paths) ? validated.paths : [],
     ...(typeof validated.dotenvToken === 'string'
@@ -124,10 +148,7 @@ export const computeContext = async <
     ...(typeof validated.privateToken === 'string'
       ? { privateToken: validated.privateToken }
       : {}),
-    ...(typeof validated.env === 'string' ? { env: validated.env } : {}),
-    ...(typeof validated.defaultEnv === 'string'
-      ? { defaultEnv: validated.defaultEnv }
-      : {}),
+    ...(typeof envName === 'string' ? { env: envName } : {}),
     ...(validated.excludeEnv === true ? { excludeEnv: true } : {}),
     ...(validated.excludeGlobal === true ? { excludeGlobal: true } : {}),
     ...(validated.excludePrivate === true ? { excludePrivate: true } : {}),

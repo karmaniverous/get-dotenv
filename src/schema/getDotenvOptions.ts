@@ -32,6 +32,8 @@ export const processEnvSchema = z.record(z.string(), z.string().optional());
 export const getDotenvOptionsSchemaRaw = z.object({
   /** Default environment name when `env` is not provided. */
   defaultEnv: z.string().optional(),
+  /** Env var name in global dotenv files that specifies the default environment. */
+  defaultEnvKey: z.string().optional(),
   /** Base dotenv filename token (default `.env`). */
   dotenvToken: z.string().optional(),
   /** Path to a dynamic variables module (JS/TS) to load and apply. */
