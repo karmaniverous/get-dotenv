@@ -114,25 +114,29 @@ export const computeContext = async <
   // Discover config sources.
   const sources = await resolveGetDotenvConfigSources(hostMetaUrl);
 
-  // Pre-pass: read global-only files to resolve defaultEnvKey.
-  const defaultEnvKey = validated.defaultEnvKey ?? 'DEFAULT_ENV';
-  const prePass = await readDotenvCascadeWithProvenance({
-    paths: Array.isArray(validated.paths) ? validated.paths : [],
-    ...(typeof validated.dotenvToken === 'string'
-      ? { dotenvToken: validated.dotenvToken }
-      : {}),
-    ...(typeof validated.privateToken === 'string'
-      ? { privateToken: validated.privateToken }
-      : {}),
-    excludeEnv: true,
-  });
-  const fileDefaultEnv = prePass.dotenv[defaultEnvKey];
+  // Pre-pass: read global-only files to resolve defaultEnvKey (skip when env is explicit).
+  let fileDefaultEnv: string | undefined;
+  if (!validated.env) {
+    const defaultEnvKey = validated.defaultEnvKey ?? 'DEFAULT_ENV';
+    const prePass = await readDotenvCascadeWithProvenance({
+      paths: Array.isArray(validated.paths) ? validated.paths : [],
+      ...(typeof validated.dotenvToken === 'string'
+        ? { dotenvToken: validated.dotenvToken }
+        : {}),
+      ...(typeof validated.privateToken === 'string'
+        ? { privateToken: validated.privateToken }
+        : {}),
+      excludeEnv: true,
+    });
+    fileDefaultEnv = prePass.dotenv[defaultEnvKey];
+  }
 
   // Resolution: env > fileDefaultEnv > defaultEnv
-  const envName = validated.env
+  const envName =
+    validated.env
     ?? (typeof fileDefaultEnv === 'string' && fileDefaultEnv.length > 0
-        ? fileDefaultEnv
-        : undefined)
+      ? fileDefaultEnv
+      : undefined)
     ?? validated.defaultEnv;
 
   // Base dotenv from files (with file provenance; no dynamics; no programmatic vars; no side effects).
