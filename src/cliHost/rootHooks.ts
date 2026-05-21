@@ -109,6 +109,20 @@ export function installRootHooks<TOptions extends GetDotenvOptions>(
     ) as unknown as Partial<TOptions>;
     await program.resolveAndLoad(serviceOptions);
 
+    // Propagate resolved env into the options bag so plugins always see
+    // the effective environment as bag.env — no defaulting logic needed downstream.
+    if (program.hasCtx()) {
+      const resolvedCtx = program.getCtx();
+      if (resolvedCtx.env) {
+        (merged as Record<string, unknown>).env = resolvedCtx.env;
+        (
+          program as unknown as {
+            _setOptionsBag: (b: GetDotenvCliOptions) => void;
+          }
+        )._setOptionsBag(merged as unknown as GetDotenvCliOptions);
+      }
+    }
+
     // Refresh dynamic help text using the resolved config slices.
     try {
       const ctx = program.getCtx();
@@ -179,6 +193,21 @@ export function installRootHooks<TOptions extends GetDotenvOptions>(
         merged,
       ) as unknown as Partial<TOptions>;
       await program.resolveAndLoad(serviceOptions);
+
+      // Propagate resolved env into the options bag so plugins always see
+      // the effective environment as bag.env — no defaulting logic needed downstream.
+      if (program.hasCtx()) {
+        const resolvedCtx = program.getCtx();
+        if (resolvedCtx.env) {
+          (merged as Record<string, unknown>).env = resolvedCtx.env;
+          (
+            program as unknown as {
+              _setOptionsBag: (b: GetDotenvCliOptions) => void;
+            }
+          )._setOptionsBag(merged as unknown as GetDotenvCliOptions);
+        }
+      }
+
       try {
         const ctx = program.getCtx();
         const helpCfg = toHelpConfig(merged, ctx.pluginConfigs);

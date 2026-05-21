@@ -153,6 +153,10 @@ export interface GetDotenvCliCtx<
   TOptions extends GetDotenvOptions = GetDotenvOptions,
 > {
   /**
+   * Effective environment name after resolution (explicit -e \> defaultEnvKey \> defaultEnv).
+   */
+  env?: string;
+  /**
    * Fully resolved option bag used to compute this context.
    */
   optionsResolved: TOptions;

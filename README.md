@@ -88,6 +88,8 @@ Author config in JSON/YAML/JS/TS at your project root. The loader is always on i
 - Dynamic (JS/TS only): `dynamic`
 - Validation (JS/TS schema or required keys): `schema`, `requiredKeys`
 
+Set the target environment dynamically: `defaultEnvKey` names a variable in your global dotenv files (default: `DEFAULT_ENV`) that overrides the static `defaultEnv` when `-e` is not provided.
+
 Overlays apply by kind/env/privacy/source with clear precedence. Details and examples in the [Config guide](./guides/config.md).
 
 ## Dynamic variables (JS/TS)

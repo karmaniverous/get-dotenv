@@ -23,6 +23,14 @@ Per input path, the loader evaluates up to four files in this order:
 
 If a file is missing, it is silently skipped. Parsed values from later files override earlier ones (e.g., private values override public values).
 
+## Environment resolution
+
+When `env` is not set via `-e`, `get-dotenv` performs a global-only pre-pass — loading only global dotenv files (excluding env-scoped files) — and checks for a variable named by `defaultEnvKey` (default: `DEFAULT_ENV`).
+
+Resolution order: explicit `-e` > `defaultEnvKey` value from global files > static `defaultEnv` from config.
+
+The resolved environment then determines which env-scoped files (e.g., `.env.dev`, `.env.dev.local`) are loaded in the full cascade.
+
 ## Multiple paths
 
 When `paths` contains more than one directory, `get-dotenv` visits each directory in the order they appear in the array. For each directory, the same four-file cascade is applied and merged into the overall result. Later paths override earlier paths for colliding keys.
