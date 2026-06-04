@@ -56,7 +56,7 @@ describe('preAction propagates resolved env for subcommand flows', () => {
       rootOptionDefaults: {
         dotenvToken: '.testenv',
         privateToken: 'secret',
-        paths: [base],
+        paths: base,
         loadProcess: false,
       },
       compose: (prog) => prog.use(capturePlugin),

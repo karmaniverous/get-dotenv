@@ -25,7 +25,7 @@ export function buildHelpInformation(
   }
   const marker = '\nCommands:';
   const idx = base.indexOf(marker);
-  let out = base;
+  let out: string;
   if (idx >= 0) {
     const toInsert = groups.startsWith('\n') ? groups : `\n${groups}`;
     out = `${base.slice(0, idx)}${toInsert}${base.slice(idx)}`;

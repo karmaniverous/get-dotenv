@@ -128,7 +128,7 @@ export const discoverConfigFiles = async (
 export const loadConfigFile = async (
   filePath: string,
 ): Promise<GetDotenvConfigResolved> => {
-  let raw: unknown = {};
+  let raw: unknown;
   try {
     const abs = path.resolve(filePath);
     if (isJsOrTs(abs)) {
@@ -140,7 +140,9 @@ export const loadConfigFile = async (
       raw = isJson(abs) ? JSON.parse(txt) : isYaml(abs) ? YAML.parse(txt) : {};
     }
   } catch (err) {
-    throw new Error(`Failed to read/parse config: ${filePath}. ${String(err)}`);
+    throw new Error(`Failed to read/parse config: ${filePath}.`, {
+      cause: err,
+    });
   }
   // Validate RAW
   const parsed = getDotenvConfigSchemaRaw.safeParse(raw);
