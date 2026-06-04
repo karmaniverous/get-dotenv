@@ -84,6 +84,9 @@ export function initializeInstance(
   // The passOptions() helper, when installed, resolves the final context.
   cli.hook('preSubcommand', async () => {
     if (cli.hasCtx()) return;
-    await cli.resolveAndLoad({ loadProcess: false });
+    await cli.resolveAndLoad(
+      { loadProcess: false },
+      { runAfterResolve: false },
+    );
   });
 }

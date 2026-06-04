@@ -5,12 +5,13 @@ import { applyAwsContext } from './common';
 import { resolveAwsContext } from './service';
 
 /**
- * Create the AWS plugin `afterResolve` hook.
+ * Create the AWS plugin afterResolve hook.
  *
- * This runs once per invocation after the host resolves dotenv context.
+ * This runs after the host resolves dotenv context, but only when the aws
+ * plugin (or a child of it) is in the invoked command path.
  *
  * @param plugin - The AWS plugin instance.
- * @returns An `afterResolve` hook function suitable for assigning to `plugin.afterResolve`.
+ * @returns An afterResolve hook function suitable for assigning to plugin.afterResolve.
  *
  * @internal
  */

@@ -261,3 +261,11 @@ Update (DX: no undefined):
 
 - With the current host, readConfig returns a concrete object (never undefined). Defaults are materialized from the schema when no slice is present.
 - The dynamic option callback receives a concrete plugin config object too, so you can reference cfg.foo without optional chaining when you have defaults in your schema.
+
+## afterResolve hook contract
+
+afterResolve hooks run once per invocation after the host resolves dotenv context. When the shipped root hooks are used, afterResolve is **scoped to the invoked command path**: only plugins whose namespace matches the invoked subcommand (and their children) run afterResolve. Sibling and cousin plugins do not fire.
+
+This means a plugin's afterResolve should only set up state relevant to its own command subtree. It should not assume it runs on every invocation. The shipped aws plugin, for example, only resolves AWS credentials and writes to process.env when an aws or aws/* command is invoked.
+
+Custom hosts that call resolveAndLoad() without an invokedSubcommand filter get the legacy behavior where all plugins run afterResolve.

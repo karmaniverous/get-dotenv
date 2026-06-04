@@ -507,7 +507,7 @@ From the root export:
 
 - `cmd`: executes a command under ctx; provides parent alias `-c, --cmd <command...>`; detects conflict when both alias and explicit subcommand are used.
 - `batch`: discovers directories by globs and runs a command sequentially; honors `--list` and `--ignore-errors`.
-- `aws`: establishes a session once per invocation and writes AWS env vars to `process.env`; publishes minimal metadata under `ctx.plugins.aws`; supports `strategy: none` to disable credential export.
+- `aws`: establishes a session when an `aws` command (or child) is invoked, writes AWS env vars to `process.env`; publishes minimal metadata under `ctx.plugins.aws`; supports `strategy: none` to disable credential export. Does not fire on sibling commands.
 - `init`: scaffolds config files and a CLI skeleton under `src/cli/<name>/...`; collision handling supports overwrite/example/skip plus CI heuristics.
 
 ## Shipped plugin interop contracts (composition + runtime state)

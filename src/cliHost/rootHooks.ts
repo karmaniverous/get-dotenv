@@ -82,7 +82,7 @@ export function installRootHooks<TOptions extends GetDotenvOptions>(
   };
 
   // Hook: preSubcommand — always runs for subcommand flows.
-  program.hook('preSubcommand', async (thisCommand) => {
+  program.hook('preSubcommand', async (thisCommand, actionCommand) => {
     const sources = await resolveGetDotenvConfigSources(import.meta.url);
     const rawArgs =
       (thisCommand as unknown as { rawArgs?: string[] }).rawArgs ?? [];
@@ -125,7 +125,9 @@ export function installRootHooks<TOptions extends GetDotenvOptions>(
     const serviceOptions = getDotenvCliOptions2Options(
       merged,
     ) as unknown as Partial<TOptions>;
-    await program.resolveAndLoad(serviceOptions);
+    await program.resolveAndLoad(serviceOptions, {
+      invokedSubcommand: actionCommand.name(),
+    });
 
     propagateResolvedEnv(merged);
 
@@ -198,7 +200,7 @@ export function installRootHooks<TOptions extends GetDotenvOptions>(
       const serviceOptions = getDotenvCliOptions2Options(
         merged,
       ) as unknown as Partial<TOptions>;
-      await program.resolveAndLoad(serviceOptions);
+      await program.resolveAndLoad(serviceOptions, { runAfterResolve: false });
     }
 
     // Always propagate resolved env into the merged bag — even when

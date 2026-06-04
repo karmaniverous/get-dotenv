@@ -4,7 +4,9 @@ title: aws
 
 # Shipped Plugins: aws
 
-The aws plugin establishes an AWS session once per invocation, writes the resolved region and credentials to `process.env`, and publishes a minimal, non‑sensitive breadcrumb under `ctx.plugins.aws` for downstream consumers. It also provides a small `aws` subcommand for session establishment and optional forwarding to the AWS CLI.
+The aws plugin establishes an AWS session when an `aws` command (or any child of `aws`) is invoked, writes the resolved region and credentials to `process.env`, and publishes a minimal, non‑sensitive breadcrumb under `ctx.plugins.aws` for downstream consumers. It also provides a small `aws` subcommand for session establishment and optional forwarding to the AWS CLI.
+
+> **Scoping**: The aws plugin's `afterResolve` hook only fires when the invoked command is `aws` or a descendant of `aws`. If a sibling plugin (e.g., `cmd`) is invoked, the aws plugin does not resolve credentials or write to `process.env`. This prevents unwanted side effects (such as SSO login prompts) on unrelated commands.
 
 This plugin is intended to be the parent for child plugins that need AWS auth. Compose your child plugin under `awsPlugin()` so that ordering and context are guaranteed: the aws parent resolves profile/region/credentials first; the child runs afterward and can safely use the AWS SDK (v3) with the environment already in place.
 
@@ -16,6 +18,8 @@ At a glance:
 - A simple `aws` subcommand to resolve a session and optionally forward to the AWS CLI
 
 ## How it works (high level)
+
+The following resolution logic runs in the aws plugin's `afterResolve` hook, which only fires when the invoked command is within the `aws` subtree (see scoping note above).
 
 - Profile resolve:
   - From config (`plugins.aws.profile`) → dotenv (`AWS_LOCAL_PROFILE`) → dotenv fallback (`AWS_PROFILE`) → undefined.
