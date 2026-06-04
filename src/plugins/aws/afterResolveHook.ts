@@ -24,7 +24,10 @@ export function attachAwsAfterResolveHook(plugin: AwsPlugin) {
 
     const out = await resolveAwsContext({
       dotenv: ctx.dotenv,
-      // Force loginOnDemand off — afterResolve is global; see #23.
+      // afterResolve runs globally on every command, so only passive
+      // credential resolution is safe here. Interactive SSO login is
+      // handled by the command-scoped preSubcommand hook and default
+      // action, which only fire on aws/* paths. See #23.
       cfg: { ...cfg, loginOnDemand: false },
     });
     applyAwsContext(out, ctx, true);
