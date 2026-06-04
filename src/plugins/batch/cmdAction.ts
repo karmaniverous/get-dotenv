@@ -53,6 +53,8 @@ export const attachBatchCmdAction = (
         list?: boolean;
         ignoreErrors?: boolean;
         globs?: string;
+        parallel?: boolean;
+        concurrency?: number;
         pkgCwd?: boolean;
         rootPath?: string;
         command?: string;
@@ -72,6 +74,10 @@ export const attachBatchCmdAction = (
           : typeof cfg.rootPath === 'string'
             ? cfg.rootPath
             : './';
+      const parallel =
+        g.parallel !== undefined ? g.parallel : Boolean(cfg.parallel);
+      const concurrency =
+        typeof g.concurrency === 'number' ? g.concurrency : cfg.concurrency;
 
       // Resolve scripts/shell with precedence:
       // plugin opts → plugin config → merged root CLI options
@@ -86,11 +92,13 @@ export const attachBatchCmdAction = (
         if (typeof commandOpt === 'string') {
           await execShellCommandBatch({
             command: resolveCommand(scripts, commandOpt),
+            ...(concurrency !== undefined ? { concurrency } : {}),
             dotenvEnv,
             globs,
             ignoreErrors,
             list: false,
             logger,
+            parallel,
             ...(pkgCwd ? { pkgCwd } : {}),
             rootPath,
             shell: resolveShell(scripts, commandOpt, shell),
@@ -107,10 +115,12 @@ export const attachBatchCmdAction = (
                 ? rootShell
                 : false;
           await execShellCommandBatch({
+            ...(concurrency !== undefined ? { concurrency } : {}),
             globs,
             ignoreErrors,
             list: true,
             logger,
+            parallel,
             ...(pkgCwd ? { pkgCwd } : {}),
             rootPath,
             shell: listShell,
@@ -154,12 +164,14 @@ export const attachBatchCmdAction = (
 
       await execShellCommandBatch({
         command: commandArg,
+        ...(concurrency !== undefined ? { concurrency } : {}),
         dotenvEnv,
         ...(envBag ? { getDotenvCliOptions: envBag } : {}),
         globs,
         ignoreErrors,
         list: false,
         logger,
+        parallel,
         ...(pkgCwd ? { pkgCwd } : {}),
         rootPath,
         shell: shellSetting,

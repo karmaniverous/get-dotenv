@@ -133,4 +133,62 @@ describe('plugins/batch', () => {
     expect(args.command).toBe('echo OK');
     expect(args.list).toBe(false);
   });
+
+  it('propagates parallel flag', async () => {
+    const run = createCli({
+      alias: 'test',
+      compose: (p) => p.use(batchPlugin()),
+    });
+
+    await run(['node', 'test', 'batch', '--command', 'echo ok', '--parallel']);
+
+    expect(execMock).toHaveBeenCalledTimes(1);
+    const firstCall = execMock.mock.calls[0] as
+      | [Record<string, unknown>]
+      | undefined;
+    const [args] = firstCall as [Record<string, unknown>];
+    expect(args.parallel).toBe(true);
+  });
+
+  it('propagates concurrency flag', async () => {
+    const run = createCli({
+      alias: 'test',
+      compose: (p) => p.use(batchPlugin()),
+    });
+
+    await run([
+      'node',
+      'test',
+      'batch',
+      '--command',
+      'echo ok',
+      '--parallel',
+      '--concurrency',
+      '4',
+    ]);
+
+    expect(execMock).toHaveBeenCalledTimes(1);
+    const firstCall = execMock.mock.calls[0] as
+      | [Record<string, unknown>]
+      | undefined;
+    const [args] = firstCall as [Record<string, unknown>];
+    expect(args.parallel).toBe(true);
+    expect(args.concurrency).toBe(4);
+  });
+
+  it('defaults parallel to false when not specified', async () => {
+    const run = createCli({
+      alias: 'test',
+      compose: (p) => p.use(batchPlugin()),
+    });
+
+    await run(['node', 'test', 'batch', '--command', 'echo ok']);
+
+    expect(execMock).toHaveBeenCalledTimes(1);
+    const firstCall = execMock.mock.calls[0] as
+      | [Record<string, unknown>]
+      | undefined;
+    const [args] = firstCall as [Record<string, unknown>];
+    expect(args.parallel).toBe(false);
+  });
 });
