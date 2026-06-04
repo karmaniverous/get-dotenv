@@ -131,10 +131,6 @@ This separation (“bucket of subcommands”) scales well as your plugin grows.
 
 Notes:
 
-### afterResolve hook contract
-
-`afterResolve` hooks run globally on every invocation and **must be non-interactive**. They should be fast, passive environment enrichment only (e.g., reading cached credentials, setting env vars from resolved context). Interactive flows—such as SSO login prompts or user confirmations—belong in command-scoped hooks (`preSubcommand`) or command actions, which only run when the user invokes a specific command path.
-
 - The `compose` hook runs before parsing and is the recommended way to assemble your CLI surface. The factory installs root options and hooks so shipped plugins can read the merged options bag with `readMergedOptions()`.
 - If you construct a host directly, mirror the shipped wiring (root options + root hooks) before attaching shipped plugins. For most use cases, `createCli` is simpler and safer.
 
@@ -265,3 +261,9 @@ Update (DX: no undefined):
 
 - With the current host, readConfig returns a concrete object (never undefined). Defaults are materialized from the schema when no slice is present.
 - The dynamic option callback receives a concrete plugin config object too, so you can reference cfg.foo without optional chaining when you have defaults in your schema.
+
+## afterResolve hook contract
+
+`afterResolve` hooks run globally on every invocation and **must be non-interactive**. They should be fast, passive environment enrichment only (e.g., reading cached credentials, setting env vars from resolved context). Interactive flows—such as SSO login prompts or user confirmations—belong in command-scoped hooks (`preSubcommand`) or command actions, which only run when the user invokes a specific command path.
+
+This distinction matters because `afterResolve` fires for *all* registered plugins on *every* command, not just commands within a plugin's subtree. A plugin that triggers an interactive prompt in `afterResolve` would block unrelated commands. The shipped `aws` plugin follows this contract: it resolves credentials passively in `afterResolve` (from cache, environment, or static keys) and defers interactive SSO login to its command-scoped `preSubcommand` hook and default action.

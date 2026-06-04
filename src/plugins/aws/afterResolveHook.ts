@@ -7,7 +7,11 @@ import { resolveAwsContext } from './service';
 /**
  * Create the AWS plugin `afterResolve` hook.
  *
- * This runs once per invocation after the host resolves dotenv context.
+ * This runs globally once per invocation after the host resolves dotenv context.
+ * Because `afterResolve` fires for ALL commands (not just `aws` paths),
+ * `loginOnDemand` is forced to `false` here to prevent interactive SSO login
+ * from blocking unrelated commands. Interactive login is handled by the
+ * command-scoped `preSubcommand` hook and default action instead.
  *
  * @param plugin - The AWS plugin instance.
  * @returns An `afterResolve` hook function suitable for assigning to `plugin.afterResolve`.
@@ -20,6 +24,7 @@ export function attachAwsAfterResolveHook(plugin: AwsPlugin) {
 
     const out = await resolveAwsContext({
       dotenv: ctx.dotenv,
+      // Force loginOnDemand off — afterResolve is global; see #23.
       cfg: { ...cfg, loginOnDemand: false },
     });
     applyAwsContext(out, ctx, true);
