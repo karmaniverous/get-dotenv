@@ -82,7 +82,7 @@ export function installRootHooks<TOptions extends GetDotenvOptions>(
   };
 
   // Hook: preSubcommand — always runs for subcommand flows.
-  program.hook('preSubcommand', async (thisCommand, actionCommand) => {
+  program.hook('preSubcommand', async (thisCommand, _actionCommand) => {
     const sources = await resolveGetDotenvConfigSources(import.meta.url);
     const rawArgs =
       (thisCommand as unknown as { rawArgs?: string[] }).rawArgs ?? [];
@@ -122,11 +122,12 @@ export function installRootHooks<TOptions extends GetDotenvOptions>(
     )._setOptionsBag(merged as unknown as GetDotenvCliOptions);
 
     // Resolve context for this run via programmatic converter.
+    // afterResolve is deferred to preAction where the full command path is known.
     const serviceOptions = getDotenvCliOptions2Options(
       merged,
     ) as unknown as Partial<TOptions>;
     await program.resolveAndLoad(serviceOptions, {
-      invokedSubcommand: actionCommand.name(),
+      runAfterResolve: false,
     });
 
     propagateResolvedEnv(merged);
@@ -158,8 +159,8 @@ export function installRootHooks<TOptions extends GetDotenvOptions>(
     }
   });
 
-  // Hook: preAction — root-only and parent-alias flows.
-  program.hook('preAction', async (thisCommand) => {
+  // Hook: preAction — root-only and parent-alias flows + scoped afterResolve.
+  program.hook('preAction', async (thisCommand, actionCommand) => {
     const sources = await resolveGetDotenvConfigSources(import.meta.url);
     const rawArgs =
       (thisCommand as unknown as { rawArgs?: string[] }).rawArgs ?? [];
@@ -228,6 +229,26 @@ export function installRootHooks<TOptions extends GetDotenvOptions>(
       }
     } catch {
       /* tolerate non-strict flows */
+    }
+
+    // Run afterResolve scoped to the invoked command branch.
+    // Walk actionCommand.parent chain to build the full plugin path.
+    // Always true after resolution above, but satisfies the type checker.
+    const ctx = program.hasCtx() ? program.getCtx() : undefined;
+    if (ctx) {
+      const segments: string[] = [];
+      let node: { name: () => string; parent?: unknown } | undefined =
+        actionCommand;
+      while (node && node !== (thisCommand as unknown)) {
+        segments.unshift(node.name());
+        node = (node as { parent?: { name: () => string; parent?: unknown } })
+          .parent;
+      }
+      await (
+        program as unknown as {
+          _runAfterResolve: (c: typeof ctx, p?: string[]) => Promise<void>;
+        }
+      )._runAfterResolve(ctx, segments.length > 0 ? segments : undefined);
     }
   });
   return program;

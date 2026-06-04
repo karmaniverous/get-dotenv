@@ -140,7 +140,10 @@ export class GetDotenvCli<
     // Ensure plugins are installed exactly once, then run afterResolve.
     await this.install();
     if (opts?.runAfterResolve ?? true) {
-      await this._runAfterResolve(ctx, opts?.invokedSubcommand);
+      const path = opts?.invokedSubcommand
+        ? [opts.invokedSubcommand]
+        : undefined;
+      await this._runAfterResolve(ctx, path);
     }
 
     return ctx;
@@ -363,19 +366,52 @@ export class GetDotenvCli<
 
   /**
    * Run afterResolve hooks for registered plugins (parent → children).
-   * When {@link invokedSubcommand} is provided, only the matching plugin
-   * subtree runs; otherwise all plugins run (backward compatibility).
+   * When {@link commandPath} is provided, only the matching branch of the
+   * plugin tree runs; otherwise all plugins run (backward compatibility).
+   *
+   * The path is walked segment-by-segment against the plugin tree.
+   * Intermediate matches run their own afterResolve hook.
+   * The deepest match runs afterResolve for itself and all its descendants.
    */
-  private async _runAfterResolve(
+  async _runAfterResolve(
     ctx: GetDotenvCliCtx<TOptions>,
-    invokedSubcommand?: string,
+    commandPath?: string[],
   ): Promise<void> {
-    const plugins = invokedSubcommand
-      ? this._plugins
-          .filter((e) => effectiveNs(e) === invokedSubcommand)
-          .map((e) => e.plugin)
-      : this._plugins.map((e) => e.plugin);
+    if (!commandPath || commandPath.length === 0) {
+      await runAfterResolveTree(
+        this,
+        this._plugins.map((e) => e.plugin),
+        ctx,
+      );
+      return;
+    }
 
-    await runAfterResolveTree(this, plugins, ctx);
+    // Walk the plugin tree along the command path, scoping to the invoked branch.
+    let entries: Array<PluginChildEntry<TOptions, TArgs, TOpts, TGlobal>> =
+      this._plugins;
+
+    for (let i = 0; i < commandPath.length; i++) {
+      const segment = commandPath[i] as string;
+      const entry = entries.find((e) => effectiveNs(e) === segment);
+      if (!entry) return;
+
+      const isLast = i === commandPath.length - 1;
+      const nextSegment = commandPath[i + 1];
+      const hasMatchingChild =
+        !isLast &&
+        entry.plugin.children.some((e) => effectiveNs(e) === nextSegment);
+
+      if (isLast || !hasMatchingChild) {
+        // Deepest match: run this plugin + all its descendants.
+        await runAfterResolveTree(this, [entry.plugin], ctx);
+        return;
+      }
+
+      // Intermediate match: run only this plugin's own afterResolve.
+      if (entry.plugin.afterResolve) {
+        await entry.plugin.afterResolve(this, ctx);
+      }
+      entries = entry.plugin.children;
+    }
   }
 }
