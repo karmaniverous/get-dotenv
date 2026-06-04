@@ -2,11 +2,7 @@ import type { OptionValues } from '@commander-js/extra-typings';
 
 import type { GetDotenvOptions } from '@/src/core';
 
-import type {
-  GetDotenvCliPlugin,
-  GetDotenvCliPublic,
-  PluginChildEntry,
-} from './contracts';
+import type { GetDotenvCliPlugin, GetDotenvCliPublic } from './contracts';
 
 // Existential CLI public alias for installer-only use. Keeps recursive Commander
 // generics contained and avoids leaking specific Args/Opts/Global types.
@@ -22,9 +18,10 @@ type AnyCliPublic<TOptions extends GetDotenvOptions> = GetDotenvCliPublic<
  * Uses a structural parameter so any entry with `.override?.ns` and `.plugin.ns`
  * is accepted regardless of full generic variance.
  */
-export const effectiveNs = (
-  child: { override?: { ns?: string } | undefined; plugin: { ns: string } },
-): string => {
+export const effectiveNs = (child: {
+  override?: { ns?: string } | undefined;
+  plugin: { ns: string };
+}): string => {
   const o = child.override;
   return (
     o && typeof o.ns === 'string' && o.ns.length > 0 ? o.ns : child.plugin.ns

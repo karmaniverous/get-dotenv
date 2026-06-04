@@ -116,12 +116,12 @@ export class GetDotenvCli<
    *
    * @param customOptions - Partial options to overlay for this invocation.
    * @param opts - Optional resolver behavior switches.
-   * @param opts.runAfterResolve - When false, skips running plugin afterResolve
-   *   hooks. Useful for top-level help rendering to avoid long-running
-   *   side-effects while still evaluating dynamic help text. Default: true.
-   * @param opts.invokedSubcommand - When provided, only the plugin subtree
-   *   whose namespace matches this name runs afterResolve hooks.
-   *   When omitted, all plugins run afterResolve (backward compatibility).
+   *   - `runAfterResolve` (default `true`): when false, skips running plugin
+   *     afterResolve hooks. Useful for top-level help rendering to avoid
+   *     long-running side-effects while still evaluating dynamic help text.
+   *   - `invokedSubcommand`: when provided, only the plugin subtree whose
+   *     namespace matches this name runs afterResolve hooks. When omitted,
+   *     all plugins run afterResolve (backward compatibility).
    */
   async resolveAndLoad(
     customOptions: Partial<TOptions> = {},
