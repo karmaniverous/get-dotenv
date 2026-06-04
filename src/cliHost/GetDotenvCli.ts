@@ -136,7 +136,7 @@ export class GetDotenvCli<
     // Ensure plugins are installed exactly once, then run afterResolve.
     await this.install();
     if (opts?.runAfterResolve ?? true) {
-      await this._runAfterResolve(ctx);
+      await this._runAfterResolve(ctx, opts?.invokedSubcommand);
     }
 
     return ctx;
@@ -362,11 +362,25 @@ export class GetDotenvCli<
    */
   private async _runAfterResolve(
     ctx: GetDotenvCliCtx<TOptions>,
+    invokedSubcommand?: string,
   ): Promise<void> {
-    await runAfterResolveTree(
-      this,
-      this._plugins.map((e) => e.plugin),
-      ctx,
-    );
+    // When invokedSubcommand is provided, only run afterResolve for the
+    // matching plugin subtree. When omitted, run all (backward compat).
+    const plugins = invokedSubcommand
+      ? this._plugins
+          .filter((e) => {
+            const ns = (
+              e.override &&
+              typeof e.override.ns === 'string' &&
+              e.override.ns.length > 0
+                ? e.override.ns
+                : e.plugin.ns
+            ).trim();
+            return ns === invokedSubcommand;
+          })
+          .map((e) => e.plugin)
+      : this._plugins.map((e) => e.plugin);
+
+    await runAfterResolveTree(this, plugins, ctx);
   }
 }

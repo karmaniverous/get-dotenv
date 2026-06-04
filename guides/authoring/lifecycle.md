@@ -264,6 +264,8 @@ Update (DX: no undefined):
 
 ## afterResolve hook contract
 
-`afterResolve` hooks run globally on every invocation and **must be non-interactive**. They should be fast, passive environment enrichment only (e.g., reading cached credentials, setting env vars from resolved context). Interactive flows—such as SSO login prompts or user confirmations—belong in command-scoped hooks (`preSubcommand`) or command actions, which only run when the user invokes a specific command path.
+afterResolve hooks run once per invocation after the host resolves dotenv context. When the shipped root hooks are used, afterResolve is **scoped to the invoked command path**: only plugins whose namespace matches the invoked subcommand (and their children) run afterResolve. Sibling and cousin plugins do not fire.
 
-This distinction matters because `afterResolve` fires for *all* registered plugins on *every* command, not just commands within a plugin's subtree. A plugin that triggers an interactive prompt in `afterResolve` would block unrelated commands. The shipped `aws` plugin follows this contract: it resolves credentials passively in `afterResolve` (from cache, environment, or static keys) and defers interactive SSO login to its command-scoped `preSubcommand` hook and default action.
+This means a plugin's afterResolve should only set up state relevant to its own command subtree. It should not assume it runs on every invocation. The shipped aws plugin, for example, only resolves AWS credentials and writes to process.env when an aws or aws/* command is invoked.
+
+Custom hosts that call resolveAndLoad() without an invokedSubcommand filter get the legacy behavior where all plugins run afterResolve.

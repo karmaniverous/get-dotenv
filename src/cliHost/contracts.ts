@@ -30,6 +30,12 @@ export interface ResolveAndLoadOptions {
    * @default true
    */
   runAfterResolve?: boolean;
+  /**
+   * Name of the invoked subcommand (plugin namespace). When provided,
+   * only the matching plugin subtree runs afterResolve hooks.
+   * When omitted, all plugins run afterResolve (backward compatibility).
+   */
+  invokedSubcommand?: string;
 }
 
 /**
@@ -169,11 +175,10 @@ export interface GetDotenvCliPlugin<
    * or attach per-plugin state under ctx.plugins (by convention).
    * Runs parent → children (pre-order).
    *
-   * **Contract**: afterResolve hooks run globally on every invocation and
-   * MUST be non-interactive. They should be fast, passive environment
-   * enrichment only (e.g., reading cached credentials, setting env vars).
-   * Interactive flows (such as SSO login prompts) belong in command-scoped
-   * hooks (preSubcommand or actions).
+   * **Scoping**: When the host provides an invoked subcommand filter,
+   * afterResolve only fires for plugins whose namespace matches the
+   * invoked command path. A plugin's afterResolve should never produce
+   * side effects for commands outside its subtree.
    */
   afterResolve?: (
     cli: GetDotenvCliPublic<TOptions, TArgs, TOpts, TGlobal>,

@@ -64,7 +64,7 @@ describe('loginOnDemand scoping (CLI integration)', () => {
     delete process.env.AWS_SESSION_TOKEN;
   });
 
-  it('non-aws command: resolveAwsContext always receives loginOnDemand false', async () => {
+  it('non-aws command: afterResolve does not fire for aws plugin', async () => {
     const run = createCli({
       alias: 'test',
       compose: (program) =>
@@ -78,15 +78,11 @@ describe('loginOnDemand scoping (CLI integration)', () => {
 
     await run(['node', 'test', 'cmd', 'echo', 'hello']);
 
-    // afterResolve fires for every command; loginOnDemand must be false.
-    const lodValues = resolveAwsContextMock.mock.calls.map(
-      ([arg]) => arg.cfg.loginOnDemand,
-    );
-    expect(lodValues.length).toBeGreaterThan(0);
-    expect(lodValues.every((v) => v === false)).toBe(true);
+    // afterResolve is scoped: aws plugin should NOT be called for non-aws commands.
+    expect(resolveAwsContextMock).not.toHaveBeenCalled();
   });
 
-  it('aws command: afterResolve passes false, action passes true', async () => {
+  it('aws command: afterResolve fires with full config including loginOnDemand', async () => {
     const run = createCli({
       alias: 'test',
       compose: (program) => program.use(awsPlugin()),
@@ -101,16 +97,15 @@ describe('loginOnDemand scoping (CLI integration)', () => {
       'us-east-1',
     ]);
 
+    // resolveAwsContext should be called, and at least one call should have loginOnDemand: true
+    expect(resolveAwsContextMock).toHaveBeenCalled();
     const lodValues = resolveAwsContextMock.mock.calls.map(
       ([arg]) => arg.cfg.loginOnDemand,
     );
-
-    // At least one call with false (afterResolve) and one with true (defaultAction).
-    expect(lodValues).toContain(false);
     expect(lodValues).toContain(true);
   });
 
-  it('aws child command: afterResolve passes false, preSubcommand passes true', async () => {
+  it('aws child command: afterResolve fires with full config including loginOnDemand', async () => {
     const logSpy = vi.spyOn(console, 'log').mockImplementation(() => undefined);
 
     const run = createCli({
@@ -128,12 +123,10 @@ describe('loginOnDemand scoping (CLI integration)', () => {
       'whoami',
     ]);
 
+    expect(resolveAwsContextMock).toHaveBeenCalled();
     const lodValues = resolveAwsContextMock.mock.calls.map(
       ([arg]) => arg.cfg.loginOnDemand,
     );
-
-    // At least one call with false (afterResolve) and one with true (preSubcommand).
-    expect(lodValues).toContain(false);
     expect(lodValues).toContain(true);
 
     logSpy.mockRestore();
