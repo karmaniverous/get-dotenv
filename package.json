@@ -137,6 +137,7 @@
   "files": [
     "dist",
     "getdotenv.config.json",
+    "schema",
     "templates"
   ],
   "homepage": "https://github.com/karmaniverous/get-dotenv#readme",
@@ -200,7 +201,8 @@
     "url": "https://github.com/karmaniverous/get-dotenv"
   },
   "scripts": {
-    "build": "rimraf dist && rollup --config rollup.config.ts --configPlugin @rollup/plugin-typescript",
+    "generate:schema": "tsx tools/generate-schema.js",
+    "build": "npm run generate:schema && rimraf dist && rollup --config rollup.config.ts --configPlugin @rollup/plugin-typescript",
     "cli": "tsx src/cli/getdotenv",
     "cli:dist": "node dist/getdotenv.cli.mjs",
     "changelog": "auto-changelog",
