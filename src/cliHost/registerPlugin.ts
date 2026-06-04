@@ -19,9 +19,11 @@ type AnyCliPublic<TOptions extends GetDotenvOptions> = GetDotenvCliPublic<
 
 /**
  * Determine the effective namespace for a child plugin (override \> default).
+ * Uses a structural parameter so any entry with `.override?.ns` and `.plugin.ns`
+ * is accepted regardless of full generic variance.
  */
-const effectiveNs = <TOptions extends GetDotenvOptions>(
-  child: PluginChildEntry<TOptions, unknown[], OptionValues, OptionValues>,
+export const effectiveNs = (
+  child: { override?: { ns?: string } | undefined; plugin: { ns: string } },
 ): string => {
   const o = child.override;
   return (

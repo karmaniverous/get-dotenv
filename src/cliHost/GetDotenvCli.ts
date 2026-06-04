@@ -36,7 +36,7 @@ import type { GetDotenvCliOptions } from './GetDotenvCliOptions';
 import { GROUP_TAG } from './groups';
 import type { ResolvedHelpConfig } from './helpConfig';
 import { initializeInstance } from './initializeInstance';
-import { setupPluginTree } from './registerPlugin';
+import { effectiveNs, setupPluginTree } from './registerPlugin';
 import { resolveAndComputeContext } from './resolveAndComputeContext';
 import { runAfterResolveTree } from './runAfterResolve';
 import { tagAppOptionsAround } from './tagAppOptionsHelper';
@@ -114,10 +114,14 @@ export class GetDotenvCli<
    * Resolve options (strict) and compute dotenv context.
    * Stores the context on the instance under a symbol.
    *
-   * Options:
-   * - opts.runAfterResolve (default true): when false, skips running plugin
-   *   afterResolve hooks. Useful for top-level help rendering to avoid
-   *   long-running side-effects while still evaluating dynamic help text.
+   * @param customOptions - Partial options to overlay for this invocation.
+   * @param opts - Optional resolver behavior switches.
+   * @param opts.runAfterResolve - When false, skips running plugin afterResolve
+   *   hooks. Useful for top-level help rendering to avoid long-running
+   *   side-effects while still evaluating dynamic help text. Default: true.
+   * @param opts.invokedSubcommand - When provided, only the plugin subtree
+   *   whose namespace matches this name runs afterResolve hooks.
+   *   When omitted, all plugins run afterResolve (backward compatibility).
    */
   async resolveAndLoad(
     customOptions: Partial<TOptions> = {},
@@ -358,26 +362,17 @@ export class GetDotenvCli<
   }
 
   /**
-   * Run afterResolve hooks for all plugins (parent → children).
+   * Run afterResolve hooks for registered plugins (parent → children).
+   * When {@link invokedSubcommand} is provided, only the matching plugin
+   * subtree runs; otherwise all plugins run (backward compatibility).
    */
   private async _runAfterResolve(
     ctx: GetDotenvCliCtx<TOptions>,
     invokedSubcommand?: string,
   ): Promise<void> {
-    // When invokedSubcommand is provided, only run afterResolve for the
-    // matching plugin subtree. When omitted, run all (backward compat).
     const plugins = invokedSubcommand
       ? this._plugins
-          .filter((e) => {
-            const ns = (
-              e.override &&
-              typeof e.override.ns === 'string' &&
-              e.override.ns.length > 0
-                ? e.override.ns
-                : e.plugin.ns
-            ).trim();
-            return ns === invokedSubcommand;
-          })
+          .filter((e) => effectiveNs(e) === invokedSubcommand)
           .map((e) => e.plugin)
       : this._plugins.map((e) => e.plugin);
 
