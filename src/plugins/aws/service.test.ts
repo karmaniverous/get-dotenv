@@ -341,6 +341,80 @@ describe('plugins/aws/service.resolveAwsContext', () => {
     expect(out.credentials).toEqual({ accessKeyId: 'A', secretAccessKey: 'S' });
   });
 
+  it('loginOnDemand: false does not trigger aws sso login', async () => {
+    runCommandResultMock.mockImplementation((cmd) => {
+      const args = Array.isArray(cmd) ? cmd : cmd.split(/\s+/);
+      const isExport =
+        args[0] === 'aws' &&
+        args[1] === 'configure' &&
+        args[2] === 'export-credentials';
+      if (isExport)
+        return Promise.resolve({ exitCode: 1, stdout: '', stderr: '' });
+      const isGet =
+        args[0] === 'aws' &&
+        args[1] === 'configure' &&
+        args[2] === 'get' &&
+        typeof args[3] === 'string';
+      if (isGet) {
+        const key = args[3];
+        if (key === 'sso_session')
+          return Promise.resolve({
+            exitCode: 0,
+            stdout: 'mysession',
+            stderr: '',
+          });
+        if (key === 'sso_start_url')
+          return Promise.resolve({ exitCode: 0, stdout: '', stderr: '' });
+        return Promise.resolve({ exitCode: 0, stdout: '', stderr: '' });
+      }
+      return Promise.resolve({ exitCode: 1, stdout: '', stderr: '' });
+    });
+    await resolveAwsContext({
+      dotenv: { AWS_PROFILE: 'dev' },
+      cfg: { ...baseCfg, loginOnDemand: false },
+    });
+    // aws sso login must never be called when loginOnDemand is false
+    // (this is the contract the afterResolve hook relies on)
+    expect(runCommandMock).not.toHaveBeenCalled();
+  });
+
+  it('loginOnDemand override prevents SSO login even when cfg has it enabled', async () => {
+    runCommandResultMock.mockImplementation((cmd) => {
+      const args = Array.isArray(cmd) ? cmd : cmd.split(/\s+/);
+      const isExport =
+        args[0] === 'aws' &&
+        args[1] === 'configure' &&
+        args[2] === 'export-credentials';
+      if (isExport)
+        return Promise.resolve({ exitCode: 1, stdout: '', stderr: '' });
+      const isGet =
+        args[0] === 'aws' &&
+        args[1] === 'configure' &&
+        args[2] === 'get' &&
+        typeof args[3] === 'string';
+      if (isGet) {
+        const key = args[3];
+        if (key === 'sso_session')
+          return Promise.resolve({
+            exitCode: 0,
+            stdout: 'mysession',
+            stderr: '',
+          });
+        if (key === 'sso_start_url')
+          return Promise.resolve({ exitCode: 0, stdout: '', stderr: '' });
+        return Promise.resolve({ exitCode: 0, stdout: '', stderr: '' });
+      }
+      return Promise.resolve({ exitCode: 1, stdout: '', stderr: '' });
+    });
+    // Simulate what afterResolveHook does: spread cfg with loginOnDemand: false
+    const cfgWithLogin: AwsPluginConfig = { ...baseCfg, loginOnDemand: true };
+    await resolveAwsContext({
+      dotenv: { AWS_PROFILE: 'dev' },
+      cfg: { ...cfgWithLogin, loginOnDemand: false },
+    });
+    expect(runCommandMock).not.toHaveBeenCalled();
+  });
+
   it('profile wins over ambient env credentials when present', async () => {
     process.env.AWS_ACCESS_KEY_ID = 'ENV_AKIA';
     process.env.AWS_SECRET_ACCESS_KEY = 'ENV_SECRET';

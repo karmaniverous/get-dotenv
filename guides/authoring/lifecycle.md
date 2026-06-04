@@ -131,6 +131,10 @@ This separation (“bucket of subcommands”) scales well as your plugin grows.
 
 Notes:
 
+### afterResolve hook contract
+
+`afterResolve` hooks run globally on every invocation and **must be non-interactive**. They should be fast, passive environment enrichment only (e.g., reading cached credentials, setting env vars from resolved context). Interactive flows—such as SSO login prompts or user confirmations—belong in command-scoped hooks (`preSubcommand`) or command actions, which only run when the user invokes a specific command path.
+
 - The `compose` hook runs before parsing and is the recommended way to assemble your CLI surface. The factory installs root options and hooks so shipped plugins can read the merged options bag with `readMergedOptions()`.
 - If you construct a host directly, mirror the shipped wiring (root options + root hooks) before attaching shipped plugins. For most use cases, `createCli` is simpler and safer.
 

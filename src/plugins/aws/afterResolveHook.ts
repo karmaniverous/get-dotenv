@@ -20,7 +20,7 @@ export function attachAwsAfterResolveHook(plugin: AwsPlugin) {
 
     const out = await resolveAwsContext({
       dotenv: ctx.dotenv,
-      cfg,
+      cfg: { ...cfg, loginOnDemand: false },
     });
     applyAwsContext(out, ctx, true);
 

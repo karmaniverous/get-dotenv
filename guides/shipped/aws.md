@@ -49,7 +49,7 @@ Config keys (under `plugins.aws`):
 - `profileFallbackKey?: string` — fallback dotenv/config key for profile (default: `"AWS_PROFILE"`)
 - `regionKey?: string` — dotenv/config key for region (default: `"AWS_REGION"`)
 - `strategy?: "cli-export" | "none"` — credential acquisition strategy (default `"cli-export"`). Use `"none"` to skip credential resolution; region resolution still applies.
-- `loginOnDemand?: boolean` — attempt `aws sso login` once when export fails for SSO profiles (default `false`)
+- `loginOnDemand?: boolean` — attempt `aws sso login` once when export fails for SSO profiles (default `false`). **Note:** `loginOnDemand` only fires when an `aws` or `aws/*` command path is invoked (via the default action or preSubcommand hook). The global `afterResolve` hook passively resolves credentials from cache/env/static keys and never triggers interactive SSO login, regardless of this setting.
 
 Subcommand flags (map directly to config for effective defaults):
 

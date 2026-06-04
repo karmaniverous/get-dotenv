@@ -168,6 +168,12 @@ export interface GetDotenvCliPlugin<
    * After the dotenv context is resolved, initialize any clients/secrets
    * or attach per-plugin state under ctx.plugins (by convention).
    * Runs parent → children (pre-order).
+   *
+   * **Contract**: afterResolve hooks run globally on every invocation and
+   * MUST be non-interactive. They should be fast, passive environment
+   * enrichment only (e.g., reading cached credentials, setting env vars).
+   * Interactive flows (such as SSO login prompts) belong in command-scoped
+   * hooks (preSubcommand or actions).
    */
   afterResolve?: (
     cli: GetDotenvCliPublic<TOptions, TArgs, TOpts, TGlobal>,
