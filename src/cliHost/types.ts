@@ -80,7 +80,7 @@ export interface RootOptionsShape {
   trace?: boolean | string[];
 
   /** Paths to search for dotenv files (space-delimited string or array). */
-  paths?: string;
+  paths?: string | string[];
   /** Delimiter for paths string (default: space). */
   pathsDelimiter?: string;
   /** Regex pattern for paths delimiter. */

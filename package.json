@@ -156,9 +156,13 @@
   "main": "dist/index.mjs",
   "name": "@karmaniverous/get-dotenv",
   "peerDependencies": {
+    "@aws-sdk/client-sts": "^3.965.0",
     "esbuild": "*"
   },
   "peerDependenciesMeta": {
+    "@aws-sdk/client-sts": {
+      "optional": true
+    },
     "esbuild": {
       "optional": true
     }
