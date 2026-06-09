@@ -230,7 +230,12 @@ export async function getDotenv(
   }
 
   // Load process.env.
-  if (loadProcess) Object.assign(process.env, resultDotenv);
+  if (loadProcess) {
+    for (const [key, value] of Object.entries(resultDotenv)) {
+      if (value === undefined) Reflect.deleteProperty(process.env, key);
+      else process.env[key] = value;
+    }
+  }
 
   return resultDotenv;
 }

@@ -61,7 +61,7 @@ export type RootOptionsShapeCompat = Omit<
 export type GetDotenvDynamicFunction = (
   vars: ProcessEnv,
   env: string | undefined,
-) => string | undefined;
+) => string | null | undefined;
 
 /**
  * A map of dynamic variable definitions.
@@ -126,7 +126,7 @@ export type GetDotenvOptions = Omit<
 export type DynamicFn<Vars extends ProcessEnv> = (
   vars: Vars,
   env?: string,
-) => string | undefined;
+) => string | null | undefined;
 
 /**
  * Vars-aware dynamic map type used by {@link defineDynamic} and JS/TS configs.

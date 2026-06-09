@@ -24,7 +24,7 @@ const _fn: DynamicFn<Vars> = dynamic.GREETING;
 const _tag: string = dynamic.TAG;
 
 // Ensure DynamicFn arg types line up (APP/ENV from Vars)
-const _exampleCall: string | undefined = _fn({ APP: 'world' }, 'dev');
+const _exampleCall: string | null | undefined = _fn({ APP: 'world' }, 'dev');
 void _exampleCall;
 void _fn;
 void _tag;

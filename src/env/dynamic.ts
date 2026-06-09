@@ -16,8 +16,10 @@ import { type DotenvDynamicSource, pushDotenvProvenance } from './provenance';
 
 /**
  * Apply a dynamic map to the target progressively.
- * - Functions receive (target, env) and may return string | undefined.
- * - Literals are assigned directly (including undefined).
+ * - Functions receive (target, env) and may return string | null | undefined.
+ * - string → set the key to that value.
+ * - undefined → no-op, leave existing value unchanged.
+ * - null → delete the key from the target.
  *
  * @param target - Mutable target environment to assign into.
  * @param map - Dynamic map to apply (functions and/or literal values).
@@ -33,7 +35,9 @@ export function applyDynamicMap(
   for (const key of Object.keys(map)) {
     const val =
       typeof map[key] === 'function' ? map[key](target, env) : map[key];
-    Object.assign(target, { [key]: val });
+    if (val === null) Reflect.deleteProperty(target, key);
+    else if (val !== undefined) target[key] = val;
+    // undefined → no-op
   }
 }
 
@@ -94,17 +98,32 @@ export function applyDynamicMapWithProvenance(
   for (const key of Object.keys(map)) {
     const val =
       typeof map[key] === 'function' ? map[key](target, env) : map[key];
-    Object.assign(target, { [key]: val });
-    pushDotenvProvenance(prov, key, {
-      kind: 'dynamic',
-      op: typeof val === 'string' ? 'set' : 'unset',
-      dynamicSource: meta.dynamicSource,
-      ...(meta.dynamicSource === 'dynamicPath' &&
-      typeof meta.dynamicPath === 'string' &&
-      meta.dynamicPath.length > 0
-        ? { dynamicPath: meta.dynamicPath }
-        : {}),
-    });
+    if (val === null) {
+      Reflect.deleteProperty(target, key);
+      pushDotenvProvenance(prov, key, {
+        kind: 'dynamic',
+        op: 'unset',
+        dynamicSource: meta.dynamicSource,
+        ...(meta.dynamicSource === 'dynamicPath' &&
+        typeof meta.dynamicPath === 'string' &&
+        meta.dynamicPath.length > 0
+          ? { dynamicPath: meta.dynamicPath }
+          : {}),
+      });
+    } else if (val !== undefined) {
+      target[key] = val;
+      pushDotenvProvenance(prov, key, {
+        kind: 'dynamic',
+        op: 'set',
+        dynamicSource: meta.dynamicSource,
+        ...(meta.dynamicSource === 'dynamicPath' &&
+        typeof meta.dynamicPath === 'string' &&
+        meta.dynamicPath.length > 0
+          ? { dynamicPath: meta.dynamicPath }
+          : {}),
+      });
+    }
+    // undefined → no-op, no provenance entry
   }
 }
 
