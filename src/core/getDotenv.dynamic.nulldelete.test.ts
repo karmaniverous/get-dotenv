@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it } from 'vitest';
 
 import { getDotenv } from './getDotenv';
 
@@ -63,5 +63,30 @@ describe('getDotenv dynamic null/undefined semantics', () => {
       },
     });
     expect(vars.NEW_KEY).toBe('hello');
+  });
+
+  describe('loadProcess null-delete', () => {
+    const SENTINEL_KEY = '__GETDOTENV_NULL_DELETE_TEST__';
+
+    afterEach(() => {
+      Reflect.deleteProperty(process.env, SENTINEL_KEY);
+    });
+
+    it('dynamic null removes an existing key from process.env when loadProcess is true', async () => {
+      // Pre-seed process.env so the key exists before getDotenv runs.
+      process.env[SENTINEL_KEY] = 'should-be-removed';
+
+      await getDotenv({
+        dotenvToken: '.testenv',
+        paths: ['./test/full'],
+        env: 'test',
+        loadProcess: true,
+        dynamic: {
+          [SENTINEL_KEY]: () => null,
+        },
+      });
+
+      expect(SENTINEL_KEY in process.env).toBe(false);
+    });
   });
 });

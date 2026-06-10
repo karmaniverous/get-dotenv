@@ -146,11 +146,17 @@ export async function getDotenv(
   );
 
   // Process dynamic variables. Programmatic option takes precedence over path.
+  const deletedKeys = new Set<string>();
   if (!excludeDynamic) {
     // A2 precedence: programmatic dynamic < dynamicPath (dynamicPath wins when present)
     if (options.dynamic && Object.keys(options.dynamic).length > 0) {
       try {
-        applyDynamicMap(dotenv, options.dynamic, env ?? defaultEnv);
+        for (const k of applyDynamicMap(
+          dotenv,
+          options.dynamic,
+          env ?? defaultEnv,
+        ))
+          deletedKeys.add(k);
       } catch {
         throw new Error(`Unable to evaluate dynamic variables.`);
       }
@@ -158,12 +164,13 @@ export async function getDotenv(
     // dynamicPath is evaluated even when programmatic `dynamic` is present.
     if (dynamicPath) {
       const absDynamicPath = path.resolve(dynamicPath);
-      await loadAndApplyDynamic(
+      for (const k of await loadAndApplyDynamic(
         dotenv,
         absDynamicPath,
         env ?? defaultEnv,
         'getdotenv-dynamic',
-      );
+      ))
+        deletedKeys.add(k);
     }
   }
   // Write output file.
@@ -231,6 +238,9 @@ export async function getDotenv(
 
   // Load process.env.
   if (loadProcess) {
+    for (const key of deletedKeys) {
+      Reflect.deleteProperty(process.env, key);
+    }
     for (const [key, value] of Object.entries(resultDotenv)) {
       if (value === undefined) Reflect.deleteProperty(process.env, key);
       else process.env[key] = value;
