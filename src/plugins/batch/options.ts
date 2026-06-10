@@ -3,7 +3,7 @@ import type { Command, OptionValues } from '@commander-js/extra-typings';
 import type { GetDotenvCliPublic } from '@/src/cliHost';
 
 import type { BatchPlugin } from '.';
-import type { BatchPluginConfig } from './types';
+import { type BatchPluginConfig, defaultConcurrency } from './types';
 
 /**
  * Option values parsed for the `batch` command mount.
@@ -35,6 +35,14 @@ export interface BatchCommandOptionValues extends OptionValues {
    * When true, ignore errors and continue with the next matched directory.
    */
   ignoreErrors?: boolean;
+  /**
+   * When true, execute commands in parallel across discovered directories.
+   */
+  parallel?: boolean;
+  /**
+   * Maximum number of concurrent executions in parallel mode.
+   */
+  concurrency?: number;
 }
 
 /**
@@ -122,6 +130,20 @@ export function attachBatchOptions(
       .option(
         '-e, --ignore-errors',
         'ignore errors and continue with next path',
+      )
+      .option(
+        '-P, --parallel',
+        'execute commands in parallel across directories',
+      )
+      .option(
+        '-C, --concurrency <n>',
+        `max concurrent executions in parallel mode (default: ${String(defaultConcurrency)})`,
+        (v: string) => {
+          const n = Number.parseInt(v, 10);
+          if (Number.isNaN(n) || n < 1)
+            throw new Error(`invalid concurrency: ${v}`);
+          return n;
+        },
       )
       .argument('[command...]')
   );

@@ -8,6 +8,12 @@ The aws plugin establishes an AWS session when an `aws` command (or any child of
 
 > **Scoping**: The aws plugin's `afterResolve` hook only fires when the invoked command is `aws` or a descendant of `aws`. If a sibling plugin (e.g., `cmd`) is invoked, the aws plugin does not resolve credentials or write to `process.env`. This prevents unwanted side effects (such as SSO login prompts) on unrelated commands.
 
+> **Peer dependency**: The aws plugin requires `@aws-sdk/client-sts` at runtime. It is listed as an optional peer dependency of `@karmaniverous/get-dotenv` — install it alongside the package when using this plugin:
+>
+> ```bash
+> npm i @aws-sdk/client-sts
+> ```
+
 This plugin is intended to be the parent for child plugins that need AWS auth. Compose your child plugin under `awsPlugin()` so that ordering and context are guaranteed: the aws parent resolves profile/region/credentials first; the child runs afterward and can safely use the AWS SDK (v3) with the environment already in place.
 
 At a glance:

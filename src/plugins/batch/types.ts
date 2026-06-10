@@ -1,3 +1,4 @@
+import os from 'os';
 import { z } from 'zod';
 
 import type { ScriptsTable } from '@/src/cliHost';
@@ -5,6 +6,15 @@ import type { Logger, ProcessEnv } from '@/src/core';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import type { execShellCommandBatch } from './execShellCommandBatch';
+
+/**
+ * Default concurrency limit for parallel batch execution.
+ * Uses `os.availableParallelism()` when available, otherwise falls back to CPU count.
+ */
+export const defaultConcurrency: number =
+  typeof os.availableParallelism === 'function'
+    ? os.availableParallelism()
+    : os.cpus().length;
 
 /**
  * Options provided to the batch plugin factory.
@@ -62,6 +72,11 @@ export interface ExecShellCommandBatchOptions {
    */
   command?: string | string[];
   /**
+   * Maximum number of concurrent executions when {@link ExecShellCommandBatchOptions.parallel} is true.
+   * Defaults to {@link defaultConcurrency}.
+   */
+  concurrency?: number;
+  /**
    * Merged root CLI options bag (JSON‑serializable) forwarded for nested composition
    * by downstream executors. Used to compute child overlays deterministically.
    */
@@ -87,6 +102,11 @@ export interface ExecShellCommandBatchOptions {
    */
   logger: Logger;
   /**
+   * When true, execute commands across discovered directories in parallel.
+   * Output is buffered per-directory and printed in discovery order.
+   */
+  parallel?: boolean;
+  /**
    * Resolve the batch root from the nearest package directory instead of CWD.
    */
   pkgCwd?: boolean;
@@ -109,12 +129,16 @@ export interface ExecShellCommandBatchOptions {
 export interface BatchParentInvokerFlags {
   /** Command to execute. */
   command?: string;
+  /** Maximum concurrent executions in parallel mode. */
+  concurrency?: number;
   /** Space-delimited glob patterns. */
   globs?: string;
   /** List directories without executing. */
   list?: boolean;
   /** Ignore errors and continue. */
   ignoreErrors?: boolean;
+  /** Execute commands in parallel across directories. */
+  parallel?: boolean;
   /** Use package directory as root. */
   pkgCwd?: boolean;
   /** Root path for discovery. */
@@ -147,6 +171,8 @@ export const ScriptSchema = z.union([
  * Zod schema for batch plugin configuration.
  */
 export const batchPluginConfigSchema = z.object({
+  /** Maximum concurrent executions in parallel mode. */
+  concurrency: z.number().int().positive().optional(),
   /** Optional scripts table scoped to the batch plugin. */
   scripts: z.record(z.string(), ScriptSchema).optional(),
   /** Optional default shell for batch execution (overridden by per-script shell when present). */
@@ -155,6 +181,8 @@ export const batchPluginConfigSchema = z.object({
   rootPath: z.string().optional(),
   /** Space-delimited glob patterns used to discover directories. */
   globs: z.string().optional(),
+  /** Execute commands in parallel across discovered directories. */
+  parallel: z.boolean().optional(),
   /** When true, resolve the batch root from the nearest package directory. */
   pkgCwd: z.boolean().optional(),
 });

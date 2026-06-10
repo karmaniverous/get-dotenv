@@ -44,6 +44,10 @@ export const attachBatchDefaultAction = (
     let globs =
       typeof opts.globs === 'string' ? opts.globs : (cfg.globs ?? '*');
     const list = Boolean(opts.list);
+    const parallel =
+      opts.parallel !== undefined ? opts.parallel : Boolean(cfg.parallel);
+    const concurrency =
+      typeof opts.concurrency === 'number' ? opts.concurrency : cfg.concurrency;
     const pkgCwd =
       opts.pkgCwd !== undefined ? opts.pkgCwd : Boolean(cfg.pkgCwd);
     const rootPath =
@@ -72,11 +76,13 @@ export const attachBatchDefaultAction = (
 
       await execShellCommandBatch({
         command: commandArg,
+        ...(concurrency !== undefined ? { concurrency } : {}),
         dotenvEnv,
         globs,
         ignoreErrors,
         list: false,
         logger,
+        parallel,
         ...(pkgCwd ? { pkgCwd } : {}),
         rootPath,
         shell: shellSetting,
@@ -92,10 +98,12 @@ export const attachBatchDefaultAction = (
         pluginOpts.shell ?? cfg.shell ?? merged.shell ?? false;
 
       await execShellCommandBatch({
+        ...(concurrency !== undefined ? { concurrency } : {}),
         globs,
         ignoreErrors,
         list: true,
         logger,
+        parallel,
         ...(pkgCwd ? { pkgCwd } : {}),
         rootPath,
         shell: shellMerged,
@@ -115,11 +123,13 @@ export const attachBatchDefaultAction = (
 
       await execShellCommandBatch({
         command: resolveCommand(scriptsOpt, commandOpt),
+        ...(concurrency !== undefined ? { concurrency } : {}),
         dotenvEnv,
         globs,
         ignoreErrors,
         list,
         logger,
+        parallel,
         ...(pkgCwd ? { pkgCwd } : {}),
         rootPath,
         shell: resolveShell(scriptsOpt, commandOpt, shellOpt),
@@ -132,10 +142,12 @@ export const attachBatchDefaultAction = (
     const shellOnly = pluginOpts.shell ?? cfg.shell ?? merged.shell ?? false;
 
     await execShellCommandBatch({
+      ...(concurrency !== undefined ? { concurrency } : {}),
       globs,
       ignoreErrors,
       list: true,
       logger,
+      parallel,
       ...(pkgCwd ? { pkgCwd } : {}),
       rootPath,
       shell: shellOnly,

@@ -131,6 +131,7 @@
   "files": [
     "dist",
     "getdotenv.config.json",
+    "schema",
     "templates"
   ],
   "homepage": "https://github.com/karmaniverous/get-dotenv#readme",
@@ -150,9 +151,13 @@
   "main": "dist/index.mjs",
   "name": "@karmaniverous/get-dotenv",
   "peerDependencies": {
+    "@aws-sdk/client-sts": "^3.965.0",
     "esbuild": "*"
   },
   "peerDependenciesMeta": {
+    "@aws-sdk/client-sts": {
+      "optional": true
+    },
     "esbuild": {
       "optional": true
     }
@@ -194,7 +199,8 @@
     "url": "https://github.com/karmaniverous/get-dotenv"
   },
   "scripts": {
-    "build": "rimraf dist && rollup --config rollup.config.ts --configPlugin @rollup/plugin-typescript",
+    "generate:schema": "tsx tools/generate-schema.js",
+    "build": "npm run generate:schema && rimraf dist && rollup --config rollup.config.ts --configPlugin @rollup/plugin-typescript",
     "cli": "tsx src/cli/getdotenv",
     "cli:dist": "node dist/getdotenv.cli.mjs",
     "changelog": "git-cliff -o CHANGELOG.md",
@@ -215,5 +221,5 @@
   },
   "type": "module",
   "types": "dist/index.d.ts",
-  "version": "7.0.6"
+  "version": "7.0.7"
 }
