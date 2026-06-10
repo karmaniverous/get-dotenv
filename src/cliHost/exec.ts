@@ -173,9 +173,37 @@ async function _execNormalized(
     }
   }
 
-  // Shell path (string|true|URL): execaCommand handles shell resolution.
-  const commandStr: string =
-    typeof command === 'string' ? command : command.join(' ');
+  // Shell path (string|true|URL).
+  // When the command is an array, use execa(file, args, { shell }) so that
+  // execa applies per-platform shell escaping to each argument. Joining into
+  // a flat string (the old execaCommand path) loses quoting on tokens that
+  // contained spaces or shell metacharacters — e.g. `node -e "code..."` in
+  // batch mode, where the outer shell already consumed the quotes.
+  if (Array.isArray(command) && command.length > 0) {
+    const file = command[0]!;
+    const args = command.slice(1);
+    dbg('exec (shell, argv)', { file, args, stdio });
+    try {
+      const ok = pickResult(
+        await execa(file, args, {
+          shell,
+          ...(opts.cwd !== undefined ? { cwd: opts.cwd } : {}),
+          ...(envSan !== undefined ? { env: envSan } : {}),
+          stdio,
+          ...timeoutBits,
+        }),
+      );
+      dbg('exit (shell, argv)', { exitCode: ok.exitCode });
+      return ok;
+    } catch (e: unknown) {
+      const out = pickResult(e);
+      dbg('exit:error (shell, argv)', { exitCode: out.exitCode });
+      return out;
+    }
+  }
+
+  // String command: pass through to shell as-is via execaCommand.
+  const commandStr: string = typeof command === 'string' ? command : '';
   dbg('exec (shell)', {
     command: commandStr,
     shell: typeof shell === 'string' ? shell : 'custom',

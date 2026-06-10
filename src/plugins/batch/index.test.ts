@@ -130,7 +130,7 @@ describe('plugins/batch', () => {
       | [Record<string, unknown>]
       | undefined;
     const [args] = firstCall as [Record<string, unknown>];
-    expect(args.command).toBe('echo OK');
+    expect(args.command).toEqual(['echo', 'OK']);
     expect(args.list).toBe(false);
   });
 
