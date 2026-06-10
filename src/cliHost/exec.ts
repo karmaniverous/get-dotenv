@@ -101,7 +101,7 @@ const shellQuoteToken = (s: string): string => {
   // POSIX: single-quote tokens with special chars.  Embedded single
   // quotes break out, add an escaped single, and re-enter.
   if (/[\s"'&|<>()!$\\`~#;{}[\]*?+]/.test(s)) {
-    return "'" + s.replace(/'/g, "'\\''" ) + "'";
+    return "'" + s.replace(/'/g, "'\\''") + "'";
   }
   return s;
 };

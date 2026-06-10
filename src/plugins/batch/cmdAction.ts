@@ -164,9 +164,7 @@ export const attachBatchCmdAction = (
         // Always pass the argv array to avoid lossy re-tokenization.
         // For shell-off + node -e, apply outer-quote stripping first.
         commandArg =
-          shellSetting === false
-            ? maybePreserveNodeEvalArgv(args)
-            : args;
+          shellSetting === false ? maybePreserveNodeEvalArgv(args) : args;
       }
 
       await execShellCommandBatch({

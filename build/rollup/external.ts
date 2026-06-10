@@ -33,7 +33,9 @@ export async function computeExternal(): Promise<(string | RegExp)[]> {
   list.push(/^@aws-sdk\//, /^@smithy\//);
 
   // Stable de-dupe for the string entries (RegExps are always unique).
-  const strings = unique(list.filter((x): x is string => typeof x === 'string'));
+  const strings = unique(
+    list.filter((x): x is string => typeof x === 'string'),
+  );
   const regexps = list.filter((x): x is RegExp => x instanceof RegExp);
 
   return [...strings, ...regexps];
