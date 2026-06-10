@@ -16,25 +16,33 @@ import { type DotenvDynamicSource, pushDotenvProvenance } from './provenance';
 
 /**
  * Apply a dynamic map to the target progressively.
- * - Functions receive (target, env) and may return string | undefined.
- * - Literals are assigned directly (including undefined).
+ * - Functions receive (target, env) and may return string | null | undefined.
+ * - string → set the key to that value.
+ * - undefined → no-op, leave existing value unchanged.
+ * - null → delete the key from the target.
  *
  * @param target - Mutable target environment to assign into.
  * @param map - Dynamic map to apply (functions and/or literal values).
  * @param env - Selected environment name (if any) passed through to dynamic functions.
- * @returns Nothing.
+ * @returns Set of keys that were deleted (value was null).
  */
 export function applyDynamicMap(
   target: ProcessEnv,
   map?: GetDotenvDynamic,
   env?: string,
-): void {
-  if (!map) return;
+): Set<string> {
+  const deleted = new Set<string>();
+  if (!map) return deleted;
   for (const key of Object.keys(map)) {
     const val =
       typeof map[key] === 'function' ? map[key](target, env) : map[key];
-    Object.assign(target, { [key]: val });
+    if (val === null) {
+      Reflect.deleteProperty(target, key);
+      deleted.add(key);
+    } else if (val !== undefined) target[key] = val;
+    // undefined → no-op
   }
+  return deleted;
 }
 
 /**
@@ -81,6 +89,8 @@ export async function loadDynamicModuleDefault(
  * @param prov - Provenance map to append into.
  * @param meta - Dynamic provenance metadata (source tier and optional dynamicPath).
  *
+ * @returns Set of keys that were deleted (value was null).
+ *
  * @public
  */
 export function applyDynamicMapWithProvenance(
@@ -89,23 +99,41 @@ export function applyDynamicMapWithProvenance(
   env: string | undefined,
   prov: DotenvProvenance,
   meta: { dynamicSource: DotenvDynamicSource; dynamicPath?: string },
-): void {
-  if (!map) return;
+): Set<string> {
+  const deleted = new Set<string>();
+  if (!map) return deleted;
   for (const key of Object.keys(map)) {
     const val =
       typeof map[key] === 'function' ? map[key](target, env) : map[key];
-    Object.assign(target, { [key]: val });
-    pushDotenvProvenance(prov, key, {
-      kind: 'dynamic',
-      op: typeof val === 'string' ? 'set' : 'unset',
-      dynamicSource: meta.dynamicSource,
-      ...(meta.dynamicSource === 'dynamicPath' &&
-      typeof meta.dynamicPath === 'string' &&
-      meta.dynamicPath.length > 0
-        ? { dynamicPath: meta.dynamicPath }
-        : {}),
-    });
+    if (val === null) {
+      Reflect.deleteProperty(target, key);
+      deleted.add(key);
+      pushDotenvProvenance(prov, key, {
+        kind: 'dynamic',
+        op: 'unset',
+        dynamicSource: meta.dynamicSource,
+        ...(meta.dynamicSource === 'dynamicPath' &&
+        typeof meta.dynamicPath === 'string' &&
+        meta.dynamicPath.length > 0
+          ? { dynamicPath: meta.dynamicPath }
+          : {}),
+      });
+    } else if (val !== undefined) {
+      target[key] = val;
+      pushDotenvProvenance(prov, key, {
+        kind: 'dynamic',
+        op: 'set',
+        dynamicSource: meta.dynamicSource,
+        ...(meta.dynamicSource === 'dynamicPath' &&
+        typeof meta.dynamicPath === 'string' &&
+        meta.dynamicPath.length > 0
+          ? { dynamicPath: meta.dynamicPath }
+          : {}),
+      });
+    }
+    // undefined → no-op, no provenance entry
   }
+  return deleted;
 }
 
 /**
@@ -121,15 +149,15 @@ export function applyDynamicMapWithProvenance(
  * @param absPath - Absolute path to the dynamic module file.
  * @param env - Selected environment name (if any).
  * @param cacheDirName - Cache subdirectory under `.tsbuild/` for compiled artifacts.
- * @returns A `Promise\<void\>` which resolves after the module (if present) has been applied.
+ * @returns A `Promise\<Set\<string\>\>` resolving to the set of deleted keys.
  */
 export async function loadAndApplyDynamic(
   target: ProcessEnv,
   absPath: string,
   env: string | undefined,
   cacheDirName: string,
-): Promise<void> {
+): Promise<Set<string>> {
   const dyn = await loadDynamicModuleDefault(absPath, cacheDirName);
-  if (!dyn) return;
-  applyDynamicMap(target, dyn, env);
+  if (!dyn) return new Set<string>();
+  return applyDynamicMap(target, dyn, env);
 }

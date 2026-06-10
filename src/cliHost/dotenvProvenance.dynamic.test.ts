@@ -110,7 +110,7 @@ describe('cliHost dotenvProvenance (dynamic precedence)', () => {
     await fs.remove(dir);
   });
 
-  it('records op=unset when a dynamic function returns undefined', async () => {
+  it('records op=unset when a dynamic function returns null', async () => {
     const dir = path.join(ROOT, 'case-unset');
     await fs.remove(dir);
     await fs.ensureDir(dir);
@@ -128,11 +128,11 @@ describe('cliHost dotenvProvenance (dynamic precedence)', () => {
         log: false,
         loadProcess: false,
         dynamic: {
-          PROV_UNSET: () => undefined,
+          PROV_UNSET: () => null,
         },
       });
 
-      expect(ctx.dotenv.PROV_UNSET).toBeUndefined();
+      expect('PROV_UNSET' in ctx.dotenv).toBe(false);
 
       const hist = ctx.dotenvProvenance.PROV_UNSET ?? [];
       const dyn = hist.filter(isDynamicProvEntry);
@@ -141,6 +141,40 @@ describe('cliHost dotenvProvenance (dynamic precedence)', () => {
       const last = dyn[dyn.length - 1];
       expect(last?.dynamicSource).toBe('programmatic');
       expect(last?.op).toBe('unset');
+    });
+
+    await fs.remove(dir);
+  });
+
+  it('records no provenance when a dynamic function returns undefined', async () => {
+    const dir = path.join(ROOT, 'case-noop');
+    await fs.remove(dir);
+    await fs.ensureDir(dir);
+
+    await writeJson(path.join(dir, 'package.json'), {
+      name: 'dotenv-provenance-dynamic-tests',
+      type: 'module',
+    });
+
+    const cli = new GetDotenvCli('test');
+
+    await withCwd(dir, async () => {
+      const ctx = await cli.resolveAndLoad({
+        paths: [],
+        log: false,
+        loadProcess: false,
+        dynamic: {
+          PROV_NOOP: () => undefined,
+        },
+      });
+
+      // undefined is a no-op: key should not exist
+      expect('PROV_NOOP' in ctx.dotenv).toBe(false);
+
+      // No provenance entry should be recorded for undefined
+      const hist = ctx.dotenvProvenance.PROV_NOOP ?? [];
+      const dyn = hist.filter(isDynamicProvEntry);
+      expect(dyn.length).toBe(0);
     });
 
     await fs.remove(dir);
