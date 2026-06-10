@@ -28,10 +28,11 @@ import { defaultsDeep } from '@/src/util';
  * Presents errors as clean one-line messages by default.
  * When GETDOTENV_DEBUG is set, prints the full stack trace.
  */
-function handleCliError(err: unknown): void {
+function handleCliError(err: unknown, argv?: string[]): void {
   const isDebug =
     process.env.GETDOTENV_DEBUG === '1' ||
-    process.env.GETDOTENV_DEBUG === 'true';
+    process.env.GETDOTENV_DEBUG === 'true' ||
+    (Array.isArray(argv) && argv.includes('--debug'));
 
   const message = err instanceof Error ? err.message : String(err);
 
@@ -323,7 +324,7 @@ export function createCli(
     try {
       await program.parseAsync(['node', alias, ...argv]);
     } catch (err: unknown) {
-      handleCliError(err);
+      handleCliError(err, argv);
     }
   };
 }
