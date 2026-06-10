@@ -297,6 +297,28 @@ export function createCli(
         ? { helpHeader: opts.branding }
         : {}),
     });
-    await program.parseAsync(['node', alias, ...argv]);
+
+    try {
+      await program.parseAsync(['node', alias, ...argv]);
+    } catch (err: unknown) {
+      // Top-level error boundary: present errors as clean messages.
+      // Show the full stack trace only when --debug or GETDOTENV_DEBUG is active.
+      const isDebug =
+        process.env.GETDOTENV_DEBUG === '1' ||
+        process.env.GETDOTENV_DEBUG === 'true' ||
+        argv.includes('--debug');
+
+      const message =
+        err instanceof Error ? err.message : String(err);
+
+      if (isDebug) {
+        // Full stack for debugging.
+        console.error(err instanceof Error ? err.stack ?? message : message);
+      } else {
+        console.error(`Error: ${message}`);
+      }
+
+      process.exitCode = 1;
+    }
   };
 }
