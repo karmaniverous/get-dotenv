@@ -1,0 +1,207 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "rootOptionDefaults": {
+      "type": "object",
+      "properties": {
+        "defaultEnv": {
+          "type": "string"
+        },
+        "defaultEnvKey": {
+          "type": "string"
+        },
+        "dotenvToken": {
+          "type": "string"
+        },
+        "dynamicPath": {
+          "type": "string"
+        },
+        "dynamic": {
+          "type": "object",
+          "propertyNames": {
+            "type": "string"
+          },
+          "additionalProperties": {}
+        },
+        "env": {
+          "type": "string"
+        },
+        "excludeDynamic": {
+          "type": "boolean"
+        },
+        "excludeEnv": {
+          "type": "boolean"
+        },
+        "excludeGlobal": {
+          "type": "boolean"
+        },
+        "excludePrivate": {
+          "type": "boolean"
+        },
+        "excludePublic": {
+          "type": "boolean"
+        },
+        "loadProcess": {
+          "type": "boolean"
+        },
+        "log": {
+          "type": "boolean"
+        },
+        "outputPath": {
+          "type": "string"
+        },
+        "paths": {
+          "type": "string"
+        },
+        "privateToken": {
+          "type": "string"
+        },
+        "vars": {
+          "type": "string"
+        },
+        "debug": {
+          "type": "boolean"
+        },
+        "strict": {
+          "type": "boolean"
+        },
+        "capture": {
+          "type": "boolean"
+        },
+        "trace": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "redact": {
+          "type": "boolean"
+        },
+        "warnEntropy": {
+          "type": "boolean"
+        },
+        "entropyThreshold": {
+          "type": "number"
+        },
+        "entropyMinLength": {
+          "type": "number"
+        },
+        "entropyWhitelist": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "redactPatterns": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "pathsDelimiter": {
+          "type": "string"
+        },
+        "pathsDelimiterPattern": {
+          "type": "string"
+        },
+        "scripts": {
+          "type": "object",
+          "propertyNames": {
+            "type": "string"
+          },
+          "additionalProperties": {}
+        },
+        "shell": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string"
+            }
+          ]
+        },
+        "varsAssignor": {
+          "type": "string"
+        },
+        "varsAssignorPattern": {
+          "type": "string"
+        },
+        "varsDelimiter": {
+          "type": "string"
+        },
+        "varsDelimiterPattern": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "rootOptionVisibility": {
+      "type": "object",
+      "propertyNames": {
+        "type": "string"
+      },
+      "additionalProperties": {
+        "type": "boolean"
+      }
+    },
+    "scripts": {
+      "type": "object",
+      "propertyNames": {
+        "type": "string"
+      },
+      "additionalProperties": {}
+    },
+    "requiredKeys": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "schema": {},
+    "vars": {
+      "type": "object",
+      "propertyNames": {
+        "type": "string"
+      },
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "envVars": {
+      "type": "object",
+      "propertyNames": {
+        "type": "string"
+      },
+      "additionalProperties": {
+        "type": "object",
+        "propertyNames": {
+          "type": "string"
+        },
+        "additionalProperties": {
+          "type": "string"
+        }
+      }
+    },
+    "dynamic": {},
+    "plugins": {
+      "type": "object",
+      "propertyNames": {
+        "type": "string"
+      },
+      "additionalProperties": {}
+    }
+  },
+  "additionalProperties": false,
+  "$id": "https://raw.githubusercontent.com/karmaniverous/get-dotenv/main/schema/getdotenv.config.schema.json",
+  "title": "get-dotenv Configuration",
+  "description": "Schema for getdotenv.config.json configuration files. See https://github.com/karmaniverous/get-dotenv"
+}
