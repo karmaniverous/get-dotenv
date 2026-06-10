@@ -85,6 +85,27 @@ interface ExecNormalizedOptions
 // This is safe for argv arrays passed to execa (no quoting needed) and avoids
 // passing quote characters through to Node (e.g., for `node -e "<code>"`).
 // Handles stacked quotes from shells like PowerShell: """code""" -> code.
+// Shell-quote a single token for safe interpolation when joining an argv
+// array into a command string destined for a shell.  On Windows (cmd.exe)
+// wrap in double quotes when the token contains shell metacharacters; on
+// Unix wrap in single quotes with escaped embedded singles.
+const shellQuoteToken = (s: string): string => {
+  if (process.platform === 'win32') {
+    // cmd.exe: double-quote tokens with special chars.  Inner double
+    // quotes are escaped with backslash (Node/libuv convention).
+    if (/[\s"'&|<>^()!%+,;=]/.test(s)) {
+      return '"' + s.replace(/"/g, '\\"') + '"';
+    }
+    return s;
+  }
+  // POSIX: single-quote tokens with special chars.  Embedded single
+  // quotes break out, add an escaped single, and re-enter.
+  if (/[\s"'&|<>()!$\\`~#;{}[\]*?+]/.test(s)) {
+    return "'" + s.replace(/'/g, "'\\''" ) + "'";
+  }
+  return s;
+};
+
 const stripOuterQuotes = (s: string): string => {
   let out = s;
   // Repeatedly trim only when the entire string is wrapped in matching quotes.
@@ -173,37 +194,14 @@ async function _execNormalized(
     }
   }
 
-  // Shell path (string|true|URL).
-  // When the command is an array, use execa(file, args, { shell }) so that
-  // execa applies per-platform shell escaping to each argument. Joining into
-  // a flat string (the old execaCommand path) loses quoting on tokens that
-  // contained spaces or shell metacharacters — e.g. `node -e "code..."` in
-  // batch mode, where the outer shell already consumed the quotes.
-  if (Array.isArray(command) && command.length > 0) {
-    const file = command[0]!;
-    const args = command.slice(1);
-    dbg('exec (shell, argv)', { file, args, stdio });
-    try {
-      const ok = pickResult(
-        await execa(file, args, {
-          shell,
-          ...(opts.cwd !== undefined ? { cwd: opts.cwd } : {}),
-          ...(envSan !== undefined ? { env: envSan } : {}),
-          stdio,
-          ...timeoutBits,
-        }),
-      );
-      dbg('exit (shell, argv)', { exitCode: ok.exitCode });
-      return ok;
-    } catch (e: unknown) {
-      const out = pickResult(e);
-      dbg('exit:error (shell, argv)', { exitCode: out.exitCode });
-      return out;
-    }
-  }
-
-  // String command: pass through to shell as-is via execaCommand.
-  const commandStr: string = typeof command === 'string' ? command : '';
+  // Shell path (string|true|URL): build a single command string for the
+  // target shell.  When the command is an array we shell-quote each token
+  // individually before joining so that metacharacters (spaces, quotes, +,
+  // parentheses, etc.) survive the round-trip through cmd.exe / sh.
+  const commandStr: string =
+    typeof command === 'string'
+      ? command
+      : command.map(shellQuoteToken).join(' ');
   dbg('exec (shell)', {
     command: commandStr,
     shell: typeof shell === 'string' ? shell : 'custom',
