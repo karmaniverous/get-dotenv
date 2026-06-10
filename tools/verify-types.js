@@ -52,7 +52,7 @@ const main = async () => {
   const issues = [];
   for (const f of targets) {
     const p = path.join(DIST, f);
-    let txt = '';
+    let txt;
     try {
       txt = await fs.readFile(p, 'utf-8');
     } catch {

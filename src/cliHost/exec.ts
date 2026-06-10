@@ -143,7 +143,7 @@ async function _execNormalized(
 
   if (shell === false) {
     let file: string | undefined;
-    let args: string[] = [];
+    let args: string[];
     if (typeof command === 'string') {
       const tokens = tokenize(command);
       file = tokens[0];
