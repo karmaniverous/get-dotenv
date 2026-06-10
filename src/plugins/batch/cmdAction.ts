@@ -161,14 +161,12 @@ export const attachBatchCmdAction = (
       // mode (where execa applies per-platform shell escaping per arg).
       let commandArg: string | string[] = resolved;
       if (resolved === input) {
-        if (shellSetting === false) {
-          const preserved = maybePreserveNodeEvalArgv(args);
-          if (preserved !== args) commandArg = preserved;
-        } else {
-          // Shell mode: always pass argv array so execa can shell-escape
-          // each token individually, preventing quoting loss.
-          commandArg = args;
-        }
+        // Always pass the argv array to avoid lossy re-tokenization.
+        // For shell-off + node -e, apply outer-quote stripping first.
+        commandArg =
+          shellSetting === false
+            ? maybePreserveNodeEvalArgv(args)
+            : args;
       }
 
       await execShellCommandBatch({

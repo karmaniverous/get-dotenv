@@ -1,0 +1,15 @@
+When `batch` positional args are joined into a flat string and passed back to a shell via `execaCommand`, tokens that originally contained spaces or metacharacters (e.g. `node -e "code..."`) lose their quoting — the outer shell already consumed the quotes during initial argv parsing, and the lossy `join(' ')` round-trip strips them.
+
+**Root cause** (two sites):
+
+1. **`cmdAction.ts`** — `maybePreserveNodeEvalArgv` only kept the argv array for `--shell-off` mode. In default (shell) mode the joined string was always used.
+
+2. **`exec.ts` (`_execNormalized`)** — the shell branch did `command.join(' ')` + `execaCommand(joined)`, discarding per-token quoting.
+
+**Fix:**
+
+1. **`cmdAction.ts`** — when the command is not resolved to a named script, always pass the original argv array regardless of shell setting.
+
+2. **`exec.ts`** — when command is an array in shell mode, use `execa(file, args, { shell })` instead of `execaCommand(joined)`. Execa applies per-platform shell escaping to each argument individually.
+
+All 237 tests pass, typecheck clean.
