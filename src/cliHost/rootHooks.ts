@@ -132,6 +132,11 @@ export function installRootHooks<TOptions extends GetDotenvOptions>(
 
     propagateResolvedEnv(merged);
 
+    // Propagate debug flag to env so dbg() helpers and error boundary see it.
+    if ((merged as unknown as Record<string, unknown>).debug) {
+      process.env.GETDOTENV_DEBUG = '1';
+    }
+
     // Refresh dynamic help text using the resolved config slices.
     try {
       const ctx = program.getCtx();
@@ -209,6 +214,11 @@ export function installRootHooks<TOptions extends GetDotenvOptions>(
     // builds a fresh `merged` and overwrites the options bag, so the env
     // propagated by preSubcommand is lost without this call.
     propagateResolvedEnv(merged);
+
+    // Propagate debug flag to env so dbg() helpers and error boundary see it.
+    if ((merged as unknown as Record<string, unknown>).debug) {
+      process.env.GETDOTENV_DEBUG = '1';
+    }
 
     try {
       const ctx = program.getCtx();

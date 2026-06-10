@@ -280,6 +280,29 @@ export const attachRootOptions = (
     program.setOptionGroup(lf, GROUP);
   }
 
+  // Debug ON/OFF (dynamic)
+  {
+    const dOn = program
+      .createDynamicOption(
+        '--debug',
+        (cfg) =>
+          `enable debug logging to stderr ${onOff(true, Boolean(cfg.debug))}`,
+      )
+      .conflicts('debugOff');
+    program.addOption(dOn);
+    program.setOptionGroup(dOn, GROUP);
+
+    const dOff = program
+      .createDynamicOption(
+        '--debug-off',
+        (cfg) =>
+          `enable debug logging to stderr ${onOff(false, !cfg.debug)}`,
+      )
+      .conflicts('debug');
+    program.addOption(dOff);
+    program.setOptionGroup(dOff, GROUP);
+  }
+
   // Capture flag (no default display; static)
   {
     const opt = new Option(

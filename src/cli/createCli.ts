@@ -23,6 +23,29 @@ import {
 import { defaultsDeep } from '@/src/util';
 
 /**
+ * Top-level error boundary for the CLI runner.
+ *
+ * Presents errors as clean one-line messages by default.
+ * When GETDOTENV_DEBUG is set, prints the full stack trace.
+ */
+function handleCliError(err: unknown, argv?: string[]): void {
+  const isDebug =
+    process.env.GETDOTENV_DEBUG === '1' ||
+    process.env.GETDOTENV_DEBUG === 'true' ||
+    (Array.isArray(argv) && argv.includes('--debug'));
+
+  const message = err instanceof Error ? err.message : String(err);
+
+  if (isDebug) {
+    console.error(err instanceof Error ? (err.stack ?? message) : message);
+  } else {
+    console.error(`Error: ${message}`);
+  }
+
+  process.exitCode = 1;
+}
+
+/**
  * Create a get-dotenv CLI host with included plugins.
  *
  * Options:
@@ -297,6 +320,11 @@ export function createCli(
         ? { helpHeader: opts.branding }
         : {}),
     });
-    await program.parseAsync(['node', alias, ...argv]);
+
+    try {
+      await program.parseAsync(['node', alias, ...argv]);
+    } catch (err: unknown) {
+      handleCliError(err, argv);
+    }
   };
 }
