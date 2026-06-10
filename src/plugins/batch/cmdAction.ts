@@ -153,13 +153,20 @@ export const attachBatchCmdAction = (
       const resolved = resolveCommand(scriptsExec, input);
       const shellSetting = resolveShell(scriptsExec, input, shellExec);
 
-      // Preserve argv array only for shell-off Node -e snippets to avoid
-      // lossy re-tokenization (Windows/PowerShell quoting). For simple
-      // commands (e.g., "echo OK") keep string form to satisfy unit tests.
+      // Preserve argv array to avoid lossy re-tokenization (Windows/
+      // PowerShell quoting). When the command was not resolved to a script
+      // (i.e. resolved === input), keep the original argv tokens so that
+      // _execNormalized can pass them individually to execa — both in
+      // shell-off mode (where stripOuterQuotes handles argv) and in shell
+      // mode (where execa applies per-platform shell escaping per arg).
       let commandArg: string | string[] = resolved;
-      if (shellSetting === false && resolved === input) {
-        const preserved = maybePreserveNodeEvalArgv(args);
-        if (preserved !== args) commandArg = preserved;
+      if (resolved === input) {
+        // Always pass the argv array to avoid lossy re-tokenization.
+        // For shell-off + node -e, apply outer-quote stripping first.
+        commandArg =
+          shellSetting === false
+            ? maybePreserveNodeEvalArgv(args)
+            : args;
       }
 
       await execShellCommandBatch({

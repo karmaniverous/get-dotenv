@@ -219,4 +219,51 @@ describe('E2E CLI (core options and plugins)', () => {
     // The child prints "true" once (for the single matched path)
     expect(stdout).toMatch(/true/);
   });
+
+  it('batch shell-off preserves complex node -e with metacharacters', async () => {
+    // Simulates the real-world scenario: batch running a node -e snippet
+    // whose body contains single quotes, + operators, and parentheses.
+    // --shell-off is the recommended path for node -e across platforms.
+    const { stdout, exitCode } = await execa(
+      nodeBin,
+      CLI(
+        '--shell-off',
+        'batch',
+        '-r',
+        './test',
+        '-g',
+        'full',
+        'cmd',
+        'node',
+        '-e',
+        "console.log('hello' + ' ' + 'world')",
+      ),
+      { env: { ...process.env, GETDOTENV_STDIO: 'pipe' } },
+    );
+    expect(exitCode).toBe(0);
+    expect(stdout).toMatch(/hello world/);
+  });
+
+  it('batch shell mode preserves complex node -e with metacharacters', async () => {
+    // Same complex snippet but through the default shell. Verifies that
+    // the shell-quoting round-trip in _execNormalized preserves tokens
+    // containing single quotes, +, and parentheses.
+    const { stdout, exitCode } = await execa(
+      nodeBin,
+      CLI(
+        'batch',
+        '-r',
+        './test',
+        '-g',
+        'full',
+        'cmd',
+        'node',
+        '-e',
+        "console.log('hello' + ' ' + 'world')",
+      ),
+      { env: { ...process.env, GETDOTENV_STDIO: 'pipe' } },
+    );
+    expect(exitCode).toBe(0);
+    expect(stdout).toMatch(/hello world/);
+  });
 });
