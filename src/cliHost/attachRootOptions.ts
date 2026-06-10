@@ -295,8 +295,7 @@ export const attachRootOptions = (
     const dOff = program
       .createDynamicOption(
         '--debug-off',
-        (cfg) =>
-          `enable debug logging to stderr ${onOff(false, !cfg.debug)}`,
+        (cfg) => `enable debug logging to stderr ${onOff(false, !cfg.debug)}`,
       )
       .conflicts('debug');
     program.addOption(dOff);

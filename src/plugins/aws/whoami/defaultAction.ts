@@ -13,12 +13,12 @@ export function attachWhoamiDefaultAction(cli: GetDotenvCliPublic): void {
     // Dynamic import: @aws-sdk/client-sts is an optional peer dependency.
     // A static import would cause Node to fail at startup (even for -h)
     // when the SDK is not installed in the consumer's project.
-    let STSClient: typeof import('@aws-sdk/client-sts').STSClient;
-    let GetCallerIdentityCommand: typeof import('@aws-sdk/client-sts').GetCallerIdentityCommand;
+    let GetCallerIdentityCommand: new () => unknown;
+    let STSClient: new () => { send(cmd: unknown): Promise<unknown> };
     try {
-      ({ GetCallerIdentityCommand, STSClient } = await import(
-        '@aws-sdk/client-sts'
-      ));
+      const mod = await import('@aws-sdk/client-sts');
+      GetCallerIdentityCommand = mod.GetCallerIdentityCommand;
+      STSClient = mod.STSClient;
     } catch {
       console.error(
         'The aws whoami command requires @aws-sdk/client-sts.\n' +

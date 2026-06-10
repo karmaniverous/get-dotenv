@@ -1,8 +1,6 @@
-fix(cli): address Copilot review — extract error helper, fix debug gate, add test
+chore: fix lint, build warnings, and code quality issues
 
-- Remove bogus argv.includes('--debug') check (no --debug CLI flag
-  exists); gate stack traces on GETDOTENV_DEBUG env var only.
-- Extract error boundary into handleCliError() helper to reduce
-  createCli module size.
-- Add test for AWS dynamic import failure (missing optional peer dep).
-- Remove ephemeral .commitmsg from tracked files.
+- Fix prettier formatting in attachRootOptions and defaultAction
+- Fix @typescript-eslint/consistent-type-imports in dynamic import
+- Fix Rollup build type mismatch warning for AWS SDK dynamic import
+- Remove .commitmsg from tracked files
