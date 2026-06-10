@@ -1,7 +1,0 @@
-fix(aws): dynamic import of @aws-sdk/client-sts to prevent startup crash
-
-The static import at the top of whoami/defaultAction.ts caused Node to
-fail with ERR_MODULE_NOT_FOUND at startup — even for `getdotenv -h` —
-when @aws-sdk/client-sts is not installed. Since the SDK is an optional
-peer dependency, the import must be deferred to the action handler so it
-only resolves when the aws whoami command is actually invoked.
