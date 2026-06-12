@@ -1,0 +1,10 @@
+Wire CmdPluginOptions.asDefault through to Commander's command() isDefault option via a new NsOptions type on the plugin contract.
+
+- Add NsOptions interface (isDefault, hidden) to contracts.ts
+- Extend ns() in GetDotenvCli to accept NsOptions, forward to command()
+- Add optional nsOptions to GetDotenvCliPlugin contract
+- Pass plugin.nsOptions through registerPlugin to ns()
+- cmdPlugin factory maps options.asDefault into nsOptions.isDefault
+- Add regression test for default subcommand routing
+
+Fixes #35

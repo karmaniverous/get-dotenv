@@ -58,6 +58,7 @@ export interface GetDotenvCliPublic<
    */
   ns<Usage extends string>(
     name: Usage,
+    opts?: NsOptions,
   ): GetDotenvCliPublic<
     TOptions,
     [...TArgs, ...InferCommandArguments<Usage>],
@@ -121,6 +122,25 @@ export interface GetDotenvCliPublic<
 }
 
 /**
+ * Options for the `ns()` subcommand factory, forwarded to Commander's
+ * `command(name, opts)` second argument.
+ *
+ * @public
+ */
+export interface NsOptions {
+  /**
+   * When true, this subcommand becomes the default: Commander routes
+   * unrecognized positional tokens to it when no explicit subcommand matches.
+   */
+  isDefault?: boolean;
+
+  /**
+   * When true, the subcommand is hidden from help output.
+   */
+  hidden?: boolean;
+}
+
+/**
  * Optional overrides for plugin composition.
  *
  * @public
@@ -161,6 +181,12 @@ export interface GetDotenvCliPlugin<
 > {
   /** Namespace (required): the command name where this plugin is mounted. */
   ns: string;
+
+  /**
+   * Options forwarded to the host's `ns()` call when creating the mount
+   * for this plugin (e.g. `{ isDefault: true }`).
+   */
+  nsOptions?: NsOptions;
 
   /**
    * Setup phase: register commands and wiring on the provided mount.

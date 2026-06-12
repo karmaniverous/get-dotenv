@@ -10,6 +10,7 @@ export type {
   GetDotenvCliPlugin,
   GetDotenvCliPublic,
   InferPluginConfig,
+  NsOptions,
   PluginChildEntry,
   PluginNamespaceOverride,
   PluginWithInstanceHelpers,
