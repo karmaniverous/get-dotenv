@@ -39,7 +39,6 @@ export default [
   },
   {
     ignores: [
-      '.stan/**',
       '**/.tsbuild/**',
       '**/.rollup.cache/**',
       'coverage/**',

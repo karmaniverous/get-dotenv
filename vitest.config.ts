@@ -38,7 +38,6 @@ export default defineConfig({
         'eslint.config.ts',
         'dist/**',
         'esm/**',
-        '.stan/**',
         '.tsbuild/**',
         '**/.tsbuild/**',
         '**/.rollup.cache/**',

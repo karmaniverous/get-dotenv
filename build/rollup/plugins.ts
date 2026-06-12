@@ -22,7 +22,6 @@ export function createLibraryTsPlugin(): Plugin {
     exclude: [
       'templates/**',
       'test/**',
-      '.stan/**',
       'tools/**',
       'build/**',
       'dist/**',
