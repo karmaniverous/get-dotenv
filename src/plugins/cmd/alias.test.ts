@@ -12,6 +12,45 @@ import { createCli } from '@/src/cli';
 
 import { cmdPlugin } from './index';
 
+describe('plugins/cmd default subcommand (asDefault)', () => {
+  beforeEach(() => {
+    execMock.mockClear();
+  });
+
+  it('routes positional args to cmd when asDefault is true', async () => {
+    const run = createCli({
+      alias: 'test',
+      compose: (p) =>
+        p.use(
+          cmdPlugin({ asDefault: true, optionAlias: '--cmd <command...>' }),
+        ),
+    });
+    await run(['node', 'test', 'echo', 'hello']);
+
+    expect(execMock).toHaveBeenCalledTimes(1);
+    const [command] = execMock.mock.calls[0] as [
+      string,
+      Record<string, unknown>,
+    ];
+    expect(command).toBe('echo hello');
+  });
+
+  it('does not route positional args when asDefault is false', async () => {
+    const run = createCli({
+      alias: 'test',
+      compose: (p) =>
+        p.use(
+          cmdPlugin({ asDefault: false, optionAlias: '--cmd <command...>' }),
+        ),
+    });
+
+    // Without asDefault, positional args hit the root no-op action;
+    // the cmd subcommand never fires.
+    await run(['node', 'test', 'echo', 'hello']);
+    expect(execMock).not.toHaveBeenCalled();
+  });
+});
+
 describe('plugins/cmd option alias', () => {
   beforeEach(() => {
     execMock.mockClear();

@@ -1,14 +1,10 @@
-Fix lint, build, and code quality issues from the PR #33 merge.
+Wire CmdPluginOptions.asDefault through to Commander's command() isDefault option via a new NsOptions type on the plugin contract.
 
-**Quality checks passed:**
-- eslint: 0 errors, 0 warnings
-- tsc --noEmit: clean
-- rollup build: clean (no warnings)
-- vitest: 240 passed, 1 skipped
-- knip: only pre-existing noise (esbuild/fs-extra)
+- Add NsOptions interface (isDefault, hidden) to contracts.ts
+- Extend ns() in GetDotenvCli to accept NsOptions, forward to command()
+- Add optional nsOptions to GetDotenvCliPlugin contract
+- Pass plugin.nsOptions through registerPlugin to ns()
+- cmdPlugin factory maps options.asDefault into nsOptions.isDefault
+- Add regression test for default subcommand routing
 
-**Fixes:**
-- Prettier formatting in `attachRootOptions.ts` (debug flag block)
-- `@typescript-eslint/consistent-type-imports` violation in `defaultAction.ts` — replaced `typeof import()` type annotations with local variable typing and direct assignment from the dynamic import
-- Rollup build warning for AWS SDK type mismatch (same root cause)
-- Added `.commitmsg` to `.gitignore` to prevent ephemeral files from being tracked
+Fixes #35
