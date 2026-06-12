@@ -23,6 +23,7 @@ export type { RunCmdWithContextOptions } from './types';
 export const cmdPlugin = (options: CmdPluginOptions = {}) => {
   const plugin = definePlugin({
     ns: 'cmd',
+    ...(options.asDefault ? { nsOptions: { isDefault: true } } : {}),
     configSchema: cmdPluginConfigSchema,
     setup(cli) {
       const aliasSpec =

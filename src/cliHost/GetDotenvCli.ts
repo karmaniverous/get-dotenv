@@ -24,6 +24,7 @@ import { buildHelpInformation } from './buildHelpInformation';
 import type {
   GetDotenvCliPlugin,
   GetDotenvCliPublic,
+  NsOptions,
   PluginChildEntry,
   PluginNamespaceOverride,
   ResolveAndLoadOptions,
@@ -250,6 +251,7 @@ export class GetDotenvCli<
    */
   ns<Usage extends string>(
     name: Usage,
+    opts?: NsOptions,
   ): GetDotenvCliPublic<
     TOptions,
     [...TArgs, ...InferCommandArguments<Usage>],
@@ -261,7 +263,10 @@ export class GetDotenvCli<
     if (exists) {
       throw new Error(`Duplicate command name: ${name}`);
     }
-    return this.command(name) as unknown as GetDotenvCliPublic<
+    return this.command(name, {
+      ...(opts?.isDefault !== undefined ? { isDefault: opts.isDefault } : {}),
+      ...(opts?.hidden !== undefined ? { hidden: opts.hidden } : {}),
+    }) as unknown as GetDotenvCliPublic<
       TOptions,
       [...TArgs, ...InferCommandArguments<Usage>],
       {},
