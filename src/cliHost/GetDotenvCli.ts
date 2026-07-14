@@ -208,8 +208,7 @@ export class GetDotenvCli<
     if (!ctx) {
       const root = this._root();
       ctx = (root as unknown as { [k: symbol]: unknown })[CTX_SYMBOL] as
-        | GetDotenvCliCtx<TOptions>
-        | undefined;
+        GetDotenvCliCtx<TOptions> | undefined;
     }
     if (!ctx) {
       throw new Error(

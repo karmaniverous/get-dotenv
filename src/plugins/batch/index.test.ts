@@ -37,8 +37,7 @@ describe('plugins/batch', () => {
     expect(execMock).toHaveBeenCalledTimes(1);
     // Safe after call-count assertion
     const firstCall = execMock.mock.calls[0] as
-      | [Record<string, unknown>]
-      | undefined;
+      [Record<string, unknown>] | undefined;
     const [args] = firstCall as [Record<string, unknown>];
     expect(args.list).toBe(true);
     expect(args.globs).toBe('a b');
@@ -71,8 +70,7 @@ describe('plugins/batch', () => {
 
     expect(execMock).toHaveBeenCalledTimes(1);
     const firstCall = execMock.mock.calls[0] as
-      | [Record<string, unknown>]
-      | undefined;
+      [Record<string, unknown>] | undefined;
     const [args] = firstCall as [Record<string, unknown>];
     expect(args.command).toBe('npm run build');
     expect(args.shell).toBe('/bin/zsh');
@@ -88,8 +86,7 @@ describe('plugins/batch', () => {
 
     expect(execMock).toHaveBeenCalledTimes(1);
     const firstCall = execMock.mock.calls[0] as
-      | [Record<string, unknown>]
-      | undefined;
+      [Record<string, unknown>] | undefined;
     const [args] = firstCall as [Record<string, unknown>];
     expect(args.pkgCwd).toBe(true);
   });
@@ -111,8 +108,7 @@ describe('plugins/batch', () => {
 
     expect(execMock).toHaveBeenCalledTimes(1);
     const firstCall = execMock.mock.calls[0] as
-      | [Record<string, unknown>]
-      | undefined;
+      [Record<string, unknown>] | undefined;
     const [args] = firstCall as [Record<string, unknown>];
     expect(args.ignoreErrors).toBe(true);
   });
@@ -127,8 +123,7 @@ describe('plugins/batch', () => {
 
     expect(execMock).toHaveBeenCalledTimes(1);
     const firstCall = execMock.mock.calls[0] as
-      | [Record<string, unknown>]
-      | undefined;
+      [Record<string, unknown>] | undefined;
     const [args] = firstCall as [Record<string, unknown>];
     expect(args.command).toEqual(['echo', 'OK']);
     expect(args.list).toBe(false);
@@ -144,8 +139,7 @@ describe('plugins/batch', () => {
 
     expect(execMock).toHaveBeenCalledTimes(1);
     const firstCall = execMock.mock.calls[0] as
-      | [Record<string, unknown>]
-      | undefined;
+      [Record<string, unknown>] | undefined;
     const [args] = firstCall as [Record<string, unknown>];
     expect(args.parallel).toBe(true);
   });
@@ -169,8 +163,7 @@ describe('plugins/batch', () => {
 
     expect(execMock).toHaveBeenCalledTimes(1);
     const firstCall = execMock.mock.calls[0] as
-      | [Record<string, unknown>]
-      | undefined;
+      [Record<string, unknown>] | undefined;
     const [args] = firstCall as [Record<string, unknown>];
     expect(args.parallel).toBe(true);
     expect(args.concurrency).toBe(4);
@@ -186,8 +179,7 @@ describe('plugins/batch', () => {
 
     expect(execMock).toHaveBeenCalledTimes(1);
     const firstCall = execMock.mock.calls[0] as
-      | [Record<string, unknown>]
-      | undefined;
+      [Record<string, unknown>] | undefined;
     const [args] = firstCall as [Record<string, unknown>];
     expect(args.parallel).toBe(false);
   });
