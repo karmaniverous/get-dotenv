@@ -235,9 +235,7 @@ export interface DotenvBareKeySegment extends DotenvKeySegmentBase {
  * @public
  */
 export type DotenvSegment =
-  | DotenvRawSegment
-  | DotenvAssignmentSegment
-  | DotenvBareKeySegment;
+  DotenvRawSegment | DotenvAssignmentSegment | DotenvBareKeySegment;
 
 /**
  * A parsed dotenv document suitable for format-preserving edits.

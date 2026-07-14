@@ -10,10 +10,10 @@ export function tagAppOptionsAround<T>(
   fn: (root: CommandUnknownOpts) => T,
 ): T {
   const originalAddOption: typeof root.addOption = root.addOption.bind(root);
-  root.addOption = ((opt: Option) => {
+  root.addOption = (opt: Option) => {
     setOptionGroup(opt, 'app');
     return originalAddOption(opt);
-  }) as typeof root.addOption;
+  };
   try {
     return fn(root);
   } finally {
