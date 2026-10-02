@@ -41,6 +41,7 @@ await editDotenvFile(
   - `searchOrder: 'reverse'` (default): last path wins.
   - `searchOrder: 'forward'`: first path wins.
 - Template bootstrap: if the target is missing but `<target>.<templateExtension>` exists (default `template`), it is copied first.
+- Shared env template fallback (`scope: 'env'` only): if neither the target nor its env-specific template exists, a shared template is tried next. It's named the same way as the env target, but with a fixed token (`sharedEnvTemplateToken`, default `'env'`) in place of the env name — e.g. `.env.env.local.template` for `.env.<env>.local`, or `.env.env.template` for `.env.<env>`. An env-specific template always wins when present. Global scope never uses this fallback.
 - Return shape: `{ path, createdFromTemplate, changed }`.
 
 ### Selector mapping
