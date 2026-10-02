@@ -123,6 +123,20 @@ export interface ResolveDotenvTargetOptions extends BuildDotenvTargetFilenameOpt
   searchOrder?: DotenvPathSearchOrder;
   /** Template extension used for bootstrap discovery. Defaults to `'template'`. */
   templateExtension?: string;
+  /**
+   * Env name token substituted in place of the real env name when building the
+   * shared env template filename (`scope: 'env'` only). For example, with the
+   * default token `'env'`, the shared template for `.env.<env>.local` is
+   * `.env.env.local.template`, and for `.env.<env>` it is `.env.env.template`.
+   *
+   * The shared env template is used as a last-resort fallback when neither the
+   * env-scoped target nor its env-specific template (`<target>.<templateExtension>`)
+   * exists anywhere under `paths`. An env-specific template always takes priority
+   * over the shared one. This option has no effect for `scope: 'global'`.
+   *
+   * @defaultValue `'env'`
+   */
+  sharedEnvTemplateToken?: string;
 }
 
 /**
@@ -145,22 +159,55 @@ export async function resolveDotenvTarget(
   const filename = buildDotenvTargetFilename(opts);
   const templateExtension = opts.templateExtension ?? 'template';
   const searchOrder = opts.searchOrder ?? 'reverse';
+  const sharedEnvTemplateToken = opts.sharedEnvTemplateToken ?? 'env';
 
   const pathsOrdered = orderedPaths(opts.paths, searchOrder);
 
+  // The shared env template filename is built the same way as the env target,
+  // but with a fixed token in place of the actual env name (scope: 'env' only).
+  const sharedEnvTemplateFilename =
+    opts.scope === 'env'
+      ? `${buildDotenvTargetFilename({
+          ...(typeof opts.dotenvToken === 'string'
+            ? { dotenvToken: opts.dotenvToken }
+            : {}),
+          ...(typeof opts.privateToken === 'string'
+            ? { privateToken: opts.privateToken }
+            : {}),
+          scope: 'env',
+          privacy: opts.privacy,
+          env: sharedEnvTemplateToken,
+        })}.${templateExtension}`
+      : undefined;
+
+  const candidates: string[] = [];
+
   for (const dir of pathsOrdered) {
     const targetPath = path.resolve(dir, filename);
+    candidates.push(targetPath);
     if (await opts.fs.pathExists(targetPath)) {
       return { targetPath, filename };
     }
 
     const templatePath = `${targetPath}.${templateExtension}`;
+    candidates.push(templatePath);
     if (await opts.fs.pathExists(templatePath)) {
       return { targetPath, templatePath, filename };
     }
   }
 
+  if (sharedEnvTemplateFilename) {
+    for (const dir of pathsOrdered) {
+      const targetPath = path.resolve(dir, filename);
+      const sharedTemplatePath = path.resolve(dir, sharedEnvTemplateFilename);
+      candidates.push(sharedTemplatePath);
+      if (await opts.fs.pathExists(sharedTemplatePath)) {
+        return { targetPath, templatePath: sharedTemplatePath, filename };
+      }
+    }
+  }
+
   throw new Error(
-    `Unable to locate dotenv target "${filename}" under provided paths, and no template was found.`,
+    `Unable to locate dotenv target "${filename}" under provided paths, and no template was found. Checked: ${candidates.join(', ')}`,
   );
 }

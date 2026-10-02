@@ -62,6 +62,9 @@ export async function editDotenvFile(
     privacy: options.privacy,
     templateExtension,
     searchOrder,
+    ...(typeof options.sharedEnvTemplateToken === 'string'
+      ? { sharedEnvTemplateToken: options.sharedEnvTemplateToken }
+      : {}),
   });
 
   let createdFromTemplate = false;
