@@ -77,6 +77,29 @@ describe('dotenv/edit/editDotenvFile', () => {
     expect(txt).toBe('A=updated\n');
   });
 
+  it('bootstraps from the shared env template when no env-specific template exists', async () => {
+    const d = await mk(path.join(ROOT, 'case5', 'p'));
+    await fs.writeFile(
+      path.join(d, '.env.env.local.template'),
+      'A=shared\n',
+      'utf-8',
+    );
+
+    const res = await editDotenvFile(
+      { A: 'updated' },
+      {
+        paths: [d],
+        scope: 'env',
+        privacy: 'private',
+        env: 'dev',
+      },
+    );
+    expect(res.createdFromTemplate).toBe(true);
+    expect(res.path).toBe(path.resolve(d, '.env.dev.local'));
+    const txt = await fs.readFile(res.path, 'utf-8');
+    expect(txt).toBe('A=updated\n');
+  });
+
   it('throws when env-scoped selection is requested without an env', async () => {
     const d = await mk(path.join(ROOT, 'case4', 'p'));
     await fs.writeFile(path.join(d, '.env'), 'A=1\n', 'utf-8');
