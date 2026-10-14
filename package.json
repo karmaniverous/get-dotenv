@@ -171,7 +171,9 @@
       "requireBranch": "main"
     },
     "github": {
-      "release": true
+      "release": true,
+      "releaseName": "${name.split('/').pop()}@${version}",
+      "releaseNotes": "npx git-cliff --tag v${version} --unreleased --strip header"
     },
     "hooks": {
       "after:init": [
@@ -182,6 +184,10 @@
         "npm run verify:package",
         "npm run verify:bundle",
         "npm run verify:tarball"
+      ],
+      "after:bump": [
+        "npx git-cliff --tag v${version} -o CHANGELOG.md",
+        "git add CHANGELOG.md"
       ],
       "after:release": [
         "git switch -c release/${version}",
