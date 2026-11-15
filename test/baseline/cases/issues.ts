@@ -19,6 +19,7 @@ import { editDotenvFile, editDotenvText } from '@/src/dotenv/edit';
 import { cmdPlugin } from '@/src/plugins';
 
 import type { BaselineCase, CaseSource, CliCase, LibCase } from '../types';
+import { awsChildHelpCase, awsChildProfileFlagCase } from './awsChild';
 
 const P = ['node', 'probe.mjs'];
 
@@ -253,13 +254,7 @@ export const issuesCorpus: BaselineCase[] = [
     ],
     files: { '.env': 'APP=base\nAWS_REGION=us-east-1\n' },
   }),
-  gd(56, 'profile flag on aws child', {
-    args: ['aws', '--profile', 'flag-profile', 'whoami', 'really'],
-    files: {
-      '.env':
-        'APP=base\nAWS_LOCAL_PROFILE=dotenv-profile\nSECRET_IDENTITY=batman\n',
-    },
-  }),
+  awsChildProfileFlagCase,
 
   gd(57, 'whoami really', {
     args: ['aws', 'whoami', 'really'],
@@ -461,10 +456,7 @@ export const issuesCorpus: BaselineCase[] = [
     }),
   }),
 
-  gd(84, 'aws child help resolves session', {
-    args: ['aws', 'whoami', 'really', '-h'],
-    files: { '.env': 'APP=base\nAWS_LOCAL_PROFILE=dotenv-profile\n' },
-  }),
+  awsChildHelpCase,
 
   lib(86, 'trailing dollar', () => ({
     cost: dotenvExpand('$A cost $', { A: 'x' }),

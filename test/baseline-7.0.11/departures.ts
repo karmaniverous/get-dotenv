@@ -245,16 +245,6 @@ export const departures: Departure[] = [
     note: "The demo 'really' subcommand is gone: whoami rejects it (\"error: too many arguments for 'whoami'. Expected 0 arguments but got 1: really.\"), exit 1, no secret identity on stdout.",
   },
   {
-    case: '#56 profile flag on aws child',
-    issueOrDecision: '#57',
-    note: "The case drives the removed demo 'aws whoami really': whoami now rejects 'really' (exit 1). The aws session probes with --profile flag-profile are unchanged.",
-  },
-  {
-    case: '#84 aws child help resolves session',
-    issueOrDecision: '#57',
-    note: "The case asks for help on the removed demo 'aws whoami really': it now shows whoami's own help.",
-  },
-  {
     case: 'help getdotenv init',
     issueOrDecision: '#58',
     note: 'init no longer offers the no-op --dynamic flag.',

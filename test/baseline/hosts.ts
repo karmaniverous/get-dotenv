@@ -101,6 +101,48 @@ export const smozFixturePlugin = () =>
   });
 
 /**
+ * Fixture aws child: `aws session show` reports the AWS session the child
+ * sees (the profile and region in `process.env`, and `ctx.plugins.aws`).
+ *
+ * It replaces the demo `aws whoami really` (removed by #57) in the corpus
+ * cases that drive an aws child command (`#56 profile flag on aws child`,
+ * `#84 aws child help resolves session`): a plugin child of `aws` with a
+ * `cli.ns()` leaf, the same shape as `whoami` with its `really` leaf.
+ *
+ * @returns The plugin.
+ */
+export const awsChildFixturePlugin = () =>
+  definePlugin({
+    ns: 'session',
+    setup(cli) {
+      cli.description('Fixture: an aws child command');
+      const show = cli
+        .ns('show')
+        .description('Fixture: print the AWS session this child sees');
+      show.action(() => {
+        report('aws session show', {
+          AWS_PROFILE: process.env.AWS_PROFILE ?? null,
+          AWS_REGION: process.env.AWS_REGION ?? null,
+          aws: show.getCtx().plugins?.aws ?? null,
+        });
+      });
+      return undefined;
+    },
+  });
+
+/**
+ * A host with only the aws plugin and the {@link awsChildFixturePlugin}
+ * child under it.
+ *
+ * @returns Its runner.
+ */
+export const createAwsChildHost = (): Runner =>
+  createCli({
+    alias: 'getdotenv',
+    compose: (program) => program.use(awsPlugin().use(awsChildFixturePlugin())),
+  });
+
+/**
  * The shipped `getdotenv` host.
  *
  * @returns Its runner.

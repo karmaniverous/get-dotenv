@@ -66,6 +66,19 @@ Recorded per case: the merged options bag, every child the probe saw (argv, cwd,
 
 **Normalization** (`normalize.ts`): the case directory, the repo checkout, the OS temp directory and the home directory become `<TMP>`, `<REPO>`, `<OSTMP>` and `<HOME>` in raw, forward-slash and JSON-escaped spellings (case-insensitive on Windows), with separators after them written as `/`; the case directory's bare name becomes `<TMPNAME>`; the package and Node versions, ISO timestamps, `NNms` durations and stack frames are replaced; stream output uses LF. The recorder runs the corpus twice and refuses to write unless both runs match.
 
+## Re-pointed cases
+
+A case whose command a later step removes from the code is re-pointed to an equivalent fixture command, and only that case is re-recorded from the untouched 7.0.11 code; nothing else in the baseline is touched.
+
+| Case | Was (S1) | Now | Step |
+| --- | --- | --- | --- |
+| `#56 profile flag on aws child` | `getdotenv aws --profile flag-profile whoami really` | `aws --profile flag-profile session show` on a fixture host (`createAwsChildHost`: `awsPlugin()` with the fixture child `awsChildFixturePlugin`, `test/baseline/hosts.ts`), same files | S8 |
+| `#84 aws child help resolves session` | `getdotenv aws whoami really -h` | `aws session show -h` on the same fixture host, same files | S8 |
+
+Why: #57 (S7) removed the demo `aws whoami really`, which both cases drove. The fixture child has the same shape (a plugin child of `aws` with a `cli.ns()` leaf) and its leaf prints the session it sees (`AWS_PROFILE`, `AWS_REGION`, `ctx.plugins.aws`), so the cases exercise the same paths: the aws `preSubcommand` hook, then (for `#56`) the root `preAction` hook's aws `afterResolve` and the leaf action. The cases live in `test/baseline/cases/awsChild.ts`; with a custom host they are stored in `lib.json`.
+
+How: the 7.0.11 code (`903b57d4`) was checked out into a temporary git worktree outside the repo, with its own `npm ci`; the harness modules and `cases/awsChild.ts` were copied in, and a one-off test ran just these two cases twice (identical output) with the same exec mock as `baseline.test.ts`. The win32 records are that output. No Linux host was available, so the Linux records were derived from the win32 ones with exactly the two platform differences the S1 Linux and win32 records of the same cases show (`export-credentials --format powershell` → `env`; the bag's `shell` `powershell.exe` → `/bin/bash`). The re-pointing commit compares both against the S7 code, which is unchanged from 7.0.11 on these paths, with no departure: locally on win32 and in CI on Linux. The 7.0.11 output shows the #56 defect: the child sees `AWS_PROFILE` `dotenv-profile` although `--profile flag-profile` was given.
+
 ## Re-recording
 
 Only for the untouched 7.0.11 code, or to add a platform:

@@ -56,6 +56,464 @@
     "stderr": "",
     "stdout": ""
   },
+  "#56 profile flag on aws child": {
+    "argv": ["custom", "aws", "--profile", "flag-profile", "session", "show"],
+    "aws": [
+      {
+        "command": [
+          "aws",
+          "configure",
+          "export-credentials",
+          "--profile",
+          "flag-profile",
+          "--format",
+          "process"
+        ],
+        "env": {
+          "added": {
+            "APP": "cae662172fd4",
+            "AWS_LOCAL_PROFILE": "5e649592b9e7",
+            "SECRET_IDENTITY": "1532e76dbe9d"
+          },
+          "changed": {},
+          "removed": []
+        },
+        "getDotenvCliOptions": null,
+        "kind": "result",
+        "shell": false
+      },
+      {
+        "command": [
+          "aws",
+          "configure",
+          "export-credentials",
+          "--profile",
+          "flag-profile",
+          "--format",
+          "powershell"
+        ],
+        "env": {
+          "added": {
+            "APP": "cae662172fd4",
+            "AWS_LOCAL_PROFILE": "5e649592b9e7",
+            "SECRET_IDENTITY": "1532e76dbe9d"
+          },
+          "changed": {},
+          "removed": []
+        },
+        "getDotenvCliOptions": null,
+        "kind": "result",
+        "shell": false
+      },
+      {
+        "command": [
+          "aws",
+          "configure",
+          "export-credentials",
+          "--profile",
+          "flag-profile"
+        ],
+        "env": {
+          "added": {
+            "APP": "cae662172fd4",
+            "AWS_LOCAL_PROFILE": "5e649592b9e7",
+            "SECRET_IDENTITY": "1532e76dbe9d"
+          },
+          "changed": {},
+          "removed": []
+        },
+        "getDotenvCliOptions": null,
+        "kind": "result",
+        "shell": false
+      },
+      {
+        "command": [
+          "aws",
+          "configure",
+          "get",
+          "sso_session",
+          "--profile",
+          "flag-profile"
+        ],
+        "env": {
+          "added": {
+            "APP": "cae662172fd4",
+            "AWS_LOCAL_PROFILE": "5e649592b9e7",
+            "SECRET_IDENTITY": "1532e76dbe9d"
+          },
+          "changed": {},
+          "removed": []
+        },
+        "getDotenvCliOptions": null,
+        "kind": "result",
+        "shell": false
+      },
+      {
+        "command": [
+          "aws",
+          "configure",
+          "get",
+          "sso_start_url",
+          "--profile",
+          "flag-profile"
+        ],
+        "env": {
+          "added": {
+            "APP": "cae662172fd4",
+            "AWS_LOCAL_PROFILE": "5e649592b9e7",
+            "SECRET_IDENTITY": "1532e76dbe9d"
+          },
+          "changed": {},
+          "removed": []
+        },
+        "getDotenvCliOptions": null,
+        "kind": "result",
+        "shell": false
+      },
+      {
+        "command": [
+          "aws",
+          "configure",
+          "get",
+          "aws_access_key_id",
+          "--profile",
+          "flag-profile"
+        ],
+        "env": {
+          "added": {
+            "APP": "cae662172fd4",
+            "AWS_LOCAL_PROFILE": "5e649592b9e7",
+            "SECRET_IDENTITY": "1532e76dbe9d"
+          },
+          "changed": {},
+          "removed": []
+        },
+        "getDotenvCliOptions": null,
+        "kind": "result",
+        "shell": false
+      },
+      {
+        "command": [
+          "aws",
+          "configure",
+          "get",
+          "aws_secret_access_key",
+          "--profile",
+          "flag-profile"
+        ],
+        "env": {
+          "added": {
+            "APP": "cae662172fd4",
+            "AWS_LOCAL_PROFILE": "5e649592b9e7",
+            "SECRET_IDENTITY": "1532e76dbe9d"
+          },
+          "changed": {},
+          "removed": []
+        },
+        "getDotenvCliOptions": null,
+        "kind": "result",
+        "shell": false
+      },
+      {
+        "command": [
+          "aws",
+          "configure",
+          "get",
+          "aws_session_token",
+          "--profile",
+          "flag-profile"
+        ],
+        "env": {
+          "added": {
+            "APP": "cae662172fd4",
+            "AWS_LOCAL_PROFILE": "5e649592b9e7",
+            "SECRET_IDENTITY": "1532e76dbe9d"
+          },
+          "changed": {},
+          "removed": []
+        },
+        "getDotenvCliOptions": null,
+        "kind": "result",
+        "shell": false
+      },
+      {
+        "command": [
+          "aws",
+          "configure",
+          "get",
+          "region",
+          "--profile",
+          "flag-profile"
+        ],
+        "env": {
+          "added": {
+            "APP": "cae662172fd4",
+            "AWS_LOCAL_PROFILE": "5e649592b9e7",
+            "SECRET_IDENTITY": "1532e76dbe9d"
+          },
+          "changed": {},
+          "removed": []
+        },
+        "getDotenvCliOptions": null,
+        "kind": "result",
+        "shell": false
+      },
+      {
+        "command": [
+          "aws",
+          "configure",
+          "export-credentials",
+          "--profile",
+          "dotenv-profile",
+          "--format",
+          "process"
+        ],
+        "env": {
+          "added": {
+            "APP": "cae662172fd4",
+            "AWS_DEFAULT_PROFILE": "31efda6f6332",
+            "AWS_LOCAL_PROFILE": "5e649592b9e7",
+            "AWS_PROFILE": "31efda6f6332",
+            "AWS_SDK_LOAD_CONFIG": "6b86b273ff34",
+            "SECRET_IDENTITY": "1532e76dbe9d"
+          },
+          "changed": {},
+          "removed": []
+        },
+        "getDotenvCliOptions": null,
+        "kind": "result",
+        "shell": false
+      },
+      {
+        "command": [
+          "aws",
+          "configure",
+          "export-credentials",
+          "--profile",
+          "dotenv-profile",
+          "--format",
+          "powershell"
+        ],
+        "env": {
+          "added": {
+            "APP": "cae662172fd4",
+            "AWS_DEFAULT_PROFILE": "31efda6f6332",
+            "AWS_LOCAL_PROFILE": "5e649592b9e7",
+            "AWS_PROFILE": "31efda6f6332",
+            "AWS_SDK_LOAD_CONFIG": "6b86b273ff34",
+            "SECRET_IDENTITY": "1532e76dbe9d"
+          },
+          "changed": {},
+          "removed": []
+        },
+        "getDotenvCliOptions": null,
+        "kind": "result",
+        "shell": false
+      },
+      {
+        "command": [
+          "aws",
+          "configure",
+          "export-credentials",
+          "--profile",
+          "dotenv-profile"
+        ],
+        "env": {
+          "added": {
+            "APP": "cae662172fd4",
+            "AWS_DEFAULT_PROFILE": "31efda6f6332",
+            "AWS_LOCAL_PROFILE": "5e649592b9e7",
+            "AWS_PROFILE": "31efda6f6332",
+            "AWS_SDK_LOAD_CONFIG": "6b86b273ff34",
+            "SECRET_IDENTITY": "1532e76dbe9d"
+          },
+          "changed": {},
+          "removed": []
+        },
+        "getDotenvCliOptions": null,
+        "kind": "result",
+        "shell": false
+      },
+      {
+        "command": [
+          "aws",
+          "configure",
+          "get",
+          "sso_session",
+          "--profile",
+          "dotenv-profile"
+        ],
+        "env": {
+          "added": {
+            "APP": "cae662172fd4",
+            "AWS_DEFAULT_PROFILE": "31efda6f6332",
+            "AWS_LOCAL_PROFILE": "5e649592b9e7",
+            "AWS_PROFILE": "31efda6f6332",
+            "AWS_SDK_LOAD_CONFIG": "6b86b273ff34",
+            "SECRET_IDENTITY": "1532e76dbe9d"
+          },
+          "changed": {},
+          "removed": []
+        },
+        "getDotenvCliOptions": null,
+        "kind": "result",
+        "shell": false
+      },
+      {
+        "command": [
+          "aws",
+          "configure",
+          "get",
+          "sso_start_url",
+          "--profile",
+          "dotenv-profile"
+        ],
+        "env": {
+          "added": {
+            "APP": "cae662172fd4",
+            "AWS_DEFAULT_PROFILE": "31efda6f6332",
+            "AWS_LOCAL_PROFILE": "5e649592b9e7",
+            "AWS_PROFILE": "31efda6f6332",
+            "AWS_SDK_LOAD_CONFIG": "6b86b273ff34",
+            "SECRET_IDENTITY": "1532e76dbe9d"
+          },
+          "changed": {},
+          "removed": []
+        },
+        "getDotenvCliOptions": null,
+        "kind": "result",
+        "shell": false
+      },
+      {
+        "command": [
+          "aws",
+          "configure",
+          "get",
+          "aws_access_key_id",
+          "--profile",
+          "dotenv-profile"
+        ],
+        "env": {
+          "added": {
+            "APP": "cae662172fd4",
+            "AWS_DEFAULT_PROFILE": "31efda6f6332",
+            "AWS_LOCAL_PROFILE": "5e649592b9e7",
+            "AWS_PROFILE": "31efda6f6332",
+            "AWS_SDK_LOAD_CONFIG": "6b86b273ff34",
+            "SECRET_IDENTITY": "1532e76dbe9d"
+          },
+          "changed": {},
+          "removed": []
+        },
+        "getDotenvCliOptions": null,
+        "kind": "result",
+        "shell": false
+      },
+      {
+        "command": [
+          "aws",
+          "configure",
+          "get",
+          "aws_secret_access_key",
+          "--profile",
+          "dotenv-profile"
+        ],
+        "env": {
+          "added": {
+            "APP": "cae662172fd4",
+            "AWS_DEFAULT_PROFILE": "31efda6f6332",
+            "AWS_LOCAL_PROFILE": "5e649592b9e7",
+            "AWS_PROFILE": "31efda6f6332",
+            "AWS_SDK_LOAD_CONFIG": "6b86b273ff34",
+            "SECRET_IDENTITY": "1532e76dbe9d"
+          },
+          "changed": {},
+          "removed": []
+        },
+        "getDotenvCliOptions": null,
+        "kind": "result",
+        "shell": false
+      },
+      {
+        "command": [
+          "aws",
+          "configure",
+          "get",
+          "aws_session_token",
+          "--profile",
+          "dotenv-profile"
+        ],
+        "env": {
+          "added": {
+            "APP": "cae662172fd4",
+            "AWS_DEFAULT_PROFILE": "31efda6f6332",
+            "AWS_LOCAL_PROFILE": "5e649592b9e7",
+            "AWS_PROFILE": "31efda6f6332",
+            "AWS_SDK_LOAD_CONFIG": "6b86b273ff34",
+            "SECRET_IDENTITY": "1532e76dbe9d"
+          },
+          "changed": {},
+          "removed": []
+        },
+        "getDotenvCliOptions": null,
+        "kind": "result",
+        "shell": false
+      },
+      {
+        "command": [
+          "aws",
+          "configure",
+          "get",
+          "region",
+          "--profile",
+          "dotenv-profile"
+        ],
+        "env": {
+          "added": {
+            "APP": "cae662172fd4",
+            "AWS_DEFAULT_PROFILE": "31efda6f6332",
+            "AWS_LOCAL_PROFILE": "5e649592b9e7",
+            "AWS_PROFILE": "31efda6f6332",
+            "AWS_SDK_LOAD_CONFIG": "6b86b273ff34",
+            "SECRET_IDENTITY": "1532e76dbe9d"
+          },
+          "changed": {},
+          "removed": []
+        },
+        "getDotenvCliOptions": null,
+        "kind": "result",
+        "shell": false
+      }
+    ],
+    "bag": {
+      "defaultEnvKey": "DEFAULT_ENV",
+      "dotenvToken": ".env",
+      "entropyMinLength": 16,
+      "entropyThreshold": 3.8,
+      "entropyWhitelist": ["^GIT_", "^npm_", "^CI$", "SHLVL"],
+      "loadProcess": true,
+      "logger": "[logger]",
+      "paths": "./",
+      "pathsDelimiter": " ",
+      "privateToken": "local",
+      "scripts": {
+        "git-status": {
+          "cmd": "git branch --show-current && git status -s -u",
+          "shell": true
+        }
+      },
+      "shell": "powershell.exe",
+      "vars": "",
+      "varsAssignor": "=",
+      "varsDelimiter": " ",
+      "warnEntropy": true
+    },
+    "children": [],
+    "exitCode": 0,
+    "source": "#56",
+    "stderr": "",
+    "stdout": "[fixture:aws session show] {\"AWS_PROFILE\":\"dotenv-profile\",\"AWS_REGION\":null,\"aws\":{\"profile\":\"dotenv-profile\"}}\n"
+  },
   "#60 visibility env debug": {
     "argv": ["custom", "-h"],
     "bag": null,
@@ -261,6 +719,230 @@
     "source": "#82",
     "stderr": "",
     "stdout": ""
+  },
+  "#84 aws child help resolves session": {
+    "argv": ["custom", "aws", "session", "show", "-h"],
+    "aws": [
+      {
+        "command": [
+          "aws",
+          "configure",
+          "export-credentials",
+          "--profile",
+          "dotenv-profile",
+          "--format",
+          "process"
+        ],
+        "env": {
+          "added": {
+            "APP": "cae662172fd4",
+            "AWS_LOCAL_PROFILE": "5e649592b9e7"
+          },
+          "changed": {},
+          "removed": []
+        },
+        "getDotenvCliOptions": null,
+        "kind": "result",
+        "shell": false
+      },
+      {
+        "command": [
+          "aws",
+          "configure",
+          "export-credentials",
+          "--profile",
+          "dotenv-profile",
+          "--format",
+          "powershell"
+        ],
+        "env": {
+          "added": {
+            "APP": "cae662172fd4",
+            "AWS_LOCAL_PROFILE": "5e649592b9e7"
+          },
+          "changed": {},
+          "removed": []
+        },
+        "getDotenvCliOptions": null,
+        "kind": "result",
+        "shell": false
+      },
+      {
+        "command": [
+          "aws",
+          "configure",
+          "export-credentials",
+          "--profile",
+          "dotenv-profile"
+        ],
+        "env": {
+          "added": {
+            "APP": "cae662172fd4",
+            "AWS_LOCAL_PROFILE": "5e649592b9e7"
+          },
+          "changed": {},
+          "removed": []
+        },
+        "getDotenvCliOptions": null,
+        "kind": "result",
+        "shell": false
+      },
+      {
+        "command": [
+          "aws",
+          "configure",
+          "get",
+          "sso_session",
+          "--profile",
+          "dotenv-profile"
+        ],
+        "env": {
+          "added": {
+            "APP": "cae662172fd4",
+            "AWS_LOCAL_PROFILE": "5e649592b9e7"
+          },
+          "changed": {},
+          "removed": []
+        },
+        "getDotenvCliOptions": null,
+        "kind": "result",
+        "shell": false
+      },
+      {
+        "command": [
+          "aws",
+          "configure",
+          "get",
+          "sso_start_url",
+          "--profile",
+          "dotenv-profile"
+        ],
+        "env": {
+          "added": {
+            "APP": "cae662172fd4",
+            "AWS_LOCAL_PROFILE": "5e649592b9e7"
+          },
+          "changed": {},
+          "removed": []
+        },
+        "getDotenvCliOptions": null,
+        "kind": "result",
+        "shell": false
+      },
+      {
+        "command": [
+          "aws",
+          "configure",
+          "get",
+          "aws_access_key_id",
+          "--profile",
+          "dotenv-profile"
+        ],
+        "env": {
+          "added": {
+            "APP": "cae662172fd4",
+            "AWS_LOCAL_PROFILE": "5e649592b9e7"
+          },
+          "changed": {},
+          "removed": []
+        },
+        "getDotenvCliOptions": null,
+        "kind": "result",
+        "shell": false
+      },
+      {
+        "command": [
+          "aws",
+          "configure",
+          "get",
+          "aws_secret_access_key",
+          "--profile",
+          "dotenv-profile"
+        ],
+        "env": {
+          "added": {
+            "APP": "cae662172fd4",
+            "AWS_LOCAL_PROFILE": "5e649592b9e7"
+          },
+          "changed": {},
+          "removed": []
+        },
+        "getDotenvCliOptions": null,
+        "kind": "result",
+        "shell": false
+      },
+      {
+        "command": [
+          "aws",
+          "configure",
+          "get",
+          "aws_session_token",
+          "--profile",
+          "dotenv-profile"
+        ],
+        "env": {
+          "added": {
+            "APP": "cae662172fd4",
+            "AWS_LOCAL_PROFILE": "5e649592b9e7"
+          },
+          "changed": {},
+          "removed": []
+        },
+        "getDotenvCliOptions": null,
+        "kind": "result",
+        "shell": false
+      },
+      {
+        "command": [
+          "aws",
+          "configure",
+          "get",
+          "region",
+          "--profile",
+          "dotenv-profile"
+        ],
+        "env": {
+          "added": {
+            "APP": "cae662172fd4",
+            "AWS_LOCAL_PROFILE": "5e649592b9e7"
+          },
+          "changed": {},
+          "removed": []
+        },
+        "getDotenvCliOptions": null,
+        "kind": "result",
+        "shell": false
+      }
+    ],
+    "bag": {
+      "defaultEnvKey": "DEFAULT_ENV",
+      "dotenvToken": ".env",
+      "entropyMinLength": 16,
+      "entropyThreshold": 3.8,
+      "entropyWhitelist": ["^GIT_", "^npm_", "^CI$", "SHLVL"],
+      "loadProcess": true,
+      "logger": "[logger]",
+      "paths": "./",
+      "pathsDelimiter": " ",
+      "privateToken": "local",
+      "scripts": {
+        "git-status": {
+          "cmd": "git branch --show-current && git status -s -u",
+          "shell": true
+        }
+      },
+      "shell": "powershell.exe",
+      "vars": "",
+      "varsAssignor": "=",
+      "varsDelimiter": " ",
+      "warnEntropy": true
+    },
+    "children": [],
+    "exitCode": 0,
+    "processExitCalled": true,
+    "source": "#84",
+    "stderr": "",
+    "stdout": "getdotenv v<VERSION>\n\n\nUsage: getdotenv aws session show [options]\n\nFixture: print the AWS session this child sees\n\n\n"
   },
   "#86 trailing dollar": {
     "exitCode": 0,
