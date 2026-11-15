@@ -246,4 +246,6 @@ getdotenv cmd bash-only
 getdotenv cmd plain
 ```
 
+One script is built in: `git-status` runs `git status -s -u -b` (the `## <branch>` line, then short status with untracked files) with `shell: true`, the OS default shell (PowerShell on Windows, `/bin/bash` elsewhere). Its command uses no shell operators, so it works under PowerShell 5.1, which has no `&&`. When you write a script for that default shell on Windows, do the same. Config scripts are merged with it.
+
 For help‑time visibility of root flags (e.g., hiding `--capture` or an entire family like `--shell`/`--shell-off`), set `rootOptionVisibility` in JSON/YAML/JS/TS config. Precedence matches root defaults: createCli < packaged/public < project/public < project/local; a higher layer’s true shows a flag a lower layer hid. Every root flag has a key, including env, outputPath, defaultEnvKey, debug and excludeAll.

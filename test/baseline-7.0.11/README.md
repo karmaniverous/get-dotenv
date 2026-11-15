@@ -12,12 +12,32 @@ This directory holds the recorded behaviour of the **untouched 7.0.11 code** (de
 
 `issueOrDecision` is a GitHub issue (`#NN`) or a spec decision (`DNN`). The test rejects entries that name an unknown case. An unlisted difference means stop and report: **never re-record the baseline to make the test pass.**
 
+### Field departures
+
+A case departure stops comparing a whole case. When one value changes in many cases for one cause (a built-in default that every options bag carries, say), list it in `fieldDepartures` instead, so the rest of each case is still compared:
+
+```ts
+{
+  bagPath: ['scripts', 'git-status', 'cmd'],
+  from: 'git branch --show-current && git status -s -u',
+  to: 'git status -s -u -b',
+  issueOrDecision: '#51 (follow-up)',
+  note: 'one command with no shell operators',
+}
+```
+
+Use one only when all three hold: **one value** (a single field, from one stored value to one new value), **many cases** (a case departure would hide unrelated changes in each of them), **one cause** (the cited issue or decision). Otherwise list the cases.
+
+The comparer (`test/baseline/fieldDepartures.ts`) looks for `bagPath` in every options bag a record holds: the merged bag, and the `getDotenvCliOptions` each child and AWS call received. Where the stored value is `from`, the current value must be `to`; any other value fails, and a stored value other than `from` is compared as is. An entry that rewrites nothing in any case fails the test.
+
+**The hash exemption.** A child also gets its options bag serialized in its env, which is recorded only as a hash, so a rewritten bag changes that hash too. For a child whose decoded `getDotenvCliOptions` a field departure actually rewrote, the comparer takes that one hash (`getDotenvCliOptions` under `added` or `changed`, in the same place as stored) from the current record; the decoded bag is still compared field by field. Every other hash stays exact: a hash change on a child whose bag no departure rewrote, or with a decoded bag that is unchanged, still fails. AWS call env hashes are never exempt.
+
 ## Layout
 
 | Path | What |
 | --- | --- |
 | `win32/`, `linux/` | The stored records, one JSON file per group: `getdotenv.json` (the shipped CLI), `vc.json` (the fixture host), `lib.json` (library-level repros and custom `createCli` hosts). Each maps a case id to its record. Windows and Linux differ (default shell, quoting, env casing), so each OS has its own baseline. |
-| `departures.ts` | The typed list of accepted departures, `{ case, issueOrDecision, note }`. Empty at S1. |
+| `departures.ts` | The typed lists of accepted departures: per case, `{ case, issueOrDecision, note }` (empty at S1), and per field, `{ bagPath, from, to, issueOrDecision, note }`. |
 | `../baseline/` | The harness: corpus, hosts, probe, normalization and the test. |
 
 ## The harness

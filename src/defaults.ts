@@ -62,9 +62,15 @@ export interface BaseRootOptionDefaults {
   varsDelimiter: string;
 }
 
+/**
+ * Built-in scripts. Each runs under every default shell (`shell: true` is
+ * powershell.exe on Windows, /bin/bash elsewhere), so a command uses no shell
+ * operators: PowerShell 5.1 has no `&&`.
+ */
 const baseScripts: Record<string, BaseRootOptionDefaultsScript> = {
+  // `-b` prints the `## <branch>` line, so one command does the job.
   'git-status': {
-    cmd: 'git branch --show-current && git status -s -u',
+    cmd: 'git status -s -u -b',
     shell: true,
   },
 };

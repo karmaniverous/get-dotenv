@@ -5,6 +5,13 @@
  * 7.0.11 output, unless the case is listed here. Every entry names the issue
  * (`#NN`) or spec decision (`DNN`) that changes the behaviour. The baseline
  * itself is never re-recorded to make a test pass.
+ *
+ * Two kinds of entry:
+ * - {@link departures}: one case, whose whole record is no longer compared.
+ * - {@link fieldDepartures}: one field of the options bag, changed from one
+ *   value to another in every case that records it. Everything else in those
+ *   cases is still compared exactly. Only for a value that appears in many
+ *   cases and has a single cause.
  */
 
 /** One accepted departure from the 7.0.11 baseline. */
@@ -16,6 +23,40 @@ export interface Departure {
   /** What changes, in a sentence. */
   note: string;
 }
+
+/**
+ * One accepted change to a single options-bag field, across every case.
+ *
+ * The comparer looks for `bagPath` in every options bag a record holds: the
+ * merged bag (`bag`) and the `getDotenvCliOptions` each child and AWS call
+ * received. Wherever the stored value is `from`, the current value must be
+ * `to`; any other current value fails. A stored value other than `from` is
+ * compared as is. An entry that matches no stored value in any case fails.
+ */
+export interface FieldDeparture {
+  /** Property path inside an options bag, e.g. `['scripts', 'git-status', 'cmd']`. */
+  bagPath: readonly string[];
+  /** The stored 7.0.11 value. */
+  from: unknown;
+  /** The value that replaces it. */
+  to: unknown;
+  /** The issue (`#NN`, optionally `(follow-up)`) or spec decision (`DNN`). */
+  issueOrDecision: `#${number}` | `#${number} (follow-up)` | `D${number}`;
+  /** What changes, and why, in a sentence. */
+  note: string;
+}
+
+/** Field departures, in step order. */
+export const fieldDepartures: FieldDeparture[] = [
+  // S6b: follow-ups after S7
+  {
+    bagPath: ['scripts', 'git-status', 'cmd'],
+    from: 'git branch --show-current && git status -s -u',
+    to: 'git status -s -u -b',
+    issueOrDecision: '#51 (follow-up)',
+    note: "The built-in git-status script is one command with no shell operators: shell: true is powershell.exe on win32 since #51, and PowerShell 5.1 has no '&&'. '-b' prints the branch line.",
+  },
+];
 
 /** Departures, in step order. Empty at S1. */
 export const departures: Departure[] = [
