@@ -8,6 +8,21 @@ import type { GetDotenvOptions } from '@/src/core';
 import type { GetDotenvCliPlugin, GetDotenvCliPublic } from './contracts';
 
 /**
+ * Determine the effective namespace for a child plugin (override \> default).
+ * Uses a structural parameter so any entry with `.override?.ns` and `.plugin.ns`
+ * is accepted regardless of full generic variance.
+ */
+export const effectiveNs = (child: {
+  override?: { ns?: string } | undefined;
+  plugin: { ns: string };
+}): string => {
+  const o = child.override;
+  return (
+    o && typeof o.ns === 'string' && o.ns.length > 0 ? o.ns : child.plugin.ns
+  ).trim();
+};
+
+/**
  * Compute the realized path for a command mount (leaf-up to root).
  * Excludes the root application alias.
  *
