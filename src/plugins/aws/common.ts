@@ -23,8 +23,7 @@ export function applyAwsContext(
     // AWS_PROFILE and AWS_ACCESS_KEY_ID/AWS_SECRET_ACCESS_KEY are set.
     const clear = (keys: string[]) => {
       for (const k of keys) {
-        // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
-        delete process.env[k];
+        Reflect.deleteProperty(process.env, k);
       }
     };
     const clearProfileVars = () => {

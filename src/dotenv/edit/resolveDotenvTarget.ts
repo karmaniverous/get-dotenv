@@ -3,7 +3,7 @@
  * Deterministic dotenv target selection across a multi-path cascade.
  *
  * This module extracts the “which file should we edit?” logic from the FS-level editor
- * so plugins/tools can reuse the same selection semantics as {@link editDotenvFile}.
+ * so plugins/tools can reuse the same selection semantics as `editDotenvFile`.
  *
  * Notes:
  * - Selection is based on `paths` only (directories), consistent with get-dotenv overlay precedence.
@@ -14,8 +14,6 @@
 
 import path from 'node:path';
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import type { editDotenvFile } from './editDotenvFile';
 import type {
   DotenvFs,
   DotenvPathSearchOrder,

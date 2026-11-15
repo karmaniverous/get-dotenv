@@ -125,9 +125,6 @@ const getAwsConfigure = async (
       timeoutMs,
     },
   );
-  // Guard for mocked undefined in tests; keep narrow lint scope.
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-  if (!r || typeof r.exitCode !== 'number') return undefined;
   if (r.exitCode === 0) {
     const v = trim(r.stdout);
     return v.length > 0 ? v : undefined;

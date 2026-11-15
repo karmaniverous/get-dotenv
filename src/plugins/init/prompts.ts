@@ -38,8 +38,7 @@ export const promptDecision = async (
     `File exists: ${filePath}\nChoose: [o]verwrite, [e]xample, [s]kip, [O]verwrite All, [E]xample All, [S]kip All`,
   );
 
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-  while (true) {
+  for (;;) {
     const a = (await rl.question('> ')).trim();
     const valid = ['o', 'e', 's', 'O', 'E', 'S'] as const;
     if ((valid as readonly string[]).includes(a))

@@ -4,9 +4,6 @@ import { z } from 'zod';
 import type { ScriptsTable } from '@/src/cliHost';
 import type { Logger, ProcessEnv } from '@/src/core';
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import type { execShellCommandBatch } from './execShellCommandBatch';
-
 /**
  * Default concurrency limit for parallel batch execution.
  * Uses `os.availableParallelism()` when available, otherwise falls back to CPU count.
@@ -61,7 +58,7 @@ export interface BatchGlobPathsOptions {
 }
 
 /**
- * Arguments for {@link execShellCommandBatch} — batch execution over discovered working directories.
+ * Arguments for `execShellCommandBatch` — batch execution over discovered working directories.
  *
  * @public
  */

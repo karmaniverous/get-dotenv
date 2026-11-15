@@ -11,8 +11,6 @@
 import { shake } from 'radash';
 import type { z } from 'zod';
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import type { baseGetDotenvCliOptions } from '@/src/cliHost';
 import type {
   RootOptionsShape,
   ScriptsTable as Scripts,
@@ -327,7 +325,7 @@ export const getDotenvCliOptions2Options = ({
  * Resolve {@link GetDotenvOptions} by layering defaults in ascending precedence:
  *
  * 1. Base defaults derived from the CLI generator defaults
- *    ({@link baseGetDotenvCliOptions}).
+ *    (`baseGetDotenvCliOptions`).
  * 2. Local project overrides from a `getdotenv.config.json` in the nearest
  *    package root (if present).
  * 3. The provided customOptions.

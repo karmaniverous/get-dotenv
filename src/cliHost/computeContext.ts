@@ -1,4 +1,3 @@
-/* eslint-disable */
 import type { OptionValues } from '@commander-js/extra-typings';
 import path from 'path';
 
@@ -20,8 +19,8 @@ import { getDotenvOptionsSchemaResolved } from '@/src/schema';
 import { defaultsDeep, interpolateDeep, writeDotenvFile } from '@/src/util';
 
 import type { GetDotenvCliPlugin, PluginChildEntry } from './contracts';
-import type { GetDotenvCliCtx } from './types';
 import { flattenPluginTreeByPath, type PluginFlattenedEntry } from './paths';
+import type { GetDotenvCliCtx } from './types';
 
 /**
  * Instance-bound plugin config store.
@@ -30,10 +29,7 @@ import { flattenPluginTreeByPath, type PluginFlattenedEntry } from './paths';
  * provides a typed accessor that reads from this store for the calling
  * plugin instance.
  */
-const PLUGIN_CONFIG_STORE: WeakMap<
-  GetDotenvCliPlugin<any, unknown[], OptionValues, OptionValues>,
-  unknown
-> = new WeakMap();
+const PLUGIN_CONFIG_STORE = new WeakMap<object, unknown>();
 
 /**
  * Store a validated, interpolated config slice for a specific plugin instance.
@@ -50,15 +46,7 @@ export const setPluginConfig = <
   plugin: GetDotenvCliPlugin<TOptions, TArgs, TOpts, TGlobal>,
   cfg: Readonly<TCfg>,
 ): void => {
-  PLUGIN_CONFIG_STORE.set(
-    plugin as unknown as GetDotenvCliPlugin<
-      any,
-      unknown[],
-      OptionValues,
-      OptionValues
-    >,
-    cfg,
-  );
+  PLUGIN_CONFIG_STORE.set(plugin, cfg);
 };
 
 /**
@@ -73,14 +61,7 @@ export const getPluginConfig = <
 >(
   plugin: GetDotenvCliPlugin<TOptions, TArgs, TOpts, TGlobal>,
 ): Readonly<TCfg> | undefined => {
-  return PLUGIN_CONFIG_STORE.get(
-    plugin as unknown as GetDotenvCliPlugin<
-      any,
-      unknown[],
-      OptionValues,
-      OptionValues
-    >,
-  ) as Readonly<TCfg> | undefined;
+  return PLUGIN_CONFIG_STORE.get(plugin) as Readonly<TCfg> | undefined;
 };
 
 /**
@@ -135,11 +116,11 @@ export const computeContext = async <
 
   // Resolution: env > fileDefaultEnv > defaultEnv
   const envName =
-    validated.env
-    ?? (typeof fileDefaultEnv === 'string' && fileDefaultEnv.length > 0
+    validated.env ??
+    (typeof fileDefaultEnv === 'string' && fileDefaultEnv.length > 0
       ? fileDefaultEnv
-      : undefined)
-    ?? validated.defaultEnv;
+      : undefined) ??
+    validated.defaultEnv;
 
   // Base dotenv from files (with file provenance; no dynamics; no programmatic vars; no side effects).
   const fileRes = await readDotenvCascadeWithProvenance({
@@ -173,14 +154,11 @@ export const computeContext = async <
   if (!validated.excludeDynamic) {
     // Config dynamics (JS/TS configs only), ordered by source precedence.
     const packagedDyn = (sources.packaged?.dynamic ?? undefined) as
-      | GetDotenvDynamic
-      | undefined;
+      GetDotenvDynamic | undefined;
     const publicDyn = (sources.project?.public?.dynamic ?? undefined) as
-      | GetDotenvDynamic
-      | undefined;
+      GetDotenvDynamic | undefined;
     const localDyn = (sources.project?.local?.dynamic ?? undefined) as
-      | GetDotenvDynamic
-      | undefined;
+      GetDotenvDynamic | undefined;
 
     applyDynamicMapWithProvenance(
       dotenv,
@@ -207,7 +185,7 @@ export const computeContext = async <
     // Programmatic dynamic (overrides config dynamic)
     applyDynamicMapWithProvenance(
       dotenv,
-      validated.dynamic as GetDotenvDynamic | undefined,
+      validated.dynamic,
       envName,
       dotenvProvenance,
       { dynamicSource: 'programmatic' },
@@ -231,7 +209,7 @@ export const computeContext = async <
   if (validated.outputPath) {
     await writeDotenvFile(validated.outputPath, dotenv);
   }
-  const logger: Logger = (validated as GetDotenvOptions).logger!;
+  const logger: Logger = validated.logger;
   if (validated.log) logger.info(dotenv);
   if (validated.loadProcess) Object.assign(process.env, dotenv);
 
@@ -277,10 +255,7 @@ export const computeContext = async <
       (publicPlugins[pathKey] as Record<string, unknown> | undefined) ?? {},
       (localPlugins[pathKey] as Record<string, unknown> | undefined) ?? {},
     );
-    const interpolated =
-      mergedRaw && typeof mergedRaw === 'object'
-        ? interpolateDeep(mergedRaw, envRef)
-        : ({} as Record<string, unknown>);
+    const interpolated = interpolateDeep(mergedRaw, envRef);
 
     const schema = e.plugin.configSchema;
     if (schema) {

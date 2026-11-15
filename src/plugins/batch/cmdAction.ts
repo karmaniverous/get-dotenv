@@ -42,8 +42,6 @@ export const attachBatchCmdAction = (
       // Resolve batch flags from the parent (batch) command.
       const gSrc: unknown = (() => {
         // Safely retrieve merged parent flags (prefer optsWithGlobals when present)
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore - accessed reflectively; contextual typing supplied by Commander
         const maybe = (
           thisCommand as unknown as { optsWithGlobals?: () => unknown }
         ).optsWithGlobals;

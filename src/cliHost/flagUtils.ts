@@ -82,7 +82,6 @@ export const setOptionalFlag = <T>(
   const target = obj as unknown as Record<string, unknown>;
   const k = key;
 
-  // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
-  if (value === undefined) delete target[k];
+  if (value === undefined) Reflect.deleteProperty(target, k);
   else target[k] = value;
 };
