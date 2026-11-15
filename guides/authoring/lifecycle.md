@@ -91,6 +91,33 @@ Notes:
 - Plugin config keys follow the realized mount path, so mounting under `getdotenv` changes keys (for example `plugins['getdotenv/init']` rather than `plugins['init']`).
 - If you mount `cmdPlugin({ optionAlias: ... })` under the group, the parent alias is attached to the group command (so `smoz getdotenv -c 'echo OK'` works, but `smoz -c 'echo OK'` does not).
 
+### Mounting a plugin under another name (`.use(plugin, { ns })`)
+
+`cli.use(plugin, { ns })` and `parent.use(child, { ns })` mount a plugin under a name of your choice instead of its declared `ns`. The override is the plugin's **effective namespace**: the host creates the mount there, and the plugin's realized mount path (the chain of effective namespaces from the root, e.g. `ops/who2`) keys its config slice and scopes its `afterResolve` hook. This lets you mount two instances of one plugin side by side, each with its own config:
+
+```ts
+const run = createCli({
+  alias: 'toolbox',
+  compose: (p) =>
+    p
+      .use(deployPlugin(), { ns: 'deploy-api' })
+      .use(deployPlugin(), { ns: 'deploy-web' }),
+});
+```
+
+```json
+{
+  "plugins": {
+    "deploy-api": { "target": "api" },
+    "deploy-web": { "target": "web" }
+  }
+}
+```
+
+`toolbox deploy-api ...` runs the first instance with `plugins['deploy-api']` and only its `afterResolve`. Renaming a mount intentionally changes its config key.
+
+Sibling namespaces must be unique at every level, the root included. A collision throws `Duplicate namespace '<ns>' under '<parent>'. Override via .use(plugin, { ns: '...' }).`, where `<parent>` is the parent's realized path (`root` at the top level). Children of a plugin are checked as soon as the second one is added with `.use()`; root-level plugins are checked at install. Mounting one plugin _instance_ twice gives both mounts one shared config slot, so call the plugin factory once per mount.
+
 ### Access the true root command (typed helper)
 
 When you need the real root command (for branding, alias labels, or reading root‑level metadata) from inside a plugin mount or action, use the small typed helper exported by the host:
@@ -264,7 +291,7 @@ Update (DX: no undefined):
 
 ## afterResolve hook contract
 
-afterResolve hooks run once per invocation after the host resolves dotenv context. When the shipped root hooks are used, afterResolve is **scoped to the invoked command path**: only plugins whose namespace matches the invoked subcommand (and their children) run afterResolve. Sibling and cousin plugins do not fire.
+afterResolve hooks run once per invocation after the host resolves dotenv context. When the shipped root hooks are used, afterResolve is **scoped to the invoked command path**: only plugins whose realized mount path matches the invoked subcommand path (and their children) run afterResolve. The match uses each plugin's effective namespace, so a plugin mounted with `.use(plugin, { ns })` is matched by its override. Sibling and cousin plugins do not fire.
 
 This means a plugin's afterResolve should only set up state relevant to its own command subtree. It should not assume it runs on every invocation. The shipped aws plugin, for example, only resolves AWS credentials and writes to process.env when an aws or aws/* command is invoked.
 

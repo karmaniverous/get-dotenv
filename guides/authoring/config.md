@@ -4,7 +4,7 @@ title: Config & Validation
 
 # Authoring Plugins: Config & Validation
 
-The host discovers config in packaged and project roots, overlays privacy (public/local) and source (packaged/project), and exposes the merged result to plugins. Plugin config lives under `plugins.<mount-path>` (realized namespace path, e.g., `aws/whoami`) in getdotenv.config.\*.
+The host discovers config in packaged and project roots, overlays privacy (public/local) and source (packaged/project), and exposes the merged result to plugins. Plugin config lives under `plugins.<mount-path>` (realized namespace path, e.g., `aws/whoami`) in getdotenv.config.\*. Each segment is the plugin's effective namespace: the `.use(plugin, { ns })` override when one is given, else the plugin's own `ns`. Two instances mounted with `.use(deployPlugin(), { ns: 'deploy-api' })` and `.use(deployPlugin(), { ns: 'deploy-web' })` read `plugins['deploy-api']` and `plugins['deploy-web']`.
 
 ## Overlay and interpolation timing
 

@@ -113,6 +113,7 @@ The `plugins` map is keyed by the realized mount path (root alias excluded). Exa
 
 - `plugins.aws`
 - `plugins['aws/whoami']`
+- `plugins['deploy-api']` for a plugin mounted with `.use(deployPlugin(), { ns: 'deploy-api' })` (an override replaces the plugin's `ns` in the path)
 
 ## Provenance & Auditing
 

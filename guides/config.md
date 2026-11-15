@@ -153,7 +153,7 @@ export default {
 
 ## Plugin config
 
-Plugin configuration is discovered under `plugins.<mount-path>` in the same packaged/project public/local files. The host merges slices by precedence (packaged → project/public → project/local) and deep‑interpolates string leaves once against `{ ...ctx.dotenv, ...process.env }` (process.env wins for plugin slices). Plugins read their own validated slice via the instance‑bound helper `plugin.readConfig(cli)`.
+Plugin configuration is discovered under `plugins.<mount-path>` in the same packaged/project public/local files. The mount path is the chain of effective namespaces from the root (a `.use(plugin, { ns })` override replaces the plugin's own `ns`), e.g. `aws/whoami` or `deploy-api`. The host merges slices by precedence (packaged → project/public → project/local) and deep‑interpolates string leaves once against `{ ...ctx.dotenv, ...process.env }` (process.env wins for plugin slices). Plugins read their own validated slice via the instance‑bound helper `plugin.readConfig(cli)`.
 
 Location and shape:
 

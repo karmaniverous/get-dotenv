@@ -425,8 +425,9 @@ export const helloPlugin = () =>
 
 - Every plugin declares `ns` (command name).
 - Mounts are created by the host; plugin `setup(cli)` receives the mount and returns void.
-- You can override a child namespace at composition time: `.use(child, { ns: 'whoami2' })`.
-- Config keys follow the realized mount path (rename changes config key intentionally).
+- You can override a namespace at composition time, at the root or under a parent: `program.use(plugin, { ns: 'deploy-api' })`, `.use(child, { ns: 'whoami2' })`. The host mounts the plugin at the override.
+- Config keys and `afterResolve` scoping follow the realized mount path, built from these effective namespaces (rename changes config key intentionally). Two instances of one plugin can be mounted side by side (`deploy-api`, `deploy-web`), each with its own slice.
+- Sibling namespaces must be unique at every level; a collision throws `Duplicate namespace '<ns>' under '<parent>'. Override via .use(plugin, { ns: '...' }).`
 
 ### Plugin config + dynamic help (recommended)
 
