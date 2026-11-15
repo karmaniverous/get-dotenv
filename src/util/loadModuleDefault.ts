@@ -15,14 +15,29 @@ const cacheHash = (absPath: string, mtimeMs: number) =>
     .digest('hex')
     .slice(0, 12);
 
+/** Compiled builds kept per cache directory and file name by default. */
+const DEFAULT_CACHE_KEEP = 2;
+
+/**
+ * Resolve `GETDOTENV_CACHE_KEEP`: an integer, minimum 1. Anything that isn't an
+ * integer (`abc`, an empty string, `2.5`) falls back to the default, 2.
+ */
+const resolveCacheKeep = (raw: string | undefined): number => {
+  const n = raw !== undefined && raw.trim() !== '' ? Number(raw) : Number.NaN;
+  return Number.isInteger(n) ? Math.max(1, n) : DEFAULT_CACHE_KEEP;
+};
+
 /**
  * Remove older compiled cache files for a given source base name, keeping
- * at most `keep` most-recent files. Errors are ignored by design.
+ * at most `keep` most-recent files (`GETDOTENV_CACHE_KEEP`, default 2).
+ * Errors are ignored by design.
+ *
+ * @internal
  */
-const cleanupOldCacheFiles = async (
+export const cleanupOldCacheFiles = async (
   cacheDir: string,
   baseName: string,
-  keep = Math.max(1, Number.parseInt(process.env.GETDOTENV_CACHE_KEEP ?? '2')),
+  keep = resolveCacheKeep(process.env.GETDOTENV_CACHE_KEEP),
 ) => {
   try {
     const entries = await fs.readdir(cacheDir);
@@ -59,6 +74,10 @@ const cleanupOldCacheFiles = async (
  *   - try direct dynamic import (when a TS loader is active),
  *   - else compile via `esbuild` to a cached `.mjs` file and import,
  *   - else fallback to `typescript.transpileModule` for simple modules.
+ *
+ * Compiled builds are cached under `.tsbuild/<cacheDirName>/`, keeping the
+ * newest `GETDOTENV_CACHE_KEEP` builds per file name (default 2, minimum 1; a
+ * value that isn't an integer falls back to 2).
  *
  * @typeParam T - Type of the expected default export.
  * @param absPath - Absolute path to the source file.
