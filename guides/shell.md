@@ -69,7 +69,7 @@ TypeScript note: When you author scripts in code, a helper `defineScripts<TShell
 
 ## Nested CLI behavior
 
-Nested `getdotenv` invocations inherit parent CLI options and the loaded dotenv context via `process.env.getDotenvCliOptions` (JSON). The shell resolution and scripts table continue to apply within nested commands using the same rules.
+Nested `getdotenv` invocations inherit parent CLI options and the loaded dotenv context via `process.env.getDotenvCliOptions` (JSON). The shell resolution and scripts table continue to apply within nested commands using the same rules. The parent's options rank above the child's own defaults and config, so a parent run with `--shell-off` (`shell: false`) runs the child without a shell too, even when the child's own default shell is a string; the child's own `--shell` still wins.
 
 ## Environment normalization
 

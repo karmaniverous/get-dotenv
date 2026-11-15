@@ -138,20 +138,18 @@ export const resolveCliOptions = <T extends ResolveCliOptionsShape>(
   // `excludeAll` only selects the five exclusions; it never enters the bag.
   setOptionalFlag(merged, 'excludeAll', undefined);
 
-  // Normalize shell for predictability: explicit default shell per OS.
+  // Normalize shell for predictability: -S (or a `false` from any layer,
+  // such as a parent's -S) gives no shell; a string is kept; `true` or
+  // unset gives the OS default shell.
   const defaultShell =
     process.platform === 'win32' ? 'powershell.exe' : '/bin/bash';
-  let resolvedShell = merged.shell;
-  if (shellOff) resolvedShell = false;
-  else if (resolvedShell === true || resolvedShell === undefined) {
-    resolvedShell = defaultShell;
-  } else if (
-    typeof resolvedShell !== 'string' &&
-    typeof defaults.shell === 'string'
-  ) {
-    resolvedShell = defaults.shell;
-  }
-  merged.shell = resolvedShell;
+  const shell = merged.shell;
+  merged.shell =
+    shellOff === true || shell === false
+      ? false
+      : typeof shell === 'string'
+        ? shell
+        : defaultShell;
 
   const cmd = typeof command === 'string' ? command : undefined;
   return cmd !== undefined ? { merged, command: cmd } : { merged };

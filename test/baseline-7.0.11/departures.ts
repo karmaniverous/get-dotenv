@@ -51,4 +51,9 @@ export const departures: Departure[] = [
     issueOrDecision: '#68',
     note: 'Config rootOptionDefaults.excludeAll takes effect: the bag has all five exclusions true and the child sees no APP.',
   },
+  {
+    case: '#91 parent shell false',
+    issueOrDecision: '#91',
+    note: "A parent bag shell: false beats the child's string default: stringDefault is false, not '/bin/zsh'.",
+  },
 ];
