@@ -2,14 +2,13 @@ import { definePlugin } from '@/src/cliHost';
 
 import { attachWhoamiDefaultAction } from './defaultAction';
 import { attachWhoamiOptions } from './options';
-import { attachWhoamiReallyAction } from './reallyAction';
 
 /**
- * AWS Whoami plugin factory.
+ * AWS Whoami plugin factory: `aws whoami` prints the caller identity.
  *
- * This plugin demonstrates a “bucket of subcommands” pattern:
- * - Subcommand behavior is articulated in separate modules as `attach*` helpers.
- * - Those helpers are not individually composable plugins; they are internal wiring for one plugin instance.
+ * Its behaviour lives in separate modules as `attach*` helpers (options,
+ * default action): internal wiring for one plugin instance, not individually
+ * composable plugins.
  *
  * @returns A plugin instance mounted at `aws whoami`.
  */
@@ -24,9 +23,6 @@ export const awsWhoamiPlugin = () =>
 
       // Default behavior: `getdotenv aws whoami`
       attachWhoamiDefaultAction(whoami);
-
-      // Subcommand behavior: `getdotenv aws whoami really`
-      attachWhoamiReallyAction(whoami);
 
       return undefined;
     },

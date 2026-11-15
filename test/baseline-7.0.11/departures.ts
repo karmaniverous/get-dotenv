@@ -189,6 +189,31 @@ export const departures: Departure[] = [
     note: "batch -g pkgA -l node probe.mjs lists directories (globs 'pkgA node probe.mjs') and runs nothing.",
   },
   {
+    case: 'help getdotenv aws whoami',
+    issueOrDecision: '#57',
+    note: "The demo 'really' subcommand is gone: whoami's help has no Commands section and its usage has no [command].",
+  },
+  {
+    case: 'help getdotenv aws whoami really',
+    issueOrDecision: '#57',
+    note: "The demo 'really' subcommand is gone: 'aws whoami really -h' shows whoami's own help.",
+  },
+  {
+    case: '#57 whoami really',
+    issueOrDecision: '#57',
+    note: "The demo 'really' subcommand is gone: whoami rejects it (\"error: too many arguments for 'whoami'. Expected 0 arguments but got 1: really.\"), exit 1, no secret identity on stdout.",
+  },
+  {
+    case: '#56 profile flag on aws child',
+    issueOrDecision: '#57',
+    note: "The case drives the removed demo 'aws whoami really': whoami now rejects 'really' (exit 1). The aws session probes with --profile flag-profile are unchanged.",
+  },
+  {
+    case: '#84 aws child help resolves session',
+    issueOrDecision: '#57',
+    note: "The case asks for help on the removed demo 'aws whoami really': it now shows whoami's own help.",
+  },
+  {
     case: '#59 batch --command capture',
     issueOrDecision: '#59',
     note: "batch --command passes the merged options bag: each child's getDotenvCliOptions is the full bag (with capture: true), not {}.",
