@@ -42,8 +42,16 @@ export interface CmdAlias {
   valueOn: (parent: CommandUnknownOpts) => string | undefined;
 }
 
-// Commander's default-subcommand slot: what `addCommand(cmd, { isDefault })`
-// sets. Commander has no public API to choose the default for one parse.
+/**
+ * Commander's default-subcommand slot: what `addCommand(cmd, { isDefault })`
+ * sets. Commander has no public API to choose the default for one parse.
+ *
+ * @remarks
+ * `_defaultCommandName` is private Commander API, checked against commander
+ * 15.1.0 (and `@commander-js/extra-typings` 15.1.0). The guard test
+ * `alias.commanderPrivate.test.ts` fails if an upgrade renames or removes the
+ * field, or stops dispatching a bare parse through it.
+ */
 interface DefaultCommandSlot {
   _defaultCommandName: string | null;
 }
