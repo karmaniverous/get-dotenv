@@ -86,4 +86,15 @@ export const departures: Departure[] = [
     issueOrDecision: '#64',
     note: 'The -c alias runs against the root composition: one DYN-EVAL, not three.',
   },
+  // S6: env composition and expansion
+  {
+    case: '#78 expansion',
+    issueOrDecision: '#78',
+    note: "'\\$A $A' gives '$A x'; 'x$&y' is spliced in unchanged; 'a$$b' expands like any value ('a$' plus the unset $b); '$SELF' with SELF=$SELF gives undefined instead of a RangeError.",
+  },
+  {
+    case: '#86 trailing dollar',
+    issueOrDecision: '#86',
+    note: "A $ that starts no reference stays literal and the other references expand: 'x cost $', 'x $!', 'x 100$'.",
+  },
 ];

@@ -3,99 +3,156 @@ import type { ProcessEnv } from '@/src/core';
 /**
  * Dotenv expansion utilities.
  *
- * This module implements recursive expansion of environment-variable
- * references in strings and records. It supports both whitespace and
- * bracket syntaxes with optional defaults:
+ * This module expands environment-variable references in strings and
+ * records. References take an optional default:
  *
- * - Whitespace: `$VAR[:default]`
- * - Bracketed: `${VAR[:default]}`
+ * - Unbraced: `$VAR[:default]` (the default runs to the next whitespace)
+ * - Braced: `${VAR[:default]}` (the default may itself contain braced
+ *   references)
  *
- * Escaped dollar signs (`\$`) are preserved.
- * Unknown variables resolve to empty string unless a default is provided.
+ * The text is scanned once, left to right:
+ *
+ * - `\$` is a literal `$`.
+ * - A `$` that starts no reference stays literal.
+ * - A reference to a set variable is replaced by that variable's value,
+ *   itself expanded by these rules; otherwise by its default, expanded;
+ *   otherwise by the empty string.
+ * - A substituted value is spliced in as-is: it is not re-scanned with the
+ *   surrounding text, and `$&`, `$$` and the other `String.replace` patterns
+ *   have no special meaning.
+ * - A reference to a variable that is already being expanded (`SELF=$SELF`,
+ *   or `A=$B` with `B=$A`) counts as unset: it takes its default, else the
+ *   empty string. So `P=${P:/usr/bin}:/x` expands to `/usr/bin:/x`.
  */
+
+/** A reference parsed at a `$`. */
+interface Reference {
+  /** The variable name. */
+  name: string;
+  /** The raw default, when one is given. */
+  fallback: string | undefined;
+  /** Index just past the reference. */
+  end: number;
+}
+
+const UNBRACED = /\$(\w+)(?::(\S*))?/y;
+const BRACED_HEAD = /\$\{(\w+)(:?)/y;
 
 /**
- * Like String.prototype.search but returns the last index.
- * @internal
+ * Find the `}` that closes a braced default starting at `from`, skipping
+ * escaped dollars and nested `${…}` references.
  */
-const searchLast = (str: string, rgx: RegExp) => {
-  const matches = Array.from(str.matchAll(rgx));
-  return matches.length > 0 ? (matches.slice(-1)[0]?.index ?? -1) : -1;
-};
-
-const replaceMatch = (
-  value: string,
-  match: RegExpMatchArray,
-  ref: ProcessEnv,
-) => {
-  /**
-   * @internal
-   */
-  const group = match[0];
-  const key = match[1];
-  const defaultValue = match[2];
-  if (!key) return value;
-
-  const replacement = value.replace(group, ref[key] ?? defaultValue ?? '');
-
-  return interpolate(replacement, ref);
-};
-const interpolate = (value = '', ref: ProcessEnv = {}): string => {
-  /**
-   * @internal
-   */
-  // if value is falsy, return it as is
-  if (!value) return value;
-  // get position of last unescaped dollar sign
-  const lastUnescapedDollarSignIndex = searchLast(value, /(?!(?<=\\))\$/g);
-
-  // return value if none found
-  if (lastUnescapedDollarSignIndex === -1) return value;
-
-  // evaluate the value tail
-  const tail = value.slice(lastUnescapedDollarSignIndex);
-
-  // find whitespace pattern: $KEY:DEFAULT
-  const whitespacePattern = /^\$([\w]+)(?::([^\s]*))?/;
-  const whitespaceMatch = whitespacePattern.exec(tail);
-  if (whitespaceMatch != null) return replaceMatch(value, whitespaceMatch, ref);
-  else {
-    // find bracket pattern: ${KEY:DEFAULT}
-    const bracketPattern = /^\${([\w]+)(?::([^}]*))?}/;
-    const bracketMatch = bracketPattern.exec(tail);
-    if (bracketMatch != null) return replaceMatch(value, bracketMatch, ref);
+const closingBrace = (text: string, from: number): number => {
+  let depth = 0;
+  for (let i = from; i < text.length; i++) {
+    if (text.startsWith('\\$', i)) i++;
+    else if (text.startsWith('${', i)) {
+      depth++;
+      i++;
+    } else if (text[i] === '}') {
+      if (depth === 0) return i;
+      depth--;
+    }
   }
+  return -1;
+};
 
-  return value;
+/** Parse the reference that starts at `text[at]` (a `$`), if any. */
+const parseReference = (text: string, at: number): Reference | undefined => {
+  UNBRACED.lastIndex = at;
+  const plain = UNBRACED.exec(text);
+  if (plain?.[1])
+    return { name: plain[1], fallback: plain[2], end: UNBRACED.lastIndex };
+
+  BRACED_HEAD.lastIndex = at;
+  const head = BRACED_HEAD.exec(text);
+  if (!head?.[1]) return undefined;
+  const start = BRACED_HEAD.lastIndex;
+  if (!head[2])
+    return text[start] === '}'
+      ? { name: head[1], fallback: undefined, end: start + 1 }
+      : undefined;
+  const close = closingBrace(text, start);
+  return close === -1
+    ? undefined
+    : { name: head[1], fallback: text.slice(start, close), end: close + 1 };
 };
 
 /**
- * Recursively expands environment variables in a string. Variables may be
- * presented with optional default as `$VAR[:default]` or `${VAR[:default]}`.
- * Unknown variables will expand to an empty string.
+ * Expand `text` against `ref`. `active` holds the variables whose values are
+ * being expanded further up the stack.
+ */
+const expandText = (
+  text: string,
+  ref: ProcessEnv,
+  active: ReadonlySet<string>,
+): string => {
+  let out = '';
+  let i = 0;
+  while (i < text.length) {
+    if (text.startsWith('\\$', i)) {
+      out += '$';
+      i += 2;
+      continue;
+    }
+    const reference = text[i] === '$' ? parseReference(text, i) : undefined;
+    if (!reference) {
+      out += text.charAt(i);
+      i++;
+      continue;
+    }
+    const { name, fallback, end } = reference;
+    const value = active.has(name) ? undefined : ref[name];
+    if (value !== undefined)
+      out += expandText(value, ref, new Set(active).add(name));
+    else if (fallback !== undefined) out += expandText(fallback, ref, active);
+    i = end;
+  }
+  return out;
+};
+
+/**
+ * Expands environment-variable references in a string. References may be
+ * written `$VAR[:default]` or `${VAR[:default]}`; unknown variables without a
+ * default expand to the empty string.
  *
  * @param value - The string to expand.
  * @param ref - The reference object to use for variable expansion.
- * @returns The expanded string.
+ * @returns The expanded string, or `undefined` when it is empty.
  *
  * @example
  * ```ts
  * process.env.FOO = 'bar';
  * dotenvExpand('Hello $FOO'); // "Hello bar"
  * dotenvExpand('Hello $BAZ:world'); // "Hello world"
+ * dotenvExpand('Price \\$5'); // "Price $5"
  * ```
  *
  * @remarks
- * The expansion is recursive. If a referenced variable itself contains
- * references, those will also be expanded until a stable value is reached.
- * Escaped references (e.g. `\$FOO`) are preserved as literals.
+ * Expansion is recursive: a referenced value that itself contains references
+ * is expanded by the same rules, and so is a default. The text is scanned once,
+ * left to right, and each substituted value is spliced in as-is (it is not
+ * re-scanned with the text around it):
+ *
+ * - `\$` is a literal `$`.
+ * - A `$` that starts no reference (`cost $`, `$!`) stays literal, and the
+ *   other references in the value are still expanded.
+ * - The unbraced default runs to the next whitespace, so `$HOST:8080` reads
+ *   `8080` as `HOST`'s default; write `${HOST}:8080`. There is no `:-` form:
+ *   `${A:-x}` has the default `-x`.
+ * - A variable set to the empty string is used as is; only an unset variable
+ *   takes its default.
+ * - A reference to a variable that is already being expanded (a self or
+ *   mutual reference) counts as unset: it takes its default, else the empty
+ *   string. With `SELF=$SELF`, `$SELF` expands to `undefined`; with
+ *   `P=${P:/usr/bin}:/x`, `$P` expands to `/usr/bin:/x`.
  */
 export const dotenvExpand = (
   value: string | undefined,
   ref: ProcessEnv = process.env,
-) => {
-  const result = interpolate(value, ref);
-  return result ? result.replace(/\\\$/g, '$') : undefined;
+): string | undefined => {
+  const result = value ? expandText(value, ref, new Set()) : '';
+  return result || undefined;
 };
 
 /**
@@ -138,6 +195,8 @@ export interface DotenvExpandAllOptions {
  *
  * When `progressive` is true, each expanded key becomes available for
  * subsequent expansions in the same object (left-to-right by object key order).
+ *
+ * Each value is expanded by the rules of {@link dotenvExpand}.
  */
 export function dotenvExpandAll<T extends ProcessEnv | Readonly<ProcessEnv>>(
   values: T,

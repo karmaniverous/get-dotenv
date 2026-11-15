@@ -27,10 +27,13 @@ describe('dotenvExpand', function () {
       expect(result).toBe('kindly baz my bar');
     });
     it('complex expansion', function () {
+      // #78: substituted values are not re-scanned with the text around
+      // them, so `$FOO$BAR` no longer composes a reference to `$FOOBAZ`.
       process.env.FOOBAZ = 'bar';
       process.env.BAR = 'BAZ';
+      delete process.env.FOO;
       const result = dotenvExpand('kindly $FOO$BAR my bar');
-      expect(result).toBe('kindly bar my bar');
+      expect(result).toBe('kindly BAZ my bar');
     });
     it('isolated unknown variable', function () {
       delete process.env.FOO;
