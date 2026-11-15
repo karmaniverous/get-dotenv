@@ -13,6 +13,14 @@ import process from 'node:process';
 import { distCore, tarballDistExtras, tarballTemplates } from './_expected.js';
 const execFileAsync = promisify(execFile);
 
+// Run npm through the CLI script npm exposes to its scripts (npm_execpath).
+// Spawning bare 'npm' fails on Windows, where npm is a .cmd shim.
+const npmExecPath = process.env.npm_execpath;
+const runNpm = (args) =>
+  npmExecPath && /\.[cm]?js$/.test(npmExecPath)
+    ? execFileAsync(process.execPath, [npmExecPath, ...args])
+    : execFileAsync('npm', args);
+
 const normalize = (p) => p.split(path.sep).join('/');
 const expected = [
   ...distCore.map((f) => `dist/${f}`),
@@ -28,11 +36,7 @@ const pickPath = (entry) => {
 };
 
 const tryNpmPackJson = async () => {
-  const { stdout } = await execFileAsync('npm', [
-    'pack',
-    '--json',
-    '--dry-run',
-  ]);
+  const { stdout } = await runNpm(['pack', '--json', '--dry-run']);
   return JSON.parse(stdout);
 };
 
@@ -51,7 +55,7 @@ const logNpmFailure = async (err) => {
     `node: ${process.version} (${process.platform}/${process.arch})`,
   );
   try {
-    const { stdout: npmv } = await execFileAsync('npm', ['--version']);
+    const { stdout: npmv } = await runNpm(['--version']);
     console.error(`npm: ${npmv.trim()}`);
   } catch {
     console.error('npm: <unavailable>');
@@ -61,10 +65,7 @@ const logNpmFailure = async (err) => {
   if (stderr && stderr.trim()) console.error('[stderr]\n' + stderr.trim());
   if (stdout && stdout.trim()) console.error('[stdout]\n' + stdout.trim());
   try {
-    const { stdout: fallback } = await execFileAsync('npm', [
-      'pack',
-      '--dry-run',
-    ]);
+    const { stdout: fallback } = await runNpm(['pack', '--dry-run']);
     const head = fallback.split(/\r?\n/).slice(0, 80).join('\n');
     console.error('[fallback npm pack --dry-run output (head)]\n' + head);
   } catch {
@@ -222,7 +223,7 @@ const main = async () => {
       'node: ' + process.version + ` (${process.platform}/${process.arch})`,
     );
     try {
-      const { stdout: npmv } = await execFileAsync('npm', ['--version']);
+      const { stdout: npmv } = await runNpm(['--version']);
       console.error('npm: ' + npmv.trim());
     } catch {
       /* ignore */
