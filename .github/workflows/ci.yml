@@ -1,0 +1,59 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  ci:
+    name: ci (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Typecheck
+        run: npx tsc --noEmit
+
+      - name: Test (with coverage)
+        run: npm test -- --coverage
+
+      - name: Build
+        run: npm run build
+
+      - name: Knip
+        run: npm run knip
+
+      - name: Docs
+        run: npm run docs
+
+      - name: verify:types
+        run: npm run verify:types
+
+      - name: verify:package
+        run: npm run verify:package
+
+      - name: verify:smoke
+        run: npm run verify:smoke
+
+      - name: verify:bundle
+        run: npm run verify:bundle
+
+      - name: verify:tarball
+        run: npm run verify:tarball
