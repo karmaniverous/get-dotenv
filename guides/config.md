@@ -41,7 +41,7 @@ JSON/YAML (data only, always-on; no-op when no files are present):
 - Allowed keys:
   - rootOptionDefaults?: Partial<RootOptionsShape> — collapsed, CLI‑like flags and strings. Supported keys:
     - Targeting: `env`, `defaultEnv`, `defaultEnvKey`, `paths`, `pathsDelimiter`, `pathsDelimiterPattern`, `dotenvToken`, `privateToken`.
-    - Output/Vars: `vars`, `varsAssignor`, `varsAssignorPattern`, `varsDelimiter`, `varsDelimiterPattern`, `outputPath`.
+    - Output/Vars: `vars`, `varsAssignor`, `varsAssignorPattern`, `varsDelimiter`, `varsDelimiterPattern`, `outputPath`. A `vars` string is split into pairs at the delimiter and each pair at its first assignor, so `A=1 B=x=y` sets `B` to `x=y`.
     - Loading: `loadProcess`, `dynamicPath`.
     - Exclusions: `excludeAll`, `excludeDynamic`, `excludeEnv`, `excludeGlobal`, `excludePrivate`, `excludePublic`.
     - Execution: `shell`, `capture`.

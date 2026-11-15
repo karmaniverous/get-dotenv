@@ -42,7 +42,9 @@ export type RootOptionsShapeCompat = Omit<
 > & {
   /**
    * Extra variables as either a space‑delimited string of assignments
-   * (e.g., `"FOO=1 BAR=2"`) or an object map of `string | undefined` values.
+   * (e.g., `"FOO=1 BAR=2"`; each pair is split at its first assignor, so
+   * `"A=b=c"` sets `A` to `b=c`) or an object map of `string | undefined`
+   * values.
    */
   vars?: string | ProcessEnv;
   /**
@@ -282,20 +284,30 @@ export const getDotenvCliOptions2Options = ({
     return value.split(' ');
   };
 
+  // Split one pair at its first assignor only, so the value may contain it.
+  // A pair without an assignor yields no value (and is dropped below).
+  const findAssignor = (pair: string): [number, number] | undefined => {
+    if (varsAssignorPattern) {
+      const m = RegExp(varsAssignorPattern).exec(pair);
+      return m ? [m.index, m[0].length] : undefined;
+    }
+    const assignor = varsAssignor ?? '=';
+    const at = pair.indexOf(assignor);
+    return at === -1 ? undefined : [at, assignor.length];
+  };
+  const splitPair = (pair: string): [string, string | undefined] => {
+    const found = findAssignor(pair);
+    if (!found) return [pair, undefined];
+    const [at, length] = found;
+    return [pair.slice(0, at), pair.slice(at + length)];
+  };
+
   // Tolerate vars as either a CLI string ("A=1 B=2") or an object map.
   let parsedVars: ProcessEnv | undefined;
   if (typeof vars === 'string') {
     const kvPairs = splitBy(vars, varsDelimiter, varsDelimiterPattern)
-      .map((v) =>
-        v.split(
-          varsAssignorPattern
-            ? RegExp(varsAssignorPattern)
-            : (varsAssignor ?? '='),
-        ),
-      )
-      .filter(([k]) => typeof k === 'string' && k.length > 0) as Array<
-      [string, string]
-    >;
+      .map(splitPair)
+      .filter(([k]) => k.length > 0);
     parsedVars = Object.fromEntries(kvPairs);
   } else if (vars && typeof vars === 'object' && !Array.isArray(vars)) {
     // Accept provided object map of string | undefined; drop undefined values

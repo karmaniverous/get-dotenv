@@ -102,4 +102,9 @@ export const departures: Departure[] = [
     issueOrDecision: '#89',
     note: "-v is expanded once, in the vars layer, which sees process.env (#63): P is '$5' (not unset), Q is '\\$6' (not '$6'), and the bag keeps the -v string as given. The -P in the case also takes effect (#45, S5): the bag has loadProcess false.",
   },
+  {
+    case: '#73 vars split',
+    issueOrDecision: '#73',
+    note: "-v 'A=b=c' is split at the first assignor only: the child sees A 'b=c', not 'b'.",
+  },
 ];

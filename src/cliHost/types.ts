@@ -91,9 +91,12 @@ export interface RootOptionsShape {
   varsDelimiter?: string;
   /** Regex pattern for vars delimiter. */
   varsDelimiterPattern?: string;
-  /** Assignment operator for vars (default: "="). */
+  /**
+   * Assignment operator for vars (default: "="). Each pair is split at its
+   * first assignor, so `A=b=c` sets `A` to `b=c`.
+   */
   varsAssignor?: string;
-  /** Regex pattern for vars assignment operator. */
+  /** Regex pattern for vars assignment operator (its first match splits). */
   varsAssignorPattern?: string;
 
   // Scripts table (string or { cmd, shell })
