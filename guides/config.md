@@ -81,7 +81,7 @@ Each ON/OFF family (`-p`/`-P` `loadProcess`, `-l`/`-L` `log`, `--debug`/`--debug
 - an explicit OFF flag turns it off, even when `rootOptionDefaults` (or a built-in default, such as `loadProcess: true` and `warnEntropy: true`) turns it on;
 - with neither flag, the value comes from the defaults.
 
-For the exclusions, an individual flag (`-r`, `-R`, …) beats `-a/--exclude-all` and `-A/--exclude-all-off`, which beat the defaults.
+For the exclusions, an individual flag (`-r`, `-R`, …) beats `-a/--exclude-all` and `-A/--exclude-all-off`, which beat the defaults. In the defaults, `rootOptionDefaults.excludeAll: true` (in config or `createCli`) turns on all five exclusions, and an individual default such as `excludePrivate: false` beats it.
 
 ## Privacy
 

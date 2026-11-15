@@ -46,4 +46,9 @@ export const departures: Departure[] = [
     issueOrDecision: '#45',
     note: 'The case passes -P, which now takes effect: the bag has loadProcess false. The #89 output is unchanged.',
   },
+  {
+    case: '#68 excludeAll default',
+    issueOrDecision: '#68',
+    note: 'Config rootOptionDefaults.excludeAll takes effect: the bag has all five exclusions true and the child sees no APP.',
+  },
 ];

@@ -63,6 +63,9 @@
         "debug": {
           "type": "boolean"
         },
+        "excludeAll": {
+          "type": "boolean"
+        },
         "strict": {
           "type": "boolean"
         },

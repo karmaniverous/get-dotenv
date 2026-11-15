@@ -22,6 +22,11 @@ export const getDotenvCliOptionsSchemaRaw = getDotenvOptionsSchemaRaw.extend({
   // CLI-specific fields (stringly inputs before preprocessing)
   /** Enable verbose debug output (host-specific). */
   debug: z.boolean().optional(),
+  /**
+   * Default for all five exclusions (`-a`/`-A`). An individual exclusion
+   * default beats it, and so do the `-a`/`-A` and individual flags.
+   */
+  excludeAll: z.boolean().optional(),
   /** Fail on validation errors (schema/requiredKeys). */
   strict: z.boolean().optional(),
   /** Capture child process stdio (useful for CI/tests). */

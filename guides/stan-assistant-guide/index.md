@@ -289,7 +289,7 @@ Higher wins:
 - `createCli({ rootOptionDefaults })`
 - `baseRootOptionDefaults`
 
-ON/OFF families (`-p`/`-P`, `-l`/`-L`, `--debug[-off]`, `--redact[-off]`, `--entropy-warn[-off]`, the exclusions): an explicit ON flag gives on, an explicit OFF flag gives off (even over a true default), otherwise the stacked default. For the exclusions, an individual flag beats `-a`/`-A`, which beat the defaults.
+ON/OFF families (`-p`/`-P`, `-l`/`-L`, `--debug[-off]`, `--redact[-off]`, `--entropy-warn[-off]`, the exclusions): an explicit ON flag gives on, an explicit OFF flag gives off (even over a true default), otherwise the stacked default. For the exclusions, an individual flag beats `-a`/`-A`, which beat the defaults; a default `excludeAll: true` turns on all five exclusions unless an individual default says otherwise.
 
 Visibility precedence is similar (but no CLI flags for visibility):
 

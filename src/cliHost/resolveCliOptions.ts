@@ -130,10 +130,13 @@ export const resolveCliOptions = <T extends ResolveCliOptionsShape>(
         raw[off],
         raw.excludeAll,
         raw.excludeAllOff,
-        asBoolean(stack[key]),
+        // A stacked individual default beats a stacked `excludeAll`.
+        asBoolean(stack[key]) ?? (stack.excludeAll === true || undefined),
       ),
     );
   }
+  // `excludeAll` only selects the five exclusions; it never enters the bag.
+  setOptionalFlag(merged, 'excludeAll', undefined);
 
   // Normalize shell for predictability: explicit default shell per OS.
   const defaultShell =
