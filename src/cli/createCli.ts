@@ -80,8 +80,10 @@ export type CreateCliOptions = {
    */
   compose?: (program: GetDotenvCli) => GetDotenvCli;
   /**
-   * Root defaults applied once before composition. These are used by flag declaration
-   * and merge-time defaults (and top-level -h parity labels).
+   * Host root defaults. They rank above `baseRootOptionDefaults` and below
+   * config `rootOptionDefaults`, the parent options bag and CLI flags; they
+   * are merge-time defaults (and top-level -h labels), never Commander option
+   * defaults.
    * Note: shipped CLI does not force loadProcess OFF; base defaults apply unless set here.
    */
   rootOptionDefaults?: Partial<RootOptionsShape>;

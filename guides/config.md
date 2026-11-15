@@ -73,6 +73,10 @@ TS support:
 - scripts belongs at the top level only. Do not nest scripts inside rootOptionDefaults.
 - dynamic and schema are JS/TS‑only. JSON/YAML loader rejects them.
 
+### Root defaults precedence
+
+Root options resolve from one stack, higher wins: CLI flags, then the parent options bag (`process.env.getDotenvCliOptions`, in a nested run), then config `rootOptionDefaults` (project local, project public, packaged), then `createCli({ rootOptionDefaults })`, then the built-in defaults. `createCli` defaults are not Commander option defaults, so config and the parent bag override them.
+
 ### ON/OFF flags
 
 Each ON/OFF family (`-p`/`-P` `loadProcess`, `-l`/`-L` `log`, `--debug`/`--debug-off`, `--redact`/`--redact-off`, `--entropy-warn`/`--entropy-warn-off` `warnEntropy`, and the five exclusions `-z`/`-Z`, `-n`/`-N`, `-g`/`-G`, `-r`/`-R`, `-u`/`-U`) resolves the same way:

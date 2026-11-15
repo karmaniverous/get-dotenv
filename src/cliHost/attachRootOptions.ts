@@ -9,29 +9,17 @@ import type { RootOptionsShape } from './types';
  * Attach root flags to a {@link GetDotenvCli} instance.
  *
  * Program is typed as {@link GetDotenvCli} and supports {@link GetDotenvCli.createDynamicOption | createDynamicOption}.
+ *
+ * No flag gets a Commander default, so `opts()` holds only the values given
+ * on the command line; every default is resolved from the defaults stack
+ * (base \< `createCli` \< config \< parent bag) when the options resolve.
+ * `defaults` only shapes the help text (the `--vars` example).
  */
 export const attachRootOptions = (
   program: GetDotenvCli,
   defaults?: Partial<RootOptionsShape>,
 ) => {
   const GROUP = 'base';
-
-  const {
-    defaultEnv,
-    defaultEnvKey,
-    dotenvToken,
-    dynamicPath,
-    env,
-    outputPath,
-    paths,
-    pathsDelimiter,
-    pathsDelimiterPattern,
-    privateToken,
-    varsAssignor,
-    varsAssignorPattern,
-    varsDelimiter,
-    varsDelimiterPattern,
-  } = defaults ?? {};
 
   const va =
     typeof defaults?.varsAssignor === 'string' ? defaults.varsAssignor : '=';
@@ -53,7 +41,6 @@ export const attachRootOptions = (
       'target environment (dotenv-expanded)',
     );
     opt.argParser(dotenvExpandFromProcessEnv);
-    if (env !== undefined) opt.default(env);
     program.addOption(opt);
     program.setOptionGroup(opt, GROUP);
   }
@@ -82,7 +69,6 @@ export const attachRootOptions = (
       'consolidated output file  (dotenv-expanded)',
     );
     opt.argParser(dotenvExpandFromProcessEnv);
-    if (outputPath !== undefined) opt.default(outputPath);
     program.addOption(opt);
     program.setOptionGroup(opt, GROUP);
   }
@@ -319,7 +305,6 @@ export const attachRootOptions = (
       'default target environment',
     );
     o1.argParser(dotenvExpandFromProcessEnv);
-    if (defaultEnv !== undefined) o1.default(defaultEnv);
     program.addOption(o1);
     program.setOptionGroup(o1, GROUP);
 
@@ -328,7 +313,6 @@ export const attachRootOptions = (
       'env var name in global dotenv files that specifies the default environment (dotenv-expanded)',
     );
     o1b.argParser(dotenvExpandFromProcessEnv);
-    if (defaultEnvKey !== undefined) o1b.default(defaultEnvKey);
     program.addOption(o1b);
     program.setOptionGroup(o1b, GROUP);
 
@@ -337,7 +321,6 @@ export const attachRootOptions = (
       'dotenv-expanded token indicating a dotenv file',
     );
     o2.argParser(dotenvExpandFromProcessEnv);
-    if (dotenvToken !== undefined) o2.default(dotenvToken);
     program.addOption(o2);
     program.setOptionGroup(o2, GROUP);
 
@@ -346,7 +329,6 @@ export const attachRootOptions = (
       'dynamic variables path (.js or .ts; .ts is auto-compiled when esbuild is available, otherwise precompile)',
     );
     o3.argParser(dotenvExpandFromProcessEnv);
-    if (dynamicPath !== undefined) o3.default(dynamicPath);
     program.addOption(o3);
     program.setOptionGroup(o3, GROUP);
 
@@ -355,7 +337,6 @@ export const attachRootOptions = (
       'dotenv-expanded delimited list of paths to dotenv directory',
     );
     o4.argParser(dotenvExpandFromProcessEnv);
-    if (paths !== undefined) o4.default(paths);
     program.addOption(o4);
     program.setOptionGroup(o4, GROUP);
 
@@ -363,7 +344,6 @@ export const attachRootOptions = (
       '--paths-delimiter <string>',
       'paths delimiter string',
     );
-    if (pathsDelimiter !== undefined) o5.default(pathsDelimiter);
     program.addOption(o5);
     program.setOptionGroup(o5, GROUP);
 
@@ -371,7 +351,6 @@ export const attachRootOptions = (
       '--paths-delimiter-pattern <string>',
       'paths delimiter regex pattern',
     );
-    if (pathsDelimiterPattern !== undefined) o6.default(pathsDelimiterPattern);
     program.addOption(o6);
     program.setOptionGroup(o6, GROUP);
 
@@ -380,12 +359,10 @@ export const attachRootOptions = (
       'dotenv-expanded token indicating private variables',
     );
     o7.argParser(dotenvExpandFromProcessEnv);
-    if (privateToken !== undefined) o7.default(privateToken);
     program.addOption(o7);
     program.setOptionGroup(o7, GROUP);
 
     const o8 = new Option('--vars-delimiter <string>', 'vars delimiter string');
-    if (varsDelimiter !== undefined) o8.default(varsDelimiter);
     program.addOption(o8);
     program.setOptionGroup(o8, GROUP);
 
@@ -393,7 +370,6 @@ export const attachRootOptions = (
       '--vars-delimiter-pattern <string>',
       'vars delimiter regex pattern',
     );
-    if (varsDelimiterPattern !== undefined) o9.default(varsDelimiterPattern);
     program.addOption(o9);
     program.setOptionGroup(o9, GROUP);
 
@@ -401,7 +377,6 @@ export const attachRootOptions = (
       '--vars-assignor <string>',
       'vars assignment operator string',
     );
-    if (varsAssignor !== undefined) o10.default(varsAssignor);
     program.addOption(o10);
     program.setOptionGroup(o10, GROUP);
 
@@ -409,7 +384,6 @@ export const attachRootOptions = (
       '--vars-assignor-pattern <string>',
       'vars assignment operator regex pattern',
     );
-    if (varsAssignorPattern !== undefined) o11.default(varsAssignorPattern);
     program.addOption(o11);
     program.setOptionGroup(o11, GROUP);
   }

@@ -283,6 +283,7 @@ Do not put operational root flags (like `shell`, `loadProcess`, `paths`) at top 
 Higher wins:
 
 - CLI flags
+- the parent options bag (`process.env.getDotenvCliOptions`, nested runs)
 - project local `rootOptionDefaults`
 - project public `rootOptionDefaults`
 - packaged public `rootOptionDefaults`

@@ -56,4 +56,9 @@ export const departures: Departure[] = [
     issueOrDecision: '#91',
     note: "A parent bag shell: false beats the child's string default: stringDefault is false, not '/bin/zsh'.",
   },
+  {
+    case: '#77 createCli defaults beat config',
+    issueOrDecision: '#77',
+    note: "Config rootOptionDefaults.paths './b' beats createCli's './a': the bag has paths './b' and FOO is fromB.",
+  },
 ];

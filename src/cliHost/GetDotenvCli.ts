@@ -105,6 +105,9 @@ export class GetDotenvCli<
   /**
    * Attach legacy/base root flags to this CLI instance.
    * Delegates to the pure builder in attachRootOptions.ts.
+   *
+   * The flags get no Commander defaults: `opts()` holds only values given on
+   * the command line. `defaults` only shapes the help text.
    */
   attachRootOptions(defaults?: Partial<RootOptionsShape>): this {
     const d = (defaults ?? baseRootOptionDefaults) as Partial<RootOptionsShape>;
