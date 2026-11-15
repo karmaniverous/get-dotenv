@@ -484,7 +484,9 @@ export const issuesCorpus: BaselineCase[] = [
     args: ['-P', '-v', 'P=\\$5 Q=\\\\$6 R=lit', '-l', 'cmd'],
   }),
 
-  gd(90, 'toString', { args: ['toString'] }),
+  // Shell off: since #90 is fixed the command really runs, and a PowerShell
+  // command-not-found lookup takes up to a minute on CI Windows runners.
+  gd(90, 'toString', { args: ['-S', 'toString'] }),
   gd(90, 'constructor', { args: ['-S', 'constructor'] }),
 
   lib(91, 'parent shell false', () => ({

@@ -52,9 +52,11 @@ describe('resolveCommand / resolveShell: own keys only (#90)', () => {
   });
 });
 
+// Shell off: PowerShell's command-not-found lookup takes up to a minute on
+// CI Windows runners, and the crash did not depend on the shell.
 describe('getdotenv toString (#90 repro)', () => {
   it.each([
-    ['toString', ['toString']],
+    ['-S toString', ['-S', 'toString']],
     ['-S constructor', ['-S', 'constructor']],
   ])('%s runs the command instead of crashing', async (_label, args) => {
     const r = await runCase({

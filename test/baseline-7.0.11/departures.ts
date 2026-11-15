@@ -311,7 +311,7 @@ export const departures: Departure[] = [
   {
     case: '#90 toString',
     issueOrDecision: '#90',
-    note: "'toString' is not a script: it runs as typed through the shell, whose 'not recognized' error reaches stderr under capture (#74).",
+    note: "'toString' is not a script: it runs as typed, and the 'not recognized' error reaches stderr under capture (#74). The case now runs with the shell off (-S): with #90 fixed it really runs, and PowerShell's command-not-found lookup takes up to a minute on CI Windows runners.",
   },
   {
     case: '#90 constructor',
