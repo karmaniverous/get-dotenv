@@ -72,7 +72,7 @@ Subcommand flags (map directly to config for effective defaults):
 - `--profile-fallback-key <string>` — override fallback key (`AWS_PROFILE` by default)
 - `--region-key <string>` — override config key name for region (`AWS_REGION` by default)
 
-Note on capture: The shipped host treats `--capture` (or `GETDOTENV_STDIO=pipe`) as a global behavior. The aws subcommand honors it when forwarding to the AWS CLI and in child processes; when piped, the current executor re-emits buffered stdout (stderr is not re-emitted by default).
+Note on capture: The shipped host treats `--capture` (or `GETDOTENV_STDIO=pipe`) as a global behavior. The aws subcommand honors it when forwarding to the AWS CLI and in child processes; when piped, the executor re-emits the buffered stdout to stdout and stderr to stderr after the child exits.
 
 ## Config examples
 

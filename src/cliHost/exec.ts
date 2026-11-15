@@ -73,7 +73,9 @@ export interface RunCommandOptions {
    */
   env?: NodeJS.ProcessEnv;
   /**
-   * Stdio strategy for the child process.
+   * Stdio strategy for the child process. `inherit` streams the child's
+   * output; `pipe` buffers it and, after the child exits, writes its stdout
+   * to stdout and its stderr to stderr.
    */
   stdio?: 'inherit' | 'pipe';
 }
@@ -312,6 +314,11 @@ export async function runCommandResult(
   return _execNormalized(command, shell, coreOpts);
 }
 
+// Write captured child output, ending it with a newline.
+const writeBuffered = (stream: NodeJS.WriteStream, text: string): void => {
+  if (text) stream.write(text + (text.endsWith('\n') ? '' : '\n'));
+};
+
 /**
  * Execute a command and return its exit code.
  *
@@ -361,8 +368,11 @@ export async function runCommand(
   }
   if (opts.stdio !== undefined) callOpts.stdio = opts.stdio;
   const ok = await _execNormalized(command, shell, callOpts);
-  if (opts.stdio === 'pipe' && ok.stdout) {
-    process.stdout.write(ok.stdout + (ok.stdout.endsWith('\n') ? '' : '\n'));
+  if (opts.stdio === 'pipe') {
+    // Re-emit the buffered output after the child exits: stdout to stdout,
+    // stderr to stderr.
+    writeBuffered(process.stdout, ok.stdout);
+    writeBuffered(process.stderr, ok.stderr);
   }
   return typeof ok.exitCode === 'number' ? ok.exitCode : Number.NaN;
 }

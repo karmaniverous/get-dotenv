@@ -86,7 +86,7 @@ By default, child process output is streamed live (`stdio: 'inherit'`). For dete
 - Flag: `--capture`
 - Env: `GETDOTENV_STDIO=pipe`
 
-When capture is enabled, commands run with `stdio: 'pipe'` and the host re‑emits buffered stdout after the child completes. Note: the current `runCommand()` helper re‑emits stdout only; stderr is captured for programmatic callers via `runCommandResult()`, but it is not re‑emitted by default. Live streaming remains available by omitting the flag/env (the default).
+When capture is enabled, commands run with `stdio: 'pipe'` and the host re-emits the child's buffered stdout to stdout and its stderr to stderr after the child completes. Live streaming remains available by omitting the flag/env (the default).
 
 ## Dynamic help defaults
 

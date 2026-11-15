@@ -37,7 +37,7 @@ await runCommand([file, ...args], false, {
 });
 ```
 
-Note: the current `runCommand()` helper re-emits buffered stdout only when `stdio: 'pipe'` is used. If you need to reliably print stderr in capture mode, prefer `runCommandResult()` and write `stderr` explicitly.
+Note: with `stdio: 'pipe'`, `runCommand()` re-emits the child's buffered stdout to stdout and its stderr to stderr after the child exits. Use `runCommandResult()` when you need the buffers themselves.
 
 ## Optional trace / redaction / entropy (best practice)
 

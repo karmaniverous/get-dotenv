@@ -127,4 +127,30 @@ export const departures: Departure[] = [
     issueOrDecision: '#82',
     note: "getDotenv({ env: '', defaultEnv: 'dev' }) reads .env.dev and .env.dev.local (XLOCAL 'dev', STAGE 'dev'), not .env..local.",
   },
+  // S7: command execution
+  {
+    case: '#74 capture drops stderr',
+    issueOrDecision: '#74',
+    note: "Under capture the child's stderr is re-emitted: stderr is '1111'.",
+  },
+  {
+    case: '#49 alias script',
+    issueOrDecision: '#74',
+    note: "The harness captures (GETDOTENV_STDIO=pipe), so the shell's error for the unresolved 'hello' now reaches stderr.",
+  },
+  {
+    case: '#51 batch argv quoting',
+    issueOrDecision: '#74',
+    note: "The harness captures (GETDOTENV_STDIO=pipe), so PowerShell's parse error for the cmd.exe-quoted tokens now reaches stderr (win32).",
+  },
+  {
+    case: '#90 toString',
+    issueOrDecision: '#90',
+    note: "'toString' is not a script: it runs as typed through the shell, whose 'not recognized' error reaches stderr under capture (#74).",
+  },
+  {
+    case: '#90 constructor',
+    issueOrDecision: '#90',
+    note: "'constructor' is not a script: it runs as typed (shell off), and the 'not recognized' error reaches stderr under capture (#74).",
+  },
 ];

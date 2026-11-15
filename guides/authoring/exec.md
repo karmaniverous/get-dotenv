@@ -304,7 +304,7 @@ Honor the shared capture contract for CI‑friendly logs:
 
 - Use `stdio: 'pipe'` when `process.env.GETDOTENV_STDIO === 'pipe'` or the merged root options bag sets `capture: true`. Otherwise, inherit stdio for live interaction.
 - Optional, best practice: mirror the cmd plugin’s concise `--trace [keys...]` lines (origin: dotenv | parent | unset) with presentation‑time redaction for secret‑like keys and once‑per‑key entropy warnings. This is not a requirement but provides a consistent DX.
-  - Note: the current `runCommand()` helper re-emits buffered stdout only when `stdio: 'pipe'` is used. If you need to reliably print stderr in capture mode, prefer `runCommandResult()` and write `stderr` explicitly.
+  - Note: with `stdio: 'pipe'`, `runCommand()` re-emits the child's buffered stdout to stdout and its stderr to stderr after the child exits. Use `runCommandResult()` when you need the buffers themselves.
 
 ## Quoting and argv vs string
 
