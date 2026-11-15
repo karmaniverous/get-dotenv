@@ -1,6 +1,7 @@
 import { Option } from '@commander-js/extra-typings';
 
 import { dotenvExpandFromProcessEnv } from '@/src/dotenv';
+import { parseFiniteNumber } from '@/src/util';
 
 import type { GetDotenvCli } from './GetDotenvCli';
 import type { RootOptionsShape } from './types';
@@ -25,6 +26,10 @@ export const attachRootOptions = (
     typeof defaults?.varsAssignor === 'string' ? defaults.varsAssignor : '=';
   const vd =
     typeof defaults?.varsDelimiter === 'string' ? defaults.varsDelimiter : ' ';
+
+  // Helper: a value option's " (default X)" label, from the effective defaults.
+  const defaultLabel = (value: number | undefined) =>
+    value === undefined ? '' : ` (default ${String(value)})`;
 
   // Helper: append (default) tags for ON/OFF toggles
   const onOff = (on: boolean, isDefault: boolean) =>
@@ -425,15 +430,19 @@ export const attachRootOptions = (
     program.addOption(woff);
     program.setOptionGroup(woff, GROUP);
 
-    const th = new Option(
+    const th = program.createDynamicOption(
       '--entropy-threshold <number>',
-      'entropy bits/char threshold (default 3.8)',
+      (cfg) =>
+        `entropy bits/char threshold${defaultLabel(cfg.entropyThreshold)}`,
+      parseFiniteNumber('entropy threshold'),
     );
     program.addOption(th);
     program.setOptionGroup(th, GROUP);
-    const ml = new Option(
+    const ml = program.createDynamicOption(
       '--entropy-min-length <number>',
-      'min length to examine for entropy (default 16)',
+      (cfg) =>
+        `min length to examine for entropy${defaultLabel(cfg.entropyMinLength)}`,
+      parseFiniteNumber('entropy min length'),
     );
     program.addOption(ml);
     program.setOptionGroup(ml, GROUP);

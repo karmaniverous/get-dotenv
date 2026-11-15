@@ -1,7 +1,10 @@
 /** src/diagnostics/redact.ts
  * Presentation-only redaction utilities for logs/trace.
- * - Default secret-like key patterns: SECRET, TOKEN, PASSWORD, API_KEY, KEY
- * - Optional custom patterns (regex strings) may be provided.
+ * - Built-in secret-like key patterns: secret, token, pass/password,
+ *   api_key/api-key/apikey and key, each as a whole word or as an
+ *   underscore- or dash-delimited segment of the key (`API_SECRET`,
+ *   `DB_PASSWORD`, `GITHUB_TOKEN`), case-insensitive.
+ * - Custom patterns (regex strings or RegExps) add to the built-in list.
  * - Never alters runtime env; only affects displayed values.
  */
 import type { ProcessEnv } from '@/src/core';
@@ -13,21 +16,31 @@ import type { ProcessEnv } from '@/src/core';
  */
 export interface RedactOptions {
   /** Enable redaction. */
-  redact?: boolean;
-  /** Regex patterns for keys to redact. */
-  redactPatterns?: Array<string | RegExp>;
+  redact?: boolean | undefined;
+  /**
+   * Additional key patterns to redact: they add to the built-in patterns.
+   * String patterns match case-insensitively.
+   */
+  redactPatterns?: Array<string | RegExp> | undefined;
 }
 
+/**
+ * A built-in word matches as a whole word or as an underscore- or
+ * dash-delimited segment: no letter or digit on either side (`_` and `-`
+ * are word characters for `\b`, so `\bsecret\b` misses `API_SECRET`).
+ */
+const segment = (word: string) => `(?<![a-z0-9])(?:${word})(?![a-z0-9])`;
+
 const DEFAULT_PATTERNS = [
-  '\\bsecret\\b',
-  '\\btoken\\b',
-  '\\bpass(word)?\\b',
-  '\\bapi[_-]?key\\b',
-  '\\bkey\\b',
-];
+  'secret',
+  'token',
+  'pass(?:word)?',
+  'api[_-]?key',
+  'key',
+].map(segment);
 
 const compile = (patterns?: Array<string | RegExp>) =>
-  (patterns && patterns.length > 0 ? patterns : DEFAULT_PATTERNS).map((p) =>
+  [...DEFAULT_PATTERNS, ...(patterns ?? [])].map((p) =>
     typeof p === 'string' ? new RegExp(p, 'i') : p,
   );
 

@@ -1,3 +1,4 @@
+import { withBuiltInEntropyWhitelist } from '@/src/defaults';
 import { defaultsDeep } from '@/src/util';
 
 import { resolveExclusion, resolveToggle, setOptionalFlag } from './flagUtils';
@@ -70,6 +71,8 @@ const RAW_ONLY_KEYS = [
   'shellOff',
   'command',
   'scripts',
+  // `--redact-pattern` (Commander key `redactPattern`) sets `redactPatterns`.
+  'redactPattern',
 ];
 
 const asBoolean = (v: unknown): boolean | undefined =>
@@ -101,6 +104,8 @@ export const resolveCliOptions = <T extends ResolveCliOptionsShape>(
   const current: Partial<T> = Object.fromEntries(
     Object.entries(raw).filter(([k]) => !RAW_ONLY_KEYS.includes(k)),
   ) as Partial<T>;
+  if (Array.isArray(raw.redactPattern))
+    (current as Record<string, unknown>).redactPatterns = raw.redactPattern;
   if (typeof scripts === 'string') {
     try {
       (current as Record<string, unknown>).scripts = JSON.parse(
@@ -138,6 +143,11 @@ export const resolveCliOptions = <T extends ResolveCliOptionsShape>(
   }
   // `excludeAll` only selects the five exclusions; it never enters the bag.
   setOptionalFlag(merged, 'excludeAll', undefined);
+
+  // A user entropy whitelist extends the built-in one (#46).
+  merged.entropyWhitelist = withBuiltInEntropyWhitelist(
+    merged.entropyWhitelist,
+  );
 
   // Normalize shell for predictability: -S (or a `false` from any layer,
   // such as a parent's -S) gives no shell; a string is kept; `true` or

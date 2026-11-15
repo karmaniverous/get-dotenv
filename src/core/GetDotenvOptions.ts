@@ -15,7 +15,10 @@ import type {
   RootOptionsShape,
   ScriptsTable as Scripts,
 } from '@/src/cliHost/types';
-import { baseRootOptionDefaults } from '@/src/defaults';
+import {
+  baseRootOptionDefaults,
+  withBuiltInEntropyWhitelist,
+} from '@/src/defaults';
 import type { getDotenvOptionsSchemaResolved } from '@/src/schema';
 import { defaultsDeep } from '@/src/util';
 
@@ -371,6 +374,8 @@ export const resolveGetDotenvOptions = (
 
   return Promise.resolve({
     ...result,
+    // A caller's entropy whitelist extends the built-in one (#46).
+    entropyWhitelist: withBuiltInEntropyWhitelist(result.entropyWhitelist),
     logger: validatedLogger,
     vars: shake(result.vars ?? {}, (v) => v === undefined) as ProcessEnv,
   });

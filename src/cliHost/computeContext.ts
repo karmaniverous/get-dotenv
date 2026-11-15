@@ -9,6 +9,7 @@ import type {
   ProcessEnv,
 } from '@/src/core';
 import { resolveGetDotenvOptions } from '@/src/core';
+import { logComposedEnv } from '@/src/diagnostics/log';
 import {
   applyDynamicMapWithProvenance,
   loadDynamicModuleDefault,
@@ -203,7 +204,7 @@ export const computeContext = async <
     await writeDotenvFile(validated.outputPath, dotenv);
   }
   const logger: Logger = validated.logger;
-  if (validated.log) logger.info(dotenv);
+  if (validated.log) logComposedEnv(dotenv, validated, logger);
   if (validated.loadProcess) loadProcessEnv(dotenv, deletedKeys);
 
   // Merge and validate per-plugin config keyed by realized path (ns chain).

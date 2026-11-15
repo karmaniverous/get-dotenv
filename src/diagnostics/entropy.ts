@@ -12,14 +12,18 @@ const warned = new Set<string>();
  * @public
  */
 export interface EntropyOptions {
-  /** Enable entropy warnings. */
-  warnEntropy?: boolean;
-  /** Entropy threshold (bits/char). */
-  entropyThreshold?: number; // default 3.8
-  /** Minimum string length to check. */
-  entropyMinLength?: number; // default 16
-  /** Whitelist of regex patterns to ignore. */
-  entropyWhitelist?: Array<string | RegExp>; // string or RegExp patterns
+  /** Enable entropy warnings (on unless `false`). */
+  warnEntropy?: boolean | undefined;
+  /** Entropy threshold (bits/char; default 3.8). */
+  entropyThreshold?: number | undefined;
+  /** Minimum string length to check (default 16). */
+  entropyMinLength?: number | undefined;
+  /**
+   * Key patterns (strings match case-insensitively, or RegExps) whose
+   * values are never checked. Used as given here; the CLI host and
+   * `getDotenv` pass the built-in whitelist plus the user's patterns.
+   */
+  entropyWhitelist?: Array<string | RegExp> | undefined;
 }
 
 const isPrintableAscii = (s: string) => /^[\x20-\x7E]+$/.test(s);

@@ -355,4 +355,25 @@ export const departures: Departure[] = [
     issueOrDecision: '#94',
     note: "Supersedes the #78 entry: a referenced value is substituted verbatim, never expanded again, so '$PW' with PW='a$$b' gives 'a$$b' and '$SELF' with SELF='$SELF' gives '$SELF'. '\\$A $A' still gives '$A x' and 'x$&y' is still spliced in unchanged (#78).",
   },
+  // S8: diagnostics and AWS
+  {
+    case: '#46 redact-pattern',
+    issueOrDecision: '#46',
+    note: "--redact-pattern is read: the bag has redactPatterns ['SECRET'] instead of the unread Commander key redactPattern. (The variadic --trace still takes 'cmd node probe.mjs' as keys, so nothing runs and nothing is traced.)",
+  },
+  {
+    case: '4.4 row 23',
+    issueOrDecision: '#46',
+    note: "--redact-pattern is read: the bag has redactPatterns ['a', 'b'] instead of the unread Commander key redactPattern.",
+  },
+  {
+    case: '#46 log redact',
+    issueOrDecision: '#46',
+    note: "-l --redact on the host path is redacted: SECRET prints as '[redacted]', not 'plainsecret'.",
+  },
+  {
+    case: '#46 entropy numbers',
+    issueOrDecision: '#46',
+    note: '--entropy-threshold 9 and --entropy-min-length 64 parse as numbers: the bag has 9 and 64, not the strings "9" and "64".',
+  },
 ];

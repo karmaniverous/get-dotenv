@@ -106,3 +106,21 @@ export const baseRootOptionDefaults: BaseRootOptionDefaults = {
   // tri-state flags default to unset unless explicitly provided
   // (debug/log/exclude* resolved via flag utils)
 };
+
+/**
+ * The effective entropy whitelist: the built-in patterns
+ * (`baseRootOptionDefaults.entropyWhitelist`) followed by the given ones,
+ * without duplicates. A user whitelist (CLI, config, `createCli` or library
+ * options) extends the built-in one; it never replaces it.
+ *
+ * @param patterns - The user's whitelist patterns, if any.
+ * @returns The built-in patterns plus `patterns`.
+ */
+export const withBuiltInEntropyWhitelist = <T extends string | RegExp>(
+  patterns?: ReadonlyArray<T>,
+): Array<string | T> => [
+  ...new Set<string | T>([
+    ...baseRootOptionDefaults.entropyWhitelist,
+    ...(patterns ?? []),
+  ]),
+];

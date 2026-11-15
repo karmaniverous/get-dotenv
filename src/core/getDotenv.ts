@@ -1,12 +1,7 @@
 import { nanoid } from 'nanoid';
 import path from 'path';
 
-import {
-  type EntropyOptions,
-  maybeWarnEntropy,
-  redactObject,
-  type RedactOptions,
-} from '@/src/diagnostics';
+import { logComposedEnv } from '@/src/diagnostics/log';
 import { dotenvExpandAll } from '@/src/dotenv';
 import { applyDynamicMap, loadAndApplyDynamic } from '@/src/env/dynamic';
 import { loadProcessEnv } from '@/src/env/loadProcessEnv';
@@ -65,6 +60,7 @@ export async function getDotenv(
   options: Partial<GetDotenvOptions> = {},
 ): Promise<ProcessEnv> {
   // Apply defaults.
+  const resolved = await resolveGetDotenvOptions(options);
   const {
     defaultEnv,
     dotenvToken = '.env',
@@ -82,7 +78,7 @@ export async function getDotenv(
     paths = [],
     privateToken = 'local',
     vars = {},
-  } = await resolveGetDotenvOptions(options);
+  } = resolved;
 
   // An empty env counts as unset (#82).
   const envName = resolveEnvName(env, defaultEnv);
@@ -183,46 +179,8 @@ export async function getDotenv(
     resultDotenv = dotenvForOutput;
   }
 
-  // Log result.
-  if (log) {
-    const redactFlag = options.redact ?? false;
-    const { redactPatterns } = options;
-    const redOpts: RedactOptions = {};
-    if (redactFlag) redOpts.redact = true;
-    if (redactFlag && Array.isArray(redactPatterns))
-      redOpts.redactPatterns = redactPatterns;
-    const bag = redactFlag
-      ? redactObject(resultDotenv, redOpts)
-      : { ...resultDotenv };
-    logger.info(bag);
-    // Entropy warnings: once-per-key-per-run (presentation only)
-    const warnEntropyVal = options.warnEntropy ?? true;
-    const {
-      entropyThreshold: entropyThresholdVal,
-      entropyMinLength: entropyMinLengthVal,
-      entropyWhitelist: entropyWhitelistVal,
-    } = options;
-    const entOpts: EntropyOptions = {};
-    if (typeof warnEntropyVal === 'boolean')
-      entOpts.warnEntropy = warnEntropyVal;
-    if (typeof entropyThresholdVal === 'number')
-      entOpts.entropyThreshold = entropyThresholdVal;
-    if (typeof entropyMinLengthVal === 'number')
-      entOpts.entropyMinLength = entropyMinLengthVal;
-    if (Array.isArray(entropyWhitelistVal))
-      entOpts.entropyWhitelist = entropyWhitelistVal;
-    for (const [k, v] of Object.entries(resultDotenv)) {
-      maybeWarnEntropy(
-        k,
-        v,
-        v !== undefined ? 'dotenv' : 'unset',
-        entOpts,
-        (line) => {
-          logger.info(line);
-        },
-      );
-    }
-  }
+  // Log result (redaction and entropy settings from the resolved options).
+  if (log) logComposedEnv(resultDotenv, resolved, logger);
 
   // Load process.env.
   if (loadProcess) loadProcessEnv(resultDotenv, deletedKeys);
