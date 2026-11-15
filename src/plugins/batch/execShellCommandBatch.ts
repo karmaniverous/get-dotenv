@@ -168,7 +168,7 @@ export const execShellCommandBatch = async ({
     const total = paths.length;
     results.length = total;
 
-    await new Promise<void>((resolveAll, rejectAll) => {
+    await new Promise<void>((resolveAll) => {
       let settled = false;
       let completedCount = 0;
 
@@ -217,9 +217,6 @@ export const execShellCommandBatch = async ({
       } else {
         tryLaunch();
       }
-
-      // Safety: if rejectAll is never called, the promise resolves via completedCount.
-      void rejectAll;
     });
 
     // Print results in discovery order.

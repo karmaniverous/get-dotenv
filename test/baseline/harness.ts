@@ -286,7 +286,9 @@ const captureInProcess = async (
     'warn',
     'error',
   ] as const;
-  const origConsole = consoleMethods.map((m) => [m, console[m]] as const);
+  const origConsole = consoleMethods.map(
+    (m) => [m, console[m].bind(console)] as const,
+  );
 
   process.exitCode = undefined;
   process.stdout.write = (chunk: string | Uint8Array) => {

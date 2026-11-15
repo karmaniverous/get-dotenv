@@ -13,7 +13,6 @@ const out1 = overlayEnv({
   configs: {},
 });
 const _check1: B = out1;
-void _check1;
 
 // With programmatic vars: return type should be B & P
 type P = { EXTRA?: string };
@@ -25,4 +24,3 @@ const out2 = overlayEnv({
   programmaticVars: prog,
 });
 const _check2: B & P = out2;
-void _check2;

@@ -16,5 +16,3 @@ const _expectShape: {
   B: string | undefined;
   [k: string]: string | undefined;
 } = out;
-
-void _expectShape;

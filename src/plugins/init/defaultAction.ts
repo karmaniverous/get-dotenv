@@ -41,8 +41,8 @@ export function attachInitDefaultAction(cli: InitCommand): void {
       ['json', 'yaml', 'js', 'ts'].includes(formatRaw) ? formatRaw : 'json'
     ) as 'json' | 'yaml' | 'js' | 'ts';
     const withLocal = Boolean(opts['withLocal']);
-    // dynamic flag reserved for future template variants; present for UX compatibility
-    void opts['dynamic'];
+    // opts['dynamic'] is reserved for future template variants; the flag is
+    // accepted for UX compatibility and not read here.
 
     // CLI name default: --cli-name | basename(dest) | 'mycli'
     const cliNameInput = opts['cliName'];
