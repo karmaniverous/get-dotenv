@@ -214,6 +214,21 @@ export const departures: Departure[] = [
     note: "The case asks for help on the removed demo 'aws whoami really': it now shows whoami's own help.",
   },
   {
+    case: 'help getdotenv init',
+    issueOrDecision: '#58',
+    note: 'init no longer offers the no-op --dynamic flag.',
+  },
+  {
+    case: '#58 init gitignore',
+    issueOrDecision: '#58',
+    note: "The existing .gitignore isn't rewritten: its CRLF endings and blank line stay, and the needed lines were already there, so it is unchanged.",
+  },
+  {
+    case: '#58 init dynamic',
+    issueOrDecision: '#58',
+    note: '--dynamic is no longer an option: init fails with "error: unknown option \'--dynamic\'" (exit 1) and scaffolds nothing.',
+  },
+  {
     case: '#59 batch --command capture',
     issueOrDecision: '#59',
     note: "batch --command passes the merged options bag: each child's getDotenvCliOptions is the full bag (with capture: true), not {}.",
