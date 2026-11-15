@@ -134,10 +134,8 @@ describe('plugins/cmd option alias', () => {
   });
 
   it('conflicts when alias and cmd subcommand are both provided', async () => {
-    // Spy process.exit (defaultCmdAction exits on conflict); do not terminate tests.
-    const exitSpy = vi.spyOn(process, 'exit').mockImplementation((() => {
-      // no-op under tests
-    }) as unknown as never);
+    // The conflict is a usage error (#50): exit code 1, nothing runs.
+    const savedExitCode = process.exitCode;
     const run = createCli({
       alias: 'test',
       compose: (p) =>
@@ -158,7 +156,8 @@ describe('plugins/cmd option alias', () => {
       'X',
     ]);
 
-    expect(exitSpy).toHaveBeenCalled();
-    exitSpy.mockRestore();
+    const exitCode = process.exitCode;
+    process.exitCode = savedExitCode;
+    expect(exitCode).toBe(1);
   });
 });

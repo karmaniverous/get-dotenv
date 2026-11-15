@@ -6,6 +6,7 @@ import {
   runCommand,
 } from '@/src/cliHost';
 import { shouldCapture } from '@/src/cliHost/exec';
+import { propagateExitCode } from '@/src/cliHost/exitCode';
 
 import type { AwsPlugin } from '.';
 import { applyAwsContext } from './common';
@@ -66,7 +67,7 @@ export function attachAwsDefaultAction(
       });
       // Propagate the AWS CLI's exit code (a spawn failure is non-zero too,
       // #75); terminate deterministically outside tests.
-      if (exit !== 0) process.exitCode = exit;
+      propagateExitCode(exit);
       if (!underTests) process.exit(exit);
       return;
     }

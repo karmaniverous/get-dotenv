@@ -28,7 +28,7 @@ const globPaths = async ({
 
     if (!pkgDir) {
       logger.error('No package directory found.');
-      process.exit(0);
+      process.exit(1);
     }
 
     cwd = pkgDir;
@@ -47,7 +47,7 @@ const globPaths = async ({
 
   if (!paths.length) {
     logger.error(`No paths found for globs '${globs}' at '${absRootPath}'.`);
-    process.exit(0);
+    process.exit(1);
   }
 
   return { absRootPath, paths };
@@ -65,6 +65,14 @@ interface ParallelResult {
 /**
  * Execute a batch of commands across multiple directories.
  * Discovers targets via globs/rootPath and runs the command in each.
+ *
+ * Sequential mode stops at the first directory whose command fails; parallel
+ * mode runs every directory and reports the failures. With `ignoreErrors`,
+ * failures don't stop the batch or fail it.
+ *
+ * @returns The batch's exit code: the first failure's exit code (in
+ *   discovery order), or 0 when every directory succeeded, when listing, or
+ *   with `ignoreErrors`.
  */
 export const execShellCommandBatch = async ({
   command,
@@ -79,7 +87,7 @@ export const execShellCommandBatch = async ({
   pkgCwd,
   rootPath,
   shell,
-}: ExecShellCommandBatchOptions) => {
+}: ExecShellCommandBatchOptions): Promise<number> => {
   const capture =
     process.env.GETDOTENV_STDIO === 'pipe' ||
     Boolean(
@@ -89,7 +97,7 @@ export const execShellCommandBatch = async ({
   // Require a command only when not listing. In list mode, a command is optional.
   if (!command && !list) {
     logger.error(`No command provided. Use --command or --list.`);
-    process.exit(0);
+    process.exit(1);
   }
   const { absRootPath, paths } = await globPaths({
     globs,
@@ -137,7 +145,7 @@ export const execShellCommandBatch = async ({
       logger.info(`CWD:   ${p}`);
     }
     logger.info('');
-    return;
+    return 0;
   }
 
   // Narrow command to a non-empty string or array after validation.
@@ -150,7 +158,7 @@ export const execShellCommandBatch = async ({
 
   if (!validCommand) {
     logger.error(`No command provided. Use --command or --list.`);
-    process.exit(0);
+    process.exit(1);
   }
 
   // Compose child env overlay once (shared across all paths).
@@ -253,6 +261,8 @@ export const execShellCommandBatch = async ({
       for (const f of failures) {
         logger.error(`  ${f.dirPath} (exit code ${String(f.exitCode)})`);
       }
+      logger.info('');
+      return failures[0]?.exitCode ?? 1;
     }
   } else {
     // Sequential execution (original behavior).
@@ -263,19 +273,26 @@ export const execShellCommandBatch = async ({
       logger.info(pathLabel);
       logger.info(headerCommand);
 
+      let exitCode: number;
       try {
-        await runCommand(validCommand, shell, {
+        exitCode = await runCommand(validCommand, shell, {
           cwd: p,
           env: spawnEnv,
           stdio: capture ? 'pipe' : 'inherit',
         });
       } catch (error) {
-        if (!ignoreErrors) {
-          throw error;
-        }
+        if (!ignoreErrors) throw error;
+        exitCode = 1;
+      }
+      if (exitCode !== 0 && !ignoreErrors) {
+        logger.error('');
+        logger.error(`${p} failed (exit code ${String(exitCode)}); stopping.`);
+        logger.info('');
+        return exitCode;
       }
     }
   }
 
   logger.info('');
+  return 0;
 };

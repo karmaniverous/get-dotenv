@@ -6,6 +6,7 @@ import {
   resolveCommand,
   resolveShell,
 } from '@/src/cliHost';
+import { propagateExitCode } from '@/src/cliHost/exitCode';
 
 import type { BatchPlugin } from '.';
 import { execShellCommandBatch } from './execShellCommandBatch';
@@ -74,20 +75,22 @@ export const attachBatchDefaultAction = (
       // Parent path: pass a string; executor handles shell-specific details.
       const commandArg = resolved;
 
-      await execShellCommandBatch({
-        command: commandArg,
-        ...(concurrency !== undefined ? { concurrency } : {}),
-        dotenvEnv,
-        globs,
-        ignoreErrors,
-        list: false,
-        logger,
-        parallel,
-        ...(pkgCwd ? { pkgCwd } : {}),
-        rootPath,
-        shell: shellSetting,
-        getDotenvCliOptions: mergedBag,
-      });
+      propagateExitCode(
+        await execShellCommandBatch({
+          command: commandArg,
+          ...(concurrency !== undefined ? { concurrency } : {}),
+          dotenvEnv,
+          globs,
+          ignoreErrors,
+          list: false,
+          logger,
+          parallel,
+          ...(pkgCwd ? { pkgCwd } : {}),
+          rootPath,
+          shell: shellSetting,
+          getDotenvCliOptions: mergedBag,
+        }),
+      );
       return;
     }
     // List-only (parent flag): merge extra positional tokens into globs when no --command is present.
@@ -97,6 +100,55 @@ export const attachBatchDefaultAction = (
       const shellMerged =
         pluginOpts.shell ?? cfg.shell ?? merged.shell ?? false;
 
+      propagateExitCode(
+        await execShellCommandBatch({
+          ...(concurrency !== undefined ? { concurrency } : {}),
+          globs,
+          ignoreErrors,
+          list: true,
+          logger,
+          parallel,
+          ...(pkgCwd ? { pkgCwd } : {}),
+          rootPath,
+          shell: shellMerged,
+          getDotenvCliOptions: mergedBag,
+        }),
+      );
+      return;
+    }
+
+    if (!commandOpt && !list) {
+      logger.error(`No command provided. Use --command or --list.`);
+      process.exit(1);
+    }
+    if (typeof commandOpt === 'string') {
+      const scriptsOpt =
+        pluginOpts.scripts ?? cfg.scripts ?? merged.scripts ?? undefined;
+      const shellOpt = pluginOpts.shell ?? cfg.shell ?? merged.shell;
+
+      propagateExitCode(
+        await execShellCommandBatch({
+          command: resolveCommand(scriptsOpt, commandOpt),
+          ...(concurrency !== undefined ? { concurrency } : {}),
+          dotenvEnv,
+          globs,
+          ignoreErrors,
+          list,
+          logger,
+          parallel,
+          ...(pkgCwd ? { pkgCwd } : {}),
+          rootPath,
+          shell: resolveShell(scriptsOpt, commandOpt, shellOpt),
+          getDotenvCliOptions: mergedBag,
+        }),
+      );
+      return;
+    }
+
+    // list only (explicit --list without --command)
+    const shellOnly = pluginOpts.shell ?? cfg.shell ?? merged.shell ?? false;
+
+    propagateExitCode(
       await execShellCommandBatch({
         ...(concurrency !== undefined ? { concurrency } : {}),
         globs,
@@ -106,52 +158,9 @@ export const attachBatchDefaultAction = (
         parallel,
         ...(pkgCwd ? { pkgCwd } : {}),
         rootPath,
-        shell: shellMerged,
+        shell: shellOnly,
         getDotenvCliOptions: mergedBag,
-      });
-      return;
-    }
-
-    if (!commandOpt && !list) {
-      logger.error(`No command provided. Use --command or --list.`);
-      process.exit(0);
-    }
-    if (typeof commandOpt === 'string') {
-      const scriptsOpt =
-        pluginOpts.scripts ?? cfg.scripts ?? merged.scripts ?? undefined;
-      const shellOpt = pluginOpts.shell ?? cfg.shell ?? merged.shell;
-
-      await execShellCommandBatch({
-        command: resolveCommand(scriptsOpt, commandOpt),
-        ...(concurrency !== undefined ? { concurrency } : {}),
-        dotenvEnv,
-        globs,
-        ignoreErrors,
-        list,
-        logger,
-        parallel,
-        ...(pkgCwd ? { pkgCwd } : {}),
-        rootPath,
-        shell: resolveShell(scriptsOpt, commandOpt, shellOpt),
-        getDotenvCliOptions: mergedBag,
-      });
-      return;
-    }
-
-    // list only (explicit --list without --command)
-    const shellOnly = pluginOpts.shell ?? cfg.shell ?? merged.shell ?? false;
-
-    await execShellCommandBatch({
-      ...(concurrency !== undefined ? { concurrency } : {}),
-      globs,
-      ignoreErrors,
-      list: true,
-      logger,
-      parallel,
-      ...(pkgCwd ? { pkgCwd } : {}),
-      rootPath,
-      shell: shellOnly,
-      getDotenvCliOptions: mergedBag,
-    });
+      }),
+    );
   });
 };

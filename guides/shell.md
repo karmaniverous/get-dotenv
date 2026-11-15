@@ -68,6 +68,10 @@ TypeScript note: When you author scripts in code, a helper `defineScripts<TShell
 - PowerShell: double-quotes perform interpolation; single quotes are literal.
 - Argv forms (batch positionals, the aws forward) are joined into one string for the shell with each token quoted by that shell's own rules: single quotes for POSIX shells and PowerShell, double quotes for `cmd.exe`. A PowerShell command name that needs quotes runs through the call operator (`& '...'`).
 
+## Exit codes
+
+get-dotenv exits with the child's exit code on every execution path (`cmd`, the default command, the `-c` alias, the aws forward, batch) and exits non-zero on usage errors. A child that can't be started (e.g. ENOENT with the shell off) prints `Error: <message>` and exits 127 (ENOENT) or 1. Under the default Windows shell, `powershell.exe -Command` reports any failure as 1, so the original code is lost there.
+
 ## Nested CLI behavior
 
 Nested `getdotenv` invocations inherit parent CLI options and the loaded dotenv context via `process.env.getDotenvCliOptions` (JSON). The shell resolution and scripts table continue to apply within nested commands using the same rules. The parent's options rank above the child's own defaults and config, so a parent run with `--shell-off` (`shell: false`) runs the child without a shell too, even when the child's own default shell is a string; the child's own `--shell` still wins.

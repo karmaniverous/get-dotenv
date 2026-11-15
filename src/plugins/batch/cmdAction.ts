@@ -7,6 +7,7 @@ import {
   resolveCommand,
   resolveShell,
 } from '@/src/cliHost';
+import { propagateExitCode } from '@/src/cliHost/exitCode';
 
 import type { BatchPlugin } from '.';
 import { execShellCommandBatch } from './execShellCommandBatch';
@@ -88,19 +89,21 @@ export const attachBatchCmdAction = (
         const commandOpt =
           typeof g.command === 'string' ? g.command : undefined;
         if (typeof commandOpt === 'string') {
-          await execShellCommandBatch({
-            command: resolveCommand(scripts, commandOpt),
-            ...(concurrency !== undefined ? { concurrency } : {}),
-            dotenvEnv,
-            globs,
-            ignoreErrors,
-            list: false,
-            logger,
-            parallel,
-            ...(pkgCwd ? { pkgCwd } : {}),
-            rootPath,
-            shell: resolveShell(scripts, commandOpt, shell),
-          });
+          propagateExitCode(
+            await execShellCommandBatch({
+              command: resolveCommand(scripts, commandOpt),
+              ...(concurrency !== undefined ? { concurrency } : {}),
+              dotenvEnv,
+              globs,
+              ignoreErrors,
+              list: false,
+              logger,
+              parallel,
+              ...(pkgCwd ? { pkgCwd } : {}),
+              rootPath,
+              shell: resolveShell(scripts, commandOpt, shell),
+            }),
+          );
           return;
         }
         if (g.list) {
@@ -112,23 +115,25 @@ export const attachBatchCmdAction = (
               : rootShell !== undefined
                 ? rootShell
                 : false;
-          await execShellCommandBatch({
-            ...(concurrency !== undefined ? { concurrency } : {}),
-            globs,
-            ignoreErrors,
-            list: true,
-            logger,
-            parallel,
-            ...(pkgCwd ? { pkgCwd } : {}),
-            rootPath,
-            shell: listShell,
-          });
+          propagateExitCode(
+            await execShellCommandBatch({
+              ...(concurrency !== undefined ? { concurrency } : {}),
+              globs,
+              ignoreErrors,
+              list: true,
+              logger,
+              parallel,
+              ...(pkgCwd ? { pkgCwd } : {}),
+              rootPath,
+              shell: listShell,
+            }),
+          );
           return;
         }
         {
           logger.error('No command provided. Use --command or --list.');
         }
-        process.exit(0);
+        process.exit(1);
       }
 
       // Note: Local "-l/--list" tokens are no longer interpreted here.
@@ -165,20 +170,22 @@ export const attachBatchCmdAction = (
           shellSetting === false ? maybePreserveNodeEvalArgv(args) : args;
       }
 
-      await execShellCommandBatch({
-        command: commandArg,
-        ...(concurrency !== undefined ? { concurrency } : {}),
-        dotenvEnv,
-        ...(envBag ? { getDotenvCliOptions: envBag } : {}),
-        globs,
-        ignoreErrors,
-        list: false,
-        logger,
-        parallel,
-        ...(pkgCwd ? { pkgCwd } : {}),
-        rootPath,
-        shell: shellSetting,
-      });
+      propagateExitCode(
+        await execShellCommandBatch({
+          command: commandArg,
+          ...(concurrency !== undefined ? { concurrency } : {}),
+          dotenvEnv,
+          ...(envBag ? { getDotenvCliOptions: envBag } : {}),
+          globs,
+          ignoreErrors,
+          list: false,
+          logger,
+          parallel,
+          ...(pkgCwd ? { pkgCwd } : {}),
+          rootPath,
+          shell: shellSetting,
+        }),
+      );
     },
   );
 };

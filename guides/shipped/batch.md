@@ -37,7 +37,7 @@ Notes:
 - `-g, --globs <string>` Space‑delimited globs under the root path (default: `"*"`).
 - `-c, --command <string>` Command to execute (string form; scripts-aware).
 - `-l, --list` List working directories without executing the command.
-- `-e, --ignore-errors` Continue processing remaining paths after a command error.
+- `-e, --ignore-errors` Continue processing remaining paths after a command error, and exit 0.
 
 ## Specifying what to run
 
@@ -168,4 +168,4 @@ await run();
 - Sequential execution reduces noise and preserves legibility. A future `--concurrency` option is planned (see roadmap).
 - Deterministic output for CI: set `GETDOTENV_STDIO=pipe` or pass `--capture` so each child process buffers output.
 - Use `--trace [keys...]` (and optionally `--redact`) to inspect child env composition before spawning, without altering runtime values.
-- On errors, the default behavior is to stop; use `--ignore-errors` to continue.
+- Exit codes: sequential mode stops at the first directory whose command fails and exits with that command's code; parallel mode runs every directory, lists the failures, and exits with the first failure's code (in discovery order). `--ignore-errors` keeps going in either mode and exits 0. Usage errors (no command and no `--list`, no matching directories, no package directory) exit 1.

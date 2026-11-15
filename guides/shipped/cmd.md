@@ -53,7 +53,9 @@ Then:
 npm run print -- -e dev
 ```
 
-Conflict guard: Supplying both the alias and the `cmd` subcommand in the same invocation is disallowed and exits with a helpful message.
+Conflict guard: Supplying both the alias and positional `cmd` arguments in the same invocation (e.g. `getdotenv -c echo -e dev cmd x`) is a usage error: it prints `--cmd option conflicts with cmd subcommand.` (named after the alias's option) and exits 1.
+
+Exit codes: `cmd`, the default command and the alias exit with the child's exit code. Under the default Windows shell, `powershell.exe -Command` reports any failure as 1, so the original code is lost there; run with `--shell-off` (or a POSIX shell) to keep it.
 
 ## Quoting and eval snippets
 

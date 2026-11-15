@@ -1,6 +1,7 @@
 import type { CommandUnknownOpts } from '@commander-js/extra-typings';
 
 import { type GetDotenvCliPublic, readMergedOptions } from '@/src/cliHost';
+import { propagateExitCode } from '@/src/cliHost/exitCode';
 
 import { runCmdWithContext } from './runner';
 
@@ -45,10 +46,13 @@ export const attachCmdDefaultAction = (
         merged.logger.error(
           `--${aliasKey} option conflicts with cmd subcommand.`,
         );
-        process.exit(0);
+        process.exitCode = 1;
+        return;
       }
     }
 
-    await runCmdWithContext(cli, merged, args, { origin: 'subcommand' });
+    propagateExitCode(
+      await runCmdWithContext(cli, merged, args, { origin: 'subcommand' }),
+    );
   });
 };

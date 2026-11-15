@@ -139,6 +139,26 @@ export const departures: Departure[] = [
     note: "The harness captures (GETDOTENV_STDIO=pipe), so the shell's error for the unresolved 'hello' now reaches stderr.",
   },
   {
+    case: '#50 cmd exit',
+    issueOrDecision: '#50',
+    note: "cmd propagates the child's failure: exit 1 on win32 (powershell.exe -Command reports any failure as 1), 4 on linux.",
+  },
+  {
+    case: '#50 default exit',
+    issueOrDecision: '#50',
+    note: "The default command propagates the child's failure: exit 1 on win32 (powershell.exe -Command reports any failure as 1), 4 on linux.",
+  },
+  {
+    case: '#50 batch exit',
+    issueOrDecision: '#50',
+    note: "Sequential batch stops at the first failure: only pkgA runs, stderr reports '<TMP>/pkgA failed (exit code N); stopping.', and the exit code is the failure's (1 on win32 via powershell.exe, 3 on linux).",
+  },
+  {
+    case: '#50 batch no command',
+    issueOrDecision: '#50',
+    note: 'A batch usage error exits non-zero: exit 1.',
+  },
+  {
     case: '#51 batch argv quoting',
     issueOrDecision: '#51',
     note: "Tokens are quoted for the resolved shell: on win32 (powershell.exe) the child now runs with argv ['a b','x$y','q\"r'] instead of failing on cmd.exe-style quoting. Unchanged on linux.",
