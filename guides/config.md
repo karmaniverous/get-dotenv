@@ -144,7 +144,7 @@ You can validate the final composed environment via config:
 Behavior:
 
 - Validation runs once against the composed env (host/generator paths), after overlays and dynamic variables are applied.
-- By default, issues are printed as warnings. Set --strict (or strict: true in options) to fail with a non‑zero exit when issues are detected.
+- By default, issues are logged at error level and the run continues. Set --strict (or strict: true in options) to fail with a non‑zero exit when issues are detected.
 
 Examples:
 

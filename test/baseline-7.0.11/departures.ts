@@ -117,4 +117,9 @@ export const departures: Departure[] = [
     issueOrDecision: '#48',
     note: 'getDotenv() no longer loads process.env by default: FOO is not set after the call.',
   },
+  {
+    case: '#61 validation twice',
+    issueOrDecision: '#61',
+    note: 'Env validation runs once per run: stderr has one "[requiredKeys] missing: MISSING_KEY" line, not two.',
+  },
 ];

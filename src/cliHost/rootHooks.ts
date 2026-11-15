@@ -227,7 +227,8 @@ export function installRootHooks<TOptions extends GetDotenvOptions>(
     // One composition per run: preSubcommand composed already in subcommand
     // flows; a root-only action composes here (a context left from an
     // earlier parse doesn't count).
-    if (!composedThisParse(program)) {
+    const composesHere = !composedThisParse(program);
+    if (composesHere) {
       const serviceOptions = getDotenvCliOptions2Options(
         merged,
       ) as unknown as Partial<TOptions>;
@@ -253,7 +254,13 @@ export function installRootHooks<TOptions extends GetDotenvOptions>(
     } catch {
       /* tolerate */
     }
-    reportEnvIssues(program, sources, merged as unknown as GetDotenvCliOptions);
+    // Validate once per run, in the hook that composed (#61).
+    if (composesHere)
+      reportEnvIssues(
+        program,
+        sources,
+        merged as unknown as GetDotenvCliOptions,
+      );
 
     // Run afterResolve scoped to the invoked command branch.
     // Walk actionCommand.parent chain to build the full plugin path.
