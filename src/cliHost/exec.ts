@@ -50,6 +50,8 @@ export interface RunCommandResultOptions {
   cwd?: string | URL;
   /**
    * Environment variables for the child process. Undefined values are dropped.
+   * When given, this is the child's complete environment: `process.env` is not
+   * merged back in (build it with `buildSpawnEnv`).
    */
   env?: NodeJS.ProcessEnv;
   /**
@@ -70,6 +72,8 @@ export interface RunCommandOptions {
   cwd?: string | URL;
   /**
    * Environment variables for the child process. Undefined values are dropped.
+   * When given, this is the child's complete environment: `process.env` is not
+   * merged back in (build it with `buildSpawnEnv`).
    */
   env?: NodeJS.ProcessEnv;
   /**
@@ -185,6 +189,11 @@ async function _execNormalized(
   opts: ExecNormalizedOptions = {},
 ): Promise<RunCommandResult> {
   const envSan = sanitizeEnv(opts.env);
+  // The supplied env is the child's complete env (#88): execa must not merge
+  // process.env back in, or an ambient key that differs only in case wins
+  // on Windows and a key removed from the env comes back.
+  const envBits =
+    envSan !== undefined ? { env: envSan, extendEnv: false as const } : {};
   const timeoutBits =
     typeof opts.timeoutMs === 'number'
       ? { timeout: opts.timeoutMs, killSignal: 'SIGKILL' as const }
@@ -209,7 +218,7 @@ async function _execNormalized(
       const ok = pickResult(
         await execa(file, args, {
           ...(opts.cwd !== undefined ? { cwd: opts.cwd } : {}),
-          ...(envSan !== undefined ? { env: envSan } : {}),
+          ...envBits,
           stdio,
           ...timeoutBits,
         }),
@@ -243,7 +252,7 @@ async function _execNormalized(
       await execa(shellFile, shellArgs, {
         shell,
         ...(opts.cwd !== undefined ? { cwd: opts.cwd } : {}),
-        ...(envSan !== undefined ? { env: envSan } : {}),
+        ...envBits,
         stdio,
         ...timeoutBits,
       }),

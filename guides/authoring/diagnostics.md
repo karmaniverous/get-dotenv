@@ -55,6 +55,7 @@ Always use `buildSpawnEnv(process.env, ctx.dotenv)` to compose and normalize the
 
 - On Windows, dedupe keys case‑insensitively and ensure HOME/TMP/TEMP are coherent.
 - On POSIX, populate TMPDIR if a temp key is present.
+- `runCommand`/`runCommandResult` pass the built env as the child's complete environment (`process.env` is not merged back in), so on Windows a dotenv key wins even when an ambient variable differs from it only in case.
 
 ```ts
 import { buildSpawnEnv } from '@karmaniverous/get-dotenv';

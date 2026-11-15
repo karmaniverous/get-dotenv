@@ -144,6 +144,11 @@ export const departures: Departure[] = [
     note: "The harness captures (GETDOTENV_STDIO=pipe), so PowerShell's parse error for the cmd.exe-quoted tokens now reaches stderr (win32).",
   },
   {
+    case: '#88 case-only key difference',
+    issueOrDecision: '#88',
+    note: "The child env is not re-extended with process.env: on win32 the child's key is the dotenv casing Gdv_Case (value 'dotenv'), not the ambient GDV_CASE.",
+  },
+  {
     case: '#90 toString',
     issueOrDecision: '#90',
     note: "'toString' is not a script: it runs as typed through the shell, whose 'not recognized' error reaches stderr under capture (#74).",
