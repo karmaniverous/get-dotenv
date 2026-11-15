@@ -51,5 +51,3 @@ export {
   type RootOptionsShape,
   type ScriptDef,
 } from './types';
-/** @deprecated Import \{ z \} from 'zod' directly. Will be removed in v7. */
-export { z } from 'zod';

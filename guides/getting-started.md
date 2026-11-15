@@ -6,9 +6,9 @@ title: Getting Started
 
 This page gives you four fast on‑ramps. Each section includes a minimal snippet and links to the right deep‑dive.
 
-## Deprecations
+## Importing `z`
 
-- The package currently re-exports `z` as a convenience, but this is deprecated. Import `{ z }` from `zod` directly; the re-export will be removed in v7.
+- `@karmaniverous/get-dotenv/cliHost` no longer re-exports `z` (removed in 8.0.0). Import `{ z }` from `zod` directly, and list `zod` in your own dependencies.
 
 ## 1) Run a one‑off command with your env
 
