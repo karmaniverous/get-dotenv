@@ -276,7 +276,7 @@ JSON/YAML configs are data-only. JS/TS configs may include dynamic + schema.
   - `dynamic?: Record<string, string | ((vars, env?) => string | undefined)>`
   - `schema?: unknown` (if it exposes `safeParse(finalEnv)`, host runs it once post-compose)
 
-Do not put operational root flags (like `shell`, `loadProcess`, `paths`) at top level; they belong under `rootOptionDefaults`. `rootOptionDefaults` rejects `dynamic` and `logger` in every format (the config is invalid); use the top-level JS/TS `dynamic` instead.
+Do not put operational root flags (like `shell`, `loadProcess`, `paths`) at top level; they belong under `rootOptionDefaults` (the `defineGetDotenvConfig()` type has exactly these keys). `rootOptionDefaults` rejects `dynamic` and `logger` in every format (the config is invalid); use the top-level JS/TS `dynamic` instead.
 
 ### Root defaults precedence (runtime + help labels)
 

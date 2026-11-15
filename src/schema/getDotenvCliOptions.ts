@@ -33,17 +33,9 @@ export const getDotenvCliOptionsSchemaRaw = getDotenvOptionsSchemaRaw.extend({
   capture: z.boolean().optional(),
   /** Emit child env diagnostics (boolean or selected keys). */
   trace: z.union([z.boolean(), z.array(z.string())]).optional(),
-  /** Enable presentation-time redaction in trace/log output. */
-  redact: z.boolean().optional(),
-  /** Enable entropy warnings in trace/log output. */
-  warnEntropy: z.boolean().optional(),
-  /** Entropy threshold (bits/char) for warnings. */
-  entropyThreshold: z.number().optional(),
-  /** Minimum value length to consider for entropy warnings. */
-  entropyMinLength: z.number().optional(),
-  /** Regex patterns (strings) to suppress entropy warnings by key. */
+  /** Regex patterns (strings: the CLI/config form) to suppress entropy warnings by key. */
   entropyWhitelist: z.array(z.string()).optional(),
-  /** Additional key-match patterns (strings) for redaction. */
+  /** Additional key-match patterns (strings: the CLI/config form) for redaction. */
   redactPatterns: z.array(z.string()).optional(),
   /** Dotenv search paths provided as a single delimited string. */
   paths: z.string().optional(),

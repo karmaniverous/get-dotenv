@@ -160,7 +160,10 @@ export function defineDynamic(d: unknown): unknown {
 /**
  * Typed config shape and builder for authoring JS/TS getdotenv config files.
  *
- * Compile-time only; the runtime loader remains schema-driven.
+ * Compile-time only; the runtime loader remains schema-driven. The keys are
+ * exactly the loader's (see `getDotenvConfigSchemaRaw`): root operational
+ * options such as `paths`, `shell` or `log` belong under
+ * `rootOptionDefaults`.
  */
 export interface GetDotenvConfig<
   Vars extends ProcessEnv,
@@ -170,18 +173,8 @@ export interface GetDotenvConfig<
    * Operational root defaults applied by the host (collapsed families; stringly form).
    */
   rootOptionDefaults?: Partial<RootOptionsShape>;
-  /** Token indicating a dotenv file. */
-  dotenvToken?: string;
-  /** Token indicating private variables. */
-  privateToken?: string;
-  /** Paths to search for dotenv files. */
-  paths?: string | string[];
-  /** Whether to load variables into `process.env`. */
-  loadProcess?: boolean;
-  /** Whether to log loaded variables. */
-  log?: boolean;
-  /** Shell execution strategy. */
-  shell?: string | boolean;
+  /** Help-time visibility for root flags (`false` hides). */
+  rootOptionVisibility?: Partial<Record<keyof RootOptionsShape, boolean>>;
   /** Scripts table. */
   scripts?: Scripts;
   /** Keys required to be present in the final environment. */
@@ -261,11 +254,22 @@ export const getDotenvCliOptions2Options = ({
   varsAssignorPattern,
   varsDelimiter,
   varsDelimiterPattern,
+  entropyThreshold,
+  entropyMinLength,
   // drop CLI-only keys from the pass-through bag
   debug: _debug,
   scripts: _scripts,
   ...rest
 }: RootOptionsShapeCompat): GetDotenvOptions => {
+  // CLI values arrive as strings: keep finite numbers, drop anything else.
+  const toNumber = (value: unknown): number | undefined => {
+    const n =
+      typeof value === 'string' && value.trim() !== '' ? Number(value) : value;
+    return typeof n === 'number' && Number.isFinite(n) ? n : undefined;
+  };
+  const threshold = toNumber(entropyThreshold);
+  const minLength = toNumber(entropyMinLength);
+
   // Split helper for delimited strings or regex patterns
   const splitBy = (
     value?: string,
@@ -318,6 +322,8 @@ export const getDotenvCliOptions2Options = ({
     ...(rest as Partial<GetDotenvOptions>),
     ...(pathsOut.length > 0 ? { paths: pathsOut } : {}),
     ...(parsedVars !== undefined ? { vars: parsedVars } : {}),
+    ...(threshold !== undefined ? { entropyThreshold: threshold } : {}),
+    ...(minLength !== undefined ? { entropyMinLength: minLength } : {}),
   };
 };
 

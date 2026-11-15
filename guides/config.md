@@ -70,7 +70,7 @@ TS support:
 
 ### Top‑level restrictions (clean contract; JSON/YAML)
 
-- Operational root flags must live under rootOptionDefaults. Do not place root toggles (e.g., env, shell, loadProcess, log, exclude\*, trace, strict, redact family, entropy family, splitters) at the top level in JSON/YAML. Put them under rootOptionDefaults to control both help‑time labels and runtime defaults.
+- Operational root flags must live under rootOptionDefaults. Do not place root toggles (e.g., env, shell, loadProcess, log, exclude\*, trace, strict, redact family, entropy family, splitters) at the top level in JSON/YAML. Put them under rootOptionDefaults to control both help‑time labels and runtime defaults. In a TS config, the `defineGetDotenvConfig()` type has exactly the loader's keys, so a top-level root option is a type error.
 - scripts belongs at the top level only. Do not nest scripts inside rootOptionDefaults.
 - dynamic and schema are JS/TS‑only. JSON/YAML loader rejects them.
 

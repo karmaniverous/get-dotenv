@@ -53,6 +53,30 @@
         "vars": {
           "type": "string"
         },
+        "redact": {
+          "type": "boolean"
+        },
+        "redactPatterns": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "warnEntropy": {
+          "type": "boolean"
+        },
+        "entropyThreshold": {
+          "type": "number"
+        },
+        "entropyMinLength": {
+          "type": "number"
+        },
+        "entropyWhitelist": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
         "debug": {
           "type": "boolean"
         },
@@ -77,30 +101,6 @@
               }
             }
           ]
-        },
-        "redact": {
-          "type": "boolean"
-        },
-        "warnEntropy": {
-          "type": "boolean"
-        },
-        "entropyThreshold": {
-          "type": "number"
-        },
-        "entropyMinLength": {
-          "type": "number"
-        },
-        "entropyWhitelist": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
-        "redactPatterns": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
         },
         "pathsDelimiter": {
           "type": "string"

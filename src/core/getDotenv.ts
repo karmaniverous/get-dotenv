@@ -187,13 +187,8 @@ export async function getDotenv(
 
   // Log result.
   if (log) {
-    const redactFlag = (options as { redact?: boolean }).redact ?? false;
-    const redactPatterns =
-      (
-        options as {
-          redactPatterns?: Array<string | RegExp>;
-        }
-      ).redactPatterns ?? undefined;
+    const redactFlag = options.redact ?? false;
+    const { redactPatterns } = options;
     const redOpts: RedactOptions = {};
     if (redactFlag) redOpts.redact = true;
     if (redactFlag && Array.isArray(redactPatterns))
@@ -203,17 +198,12 @@ export async function getDotenv(
       : { ...resultDotenv };
     logger.info(bag);
     // Entropy warnings: once-per-key-per-run (presentation only)
-    const warnEntropyVal =
-      (options as { warnEntropy?: boolean }).warnEntropy ?? true;
-    const entropyThresholdVal = (options as { entropyThreshold?: number })
-      .entropyThreshold;
-    const entropyMinLengthVal = (options as { entropyMinLength?: number })
-      .entropyMinLength;
-    const entropyWhitelistVal = (
-      options as {
-        entropyWhitelist?: Array<string | RegExp>;
-      }
-    ).entropyWhitelist;
+    const warnEntropyVal = options.warnEntropy ?? true;
+    const {
+      entropyThreshold: entropyThresholdVal,
+      entropyMinLength: entropyMinLengthVal,
+      entropyWhitelist: entropyWhitelistVal,
+    } = options;
     const entOpts: EntropyOptions = {};
     if (typeof warnEntropyVal === 'boolean')
       entOpts.warnEntropy = warnEntropyVal;
