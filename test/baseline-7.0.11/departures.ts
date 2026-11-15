@@ -107,4 +107,9 @@ export const departures: Departure[] = [
     issueOrDecision: '#73',
     note: "-v 'A=b=c' is split at the first assignor only: the child sees A 'b=c', not 'b'.",
   },
+  {
+    case: '#47 undefined into process.env',
+    issueOrDecision: '#47',
+    note: 'Host loadProcess deletes an unset key instead of writing "undefined": the child has no EMPTY.',
+  },
 ];

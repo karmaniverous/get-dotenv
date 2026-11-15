@@ -15,6 +15,7 @@ import {
   overlayEnvWithProvenance,
   readDotenvCascadeWithProvenance,
 } from '@/src/env';
+import { loadProcessEnv } from '@/src/env/loadProcessEnv';
 import { getDotenvOptionsSchemaResolved } from '@/src/schema';
 import { defaultsDeep, interpolateDeep, writeDotenvFile } from '@/src/util';
 
@@ -150,6 +151,22 @@ export const computeContext = async <
   const dotenv: ProcessEnv = { ...overlaid.env };
   const dotenvProvenance = overlaid.provenance;
 
+  // Keys a dynamic null deleted (loadProcess deletes them from process.env).
+  const deletedKeys = new Set<string>();
+  const applyDynamic = (
+    map: GetDotenvDynamic | undefined,
+    meta: Parameters<typeof applyDynamicMapWithProvenance>[4],
+  ) => {
+    for (const key of applyDynamicMapWithProvenance(
+      dotenv,
+      map,
+      envName,
+      dotenvProvenance,
+      meta,
+    ))
+      deletedKeys.add(key);
+  };
+
   // Dynamic precedence (A2): config dynamic < programmatic dynamic < dynamicPath
   if (!validated.excludeDynamic) {
     // Config dynamics (JS/TS configs only), ordered by source precedence.
@@ -160,36 +177,12 @@ export const computeContext = async <
     const localDyn = (sources.project?.local?.dynamic ?? undefined) as
       GetDotenvDynamic | undefined;
 
-    applyDynamicMapWithProvenance(
-      dotenv,
-      packagedDyn,
-      envName,
-      dotenvProvenance,
-      {
-        dynamicSource: 'config',
-      },
-    );
-    applyDynamicMapWithProvenance(
-      dotenv,
-      publicDyn,
-      envName,
-      dotenvProvenance,
-      {
-        dynamicSource: 'config',
-      },
-    );
-    applyDynamicMapWithProvenance(dotenv, localDyn, envName, dotenvProvenance, {
-      dynamicSource: 'config',
-    });
+    applyDynamic(packagedDyn, { dynamicSource: 'config' });
+    applyDynamic(publicDyn, { dynamicSource: 'config' });
+    applyDynamic(localDyn, { dynamicSource: 'config' });
 
     // Programmatic dynamic (overrides config dynamic)
-    applyDynamicMapWithProvenance(
-      dotenv,
-      validated.dynamic,
-      envName,
-      dotenvProvenance,
-      { dynamicSource: 'programmatic' },
-    );
+    applyDynamic(validated.dynamic, { dynamicSource: 'programmatic' });
 
     // dynamicPath (highest dynamic tier; always evaluated when present)
     if (validated.dynamicPath) {
@@ -198,7 +191,7 @@ export const computeContext = async <
         absDynamicPath,
         'getdotenv-dynamic-host',
       );
-      applyDynamicMapWithProvenance(dotenv, dyn, envName, dotenvProvenance, {
+      applyDynamic(dyn, {
         dynamicSource: 'dynamicPath',
         dynamicPath: validated.dynamicPath,
       });
@@ -211,7 +204,7 @@ export const computeContext = async <
   }
   const logger: Logger = validated.logger;
   if (validated.log) logger.info(dotenv);
-  if (validated.loadProcess) Object.assign(process.env, dotenv);
+  if (validated.loadProcess) loadProcessEnv(dotenv, deletedKeys);
 
   // Merge and validate per-plugin config keyed by realized path (ns chain).
   const packagedPlugins =
