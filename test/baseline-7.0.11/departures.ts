@@ -144,6 +144,16 @@ export const departures: Departure[] = [
     note: "The harness captures (GETDOTENV_STDIO=pipe), so PowerShell's parse error for the cmd.exe-quoted tokens now reaches stderr (win32).",
   },
   {
+    case: '#79 spaces collapsed',
+    issueOrDecision: '#79',
+    note: "The shell gets the command string untouched: the child's argv is '[x   y]' (three spaces kept).",
+  },
+  {
+    case: '#79 backslash space',
+    issueOrDecision: '#79',
+    note: "The shell gets the command string untouched: the child's argv is '[a\\ b]' (the shell keeps a backslash inside double quotes).",
+  },
+  {
     case: '#88 case-only key difference',
     issueOrDecision: '#88',
     note: "The child env is not re-extended with process.env: on win32 the child's key is the dotenv casing Gdv_Case (value 'dotenv'), not the ambient GDV_CASE.",

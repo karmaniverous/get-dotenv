@@ -126,33 +126,6 @@ const stripOuterQuotes = (s: string): string => {
   return out;
 };
 
-/**
- * Split a shell command string into file and arguments exactly as execa 9's
- * `execaCommand` did: trim, split on runs of spaces, and join a token that
- * ends in a backslash to the next token with one space (the backslash is
- * dropped).
- *
- * execa 10 removed `execaCommand`, and its `parseCommandString` treats runs of
- * spaces after an escape differently, so the 9.x rules are kept here.
- *
- * @param command - Command string.
- * @returns File and arguments; empty when the command is blank.
- */
-export const splitCommandString = (command: string): string[] => {
-  const trimmed = command.trim();
-  if (trimmed === '') return [];
-  const tokens: string[] = [];
-  for (const token of trimmed.split(/ +/)) {
-    const prev = tokens.at(-1);
-    if (prev !== undefined && prev.endsWith('\\')) {
-      tokens[tokens.length - 1] = `${prev.slice(0, -1)} ${token}`;
-    } else {
-      tokens.push(token);
-    }
-  }
-  return tokens;
-};
-
 // Extract exitCode/stdout/stderr from execa result or error in a tolerant way.
 const pickResult = (
   r: unknown,
@@ -245,11 +218,12 @@ async function _execNormalized(
     shell: typeof shell === 'string' ? shell : 'custom',
     stdio,
   });
-  // execa re-joins file and args with single spaces for the shell.
-  const [shellFile = '', ...shellArgs] = splitCommandString(commandStr);
+  // The shell gets the command string as is (#79): no re-splitting, so runs
+  // of spaces and backslash escapes reach it unchanged.
+  if (commandStr.trim() === '') return { exitCode: 0, stdout: '', stderr: '' };
   try {
     const ok = pickResult(
-      await execa(shellFile, shellArgs, {
+      await execa(commandStr, {
         shell,
         ...(opts.cwd !== undefined ? { cwd: opts.cwd } : {}),
         ...envBits,

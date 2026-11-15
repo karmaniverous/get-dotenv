@@ -20,7 +20,7 @@ This page documents the root shell behavior controlled by the host’s global `-
 ## Plain vs shell mode
 
 - Plain (no shell): safer for simple commands; pipes, redirects, and globbing are not available unless the command itself implements them. When `get-dotenv` is given a *string* command in shell-off mode, it tokenizes it using a minimal tokenizer; for complex quoting or `node -e/--eval` payloads, prefer passing argv tokens (or use the `cmd`/`batch` positional token forms) so payloads are preserved precisely.
-- Shell mode: the specified shell parses the command string, enabling pipes, redirects, aliases, and shell builtins. Quoting and escaping must follow the shell’s rules.
+- Shell mode: the specified shell parses the command string, enabling pipes, redirects, aliases, and shell builtins. The string reaches the shell exactly as given (runs of spaces and `\ ` escapes included). Quoting and escaping must follow the shell's rules.
 
 ## Examples
 

@@ -1,12 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 // Mock execa to capture invocations without spawning a shell. The shell
-// path calls execa(file, args, opts); execa joins them with spaces.
+// path calls execa(command, opts) with the command string as is.
 const execMock =
   vi.fn<(command: string, opts: Record<string, unknown>) => Promise<void>>();
 vi.mock('execa', () => ({
-  execa: (file: string, args: string[], opts: Record<string, unknown>) =>
-    execMock([file, ...args].join(' '), opts),
+  execa: (command: string, opts: Record<string, unknown>) =>
+    execMock(command, opts),
 }));
 
 import { createCli } from '@/src/cli';
