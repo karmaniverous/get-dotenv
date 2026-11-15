@@ -120,14 +120,7 @@
           "additionalProperties": {}
         },
         "shell": {
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "type": "string"
-            }
-          ]
+          "type": ["boolean", "string"]
         },
         "varsAssignor": {
           "type": "string"

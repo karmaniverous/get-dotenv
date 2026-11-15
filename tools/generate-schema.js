@@ -9,6 +9,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { format, resolveConfig } from 'prettier';
 import { z } from 'zod';
 
 // tsx resolves TypeScript path aliases, so we can import directly.
@@ -51,6 +52,14 @@ const outDir = path.join(rootDir, 'schema');
 fs.mkdirSync(outDir, { recursive: true });
 
 const outPath = path.join(outDir, 'getdotenv.config.schema.json');
-fs.writeFileSync(outPath, JSON.stringify(output, null, 2) + '\n');
+// Format with the repo's Prettier config so the committed file passes lint.
+const prettierConfig = (await resolveConfig(outPath)) ?? {};
+fs.writeFileSync(
+  outPath,
+  await format(JSON.stringify(output, null, 2), {
+    ...prettierConfig,
+    parser: 'json',
+  }),
+);
 
 console.log(`✅ JSON Schema written to ${path.relative(rootDir, outPath)}`);
