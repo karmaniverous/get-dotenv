@@ -4,10 +4,9 @@
  * alias to execute a command within the resolved dotenv context.
  */
 
-import { camel } from 'radash';
-
 import { definePlugin } from '@/src/cliHost';
 
+import { aliasOptionKey, resolveAliasSpec } from './alias';
 import { attachCmdDefaultAction } from './defaultAction';
 import { attachCmdOptions } from './options';
 import { attachCmdParentInvoker } from './parentInvoker';
@@ -26,16 +25,8 @@ export const cmdPlugin = (options: CmdPluginOptions = {}) => {
     ...(options.asDefault ? { nsOptions: { isDefault: true } } : {}),
     configSchema: cmdPluginConfigSchema,
     setup(cli) {
-      const aliasSpec =
-        typeof options.optionAlias === 'string'
-          ? { flags: options.optionAlias, description: undefined, expand: true }
-          : options.optionAlias;
-      const deriveKey = (flags: string) => {
-        const long =
-          flags.split(/[ ,|]+/).find((f) => f.startsWith('--')) ?? '--cmd';
-        return camel(long.replace(/^--/, ''));
-      };
-      const aliasKey = aliasSpec ? deriveKey(aliasSpec.flags) : undefined;
+      const aliasSpec = resolveAliasSpec(options.optionAlias);
+      const aliasKey = aliasSpec ? aliasOptionKey(aliasSpec.flags) : undefined;
 
       // Mount is the command ('cmd'); attach default action.
       cli.description(

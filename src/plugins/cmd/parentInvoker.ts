@@ -1,5 +1,4 @@
 import type { CommandUnknownOpts } from '@commander-js/extra-typings';
-import { camel } from 'radash';
 
 import {
   baseGetDotenvCliOptions,
@@ -16,6 +15,7 @@ import { dotenvExpandFromProcessEnv } from '@/src/dotenv';
 import { defaultsDeep } from '@/src/util';
 
 import type { CmdPlugin } from '.';
+import { aliasOptionKey, resolveAliasSpec } from './alias';
 import { runCmdWithContext } from './runner';
 import type { CmdPluginOptions } from './types';
 
@@ -40,22 +40,13 @@ export const attachCmdParentInvoker = (
       }
     }
   };
-  const aliasSpec =
-    typeof options.optionAlias === 'string'
-      ? { flags: options.optionAlias, description: undefined, expand: true }
-      : options.optionAlias;
+  const aliasSpec = resolveAliasSpec(options.optionAlias);
   if (!aliasSpec) return;
 
-  const deriveKey = (flags: string) => {
-    // install alias option
-    if (process.env.GETDOTENV_DEBUG) {
-      console.error('[getdotenv:alias] install alias option', flags);
-    }
-    const long =
-      flags.split(/[ ,|]+/).find((f) => f.startsWith('--')) ?? '--cmd';
-    return camel(long.replace(/^--/, ''));
-  };
-  const aliasKey = deriveKey(aliasSpec.flags);
+  if (process.env.GETDOTENV_DEBUG) {
+    console.error('[getdotenv:alias] install alias option', aliasSpec.flags);
+  }
+  const aliasKey = aliasOptionKey(aliasSpec.flags);
 
   // Expose the option on the parent (root) command.
   const parentCmd = (cli.parent as unknown as GetDotenvCliPublic | null) ?? cli;
