@@ -376,4 +376,14 @@ export const departures: Departure[] = [
     issueOrDecision: '#46',
     note: '--entropy-threshold 9 and --entropy-min-length 64 parse as numbers: the bag has 9 and 64, not the strings "9" and "64".',
   },
+  {
+    case: '#56 dotenv region overrides session',
+    issueOrDecision: '#56',
+    note: 'The session goes over the dotenv overlay in the forwarded env: AWS_REGION and AWS_DEFAULT_REGION are eu-west-3 (--region), not the dotenv us-east-1.',
+  },
+  {
+    case: '#56 profile flag on aws child',
+    issueOrDecision: '#56',
+    note: "One resolution, with the aws flags: only the 9 flag-profile probes run (the second round, 9 dotenv-profile probes from afterResolve, is gone), and the child sees AWS_PROFILE and ctx.plugins.aws profile 'flag-profile', not 'dotenv-profile'.",
+  },
 ];

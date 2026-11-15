@@ -3,15 +3,15 @@ import type { CommandUnknownOpts } from '@commander-js/extra-typings';
 import type { GetDotenvCliPublic } from '@/src/cliHost';
 
 import type { AwsPlugin } from '.';
-import { applyAwsContext } from './common';
 import { awsConfigWithFlags } from './configOverrides';
-import { resolveAwsContext } from './service';
+import { establishAwsSession } from './session';
 
 /**
  * Attach the AWS plugin `preSubcommand` hook.
  *
- * Ensures `aws --profile/--region <child>` applies the AWS session setup before
- * child subcommand execution.
+ * For `aws <flags> <child>` it establishes the invocation's AWS session with
+ * the `aws` flags applied, before the child runs; the `afterResolve` hook
+ * and the child then keep that session (#56).
  *
  * @param cli - The `aws` command mount.
  * @param plugin - The AWS plugin instance.
@@ -26,14 +26,9 @@ export function attachAwsPreSubcommandHook(
     // Avoid side effects for help rendering.
     if (process.argv.includes('-h') || process.argv.includes('--help')) return;
 
-    const ctx = cli.getCtx();
-    const cfg = awsConfigWithFlags(plugin, cli, thisCommand.opts());
-
-    const out = await resolveAwsContext({
-      dotenv: ctx.dotenv,
-      cfg,
-    });
-
-    applyAwsContext(out, ctx, true);
+    await establishAwsSession(
+      cli.getCtx(),
+      awsConfigWithFlags(plugin, cli, thisCommand.opts()),
+    );
   });
 }

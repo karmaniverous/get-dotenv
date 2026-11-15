@@ -9,10 +9,10 @@ import { shouldCapture } from '@/src/cliHost/exec';
 import { propagateExitCode } from '@/src/cliHost/exitCode';
 
 import type { AwsPlugin } from '.';
-import { applyAwsContext } from './common';
+import { awsSessionEnv } from './common';
 import { awsConfigWithFlags } from './configOverrides';
 import type { AwsCommand } from './options';
-import { resolveAwsContext } from './service';
+import { establishAwsSession } from './session';
 
 /**
  * Attach the default action for the AWS plugin mount.
@@ -39,25 +39,25 @@ export function attachAwsDefaultAction(
       process.env.GETDOTENV_TEST === '1' ||
       typeof process.env.VITEST_WORKER_ID === 'string';
 
-    // Build overlay cfg from subcommand flags layered over discovered config.
+    // The invocation's session (established once, with the aws flags; #56).
     const ctx = cli.getCtx();
-    const cfg = awsConfigWithFlags(plugin, cli, opts);
-
-    // Resolve current context with overrides
-    const out = await resolveAwsContext({
-      dotenv: ctx.dotenv,
-      cfg,
-    });
-
-    // Publish env/context
-    applyAwsContext(out, ctx, true);
+    const out = await establishAwsSession(
+      ctx,
+      awsConfigWithFlags(plugin, cli, opts),
+    );
 
     // Forward when positional args are present; otherwise session-only.
     if (args.length > 0) {
       const argv = ['aws', ...args];
       const shellSetting = resolveShell(bag.scripts, 'aws', bag.shell);
       const exit = await runCommand(argv, shellSetting, {
-        env: buildSpawnEnv(process.env, ctx.dotenv),
+        // The session's AWS_* entries go over the dotenv overlay, so its
+        // region and credentials win and the two credential sources stay
+        // exclusive (#56).
+        env: buildSpawnEnv(process.env, {
+          ...ctx.dotenv,
+          ...awsSessionEnv(out, process.env),
+        }),
         stdio: capture ? 'pipe' : 'inherit',
       });
       // Propagate the AWS CLI's exit code (a spawn failure is non-zero too,
