@@ -7,6 +7,7 @@ import type { Command, Option } from '@commander-js/extra-typings';
 
 import type { GetDotenvCli } from './GetDotenvCli';
 import { GROUP_TAG } from './groups';
+import { hasRootHooks } from './rootHooksState';
 
 /**
  * Initialize a {@link GetDotenvCli} instance with help configuration and safe defaults.
@@ -81,9 +82,10 @@ export function initializeInstance(
     /* no-op */
   });
   // PreSubcommand hook: compute a context if absent, without mutating process.env.
-  // The passOptions() helper, when installed, resolves the final context.
+  // Bare hosts only: when the root hooks are installed they compose the
+  // run's one context, so this resolver stands down.
   cli.hook('preSubcommand', async () => {
-    if (cli.hasCtx()) return;
+    if (hasRootHooks(cli) || cli.hasCtx()) return;
     await cli.resolveAndLoad(
       { loadProcess: false },
       { runAfterResolve: false },

@@ -296,3 +296,7 @@ afterResolve hooks run once per invocation after the host resolves dotenv contex
 This means a plugin's afterResolve should only set up state relevant to its own command subtree. It should not assume it runs on every invocation. The shipped aws plugin, for example, only resolves AWS credentials and writes to process.env when an aws or aws/* command is invoked.
 
 Custom hosts that call resolveAndLoad() without an invokedSubcommand filter get the legacy behavior where all plugins run afterResolve.
+
+## One composition per invocation
+
+With the shipped root hooks (every `createCli` host), each invocation composes its dotenv context once, so config `dynamic` functions run once (and not at all under `-z`). The cmd plugin's parent alias (`-c`) runs against that same context. A bare `GetDotenvCli` host without the root hooks still gets a lazy context before its subcommands run (`loadProcess` off, no afterResolve).

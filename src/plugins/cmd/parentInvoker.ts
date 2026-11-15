@@ -9,6 +9,7 @@ import {
   type RootOptionsShape,
   type ScriptsTable,
 } from '@/src/cliHost';
+import { composedThisParse } from '@/src/cliHost/rootHooksState';
 import { resolveGetDotenvConfigSources } from '@/src/config';
 import { getDotenvCliOptions2Options } from '@/src/core';
 import { dotenvExpandFromProcessEnv } from '@/src/dotenv';
@@ -121,8 +122,11 @@ export const attachCmdParentInvoker = (
     const { merged } = resolveCliOptions<
       RootOptionsShape & { scripts?: ScriptsTable }
     >(raw, enrichedDefaults, process.env.getDotenvCliOptions);
-    const serviceOptions = getDotenvCliOptions2Options(merged);
-    await cli.resolveAndLoad(serviceOptions);
+    // One composition per run: when the root hooks already composed this
+    // parse's context, the alias runs against it instead of composing again.
+    if (!composedThisParse(parentCmd)) {
+      await cli.resolveAndLoad(getDotenvCliOptions2Options(merged));
+    }
 
     // Build input string and apply optional expansion (by config default).
     const joined =

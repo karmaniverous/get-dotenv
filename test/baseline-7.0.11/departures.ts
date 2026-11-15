@@ -71,4 +71,19 @@ export const departures: Departure[] = [
     issueOrDecision: '#83',
     note: 'As "#83 rootOptionDefaults dynamic": the config is rejected before -z matters.',
   },
+  {
+    case: '#64 compositions',
+    issueOrDecision: '#64',
+    note: 'One composition per run: the config dynamic evaluates once (one DYN-EVAL, not two); the lazy pre-pass no longer runs on a host with root hooks.',
+  },
+  {
+    case: '#64 compositions -z',
+    issueOrDecision: '#64',
+    note: '-z covers the only composition: no DYN-EVAL (the lazy pass that ignored -z is gone).',
+  },
+  {
+    case: '#64 compositions alias',
+    issueOrDecision: '#64',
+    note: 'The -c alias runs against the root composition: one DYN-EVAL, not three.',
+  },
 ];

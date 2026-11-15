@@ -11,6 +11,11 @@ import type { GetDotenvCli } from './GetDotenvCli';
 import type { GetDotenvCliOptions } from './GetDotenvCliOptions';
 import { toHelpConfig } from './helpConfig';
 import { resolveCliOptions } from './resolveCliOptions';
+import {
+  composedThisParse,
+  markComposed,
+  markRootHooks,
+} from './rootHooksState';
 import type { RootOptionsShape, ScriptsTable } from './types';
 
 const dbg = (...args: unknown[]) => {
@@ -63,6 +68,9 @@ export function installRootHooks<TOptions extends GetDotenvOptions>(
   program: GetDotenvCli<TOptions>,
   defaults?: Partial<RootOptionsShape>,
 ): GetDotenvCli<TOptions> {
+  // The root hooks own this program's composition; the lazy resolver stands down.
+  markRootHooks(program);
+
   // Propagate resolved env into the options bag so plugins always see
   // the effective environment as bag.env — no defaulting logic needed downstream.
   const propagateResolvedEnv = (
@@ -129,6 +137,7 @@ export function installRootHooks<TOptions extends GetDotenvOptions>(
     await program.resolveAndLoad(serviceOptions, {
       runAfterResolve: false,
     });
+    markComposed(program);
 
     propagateResolvedEnv(merged);
 
@@ -202,11 +211,15 @@ export function installRootHooks<TOptions extends GetDotenvOptions>(
       }
     )._setOptionsBag(merged as unknown as GetDotenvCliOptions);
 
-    if (!program.hasCtx()) {
+    // One composition per run: preSubcommand composed already in subcommand
+    // flows; a root-only action composes here (a context left from an
+    // earlier parse doesn't count).
+    if (!composedThisParse(program)) {
       const serviceOptions = getDotenvCliOptions2Options(
         merged,
       ) as unknown as Partial<TOptions>;
       await program.resolveAndLoad(serviceOptions, { runAfterResolve: false });
+      markComposed(program);
     }
 
     // Always propagate resolved env into the merged bag — even when
