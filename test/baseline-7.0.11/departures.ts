@@ -140,8 +140,13 @@ export const departures: Departure[] = [
   },
   {
     case: '#51 batch argv quoting',
-    issueOrDecision: '#74',
-    note: "The harness captures (GETDOTENV_STDIO=pipe), so PowerShell's parse error for the cmd.exe-quoted tokens now reaches stderr (win32).",
+    issueOrDecision: '#51',
+    note: "Tokens are quoted for the resolved shell: on win32 (powershell.exe) the child now runs with argv ['a b','x$y','q\"r'] instead of failing on cmd.exe-style quoting. Unchanged on linux.",
+  },
+  {
+    case: '#51 script shell true',
+    issueOrDecision: '#51',
+    note: "shell: true is the OS default shell: on win32 the script runs under powershell.exe (debug line shell 'powershell.exe'; no cmd.exe PROMPT in the child env), on linux under /bin/bash.",
   },
   {
     case: '#75 alias spawn failure',
@@ -152,6 +157,16 @@ export const departures: Departure[] = [
     case: '#75 cmd spawn failure',
     issueOrDecision: '#75',
     note: "Where the command can't spawn (linux: ENOENT), stderr is 'Error: Command failed with ENOENT: ...'. Unchanged on win32, where cmd.exe reports the missing command.",
+  },
+  {
+    case: 'D28 row 02',
+    issueOrDecision: '#75',
+    note: "--shell cmd names a shell linux doesn't have: the spawn failure now reports 'Error: Command failed with ENOENT: node probe.mjs hi' on stderr. Unchanged on win32.",
+  },
+  {
+    case: 'D28 row 06',
+    issueOrDecision: '#75',
+    note: "--shell cmd names a shell linux doesn't have: the spawn failure now reports 'Error: Command failed with ENOENT: node probe.mjs hi' on stderr (and the debug exit line shows 127, not NaN). Unchanged on win32.",
   },
   {
     case: '#79 spaces collapsed',

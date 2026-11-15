@@ -311,7 +311,8 @@ Honor the shared capture contract for CI‑friendly logs:
 
 - Shell‑off (plain exec): prefer argv arrays (especially for `node -e/--eval` payloads) to avoid lossy re‑tokenization and keep code payloads intact.
 - Shell‑on: pass a single string to the selected shell and document quoting rules:
-  - POSIX and PowerShell both treat single quotes as literal and double quotes as interpolating. Recommend single quotes when users want to prevent outer‑shell expansion.
+  - POSIX and PowerShell both treat single quotes as literal and double quotes as interpolating. Recommend single quotes when users want to prevent outer-shell expansion.
+  - When you hand `runCommand`/`runCommandResult` an argv array with a shell, each token is quoted by the target shell's rules (POSIX, `cmd.exe`, PowerShell), and `shell: true` means the OS default shell.
 
 ### Preserve Node `-e/--eval` argv under shell‑off
 

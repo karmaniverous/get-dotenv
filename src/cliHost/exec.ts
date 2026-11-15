@@ -2,6 +2,8 @@ import { execa } from 'execa';
 
 import { tokenize } from '@/src/util';
 
+import { joinForShell, osDefaultShell } from './shell';
+
 const dbg = (...args: unknown[]) => {
   if (process.env.GETDOTENV_DEBUG) {
     // Use stderr to avoid interfering with stdout assertions
@@ -93,26 +95,6 @@ interface ExecNormalizedOptions
 // This is safe for argv arrays passed to execa (no quoting needed) and avoids
 // passing quote characters through to Node (e.g., for `node -e "<code>"`).
 // Handles stacked quotes from shells like PowerShell: """code""" -> code.
-// Shell-quote a single token for safe interpolation when joining an argv
-// array into a command string destined for a shell.  On Windows (cmd.exe)
-// wrap in double quotes when the token contains shell metacharacters; on
-// Unix wrap in single quotes with escaped embedded singles.
-const shellQuoteToken = (s: string): string => {
-  if (process.platform === 'win32') {
-    // cmd.exe: double-quote tokens with special chars.  Inner double
-    // quotes are escaped with backslash (Node/libuv convention).
-    if (/[\s"'&|<>^()!%+,;=]/.test(s)) {
-      return '"' + s.replace(/"/g, '\\"') + '"';
-    }
-    return s;
-  }
-  // POSIX: single-quote tokens with special chars.  Embedded single
-  // quotes break out, add an escaped single, and re-enter.
-  if (/[\s"'&|<>()!$\\`~#;{}[\]*?+]/.test(s)) {
-    return "'" + s.replace(/'/g, "'\\''") + "'";
-  }
-  return s;
-};
 
 const stripOuterQuotes = (s: string): string => {
   let out = s;
@@ -235,17 +217,17 @@ async function _execNormalized(
     }
   }
 
-  // Shell path (string|true|URL): build a single command string for the
-  // target shell.  When the command is an array we shell-quote each token
-  // individually before joining so that metacharacters (spaces, quotes, +,
-  // parentheses, etc.) survive the round-trip through cmd.exe / sh.
+  // Shell path: `true` is the OS default shell (#51). An argv array is
+  // joined into one command string, each token quoted by that shell's rules
+  // so metacharacters (spaces, quotes, $, parentheses, ...) survive.
+  const shellResolved = shell === true ? osDefaultShell() : shell;
   const commandStr: string =
     typeof command === 'string'
       ? command
-      : command.map(shellQuoteToken).join(' ');
+      : joinForShell(command, shellResolved);
   dbg('exec (shell)', {
     command: commandStr,
-    shell: typeof shell === 'string' ? shell : 'custom',
+    shell: typeof shellResolved === 'string' ? shellResolved : 'custom',
     stdio,
   });
   // The shell gets the command string as is (#79): no re-splitting, so runs
@@ -254,7 +236,7 @@ async function _execNormalized(
   try {
     const ok = pickResult(
       await execa(commandStr, {
-        shell,
+        shell: shellResolved,
         ...(opts.cwd !== undefined ? { cwd: opts.cwd } : {}),
         ...envBits,
         stdio,
@@ -285,7 +267,9 @@ export function runCommandResult(
  * Execute a command and capture stdout/stderr (buffered).
  *
  * @param command - Command string (shell) or argv array (shell-off supported).
- * @param shell - Shell setting (false for plain execution).
+ * @param shell - Shell setting: false for plain execution, true for the OS
+ *   default shell (`powershell.exe` on Windows, `/bin/bash` elsewhere), or a
+ *   shell path. An argv array is quoted for that shell.
  * @param opts - Execution options (cwd/env/timeout).
  * @returns A promise resolving to the captured result.
  */
@@ -298,7 +282,9 @@ export function runCommandResult(
  * Execute a command and capture stdout/stderr (buffered).
  *
  * @param command - Command string (shell) or argv array (shell-off supported).
- * @param shell - Shell setting (false for plain execution).
+ * @param shell - Shell setting: false for plain execution, true for the OS
+ *   default shell (`powershell.exe` on Windows, `/bin/bash` elsewhere), or a
+ *   shell path. An argv array is quoted for that shell.
  * @param opts - Execution options (cwd/env/timeout).
  * @returns A promise resolving to the captured result.
  */
@@ -341,7 +327,9 @@ const writeBuffered = (stream: NodeJS.WriteStream, text: string): void => {
  * Execute a command and return its exit code.
  *
  * @param command - Command string (shell) or argv array (shell-off supported).
- * @param shell - Shell setting (false for plain execution).
+ * @param shell - Shell setting: false for plain execution, true for the OS
+ *   default shell (`powershell.exe` on Windows, `/bin/bash` elsewhere), or a
+ *   shell path. An argv array is quoted for that shell.
  * @param opts - Execution options (cwd/env/stdio).
  * @returns A promise resolving to the process exit code. When the child
  * never ran, `Error: <message>` is written to stderr and the code is 127
@@ -356,7 +344,9 @@ export function runCommand(
  * Execute a command and return its exit code.
  *
  * @param command - Command string (shell) or argv array (shell-off supported).
- * @param shell - Shell setting (false for plain execution).
+ * @param shell - Shell setting: false for plain execution, true for the OS
+ *   default shell (`powershell.exe` on Windows, `/bin/bash` elsewhere), or a
+ *   shell path. An argv array is quoted for that shell.
  * @param opts - Execution options (cwd/env/stdio).
  * @returns A promise resolving to the process exit code. When the child
  * never ran, `Error: <message>` is written to stderr and the code is 127
@@ -371,7 +361,9 @@ export function runCommand(
  * Execute a command and return its exit code.
  *
  * @param command - Command string (shell) or argv array (shell-off supported).
- * @param shell - Shell setting (false for plain execution).
+ * @param shell - Shell setting: false for plain execution, true for the OS
+ *   default shell (`powershell.exe` on Windows, `/bin/bash` elsewhere), or a
+ *   shell path. An argv array is quoted for that shell.
  * @param opts - Execution options (cwd/env/stdio).
  * @returns A promise resolving to the process exit code. When the child
  * never ran, `Error: <message>` is written to stderr and the code is 127

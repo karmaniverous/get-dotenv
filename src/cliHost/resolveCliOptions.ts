@@ -1,6 +1,7 @@
 import { defaultsDeep } from '@/src/util';
 
 import { resolveExclusion, resolveToggle, setOptionalFlag } from './flagUtils';
+import { osDefaultShell } from './shell';
 import type { RootOptionsShape, ScriptsTable } from './types';
 
 /**
@@ -141,15 +142,13 @@ export const resolveCliOptions = <T extends ResolveCliOptionsShape>(
   // Normalize shell for predictability: -S (or a `false` from any layer,
   // such as a parent's -S) gives no shell; a string is kept; `true` or
   // unset gives the OS default shell.
-  const defaultShell =
-    process.platform === 'win32' ? 'powershell.exe' : '/bin/bash';
   const shell = merged.shell;
   merged.shell =
     shellOff === true || shell === false
       ? false
       : typeof shell === 'string'
         ? shell
-        : defaultShell;
+        : osDefaultShell();
 
   const cmd = typeof command === 'string' ? command : undefined;
   return cmd !== undefined ? { merged, command: cmd } : { merged };

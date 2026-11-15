@@ -10,7 +10,7 @@ This page documents the root shell behavior controlled by the host’s global `-
 
 ## Resolution rules
 
-- `--shell` (or `shell: true`): use a normalized default shell
+- `--shell` (or `shell: true`): use a normalized default shell. `shell: true` means this shell wherever it is set: the root, a script entry, plugin config, or a direct `runCommand(..., true)`.
   - POSIX: `/bin/bash`
   - Windows: `powershell.exe`
 - `--shell <string>`: use the provided shell (e.g., `/bin/zsh`)
@@ -66,6 +66,7 @@ TypeScript note: When you author scripts in code, a helper `defineScripts<TShell
 
 - POSIX shells: prefer single quotes when possible; escape `$` for literal dollar signs.
 - PowerShell: double-quotes perform interpolation; single quotes are literal.
+- Argv forms (batch positionals, the aws forward) are joined into one string for the shell with each token quoted by that shell's own rules: single quotes for POSIX shells and PowerShell, double quotes for `cmd.exe`. A PowerShell command name that needs quotes runs through the call operator (`& '...'`).
 
 ## Nested CLI behavior
 
