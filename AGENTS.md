@@ -1,6 +1,6 @@
 # AGENTS.md
 
-Standing rules for every agent (human or AI) working on a pull request in this repository. They apply to every step of the get-dotenv 8.0.0 dev plan (one branch, `feature/8-0-0`, and one PR) and stay until replaced. Each step's brief says "follow AGENTS.md"; these rules are part of every step.
+Standing rules for every agent (human or AI) working on a pull request in this repository. They apply to every step of the get-dotenv 8.0.0 dev plan (one branch, `feature/gh-44-get-dotenv-8`, and one PR, [#93](https://github.com/karmaniverous/get-dotenv/pull/93)) and stay until replaced. Each step's brief says "follow AGENTS.md"; these rules are part of every step.
 
 ## Source of truth
 
@@ -58,10 +58,11 @@ The finishing step (S15) runs the `jeeves-pr-review` passes. Their results go in
 
 - Branch names follow `.lefthook/pre-commit/branch-naming-policy` (`feature/`, `bugfix/`, `chore/`, `docs/`, `hotfix/`; no dots).
 - Conventional Commits. Commit in logical steps, and **push after every commit**.
+- The `add-issue` commit hook prefixes every commit message with `[GH-44]`, taken from the branch name. That prefix is intended: commit normally, and never skip or exclude a hook.
 - Immediately before **every** push, run:
 
   ```bash
-  gh pr list --repo karmaniverous/get-dotenv --head feature/8-0-0 --state all --json number,state
+  gh pr list --repo karmaniverous/get-dotenv --head feature/gh-44-get-dotenv-8 --state all --json number,state
   ```
 
   If the newest PR on the branch is `MERGED` or `CLOSED`, stop and report; don't push.
