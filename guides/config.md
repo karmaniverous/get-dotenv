@@ -73,6 +73,16 @@ TS support:
 - scripts belongs at the top level only. Do not nest scripts inside rootOptionDefaults.
 - dynamic and schema are JS/TS‑only. JSON/YAML loader rejects them.
 
+### ON/OFF flags
+
+Each ON/OFF family (`-p`/`-P` `loadProcess`, `-l`/`-L` `log`, `--debug`/`--debug-off`, `--redact`/`--redact-off`, `--entropy-warn`/`--entropy-warn-off` `warnEntropy`, and the five exclusions `-z`/`-Z`, `-n`/`-N`, `-g`/`-G`, `-r`/`-R`, `-u`/`-U`) resolves the same way:
+
+- an explicit ON flag turns it on;
+- an explicit OFF flag turns it off, even when `rootOptionDefaults` (or a built-in default, such as `loadProcess: true` and `warnEntropy: true`) turns it on;
+- with neither flag, the value comes from the defaults.
+
+For the exclusions, an individual flag (`-r`, `-R`, …) beats `-a/--exclude-all` and `-A/--exclude-all-off`, which beat the defaults.
+
 ## Privacy
 
 Config privacy derives from the filename suffix:
