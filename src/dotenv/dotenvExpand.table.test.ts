@@ -25,7 +25,8 @@ const rows: Record<string, Row[]> = {
     ['backslash pair before $', 'a\\\\$A', A, 'a\\$A'],
     ['backslash not before $ stays', 'a\\nb', A, 'a\\nb'],
     ['escape inside a braced default', '${B:\\$A}', A, '$A'],
-    ['escape inside a referenced value', '$E', { E: 'p\\$A' }, 'p$A'],
+    // #94: a referenced value is already composed, so it is kept as is.
+    ['escape inside a referenced value', '$E', { E: 'p\\$A' }, 'p\\$A'],
   ],
   literalDollar: [
     // #86: a $ that starts no reference no longer stops expansion.
@@ -55,35 +56,35 @@ const rows: Record<string, Row[]> = {
     ['empty value is used, not the default', '[${E:d}]', { E: '' }, '[]'],
     ['empty default', '[${B:}]', A, '[]'],
     ['unknown, isolated', '$U', A, undefined],
+    ['inherited property is unset', '${toString:d}', A, 'd'],
     ['unknown, embedded', 'a $U b', A, 'a  b'],
     ['empty input', '', A, undefined],
   ],
   nested: [
-    ['referenced value is expanded', '$R', { R: '$S', S: 'y' }, 'y'],
-    ['chain', '${R}!', { R: '${S}-', S: '$T', T: 'z' }, 'z-!'],
+    // #94: a referenced value is composed: it is never expanded again.
+    ['referenced value is not expanded', '$R', { R: '$S', S: 'y' }, '$S'],
+    ['no chain', '${R}!', { R: '${S}-', S: '$T', T: 'z' }, '${S}-!'],
     ['reference in a braced default', '${B:${A}}', A, 'x'],
     ['nested braced defaults', '${B:${C:${A}}}', A, 'x'],
     ['default around a reference', '${B:pre-${A}-post}', A, 'pre-x-post'],
     ['reference in an unbraced default', '$B:$A', A, 'x'],
     ['default unused when set', '${A:${NOPE:z}}', A, 'x'],
     ['brace in a default', '${B:{y}}', A, '{y}'],
-    ['same name twice', '$R$R', { R: '$S', S: 'y' }, 'yy'],
+    ['same name twice', '$R$R', { R: '$S', S: 'y' }, '$S$S'],
     // #78: a substituted value is spliced in, never re-scanned with the text
     // around it, so `$` + `C` does not form a new reference to C.
     ['result is not re-scanned', '$D$C', { D: '$', C: 'C' }, '$C'],
   ],
   cycles: [
-    // #78: a reference to a variable already being expanded counts as unset.
-    ['self reference', '$SELF', { SELF: '$SELF' }, undefined],
-    ['self reference, embedded', '$SELF', { SELF: 'a${SELF}b' }, 'ab'],
-    [
-      'self reference takes its default',
-      '$P',
-      { P: '${P:/usr/bin}:/x' },
-      '/usr/bin:/x',
-    ],
-    ['mutual reference', '$M', { M: 'a$N', N: 'b$M' }, 'ab'],
-    ['three-way cycle', '$X', { X: '1$Y', Y: '2$Z', Z: '3$X' }, '123'],
+    // #78 overflowed on these; #94 never follows a reference inside a
+    // referenced value, so there is no cycle to follow.
+    ['self reference', '$SELF', { SELF: '$SELF' }, '$SELF'],
+    ['self reference, embedded', '$SELF', { SELF: 'a${SELF}b' }, 'a${SELF}b'],
+    ['mutual reference', '$M', { M: 'a$N', N: 'b$M' }, 'a$N'],
+    ['three-way cycle', '$X', { X: '1$Y', Y: '2$Z', Z: '3$X' }, '1$Y'],
+    // A default can't reach a cycle: it is expanded, but what it references
+    // is substituted verbatim.
+    ['default references itself', '${U:${U:d}}', A, 'd'],
   ],
   replacementPatterns: [
     // #78: String.replace patterns in a substituted value are not applied.
@@ -91,10 +92,9 @@ const rows: Record<string, Row[]> = {
     ['$& spliced mid-text', 'pre $P post', { P: 'x$&y' }, 'pre x$&y post'],
     ["$' and $` in a value", '$P', { P: "a$'b$`c" }, "a$'b$`c"],
     ['trailing $$ in a value', '$P', { P: 'a$$' }, 'a$$'],
-    ['escaped $$ in a value', '$P', { P: 'a\\$\\$b' }, 'a$$b'],
-    // A referenced value is expanded like any value: `$$b` is a literal `$`
-    // followed by a reference to b.
-    ['$$name in a value', '$P', { P: 'a$$b', b: 'B' }, 'a$B'],
+    // #94: a referenced value is spliced in verbatim, escapes and all.
+    ['escaped $$ in a value', '$P', { P: 'a\\$\\$b' }, 'a\\$\\$b'],
+    ['$$name in a value', '$P', { P: 'a$$b', b: 'B' }, 'a$$b'],
   ],
 };
 
@@ -108,15 +108,32 @@ describe('dotenvExpand table', () => {
   }
 
   it('never overflows on a self-referencing map (dotenvExpandAll)', () => {
-    // A value's own key is not marked as being expanded (so `PATH=$PATH:/x`
-    // still reads an ambient PATH); the cycle is cut at the first variable
-    // that repeats.
+    // #94: the reference map holds composed values, substituted verbatim, so
+    // a raw map passed as `ref` is never followed into a cycle.
     const raw = { SELF: '$SELF', A: 'a$B', B: 'b$A' };
     expect(dotenvExpandAll(raw, { ref: raw })).toEqual({
-      SELF: undefined,
-      A: 'aba',
-      B: 'bab',
+      SELF: '$SELF',
+      A: 'ab$A',
+      B: 'ba$B',
     });
+  });
+
+  it('progressive: a key references an earlier key verbatim (#94)', () => {
+    expect(
+      dotenvExpandAll(
+        { P: '\\$5', Q: '$P', R: '${P}x', S: '$Q' },
+        { ref: {}, progressive: true },
+      ),
+    ).toEqual({ P: '$5', Q: '$5', R: '$5x', S: '$5' });
+  });
+
+  it('progressive: a key being expanded sees the value composed before it', () => {
+    expect(
+      dotenvExpandAll(
+        { P: '${P:/usr/bin}:/x', Q: '${Q:/usr/bin}:/x' },
+        { ref: { P: '/a' }, progressive: true },
+      ),
+    ).toEqual({ P: '/a:/x', Q: '/usr/bin:/x' });
   });
 
   it('progressive: a later key in the same pass is not yet visible', () => {

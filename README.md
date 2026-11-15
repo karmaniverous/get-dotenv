@@ -13,7 +13,7 @@
 get‑dotenv helps you:
 
 - Load and merge env vars from a deterministic cascade (global/env × public/private) across multiple paths.
-- Expand values recursively with defaults.
+- Expand values with defaults; a referenced value is used as composed, never expanded twice.
 - Add dynamic variables (JS/TS) that compute from the composed env.
 - Run commands with normalized shell behavior and a consistent child environment.
 - Compose your own CLI from shipped plugins or your own.

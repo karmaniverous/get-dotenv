@@ -127,7 +127,7 @@ By the time plugins run, `bag.env` is always the fully resolved environment — 
 There are three distinct expansion stages:
 
 - Root option parse-time expansion (CLI only): selected root option values (for example `--env`, `--output-path`, `--dotenv-token`, `--private-token`, `--dynamic-path`, `--paths`) are dotenv-expanded once against `process.env` via an option parser; they do not see `{ ...ctx.dotenv }`. `--vars` is not one of them: its values are expanded once, in the vars layer, so `-v 'P=\$5'` sets `P` to `$5`.
-- Dotenv/config composition expansion (host): dotenv values from files, config `vars`/`envVars` and explicit vars (`--vars`, programmatic `vars`) are expanded progressively during composition, each against `process.env` overlaid with the values composed so far (composed values win); later keys can reference earlier ones.
+- Dotenv/config composition expansion (host): dotenv values from files, config `vars`/`envVars` and explicit vars (`--vars`, programmatic `vars`) are expanded progressively during composition, each against `process.env` overlaid with the values composed so far (composed values win); later keys can reference earlier ones. A referenced value is substituted verbatim, as composed, and never expanded again: with `.env` `P=\$5`, config `vars: { Q: '$P' }` gives `Q=$5`. While a key is being expanded, a reference to it sees the value composed before it, else counts as unset.
 - Per-plugin interpolation: before validation and `afterResolve`, the host deep-interpolates each plugin’s config slice (string leaves only) once against `{ ...ctx.dotenv, ...process.env }` (process.env wins).
 
 Notes:

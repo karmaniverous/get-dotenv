@@ -14,7 +14,7 @@ This is a compact, self-contained guide for STAN assistants to use `@karmanivero
 
 ## What this library does (mental model)
 
-`get-dotenv` composes an environment (`ProcessEnv`) from multiple sources deterministically, expands references recursively, optionally applies dynamic variables, and then lets you (a) use the final map programmatically, (b) run commands under it via a cross-platform CLI, or (c) build your own plugin-based CLI host that resolves env once per invocation.
+`get-dotenv` composes an environment (`ProcessEnv`) from multiple sources deterministically, expands references (with defaults), optionally applies dynamic variables, and then lets you (a) use the final map programmatically, (b) run commands under it via a cross-platform CLI, or (c) build your own plugin-based CLI host that resolves env once per invocation.
 
 Key idea: treat the “resolved dotenv context” (`ctx.dotenv`) as the source of truth, and do not rely on `process.env` being mutated unless you explicitly enable it.
 
@@ -73,7 +73,7 @@ This is a compact, self-contained guide for STAN assistants to use `@karmanivero
 
 ## What this library does (mental model)
 
-`get-dotenv` composes an environment (`ProcessEnv`) from multiple sources deterministically, expands references recursively, optionally applies dynamic variables, and then lets you (a) use the final map programmatically, (b) run commands under it via a cross-platform CLI, or (c) build your own plugin-based CLI host that resolves env once per invocation.
+`get-dotenv` composes an environment (`ProcessEnv`) from multiple sources deterministically, expands references (with defaults), optionally applies dynamic variables, and then lets you (a) use the final map programmatically, (b) run commands under it via a cross-platform CLI, or (c) build your own plugin-based CLI host that resolves env once per invocation.
 
 Key idea: treat the “resolved dotenv context” (`ctx.dotenv`) as the source of truth, and do not rely on `process.env` being mutated unless you explicitly enable it.
 
@@ -109,9 +109,9 @@ For each path, up to four files are merged in this order (later wins):
 
 Missing files are silently ignored.
 
-## Expansion syntax (recursive, with defaults)
+## Expansion syntax (with defaults)
 
-Expansion happens recursively in strings:
+Expansion happens in strings:
 
 - `$VAR[:default]`
 - `${VAR[:default]}`
@@ -119,8 +119,8 @@ Expansion happens recursively in strings:
 - Unknown variables expand to an empty string unless a default is provided; a value that is empty after expansion is `undefined`.
 - `\$` is a literal `$`, and a `$` that starts no reference (`cost $`, `$!`) stays literal while the other references in the value still expand.
 - The unbraced default runs to the next whitespace, so `http://$HOST:8080` reads `8080` as `HOST`'s default: write `http://${HOST}:8080`. There is no `:-` form (`${A:-x}` has the default `-x`).
-- A referenced value is itself expanded by the same rules, and so is a default (`${A:${B}}`). Each substituted value is spliced in as-is: it is never re-scanned with the surrounding text, and `$&`/`$$` in it have no special meaning.
-- A reference to a variable that is already being expanded (a self or mutual reference) counts as unset: it takes its default, else the empty string. With `SELF=$SELF`, `$SELF` expands to `undefined`; with `P=${P:/usr/bin}:/x`, `$P` expands to `/usr/bin:/x`.
+- Each value is expanded once. A referenced value has already been composed, so it is substituted verbatim and never expanded again, whether it comes from a dotenv file, config `vars`/`envVars`, `-v` or `process.env`: with `P=\$5`, `Q=$P` and `R=${P}x` give `Q=$5` and `R=$5x`. A default is expanded by the same rules (`${A:${B}}`). Each substituted value is spliced in as-is: it is never re-scanned with the surrounding text, and `$&`/`$$` in it have no special meaning.
+- A value never sees itself. While a key is being expanded, a reference to it resolves to the value composed before it (`process.env` or an earlier layer); if there is none, it counts as unset and takes its default, else the empty string. So `P=${P:/usr/bin}:/x` appends to an ambient `P`, and gives `/usr/bin:/x` when nothing earlier sets `P`.
 
 Use helpers when you need the exact semantics:
 

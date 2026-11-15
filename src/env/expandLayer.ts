@@ -19,7 +19,8 @@ export interface ExpandLayerResult {
  *
  * The layer is expanded against `process.env` overlaid with the values
  * composed so far (composed values win), the same reference as the file
- * cascade.
+ * cascade. A referenced value is substituted verbatim: it was composed by an
+ * earlier layer (or is ambient) and is never expanded again (#94).
  *
  * @param current - The values composed so far.
  * @param kv - The layer's raw values.

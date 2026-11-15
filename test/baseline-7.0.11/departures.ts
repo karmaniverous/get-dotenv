@@ -318,4 +318,10 @@ export const departures: Departure[] = [
     issueOrDecision: '#90',
     note: "'constructor' is not a script: it runs as typed (shell off), and the 'not recognized' error reaches stderr under capture (#74).",
   },
+  // S6b: follow-ups after S7
+  {
+    case: '#78 expansion',
+    issueOrDecision: '#94',
+    note: "Supersedes the #78 entry: a referenced value is substituted verbatim, never expanded again, so '$PW' with PW='a$$b' gives 'a$$b' and '$SELF' with SELF='$SELF' gives '$SELF'. '\\$A $A' still gives '$A x' and 'x$&y' is still spliced in unchanged (#78).",
+  },
 ];

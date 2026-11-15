@@ -15,14 +15,17 @@ import type { ProcessEnv } from '@/src/core';
  * - `\$` is a literal `$`.
  * - A `$` that starts no reference stays literal.
  * - A reference to a set variable is replaced by that variable's value,
- *   itself expanded by these rules; otherwise by its default, expanded;
- *   otherwise by the empty string.
- * - A substituted value is spliced in as-is: it is not re-scanned with the
- *   surrounding text, and `$&`, `$$` and the other `String.replace` patterns
- *   have no special meaning.
- * - A reference to a variable that is already being expanded (`SELF=$SELF`,
- *   or `A=$B` with `B=$A`) counts as unset: it takes its default, else the
- *   empty string. So `P=${P:/usr/bin}:/x` expands to `/usr/bin:/x`.
+ *   verbatim; otherwise by its default, expanded; otherwise by the empty
+ *   string.
+ * - A referenced value is a composed value: it has already been expanded
+ *   once, so it is spliced in as-is and never expanded again (#94). It is not
+ *   re-scanned with the surrounding text either, and `$&`, `$$` and the other
+ *   `String.replace` patterns have no special meaning.
+ * - A value never sees itself: while a key is being expanded it is not in
+ *   the reference map, so a reference to it (`SELF=$SELF`) resolves to the
+ *   value composed before it, else counts as unset and takes its default.
+ *   So `P=${P:/usr/bin}:/x` expands to `/usr/bin:/x` when nothing earlier
+ *   sets `P`.
  */
 
 /** A reference parsed at a `$`. */
@@ -79,14 +82,10 @@ const parseReference = (text: string, at: number): Reference | undefined => {
 };
 
 /**
- * Expand `text` against `ref`. `active` holds the variables whose values are
- * being expanded further up the stack.
+ * Expand `text` against `ref`. Referenced values are substituted verbatim;
+ * only defaults are expanded further.
  */
-const expandText = (
-  text: string,
-  ref: ProcessEnv,
-  active: ReadonlySet<string>,
-): string => {
+const expandText = (text: string, ref: ProcessEnv): string => {
   let out = '';
   let i = 0;
   while (i < text.length) {
@@ -102,10 +101,10 @@ const expandText = (
       continue;
     }
     const { name, fallback, end } = reference;
-    const value = active.has(name) ? undefined : ref[name];
-    if (value !== undefined)
-      out += expandText(value, ref, new Set(active).add(name));
-    else if (fallback !== undefined) out += expandText(fallback, ref, active);
+    // A plain-object ref inherits `toString` and the like: only a string is set.
+    const value: unknown = ref[name];
+    if (typeof value === 'string') out += value;
+    else if (fallback !== undefined) out += expandText(fallback, ref);
     i = end;
   }
   return out;
@@ -129,10 +128,12 @@ const expandText = (
  * ```
  *
  * @remarks
- * Expansion is recursive: a referenced value that itself contains references
- * is expanded by the same rules, and so is a default. The text is scanned once,
- * left to right, and each substituted value is spliced in as-is (it is not
- * re-scanned with the text around it):
+ * `ref` holds composed values: each has already been expanded once, so a
+ * referenced value is substituted verbatim and never expanded again (#94).
+ * With `ref = { P: '$5' }`, `$P` expands to `$5`. Only a default is expanded,
+ * by the same rules. The text is scanned once, left to right, and each
+ * substituted value is spliced in as-is (it is not re-scanned with the text
+ * around it):
  *
  * - `\$` is a literal `$`.
  * - A `$` that starts no reference (`cost $`, `$!`) stays literal, and the
@@ -142,16 +143,17 @@ const expandText = (
  *   `${A:-x}` has the default `-x`.
  * - A variable set to the empty string is used as is; only an unset variable
  *   takes its default.
- * - A reference to a variable that is already being expanded (a self or
- *   mutual reference) counts as unset: it takes its default, else the empty
- *   string. With `SELF=$SELF`, `$SELF` expands to `undefined`; with
- *   `P=${P:/usr/bin}:/x`, `$P` expands to `/usr/bin:/x`.
+ * - A value never sees itself: a key that is being expanded is not yet in
+ *   the reference map ({@link dotenvExpandAll} adds it only once it is
+ *   expanded), so a reference to it resolves to the value composed before
+ *   it, else counts as unset. With nothing earlier setting `P`,
+ *   `P=${P:/usr/bin}:/x` expands to `/usr/bin:/x`.
  */
 export const dotenvExpand = (
   value: string | undefined,
   ref: ProcessEnv = process.env,
 ): string | undefined => {
-  const result = value ? expandText(value, ref, new Set()) : '';
+  const result = value ? expandText(value, ref) : '';
   return result || undefined;
 };
 
@@ -172,7 +174,7 @@ export interface DotenvExpandAllOptions {
 }
 
 /**
- * Recursively expands environment variables in the values of a JSON object.
+ * Expands environment variables in the values of a JSON object.
  * Variables may be presented with optional default as `$VAR[:default]` or
  * `${VAR[:default]}`. Unknown variables will expand to an empty string.
  *
@@ -196,7 +198,9 @@ export interface DotenvExpandAllOptions {
  * When `progressive` is true, each expanded key becomes available for
  * subsequent expansions in the same object (left-to-right by object key order).
  *
- * Each value is expanded by the rules of {@link dotenvExpand}.
+ * Each value is expanded by the rules of {@link dotenvExpand}. A key that
+ * references an earlier key gets that key's expanded value verbatim, so with
+ * `{ P: '\\$5', Q: '$P' }` both are `$5` (#94).
  */
 export function dotenvExpandAll<T extends ProcessEnv | Readonly<ProcessEnv>>(
   values: T,
@@ -219,8 +223,8 @@ export function dotenvExpandAll<T extends ProcessEnv | Readonly<ProcessEnv>>(
 }
 
 /**
- * Recursively expands environment variables in a string using `process.env` as
- * the expansion reference. Variables may be presented with optional default as
+ * Expands environment variables in a string using `process.env` as the
+ * expansion reference; a `process.env` value is substituted verbatim (#94). Variables may be presented with optional default as
  * `$VAR[:default]` or `${VAR[:default]}`. Unknown variables will expand to an
  * empty string.
  *
