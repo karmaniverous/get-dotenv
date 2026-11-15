@@ -370,12 +370,15 @@ export class GetDotenvCli<
 
   /**
    * Run afterResolve hooks for registered plugins (parent → children).
-   * When {@link commandPath} is provided, only the matching branch of the
+   * When `commandPath` is provided, only the matching branch of the
    * plugin tree runs; otherwise all plugins run (backward compatibility).
    *
    * The path is walked segment-by-segment against the plugin tree.
    * Intermediate matches run their own afterResolve hook.
    * The deepest match runs afterResolve for itself and all its descendants.
+   *
+   * @param ctx - The resolved host context passed to each hook.
+   * @param commandPath - Command names from the root to the invoked command.
    */
   async _runAfterResolve(
     ctx: GetDotenvCliCtx<TOptions>,
