@@ -122,4 +122,9 @@ export const departures: Departure[] = [
     issueOrDecision: '#61',
     note: 'Env validation runs once per run: stderr has one "[requiredKeys] missing: MISSING_KEY" line, not two.',
   },
+  {
+    case: '#82 empty env',
+    issueOrDecision: '#82',
+    note: "getDotenv({ env: '', defaultEnv: 'dev' }) reads .env.dev and .env.dev.local (XLOCAL 'dev', STAGE 'dev'), not .env..local.",
+  },
 ];

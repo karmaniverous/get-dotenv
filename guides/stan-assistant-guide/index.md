@@ -211,7 +211,7 @@ console.log(env.APP_SETTING);
 All options are optional; important ones:
 
 - Selection:
-  - `env?: string` and/or `defaultEnv?: string` (used when `env` not provided)
+  - `env?: string` and/or `defaultEnv?: string` (used when `env` is not provided or is empty)
   - `paths?: string[]` (ordered)
   - `dotenvToken?: string` (default `.env`)
   - `privateToken?: string` (default `local`)

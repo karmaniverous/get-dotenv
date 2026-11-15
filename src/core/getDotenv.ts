@@ -10,6 +10,7 @@ import {
 import { dotenvExpandAll } from '@/src/dotenv';
 import { applyDynamicMap, loadAndApplyDynamic } from '@/src/env/dynamic';
 import { loadProcessEnv } from '@/src/env/loadProcessEnv';
+import { resolveEnvName } from '@/src/env/resolveEnvName';
 import { writeDotenvFile } from '@/src/util';
 
 import type { GetDotenvOptions, ProcessEnv } from './GetDotenvOptions';
@@ -83,6 +84,9 @@ export async function getDotenv(
     vars = {},
   } = await resolveGetDotenvOptions(options);
 
+  // An empty env counts as unset (#82).
+  const envName = resolveEnvName(env, defaultEnv);
+
   // Read .env files.
   const loaded = paths.length
     ? await paths.reduce<Promise<ProcessEnv>>(async (e, p) => {
@@ -92,11 +96,9 @@ export async function getDotenv(
             : readDotenv(path.resolve(p, dotenvToken));
 
         const publicEnv =
-          excludePublic || excludeEnv || (!env && !defaultEnv)
+          excludePublic || excludeEnv || !envName
             ? Promise.resolve({})
-            : readDotenv(
-                path.resolve(p, `${dotenvToken}.${env ?? defaultEnv ?? ''}`),
-              );
+            : readDotenv(path.resolve(p, `${dotenvToken}.${envName}`));
 
         const privateGlobal =
           excludePrivate || excludeGlobal
@@ -104,13 +106,10 @@ export async function getDotenv(
             : readDotenv(path.resolve(p, `${dotenvToken}.${privateToken}`));
 
         const privateEnv =
-          excludePrivate || excludeEnv || (!env && !defaultEnv)
+          excludePrivate || excludeEnv || !envName
             ? Promise.resolve({})
             : readDotenv(
-                path.resolve(
-                  p,
-                  `${dotenvToken}.${env ?? defaultEnv ?? ''}.${privateToken}`,
-                ),
+                path.resolve(p, `${dotenvToken}.${envName}.${privateToken}`),
               );
 
         const [
@@ -154,11 +153,7 @@ export async function getDotenv(
     // A2 precedence: programmatic dynamic < dynamicPath (dynamicPath wins when present)
     if (options.dynamic && Object.keys(options.dynamic).length > 0) {
       try {
-        for (const k of applyDynamicMap(
-          dotenv,
-          options.dynamic,
-          env ?? defaultEnv,
-        ))
+        for (const k of applyDynamicMap(dotenv, options.dynamic, envName))
           deletedKeys.add(k);
       } catch {
         throw new Error(`Unable to evaluate dynamic variables.`);
@@ -170,7 +165,7 @@ export async function getDotenv(
       for (const k of await loadAndApplyDynamic(
         dotenv,
         absDynamicPath,
-        env ?? defaultEnv,
+        envName,
         'getdotenv-dynamic',
       ))
         deletedKeys.add(k);
