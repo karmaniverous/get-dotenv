@@ -699,7 +699,7 @@
     "exitCode": 0,
     "source": "4.4 row 10",
     "stderr": "",
-    "stdout": "\n***********************************************************************\nExecuting command batch...\n\nROOT:  <TMP>/\nGLOBS: *\nCMD:   node probe.mjs\n\n***************************************************************************\nCWD:   <TMP>/pkgA\nCMD:   node probe.mjs\nprobe: []\n\n***************************************************************************\nCWD:   <TMP>/pkgB\nCMD:   node probe.mjs\nprobe: []\n\n"
+    "stdout": "\n<STARS>\nExecuting command batch...\n\nROOT:  <TMP>/\nGLOBS: *\nCMD:   node probe.mjs\n\n<STARS>\nCWD:   <TMP>/pkgA\nCMD:   node probe.mjs\nprobe: []\n\n<STARS>\nCWD:   <TMP>/pkgB\nCMD:   node probe.mjs\nprobe: []\n\n"
   },
   "4.4 row 11": {
     "argv": ["vc", "--env=bali", "-h"],
@@ -1739,7 +1739,7 @@
     "processExitCalled": true,
     "source": "help",
     "stderr": "",
-    "stdout": "vc v<VERSION>\n\n\nUsage: vc batch [options] [command] [command...]\n\nBatch command execution across multiple working directories.\n\nOptions:\n  -c, --command <string>    command executed according to the base shell\n                            resolution\n  -C, --concurrency <n>     max concurrent executions in parallel mode (default:\n                            8)\n  -e, --ignore-errors       ignore errors and continue with next path\n  -g, --globs <string>      space-delimited globs from root path (default: \"*\")\n  -l, --list                list working directories without executing command\n  -P, --parallel            execute commands in parallel across directories\n  -p, --pkg-cwd             use nearest package directory as current working\n                            directory\n  -r, --root-path <string>  path to batch root directory from current working\n                            directory (default: \"./\")\n\nCommands:\n  cmd [command...]          execute command, conflicts with --command option\n                            (default subcommand)\n\n\n"
+    "stdout": "vc v<VERSION>\n\n\nUsage: vc batch [options] [command] [command...]\n\nBatch command execution across multiple working directories.\n\nOptions:\n  -c, --command <string>    command executed according to the base shell\n                            resolution\n  -C, --concurrency <n>     max concurrent executions in parallel mode (default:\n                            <CPUS>)\n  -e, --ignore-errors       ignore errors and continue with next path\n  -g, --globs <string>      space-delimited globs from root path (default: \"*\")\n  -l, --list                list working directories without executing command\n  -P, --parallel            execute commands in parallel across directories\n  -p, --pkg-cwd             use nearest package directory as current working\n                            directory\n  -r, --root-path <string>  path to batch root directory from current working\n                            directory (default: \"./\")\n\nCommands:\n  cmd [command...]          execute command, conflicts with --command option\n                            (default subcommand)\n\n\n"
   },
   "help vc batch cmd": {
     "argv": ["vc", "batch", "cmd", "-h"],

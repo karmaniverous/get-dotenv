@@ -145,6 +145,10 @@ export const normalizeText = (input: string): string => {
  */
 export const normalizeStream = (input: string): string =>
   normalizeText(input.replace(/\r\n/g, '\n'))
+    // batch banners: rules of `*` sized to the (temp) path being printed.
+    .replace(/^\*{10,}$/gm, '<STARS>')
+    // batch --concurrency defaults to the machine's available parallelism.
+    .replace(/(--concurrency <n>[^(]*\(default:\s*)\d+\)/g, '$1<CPUS>)')
     // `--trace` with no keys lists every ambient variable, which differs by
     // machine (and may hold secrets): keep one marker line per run of them.
     .replace(
