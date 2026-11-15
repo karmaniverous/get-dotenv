@@ -477,7 +477,7 @@ Note: `runCommand()` re-emits buffered stdout when using `stdio: 'pipe'`; stderr
 
 Use shared helpers:
 
-- `resolveCommand(scripts, input)` resolves `scripts[input]` (string or `{ cmd }`) or returns `input`.
+- `resolveCommand(scripts, input)` resolves `scripts[input]` (string or `{ cmd }`) or returns `input`. Only the table's own keys count: an inherited property name such as `toString` returns `input`.
 - `resolveShell(scripts, input, rootShell)` uses `scripts[input].shell` if object form, else uses `rootShell` (or false when absent).
 
 ### Shell-off + `node -e` (avoid lossy tokenization)

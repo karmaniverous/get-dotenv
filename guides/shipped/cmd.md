@@ -82,7 +82,7 @@ Use `--trace [keys...]` to print concise lines to stderr before spawning the chi
 
 ## Scripts table and shell overrides
 
-Commands may resolve via `scripts[name]`. When `scripts[name]` is the object form `{ cmd, shell }`, the effective shell is `scripts[name].shell` (and when omitted, the script currently runs with shell-off rather than inheriting the root shell):
+Commands may resolve via `scripts[name]`; only the table's own keys are script names, so `getdotenv toString` runs `toString` as typed. When `scripts[name]` is the object form `{ cmd, shell }`, the effective shell is `scripts[name].shell` (and when omitted, the script currently runs with shell-off rather than inheriting the root shell):
 
 ```json
 {

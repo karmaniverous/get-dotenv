@@ -228,7 +228,7 @@ Presentation‑only diagnostics help audit values without altering runtime behav
 
 ## Scripts table (optional)
 
-You can define a scripts table in config. Script strings are resolved by the `cmd` and `batch` commands. If you want a named script to inherit the root shell behavior, use the string form; the object form `{ cmd, shell }` uses `shell` as the effective shell for that entry (and when omitted, the script currently runs with shell-off rather than inheriting the root shell):
+You can define a scripts table in config. Script strings are resolved by the `cmd` and `batch` commands. Only the table's own keys are script names: a command named after an inherited object property (`toString`, `constructor`) runs as typed. If you want a named script to inherit the root shell behavior, use the string form; the object form `{ cmd, shell }` uses `shell` as the effective shell for that entry (and when omitted, the script currently runs with shell-off rather than inheriting the root shell):
 
 ```json
 {
