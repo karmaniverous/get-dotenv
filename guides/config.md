@@ -48,6 +48,7 @@ JSON/YAML (data only, always-on; no-op when no files are present):
     - Diagnostics: `log`, `debug`, `trace`, `strict`.
     - Redaction: `redact`, `redactPatterns`.
     - Entropy: `warnEntropy`, `entropyThreshold`, `entropyMinLength`, `entropyWhitelist`.
+    - Rejected in every format (the config is invalid): `dynamic` (use the top-level `dynamic` of a JS/TS config) and `logger`.
   - rootOptionVisibility?: Partial<Record<keyof RootOptionsShape, boolean>> — help‑time visibility (false hides a flag).
   - scripts?: Record<string, string | { cmd: string; shell?: string | boolean }>
   - vars?: Record<string, string> (global, public)

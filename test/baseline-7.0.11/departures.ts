@@ -61,4 +61,14 @@ export const departures: Departure[] = [
     issueOrDecision: '#77',
     note: "Config rootOptionDefaults.paths './b' beats createCli's './a': the bag has paths './b' and FOO is fromB.",
   },
+  {
+    case: '#83 rootOptionDefaults dynamic',
+    issueOrDecision: '#83',
+    note: 'JSON rootOptionDefaults.dynamic fails the config schema: exit 1 with "rootOptionDefaults.dynamic: ... is not allowed in rootOptionDefaults"; nothing runs.',
+  },
+  {
+    case: '#83 rootOptionDefaults dynamic -z',
+    issueOrDecision: '#83',
+    note: 'As "#83 rootOptionDefaults dynamic": the config is rejected before -z matters.',
+  },
 ];

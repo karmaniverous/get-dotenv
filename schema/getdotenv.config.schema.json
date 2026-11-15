@@ -17,13 +17,6 @@
         "dynamicPath": {
           "type": "string"
         },
-        "dynamic": {
-          "type": "object",
-          "propertyNames": {
-            "type": "string"
-          },
-          "additionalProperties": {}
-        },
         "env": {
           "type": "string"
         },
@@ -136,6 +129,12 @@
         },
         "varsDelimiterPattern": {
           "type": "string"
+        },
+        "dynamic": {
+          "not": {}
+        },
+        "logger": {
+          "not": {}
         }
       },
       "additionalProperties": false
