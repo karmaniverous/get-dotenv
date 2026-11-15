@@ -63,7 +63,7 @@ getdotenv --shell-off batch -r ./services -g "web" cmd node -e "console.log(proc
 
 Notes:
 
-- `batch cmd …` is explicit and mirrors the built-in `cmd` subcommand naming; `batch …` is equivalent (cmd is the default subcommand).
+- `batch cmd [command...]` is explicit and mirrors the built-in `cmd` subcommand naming. It is not batch's default subcommand: `batch [command...]`, `batch -c` and `batch -l` run batch's own action. Every form takes the same path: the merged options bag reaches the children (so `--capture` applies), positionals beat `-c`, and `-l` runs nothing (with `batch -l`, positionals are extra globs: `batch -l pkgB` lists `pkgB` too).
 - When `--shell-off` is active and you run `node -e/--eval`, the host preserves the argv array to avoid lossy re-tokenization.
 
 ### 2) --command string (scripts-aware)

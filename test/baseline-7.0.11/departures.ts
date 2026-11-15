@@ -159,6 +159,41 @@ export const departures: Departure[] = [
     note: "The variadic alias takes every token ('node probe.mjs', 'cmd', 'node', 'probe.mjs'), so no subcommand is in subcommand position: the alias runs and the child gets argv ['cmd','node','probe.mjs'].",
   },
   {
+    case: 'help getdotenv batch',
+    issueOrDecision: '#65',
+    note: "batch cmd is no longer batch's default subcommand: its description loses '(default subcommand)'.",
+  },
+  {
+    case: 'help getdotenv batch cmd',
+    issueOrDecision: '#65',
+    note: "batch cmd is no longer batch's default subcommand: its description loses '(default subcommand)'.",
+  },
+  {
+    case: 'help vc batch',
+    issueOrDecision: '#65',
+    note: "batch cmd is no longer batch's default subcommand: its description loses '(default subcommand)'.",
+  },
+  {
+    case: 'help vc batch cmd',
+    issueOrDecision: '#65',
+    note: "batch cmd is no longer batch's default subcommand: its description loses '(default subcommand)'.",
+  },
+  {
+    case: '4.4 row 10',
+    issueOrDecision: '#65',
+    note: "batch -l runs batch's own action: it lists directories (positionals join the globs: '* node probe.mjs') and runs nothing.",
+  },
+  {
+    case: '#65 batch -l runs positionals',
+    issueOrDecision: '#65',
+    note: "batch -g pkgA -l node probe.mjs lists directories (globs 'pkgA node probe.mjs') and runs nothing.",
+  },
+  {
+    case: '#59 batch --command capture',
+    issueOrDecision: '#59',
+    note: "batch --command passes the merged options bag: each child's getDotenvCliOptions is the full bag (with capture: true), not {}.",
+  },
+  {
     case: '#70 alias value names a subcommand',
     issueOrDecision: '#70',
     note: "A subcommand name inside the alias value is not subcommand detection: the alias runs and the child gets argv ['init'].",

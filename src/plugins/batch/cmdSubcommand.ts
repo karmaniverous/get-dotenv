@@ -7,12 +7,13 @@ import { attachBatchCmdAction } from './cmdAction';
 import type { BatchPluginOptions } from './types';
 
 /**
- * Attach the default `cmd` subcommand under the `batch` command.
+ * Attach the `cmd` subcommand under the `batch` command.
  *
  * This encapsulates:
  * - Subcommand construction (`new Command().name('cmd')…`)
  * - Action wiring
- * - Mounting as the default subcommand for `batch`
+ * - Mounting under `batch` (not as its default subcommand: `batch`'s own
+ *   action handles `batch [command...]`, `-c` and `-l`)
  *
  * @param plugin - The batch plugin instance.
  * @param cli - The batch command mount.
@@ -29,13 +30,11 @@ export const attachBatchCmdSubcommand = (
 ) => {
   const cmdSub = new Command()
     .name('cmd')
-    .description(
-      'execute command, conflicts with --command option (default subcommand)',
-    )
+    .description('execute command, conflicts with --command option')
     .enablePositionalOptions()
     .passThroughOptions()
     .argument('[command...]');
 
   attachBatchCmdAction(plugin, cli, batchCmd, pluginOpts, cmdSub);
-  batchCmd.addCommand(cmdSub, { isDefault: true });
+  batchCmd.addCommand(cmdSub);
 };
