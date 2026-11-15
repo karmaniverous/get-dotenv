@@ -49,7 +49,7 @@ JSON/YAML (data only, always-on; no-op when no files are present):
     - Redaction: `redact`, `redactPatterns`.
     - Entropy: `warnEntropy`, `entropyThreshold`, `entropyMinLength`, `entropyWhitelist`.
     - Rejected in every format (the config is invalid): `dynamic` (use the top-level `dynamic` of a JS/TS config) and `logger`.
-  - rootOptionVisibility?: Partial<Record<keyof RootOptionsShape, boolean>> — help‑time visibility (false hides a flag).
+  - rootOptionVisibility?: Partial<Record<keyof RootOptionsShape, boolean>> — help‑time visibility (false hides a flag; true shows it again, undoing a lower layer’s false).
   - scripts?: Record<string, string | { cmd: string; shell?: string | boolean }>
   - vars?: Record<string, string> (global, public)
   - envVars?: Record<string, Record<string, string>> (per‑env, public)
@@ -246,4 +246,4 @@ getdotenv cmd bash-only
 getdotenv cmd plain
 ```
 
-For help‑time visibility of root flags (e.g., hiding `--capture` or an entire family like `--shell`/`--shell-off`), set `rootOptionVisibility` in JSON/YAML/JS/TS config. Precedence matches root defaults: createCli < packaged/public < project/public < project/local.
+For help‑time visibility of root flags (e.g., hiding `--capture` or an entire family like `--shell`/`--shell-off`), set `rootOptionVisibility` in JSON/YAML/JS/TS config. Precedence matches root defaults: createCli < packaged/public < project/public < project/local; a higher layer’s true shows a flag a lower layer hid. Every root flag has a key, including env, outputPath, defaultEnvKey, debug and excludeAll.

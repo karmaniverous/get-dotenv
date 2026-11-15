@@ -266,7 +266,7 @@ When using the shipped CLI host (or embedding it via `createCli`/`GetDotenvCli`)
 JSON/YAML configs are data-only. JS/TS configs may include dynamic + schema.
 
 - `rootOptionDefaults?: { ... }` (root CLI defaults; collapsed families; see below)
-- `rootOptionVisibility?: { [rootKey]: boolean }` (help-time only; false hides options)
+- `rootOptionVisibility?: { [rootKey]: boolean }` (help-time only; false hides options, true shows them again)
 - `scripts?: Record<string, string | { cmd: string; shell?: string | boolean }>`
 - `vars?: Record<string, string>` (global/public vars)
 - `envVars?: Record<string, Record<string, string>>` (per-env/public vars)

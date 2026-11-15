@@ -12,12 +12,13 @@
  *
  * Usage
  * - mergeRootVisibility(...layers) to compute an effective map once.
- * - applyRootVisibility(program, map) to hide root flags (families and singles)
- *   by calling Commander.Option.hideHelp(true) on matching long names.
+ * - applyRootVisibility(program, map) to hide (false) or show (true) root flags
+ *   (families and singles) via Commander.Option.hideHelp on matching long names.
  *
  * Notes
- * - Families (e.g., shell, log, loadProcess, exclude*, warnEntropy, redact) hide both ON/OFF flags together.
- * - Singles (e.g., --capture, --trace) are hidden individually.
+ * - Families (e.g., shell, log, loadProcess, debug, exclude*, warnEntropy, redact) hide or show both ON/OFF flags together.
+ * - Singles (e.g., --capture, --trace, --env) are hidden or shown individually.
+ * - Whether help rendering honours the hidden state is the help layer's concern.
  */
 import type { GetDotenvCli } from './GetDotenvCli';
 import type { RootOptionsShape } from './types';
@@ -48,80 +49,80 @@ export function mergeRootVisibility(
 }
 
 /**
- * Hide a set of long flags (if present) on the provided root program.
- * @param program - the GetDotenvCli root instance
- * @param names - array of long option names (e.g., "--capture")
+ * Every root option key that has a flag, with the long flags it shows or
+ * hides. ON/OFF families list both members.
  */
-function hideByLong(program: GetDotenvCli, names: string[]): void {
-  for (const opt of program.options) {
-    const long = (opt as { long?: string }).long ?? '';
-    if (names.includes(long)) opt.hideHelp(true);
-  }
-}
+const ROOT_OPTION_FLAGS: Partial<
+  Record<keyof RootOptionsShape, readonly string[]>
+> = {
+  // ON/OFF families
+  shell: ['--shell', '--shell-off'],
+  loadProcess: ['--load-process', '--load-process-off'],
+  log: ['--log', '--log-off'],
+  debug: ['--debug', '--debug-off'],
+  excludeAll: ['--exclude-all', '--exclude-all-off'],
+  excludeDynamic: ['--exclude-dynamic', '--exclude-dynamic-off'],
+  excludeEnv: ['--exclude-env', '--exclude-env-off'],
+  excludeGlobal: ['--exclude-global', '--exclude-global-off'],
+  excludePrivate: ['--exclude-private', '--exclude-private-off'],
+  excludePublic: ['--exclude-public', '--exclude-public-off'],
+  warnEntropy: ['--entropy-warn', '--entropy-warn-off'],
+  redact: ['--redact', '--redact-off'],
+  // Singles
+  env: ['--env'],
+  defaultEnv: ['--default-env'],
+  defaultEnvKey: ['--default-env-key'],
+  outputPath: ['--output-path'],
+  capture: ['--capture'],
+  strict: ['--strict'],
+  trace: ['--trace'],
+  dotenvToken: ['--dotenv-token'],
+  privateToken: ['--private-token'],
+  dynamicPath: ['--dynamic-path'],
+  paths: ['--paths'],
+  pathsDelimiter: ['--paths-delimiter'],
+  pathsDelimiterPattern: ['--paths-delimiter-pattern'],
+  vars: ['--vars'],
+  varsDelimiter: ['--vars-delimiter'],
+  varsDelimiterPattern: ['--vars-delimiter-pattern'],
+  varsAssignor: ['--vars-assignor'],
+  varsAssignorPattern: ['--vars-assignor-pattern'],
+  entropyThreshold: ['--entropy-threshold'],
+  entropyMinLength: ['--entropy-min-length'],
+  entropyWhitelist: ['--entropy-whitelist'],
+  redactPatterns: ['--redact-pattern'],
+};
 
 /**
  * Apply root option visibility to the provided program instance.
- * Flags set to false in the visibility map are hidden via hideHelp(true).
+ *
+ * Every key the map sets decides its flags: `false` hides them and `true`
+ * shows them again, so a later (higher) layer can undo an earlier hide.
+ * Keys the map leaves unset keep their current state.
  *
  * Help-time only:
  * - This affects rendering of top-level help; it does not alter parsing or runtime semantics.
  *
  * Families vs singles:
- * - Families (e.g., "shell") hide both ON and OFF flags.
- * - Singles (e.g., "capture") hide the named long flag only.
+ * - Families (e.g., "shell") show or hide both ON and OFF flags.
+ * - Singles (e.g., "capture") show or hide the named long flag only.
  *
  * @param program - the GetDotenvCli root instance
- * @param visibility - effective visibility map (false hides; true/undefined shows)
+ * @param visibility - effective visibility map (false hides; true shows; unset leaves as is)
  */
 export function applyRootVisibility(
   program: GetDotenvCli,
   visibility?: VisibilityMap,
 ): void {
   if (!visibility) return;
-  if (Object.keys(visibility).length === 0) return;
-
-  const fam = (key: keyof RootOptionsShape, longs: string[]) => {
-    if (visibility[key] === false) hideByLong(program, longs);
-  };
-
-  // Families: hide both members when false
-  fam('shell', ['--shell', '--shell-off']);
-  fam('loadProcess', ['--load-process', '--load-process-off']);
-  fam('log', ['--log', '--log-off']);
-  fam('excludeDynamic', ['--exclude-dynamic', '--exclude-dynamic-off']);
-  fam('excludeEnv', ['--exclude-env', '--exclude-env-off']);
-  fam('excludeGlobal', ['--exclude-global', '--exclude-global-off']);
-  fam('excludePrivate', ['--exclude-private', '--exclude-private-off']);
-  fam('excludePublic', ['--exclude-public', '--exclude-public-off']);
-  fam('warnEntropy', ['--entropy-warn', '--entropy-warn-off']);
-  // Redact pair (new)
-  fam('redact', ['--redact', '--redact-off']);
-
-  // Singles: hide individual long flags
-  const singles = [
-    ['capture', '--capture'],
-    ['strict', '--strict'],
-    ['trace', '--trace'],
-    ['defaultEnv', '--default-env'],
-    ['dotenvToken', '--dotenv-token'],
-    ['privateToken', '--private-token'],
-    ['dynamicPath', '--dynamic-path'],
-    ['paths', '--paths'],
-    ['pathsDelimiter', '--paths-delimiter'],
-    ['pathsDelimiterPattern', '--paths-delimiter-pattern'],
-    ['vars', '--vars'],
-    ['varsDelimiter', '--vars-delimiter'],
-    ['varsDelimiterPattern', '--vars-delimiter-pattern'],
-    ['varsAssignor', '--vars-assignor'],
-    ['varsAssignorPattern', '--vars-assignor-pattern'],
-    // diagnostics thresholds and whitelist/patterns
-    ['entropyThreshold', '--entropy-threshold'],
-    ['entropyMinLength', '--entropy-min-length'],
-    ['entropyWhitelist', '--entropy-whitelist'],
-    ['redactPatterns', '--redact-pattern'],
-  ] as Array<[keyof RootOptionsShape, string]>;
-
-  for (const [key, long] of singles) {
-    if (visibility[key] === false) hideByLong(program, [long]);
+  for (const [key, visible] of Object.entries(visibility) as Array<
+    [keyof RootOptionsShape, boolean | undefined]
+  >) {
+    const longs = ROOT_OPTION_FLAGS[key];
+    if (typeof visible !== 'boolean' || !longs) continue;
+    for (const opt of program.options) {
+      if (opt.long !== undefined && longs.includes(opt.long))
+        opt.hideHelp(!visible);
+    }
   }
 }
