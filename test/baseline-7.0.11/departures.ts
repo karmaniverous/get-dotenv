@@ -18,4 +18,11 @@ export interface Departure {
 }
 
 /** Departures, in step order. Empty at S1. */
-export const departures: Departure[] = [];
+export const departures: Departure[] = [
+  // S4: namespaces
+  {
+    case: '#44 ns override',
+    issueOrDecision: '#44',
+    note: "Sibling overrides 'deploy-api' and 'deploy-web' both install (no 'Duplicate command name: deploy'), and the child override mounts as 'who2', not 'whoami'.",
+  },
+];

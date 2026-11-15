@@ -31,8 +31,9 @@ export interface ResolveAndLoadOptions {
    */
   runAfterResolve?: boolean;
   /**
-   * Name of the invoked subcommand (plugin namespace). When provided,
-   * only the matching plugin subtree runs afterResolve hooks.
+   * Name of the invoked top-level subcommand (a plugin's mounted name: its
+   * `.use(plugin, \{ ns \})` override when given, else its `ns`). When
+   * provided, only the matching plugin subtree runs afterResolve hooks.
    * When omitted, all plugins run afterResolve (backward compatibility).
    */
   invokedSubcommand?: string;
@@ -147,7 +148,10 @@ export interface NsOptions {
  */
 export interface PluginNamespaceOverride {
   /**
-   * Override the default namespace for this plugin instance.
+   * Override the default namespace for this plugin instance. The host mounts
+   * the plugin here, and its realized mount path (which keys its config
+   * slice under `plugins` and scopes its afterResolve hook) uses this name
+   * instead of the plugin's own `ns`. Must be unique among its siblings.
    */
   ns?: string;
 }
@@ -167,7 +171,8 @@ export interface PluginChildEntry<
   plugin: GetDotenvCliPlugin<TOptions, TArgs, TOpts, TGlobal>;
   /**
    * Optional namespace override for the child when mounted under the parent.
-   * When provided, this name is used instead of the child's default `ns`.
+   * When provided, this name is used instead of the child's default `ns`
+   * for the mount, the config key and afterResolve scoping.
    */
   override: PluginNamespaceOverride | undefined;
 }
@@ -179,7 +184,10 @@ export interface GetDotenvCliPlugin<
   TOpts extends OptionValues = {},
   TGlobal extends OptionValues = {},
 > {
-  /** Namespace (required): the command name where this plugin is mounted. */
+  /**
+   * Namespace (required): the default command name where this plugin is
+   * mounted. A `.use(plugin, \{ ns \})` override replaces it for that mount.
+   */
   ns: string;
 
   /**
@@ -202,8 +210,9 @@ export interface GetDotenvCliPlugin<
    * Runs parent → children (pre-order).
    *
    * **Scoping**: When the host provides an invoked subcommand filter,
-   * afterResolve only fires for plugins whose namespace matches the
-   * invoked command path. A plugin's afterResolve should never produce
+   * afterResolve only fires for plugins whose realized mount path (built
+   * from effective namespaces: override \> default) matches the invoked
+   * command path. A plugin's afterResolve should never produce
    * side effects for commands outside its subtree.
    */
   afterResolve?: (

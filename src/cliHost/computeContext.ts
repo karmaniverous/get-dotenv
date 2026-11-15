@@ -19,7 +19,7 @@ import {
 import { getDotenvOptionsSchemaResolved } from '@/src/schema';
 import { defaultsDeep, interpolateDeep, writeDotenvFile } from '@/src/util';
 
-import type { GetDotenvCliPlugin } from './contracts';
+import type { GetDotenvCliPlugin, PluginChildEntry } from './contracts';
 import type { GetDotenvCliCtx } from './types';
 import { flattenPluginTreeByPath, type PluginFlattenedEntry } from './paths';
 
@@ -88,10 +88,12 @@ export const getPluginConfig = <
  * - Resolves and validates options strictly (host-only).
  * - Applies file cascade, overlays, dynamics, and optional effects.
  * - Merges and validates per-plugin config slices (when provided), keyed by
- *   realized mount path (ns chain).
+ *   realized mount path (the chain of effective namespaces, override \>
+ *   default).
  *
  * @param customOptions - Partial options from the current invocation.
- * @param plugins - Installed plugins (for config validation).
+ * @param plugins - Registered plugin entries (plugin + namespace override),
+ *   for config keying and validation.
  * @param hostMetaUrl - import.meta.url of the host module (for packaged root discovery).
  */
 export const computeContext = async <
@@ -101,7 +103,7 @@ export const computeContext = async <
   TGlobal extends OptionValues = {},
 >(
   customOptions: Partial<TOptions>,
-  plugins: GetDotenvCliPlugin<TOptions, TArgs, TOpts, TGlobal>[],
+  plugins: ReadonlyArray<PluginChildEntry<TOptions, TArgs, TOpts, TGlobal>>,
   hostMetaUrl: string,
 ): Promise<GetDotenvCliCtx<TOptions>> => {
   const optionsResolved = await resolveGetDotenvOptions(customOptions);

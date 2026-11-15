@@ -5,7 +5,11 @@ import type { OptionValues } from '@commander-js/extra-typings';
 
 import type { GetDotenvOptions } from '@/src/core';
 
-import type { GetDotenvCliPlugin, GetDotenvCliPublic } from './contracts';
+import type {
+  GetDotenvCliPlugin,
+  GetDotenvCliPublic,
+  PluginChildEntry,
+} from './contracts';
 
 /**
  * Determine the effective namespace for a child plugin (override \> default).
@@ -68,8 +72,21 @@ export interface PluginFlattenedEntry<
 }
 
 /**
- * Flatten a plugin tree into a list of `{ plugin, path }` entries.
- * Traverses the namespace chain in pre-order.
+ * Append a namespace to a realized path (`''` is the root).
+ *
+ * @param prefix - The parent's realized path; empty for the root.
+ * @param ns - The child's effective namespace.
+ */
+export const joinRealizedPath = (prefix: string, ns: string): string =>
+  prefix.length > 0 ? `${prefix}/${ns}` : ns;
+
+/**
+ * Flatten a plugin tree into a list of `{ plugin, path }` entries, in
+ * pre-order. Each path is the chain of effective namespaces (override \>
+ * default) from the root, i.e. the realized mount path.
+ *
+ * @param entries - Plugin entries (plugin + optional namespace override).
+ * @param prefix - Realized path of the parent; empty or omitted for the root.
  */
 export function flattenPluginTreeByPath<
   TOptions extends GetDotenvOptions = GetDotenvOptions,
@@ -77,21 +94,14 @@ export function flattenPluginTreeByPath<
   TOpts extends OptionValues = {},
   TGlobal extends OptionValues = {},
 >(
-  plugins: GetDotenvCliPlugin<TOptions, TArgs, TOpts, TGlobal>[],
-  prefix?: string,
+  entries: ReadonlyArray<PluginChildEntry<TOptions, TArgs, TOpts, TGlobal>>,
+  prefix = '',
 ): Array<PluginFlattenedEntry<TOptions, TArgs, TOpts, TGlobal>> {
   const out: Array<PluginFlattenedEntry<TOptions, TArgs, TOpts, TGlobal>> = [];
-  for (const p of plugins) {
-    const here = prefix && prefix.length > 0 ? `${prefix}/${p.ns}` : p.ns;
-    out.push({ plugin: p, path: here });
-    if (Array.isArray(p.children) && p.children.length > 0) {
-      out.push(
-        ...flattenPluginTreeByPath(
-          p.children.map((c) => c.plugin),
-          here,
-        ),
-      );
-    }
+  for (const entry of entries) {
+    const here = joinRealizedPath(prefix, effectiveNs(entry));
+    out.push({ plugin: entry.plugin, path: here });
+    out.push(...flattenPluginTreeByPath(entry.plugin.children, here));
   }
   return out;
 }

@@ -37,7 +37,7 @@ import type { GetDotenvCliOptions } from './GetDotenvCliOptions';
 import { GROUP_TAG } from './groups';
 import type { ResolvedHelpConfig } from './helpConfig';
 import { initializeInstance } from './initializeInstance';
-import { effectiveNs } from './paths';
+import { flattenPluginTreeByPath, joinRealizedPath } from './paths';
 import { setupPluginTree } from './registerPlugin';
 import { resolveAndComputeContext } from './resolveAndComputeContext';
 import { runAfterResolveTree } from './runAfterResolve';
@@ -122,8 +122,9 @@ export class GetDotenvCli<
    *     afterResolve hooks. Useful for top-level help rendering to avoid
    *     long-running side-effects while still evaluating dynamic help text.
    *   - `invokedSubcommand`: when provided, only the plugin subtree whose
-   *     namespace matches this name runs afterResolve hooks. When omitted,
-   *     all plugins run afterResolve (backward compatibility).
+   *     realized mount path is this name (its effective namespace: override
+   *     \> default) runs afterResolve hooks. When omitted, all plugins run
+   *     afterResolve (backward compatibility).
    */
   async resolveAndLoad(
     customOptions: Partial<TOptions> = {},
@@ -131,8 +132,8 @@ export class GetDotenvCli<
   ): Promise<GetDotenvCliCtx<TOptions>> {
     const ctx = await resolveAndComputeContext<TOptions, TArgs, TOpts, TGlobal>(
       customOptions,
-      // Pass only plugin instances to the resolver (not entries with overrides)
-      this._plugins.map((e) => e.plugin),
+      // Entries carry namespace overrides, which key config by realized path.
+      this._plugins,
       HOST_META_URL,
     );
 
@@ -327,6 +328,12 @@ export class GetDotenvCli<
   /**
    * Register a plugin for installation (parent level).
    * Installation occurs on first resolveAndLoad() (or explicit install()).
+   *
+   * @param plugin - The plugin instance to mount at the root.
+   * @param override - Optional `\{ ns \}`: mount the plugin under this name
+   *   instead of its own `ns`. The name also keys its config slice and
+   *   scopes its afterResolve hook. Root-level names must be unique; a
+   *   collision throws the guided duplicate-namespace error at install.
    */
   use(
     plugin: GetDotenvCliPlugin<TOptions, TArgs, TOpts, TGlobal>,
@@ -347,19 +354,9 @@ export class GetDotenvCli<
       return;
     }
     this._installing = (async () => {
-      // Install parent → children with host-created mounts (async-aware).
-      for (const entry of this._plugins) {
-        const p = entry.plugin;
-        await setupPluginTree<TOptions>(
-          this,
-          p as unknown as GetDotenvCliPlugin<
-            TOptions,
-            unknown[],
-            OptionValues,
-            OptionValues
-          >,
-        );
-      }
+      // Install parent → children with host-created mounts at each entry's
+      // effective namespace (async-aware).
+      await setupPluginTree(this, this._plugins);
       this._installed = true;
     })();
     try {
@@ -374,9 +371,11 @@ export class GetDotenvCli<
    * When `commandPath` is provided, only the matching branch of the
    * plugin tree runs; otherwise all plugins run (backward compatibility).
    *
-   * The path is walked segment-by-segment against the plugin tree.
-   * Intermediate matches run their own afterResolve hook.
-   * The deepest match runs afterResolve for itself and all its descendants.
+   * Each prefix of the command path is matched against the plugins'
+   * realized mount paths (effective namespaces, override \> default), the
+   * same paths that key config slices. Intermediate matches run their own
+   * afterResolve hook. The deepest match runs afterResolve for itself and
+   * all its descendants.
    *
    * @param ctx - The resolved host context passed to each hook.
    * @param commandPath - Command names from the root to the invoked command.
@@ -394,32 +393,27 @@ export class GetDotenvCli<
       return;
     }
 
-    // Walk the plugin tree along the command path, scoping to the invoked branch.
-    let entries: Array<PluginChildEntry<TOptions, TArgs, TOpts, TGlobal>> =
-      this._plugins;
-
-    for (let i = 0; i < commandPath.length; i++) {
-      const segment = commandPath[i] as string;
-      const entry = entries.find((e) => effectiveNs(e) === segment);
-      if (!entry) return;
-
-      const isLast = i === commandPath.length - 1;
-      const nextSegment = commandPath[i + 1];
-      const hasMatchingChild =
-        !isLast &&
-        entry.plugin.children.some((e) => effectiveNs(e) === nextSegment);
-
-      if (isLast || !hasMatchingChild) {
-        // Deepest match: run this plugin + all its descendants.
-        await runAfterResolveTree(this, [entry.plugin], ctx);
-        return;
-      }
-
-      // Intermediate match: run only this plugin's own afterResolve.
-      if (entry.plugin.afterResolve) {
-        await entry.plugin.afterResolve(this, ctx);
-      }
-      entries = entry.plugin.children;
+    // Match each command-path prefix against the realized mount paths.
+    const byPath = new Map(
+      flattenPluginTreeByPath(this._plugins).map((e) => [e.path, e.plugin]),
+    );
+    const chain: Array<GetDotenvCliPlugin<TOptions, TArgs, TOpts, TGlobal>> =
+      [];
+    let path = '';
+    for (const segment of commandPath) {
+      path = joinRealizedPath(path, segment);
+      const plugin = byPath.get(path);
+      if (!plugin) break;
+      chain.push(plugin);
     }
+    const deepest = chain.pop();
+    if (!deepest) return;
+
+    // Intermediate matches: run only their own afterResolve.
+    for (const plugin of chain) {
+      if (plugin.afterResolve) await plugin.afterResolve(this, ctx);
+    }
+    // Deepest match: run this plugin + all its descendants.
+    await runAfterResolveTree(this, [deepest], ctx);
   }
 }
