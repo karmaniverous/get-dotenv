@@ -57,7 +57,7 @@ export const attachRootOptions = (
       '-v, --vars <string>',
       `extra variables expressed as delimited key-value pairs (dotenv-expanded): ${examples}`,
     );
-    opt.argParser(dotenvExpandFromProcessEnv);
+    // Not expanded here: the vars layer expands each value once (#89).
     program.addOption(opt);
     program.setOptionGroup(opt, GROUP);
   }

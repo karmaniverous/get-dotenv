@@ -121,7 +121,9 @@ export interface OverlayEnvWithProvenanceResult {
  * - privacy: local \> public
  * - source: project \> packaged \> base
  *
- * Programmatic explicit vars override all config slices.
+ * Programmatic explicit vars override all config slices. Each slice is
+ * expanded progressively against `process.env` overlaid with the values
+ * composed so far (composed values win).
  *
  * @param args - Overlay inputs.
  * @returns The overlaid env and the updated provenance mapping.

@@ -74,7 +74,8 @@ export interface OverlayEnvOptionsWithProgrammatic<
  * - source: project \> packaged \> base
  *
  * Programmatic explicit vars (if provided) override all config slices.
- * Progressive expansion is applied within each slice.
+ * Progressive expansion is applied within each slice, against `process.env`
+ * overlaid with the values composed so far (composed values win).
  */
 export function overlayEnv<B extends ProcessEnv | Readonly<ProcessEnv>>(args: {
   base: B;

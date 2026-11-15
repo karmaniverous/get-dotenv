@@ -42,11 +42,6 @@ export const departures: Departure[] = [
     note: '--redact-off overrides config rootOptionDefaults.redact: the bag has redact false and no raw redactOff key.',
   },
   {
-    case: '#89 vars expanded twice',
-    issueOrDecision: '#45',
-    note: 'The case passes -P, which now takes effect: the bag has loadProcess false. The #89 output is unchanged.',
-  },
-  {
     case: '#68 excludeAll default',
     issueOrDecision: '#68',
     note: 'Config rootOptionDefaults.excludeAll takes effect: the bag has all five exclusions true and the child sees no APP.',
@@ -96,5 +91,15 @@ export const departures: Departure[] = [
     case: '#86 trailing dollar',
     issueOrDecision: '#86',
     note: "A $ that starts no reference stays literal and the other references expand: 'x cost $', 'x $!', 'x 100$'.",
+  },
+  {
+    case: '#63 vars against process.env',
+    issueOrDecision: '#63',
+    note: "Config vars expand against process.env like the file cascade: the child sees CFGHOME 'xambient-value', not 'x'.",
+  },
+  {
+    case: '#89 vars expanded twice',
+    issueOrDecision: '#89',
+    note: "-v is expanded once, in the vars layer, which sees process.env (#63): P is '$5' (not unset), Q is '\\$6' (not '$6'), and the bag keeps the -v string as given. The -P in the case also takes effect (#45, S5): the bag has loadProcess false.",
   },
 ];
