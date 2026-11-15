@@ -514,7 +514,7 @@ From the root export:
 
 ## Shipped plugins: what to know as a plugin author
 
-- `cmd`: executes a command under ctx; provides parent alias `-c, --cmd <command...>`; detects conflict when both alias and explicit subcommand are used.
+- `cmd`: executes a command under ctx; provides parent alias `-c, --cmd <command...>`, which runs the cmd action itself (same bag, scripts, afterResolve scoping and exit codes); the alias plus positional `cmd` arguments is a usage error (exit 1).
 - `batch`: discovers directories by globs and runs a command sequentially (stopping at the first failure, whose exit code it exits with) or in parallel; honors `--list` and `--ignore-errors`.
 - `aws`: establishes a session when an `aws` command (or child) is invoked, writes AWS env vars to `process.env`; publishes minimal metadata under `ctx.plugins.aws`; supports `strategy: none` to disable credential export. Does not fire on sibling commands.
 - `init`: scaffolds config files and a CLI skeleton under `src/cli/<name>/...`; collision handling supports overwrite/example/skip plus CI heuristics.

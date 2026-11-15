@@ -2,57 +2,67 @@ import type { CommandUnknownOpts } from '@commander-js/extra-typings';
 
 import { type GetDotenvCliPublic, readMergedOptions } from '@/src/cliHost';
 import { propagateExitCode } from '@/src/cliHost/exitCode';
+import { dotenvExpandFromProcessEnv } from '@/src/dotenv';
 
+import type { CmdPlugin } from '.';
+import type { CmdAlias } from './alias';
 import { runCmdWithContext } from './runner';
+import type { CmdPluginConfig } from './types';
 
 /**
- * Attach the default "cmd" subcommand action.
- * Mirrors the prior inline implementation in cmd/index.ts.
+ * Attach the cmd action: the one code path for `cmd <command...>`, the
+ * default command and the parent alias (`-c <command...>`, routed here when
+ * no explicit subcommand follows it). All three use the merged options bag
+ * (createCli defaults, config `scripts`), the root hooks' context and
+ * `afterResolve` scoping, and exit with the child's code.
+ *
+ * @param cli - The cmd mount.
+ * @param plugin - The cmd plugin (for its config).
+ * @param alias - The parent alias, when configured.
  */
 export const attachCmdDefaultAction = (
   cli: GetDotenvCliPublic,
-  cmd: CommandUnknownOpts,
-  aliasKey?: string,
+  plugin: CmdPlugin,
+  alias?: CmdAlias,
 ) => {
-  cmd.action(async function (...allArgs: unknown[]) {
+  cli.action(async (...allArgs: unknown[]) => {
     // Commander passes: [...positionals, options, thisCommand]
     const thisCommand = allArgs[allArgs.length - 1] as CommandUnknownOpts;
-    const commandParts = allArgs[0];
-    const args = Array.isArray(commandParts)
-      ? (commandParts as unknown[]).map(String)
+    const positional = Array.isArray(allArgs[0])
+      ? (allArgs[0] as unknown[]).map(String)
       : [];
-    // No-op when invoked as the default command with no args.
-    if (args.length === 0) return;
+    const aliasValue =
+      alias && thisCommand.parent
+        ? alias.valueOn(thisCommand.parent)
+        : undefined;
+    // No-op when invoked as the default command with nothing to run.
+    if (positional.length === 0 && aliasValue === undefined) return;
 
     const merged = readMergedOptions(thisCommand);
-    const parent = thisCommand.parent;
-    if (!parent) throw new Error('parent command not found');
-
-    // Conflict detection: if an alias option is present on parent, do not
-    // also accept positional cmd args.
-    if (aliasKey) {
-      const p = parent as CommandUnknownOpts & {
-        optsWithGlobals?: () => unknown;
-        opts?: () => unknown;
-      };
-      const pv =
-        typeof p.optsWithGlobals === 'function'
-          ? p.optsWithGlobals()
-          : typeof p.opts === 'function'
-            ? p.opts()
-            : {};
-      const ov = (pv as Record<string, unknown>)[aliasKey];
-      if (ov !== undefined) {
-        merged.logger.error(
-          `--${aliasKey} option conflicts with cmd subcommand.`,
-        );
-        process.exitCode = 1;
-        return;
-      }
+    if (alias && aliasValue !== undefined && positional.length > 0) {
+      merged.logger.error(
+        `${alias.flag} option conflicts with cmd subcommand.`,
+      );
+      process.exitCode = 1;
+      return;
     }
 
+    const input =
+      aliasValue === undefined
+        ? positional
+        : expandAlias(
+            aliasValue,
+            plugin.readConfig<CmdPluginConfig>(cli).expand ?? alias?.expand,
+          );
     propagateExitCode(
-      await runCmdWithContext(cli, merged, args, { origin: 'subcommand' }),
+      await runCmdWithContext(cli, merged, input, {
+        origin: aliasValue === undefined ? 'subcommand' : 'alias',
+      }),
     );
   });
 };
+
+// The alias value is dotenv-expanded against process.env (the context is
+// loaded by now) unless expansion is off.
+const expandAlias = (value: string, expand: boolean | undefined): string =>
+  expand === false ? value : (dotenvExpandFromProcessEnv(value) ?? value);

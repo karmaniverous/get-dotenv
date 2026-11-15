@@ -6,10 +6,9 @@
 
 import { definePlugin } from '@/src/cliHost';
 
-import { aliasOptionKey, resolveAliasSpec } from './alias';
+import { attachCmdAlias, resolveAliasSpec } from './alias';
 import { attachCmdDefaultAction } from './defaultAction';
 import { attachCmdOptions } from './options';
-import { attachCmdParentInvoker } from './parentInvoker';
 import { cmdPluginConfigSchema, type CmdPluginOptions } from './types';
 export type { RunCmdWithContextOptions } from './types';
 
@@ -26,7 +25,6 @@ export const cmdPlugin = (options: CmdPluginOptions = {}) => {
     configSchema: cmdPluginConfigSchema,
     setup(cli) {
       const aliasSpec = resolveAliasSpec(options.optionAlias);
-      const aliasKey = aliasSpec ? aliasOptionKey(aliasSpec.flags) : undefined;
 
       // Mount is the command ('cmd'); attach default action.
       cli.description(
@@ -35,12 +33,9 @@ export const cmdPlugin = (options: CmdPluginOptions = {}) => {
       // Options/arguments (positional payload, argv routing) are attached separately.
       attachCmdOptions(cli);
 
-      attachCmdDefaultAction(cli, cli, aliasKey);
-
-      // Parent-attached option alias (optional, unified naming).
-      if (aliasSpec !== undefined) {
-        attachCmdParentInvoker(cli, options, plugin);
-      }
+      // The parent alias (optional) runs through the cmd action below.
+      const alias = aliasSpec ? attachCmdAlias(cli, aliasSpec) : undefined;
+      attachCmdDefaultAction(cli, plugin, alias);
       return undefined;
     },
   });

@@ -32,7 +32,7 @@ If you want this UX, you must expand the option value yourself, and you should d
 Recommended strategies:
 
 - Action-time expansion (ctx-aware; recommended): expand using `{ ...process.env, ...ctx.dotenv }` so the resolved dotenv context takes precedence, and so the behavior does not depend on `loadProcess` being enabled.
-- Parse-time expansion (process-only; niche): use `.argParser(dotenvExpandFromProcessEnv)` only when you explicitly want to expand against the parent process environment. This is the pattern used by the shipped cmd plugin alias expansion in [`src/plugins/cmd/parentInvoker.ts`](../../src/plugins/cmd/parentInvoker.ts), and it’s appropriate for “expand with whatever the current process already has” semantics.
+- Parse-time expansion (process-only; niche): use `.argParser(dotenvExpandFromProcessEnv)` only when you explicitly want to expand against the parent process environment. The shipped cmd plugin alias uses the same process-only expansion, applied in its action once the context is loaded ([`src/plugins/cmd/defaultAction.ts`](../../src/plugins/cmd/defaultAction.ts)), and it’s appropriate for “expand with whatever the current process already has” semantics.
 
 #### Action-time expansion (ctx-aware; recommended)
 

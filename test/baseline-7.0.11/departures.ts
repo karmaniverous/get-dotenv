@@ -135,8 +135,38 @@ export const departures: Departure[] = [
   },
   {
     case: '#49 alias script',
-    issueOrDecision: '#74',
-    note: "The harness captures (GETDOTENV_STDIO=pipe), so the shell's error for the unresolved 'hello' now reaches stderr.",
+    issueOrDecision: '#49',
+    note: "The alias runs through the cmd action with the merged bag, so config scripts resolve: 'hello' runs its config script and the child gets argv ['42'] (was: the unresolved 'hello' failed in the shell).",
+  },
+  {
+    case: '4.4 row 05',
+    issueOrDecision: '#49',
+    note: "The alias runs only through the cmd action (#49), so the alias hook's '[getdotenv:alias]' debug lines are gone from stderr.",
+  },
+  {
+    case: '4.4 row 17',
+    issueOrDecision: '#49',
+    note: "The alias runs only through the cmd action (#49), so the alias hook's '[getdotenv:alias]' debug lines are gone from stderr.",
+  },
+  {
+    case: 'D28 row 04',
+    issueOrDecision: '#49',
+    note: "The alias runs only through the cmd action (#49), so the alias hook's '[getdotenv:alias]' debug lines are gone from stderr.",
+  },
+  {
+    case: '#50 alias conflict',
+    issueOrDecision: '#70',
+    note: "The variadic alias takes every token ('node probe.mjs', 'cmd', 'node', 'probe.mjs'), so no subcommand is in subcommand position: the alias runs and the child gets argv ['cmd','node','probe.mjs'].",
+  },
+  {
+    case: '#70 alias value names a subcommand',
+    issueOrDecision: '#70',
+    note: "A subcommand name inside the alias value is not subcommand detection: the alias runs and the child gets argv ['init'].",
+  },
+  {
+    case: '#70 optionAlias expand false',
+    issueOrDecision: '#70',
+    note: "optionAlias.expand false is honoured: the child gets the literal '$BASELINE_AMBIENT'.",
   },
   {
     case: '#50 cmd exit',
@@ -166,7 +196,7 @@ export const departures: Departure[] = [
   {
     case: '#51 script shell true',
     issueOrDecision: '#51',
-    note: "shell: true is the OS default shell: on win32 the script runs under powershell.exe (debug line shell 'powershell.exe'; no cmd.exe PROMPT in the child env), on linux under /bin/bash.",
+    note: "shell: true is the OS default shell: on win32 the script runs under powershell.exe (debug line shell 'powershell.exe'; no cmd.exe PROMPT in the child env), on linux under /bin/bash. The alias hook's '[getdotenv:alias]' debug lines are gone (#49).",
   },
   {
     case: '#75 alias spawn failure',
