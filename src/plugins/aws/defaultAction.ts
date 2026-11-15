@@ -10,10 +10,9 @@ import { propagateExitCode } from '@/src/cliHost/exitCode';
 
 import type { AwsPlugin } from '.';
 import { applyAwsContext } from './common';
-import { awsConfigOverridesFromCommandOpts } from './configOverrides';
+import { awsConfigWithFlags } from './configOverrides';
 import type { AwsCommand } from './options';
 import { resolveAwsContext } from './service';
-import type { AwsPluginConfig } from './types';
 
 /**
  * Attach the default action for the AWS plugin mount.
@@ -42,11 +41,7 @@ export function attachAwsDefaultAction(
 
     // Build overlay cfg from subcommand flags layered over discovered config.
     const ctx = cli.getCtx();
-    const cfgBase = plugin.readConfig(cli);
-    const cfg: AwsPluginConfig = {
-      ...cfgBase,
-      ...awsConfigOverridesFromCommandOpts(opts),
-    };
+    const cfg = awsConfigWithFlags(plugin, cli, opts);
 
     // Resolve current context with overrides
     const out = await resolveAwsContext({

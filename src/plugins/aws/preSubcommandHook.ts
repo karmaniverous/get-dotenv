@@ -4,9 +4,8 @@ import type { GetDotenvCliPublic } from '@/src/cliHost';
 
 import type { AwsPlugin } from '.';
 import { applyAwsContext } from './common';
-import { awsConfigOverridesFromCommandOpts } from './configOverrides';
+import { awsConfigWithFlags } from './configOverrides';
 import { resolveAwsContext } from './service';
-import type { AwsPluginConfig } from './types';
 
 /**
  * Attach the AWS plugin `preSubcommand` hook.
@@ -28,11 +27,7 @@ export function attachAwsPreSubcommandHook(
     if (process.argv.includes('-h') || process.argv.includes('--help')) return;
 
     const ctx = cli.getCtx();
-    const cfgBase = plugin.readConfig(cli);
-    const cfg: AwsPluginConfig = {
-      ...cfgBase,
-      ...awsConfigOverridesFromCommandOpts(thisCommand.opts()),
-    };
+    const cfg = awsConfigWithFlags(plugin, cli, thisCommand.opts());
 
     const out = await resolveAwsContext({
       dotenv: ctx.dotenv,
