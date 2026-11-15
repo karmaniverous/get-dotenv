@@ -9,6 +9,7 @@ import {
 } from '@/src/diagnostics';
 import { dotenvExpandAll } from '@/src/dotenv';
 import { applyDynamicMap, loadAndApplyDynamic } from '@/src/env/dynamic';
+import { loadProcessEnv } from '@/src/env/loadProcessEnv';
 import { writeDotenvFile } from '@/src/util';
 
 import type { GetDotenvOptions, ProcessEnv } from './GetDotenvOptions';
@@ -227,15 +228,7 @@ export async function getDotenv(
   }
 
   // Load process.env.
-  if (loadProcess) {
-    for (const key of deletedKeys) {
-      Reflect.deleteProperty(process.env, key);
-    }
-    for (const [key, value] of Object.entries(resultDotenv)) {
-      if (value === undefined) Reflect.deleteProperty(process.env, key);
-      else process.env[key] = value;
-    }
-  }
+  if (loadProcess) loadProcessEnv(resultDotenv, deletedKeys);
 
   return resultDotenv;
 }

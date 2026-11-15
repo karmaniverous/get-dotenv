@@ -9,9 +9,9 @@
  */
 
 import type { ProcessEnv } from '@/src/core';
-import { dotenvExpandAll } from '@/src/dotenv';
 import type { GetDotenvConfigResolved } from '@/src/schema';
 
+import { expandLayer } from './expandLayer';
 import type { OverlayConfigSources } from './overlayEnv';
 import {
   createDotenvProvenance,
@@ -20,16 +20,6 @@ import {
   type DotenvVarsProvenanceEntry,
   pushDotenvProvenance,
 } from './provenance';
-
-const applyKv = (
-  current: ProcessEnv,
-  kv: Record<string, string> | undefined,
-): { env: ProcessEnv; expanded: ProcessEnv } => {
-  if (!kv || Object.keys(kv).length === 0)
-    return { env: current, expanded: {} };
-  const expanded = dotenvExpandAll(kv, { ref: current, progressive: true });
-  return { env: { ...current, ...expanded }, expanded };
-};
 
 const opFrom = (v: string | undefined): 'set' | 'unset' =>
   typeof v === 'string' ? 'set' : 'unset';
@@ -47,7 +37,7 @@ const applyConfigSlice = (
 
   // kind axis: global then env (env overrides global)
   {
-    const { env: next, expanded } = applyKv(current, cfg.vars);
+    const { env: next, expanded } = expandLayer(current, cfg.vars);
     for (const key of Object.keys(expanded)) {
       pushDotenvProvenance(prov, key, {
         kind: 'config',
@@ -63,7 +53,7 @@ const applyConfigSlice = (
 
   if (env && cfg.envVars) {
     const envKv = cfg.envVars[env];
-    const { env: next, expanded } = applyKv(current, envKv);
+    const { env: next, expanded } = expandLayer(current, envKv);
     for (const key of Object.keys(expanded)) {
       pushDotenvProvenance(prov, key, {
         kind: 'config',
@@ -175,7 +165,7 @@ export function overlayEnvWithProvenance(
   }
 
   if (Object.keys(varsKv).length > 0) {
-    const { env: next, expanded } = applyKv(current, varsKv);
+    const { env: next, expanded } = expandLayer(current, varsKv);
     for (const key of Object.keys(expanded)) {
       const op: DotenvVarsProvenanceEntry['op'] = opFrom(expanded[key]);
       pushDotenvProvenance(prov, key, { kind: 'vars', op });

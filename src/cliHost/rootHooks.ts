@@ -58,6 +58,29 @@ function computeRootDefaults(
 }
 
 /**
+ * Validate the composed env against the config sources (`schema` or
+ * `requiredKeys`) and log each issue at error level; with `--strict`, exit 1
+ * after logging them.
+ */
+function reportEnvIssues<TOptions extends GetDotenvOptions>(
+  program: GetDotenvCli<TOptions>,
+  sources: ResolvedConfigSources,
+  bag: GetDotenvCliOptions,
+): void {
+  try {
+    const issues = validateEnvAgainstSources(program.getCtx().dotenv, sources);
+    if (Array.isArray(issues) && issues.length > 0) {
+      issues.forEach((m) => {
+        bag.logger.error(m);
+      });
+      if (bag.strict) process.exit(1);
+    }
+  } catch {
+    /* tolerate non-strict flows */
+  }
+}
+
+/**
  * Install root-level hooks (preSubcommand/preAction) to handle configuration loading,
  * option resolution, and context initialization before actions run.
  *
@@ -72,7 +95,7 @@ export function installRootHooks<TOptions extends GetDotenvOptions>(
   markRootHooks(program);
 
   // Propagate resolved env into the options bag so plugins always see
-  // the effective environment as bag.env — no defaulting logic needed downstream.
+  // the effective environment as bag.env â€” no defaulting logic needed downstream.
   const propagateResolvedEnv = (
     merged: RootOptionsShape & { scripts?: ScriptsTable },
   ) => {
@@ -89,7 +112,7 @@ export function installRootHooks<TOptions extends GetDotenvOptions>(
     }
   };
 
-  // Hook: preSubcommand — always runs for subcommand flows.
+  // Hook: preSubcommand â€” always runs for subcommand flows.
   program.hook('preSubcommand', async (thisCommand, _actionCommand) => {
     const sources = await resolveGetDotenvConfigSources(import.meta.url);
     const rawArgs =
@@ -156,24 +179,14 @@ export function installRootHooks<TOptions extends GetDotenvOptions>(
     }
 
     // Global validation (once after overlays). Honor --strict.
-    try {
-      const ctx = program.getCtx();
-      const dotenv = ctx.dotenv;
-      const sources2 = await resolveGetDotenvConfigSources(import.meta.url);
-      const issues = validateEnvAgainstSources(dotenv, sources2);
-      if (Array.isArray(issues) && issues.length > 0) {
-        const logger = (merged as unknown as GetDotenvCliOptions).logger;
-        issues.forEach((m) => {
-          logger.error(m);
-        });
-        if ((merged as unknown as GetDotenvCliOptions).strict) process.exit(1);
-      }
-    } catch {
-      /* tolerate non-strict flows */
-    }
+    reportEnvIssues(
+      program,
+      await resolveGetDotenvConfigSources(import.meta.url),
+      merged as unknown as GetDotenvCliOptions,
+    );
   });
 
-  // Hook: preAction — root-only and parent-alias flows + scoped afterResolve.
+  // Hook: preAction â€” root-only and parent-alias flows + scoped afterResolve.
   program.hook('preAction', async (thisCommand, actionCommand) => {
     const sources = await resolveGetDotenvConfigSources(import.meta.url);
     const rawArgs =
@@ -222,7 +235,7 @@ export function installRootHooks<TOptions extends GetDotenvOptions>(
       markComposed(program);
     }
 
-    // Always propagate resolved env into the merged bag — even when
+    // Always propagate resolved env into the merged bag â€” even when
     // preSubcommand already set the context.  preAction unconditionally
     // builds a fresh `merged` and overwrites the options bag, so the env
     // propagated by preSubcommand is lost without this call.
@@ -240,19 +253,7 @@ export function installRootHooks<TOptions extends GetDotenvOptions>(
     } catch {
       /* tolerate */
     }
-    try {
-      const ctx = program.getCtx();
-      const issues = validateEnvAgainstSources(ctx.dotenv, sources);
-      if (Array.isArray(issues) && issues.length > 0) {
-        const logger = (merged as unknown as GetDotenvCliOptions).logger;
-        issues.forEach((m) => {
-          logger.error(m);
-        });
-        if ((merged as unknown as GetDotenvCliOptions).strict) process.exit(1);
-      }
-    } catch {
-      /* tolerate non-strict flows */
-    }
+    reportEnvIssues(program, sources, merged as unknown as GetDotenvCliOptions);
 
     // Run afterResolve scoped to the invoked command branch.
     // Walk actionCommand.parent chain to build the full plugin path.

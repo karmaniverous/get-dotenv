@@ -19,6 +19,7 @@ import {
   type DotenvProvenance,
   pushDotenvProvenance,
 } from './provenance';
+import { resolveEnvName } from './resolveEnvName';
 
 /**
  * Inputs for reading the dotenv cascade with provenance.
@@ -57,16 +58,6 @@ export interface ReadDotenvCascadeResult {
   /** File-only provenance history for keys in {@link ReadDotenvCascadeResult.dotenv}. */
   provenance: DotenvProvenance;
 }
-
-const resolveEnvName = (
-  env?: string,
-  defaultEnv?: string,
-): string | undefined =>
-  typeof env === 'string' && env.length > 0
-    ? env
-    : typeof defaultEnv === 'string' && defaultEnv.length > 0
-      ? defaultEnv
-      : undefined;
 
 const buildFileToken = (args: {
   dotenvToken: string;
