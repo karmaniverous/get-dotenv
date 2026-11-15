@@ -74,4 +74,4 @@ If `outputPath` is set, the fully expanded variables are written to a single dot
 
 ## Logging and process.env
 
-If `log` is set, the resulting map is logged. If `loadProcess` is set, the map is copied into `process.env`: a string sets the key, and an unset (`undefined`) value or a key deleted by a dynamic `null` deletes the key from `process.env`. The CLI host applies the same rule.
+If `log` is set, the resulting map is logged. If `loadProcess` is set (it is off by default for `getDotenv()`, on by default for the CLI), the map is copied into `process.env`: a string sets the key, and an unset (`undefined`) value or a key deleted by a dynamic `null` deletes the key from `process.env`. The CLI host applies the same rule.

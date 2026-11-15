@@ -356,7 +356,10 @@ export const resolveGetDotenvOptions = (
   // Programmatic callers use neutral defaults only. Do not read local packaged
   // getdotenv.config.json here; the host path applies packaged/project configs
   // via the dedicated loader/overlay pipeline.
-  const mergedDefaults = baseRootOptionDefaults as Partial<RootOptionsShape>;
+  // `loadProcess` defaults on for the CLI only (#48): the host passes its
+  // resolved value explicitly, and library callers opt in.
+  const { loadProcess: _cliOnly, ...mergedDefaults } =
+    baseRootOptionDefaults as Partial<RootOptionsShape>;
 
   const defaultsFromCli = getDotenvCliOptions2Options(mergedDefaults);
 

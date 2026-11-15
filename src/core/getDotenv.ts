@@ -44,8 +44,10 @@ import { readDotenv } from './readDotenv';
  * ```
  *
  * @remarks
- * - When {@link GetDotenvOptions | loadProcess} is true, the resulting variables are merged
- *   into `process.env` as a side effect.
+ * - When {@link GetDotenvOptions | loadProcess} is true, the resulting variables are copied
+ *   into `process.env` as a side effect (an `undefined` value, or a key a dynamic `null`
+ *   deleted, deletes the key). It defaults to false: `getDotenv()` does not touch
+ *   `process.env` unless asked to.
  * - When {@link GetDotenvOptions | outputPath} is provided, a consolidated dotenv file is written.
  *   The path is resolved after expansion, so it may reference previously loaded vars.
  *

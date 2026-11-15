@@ -112,4 +112,9 @@ export const departures: Departure[] = [
     issueOrDecision: '#47',
     note: 'Host loadProcess deletes an unset key instead of writing "undefined": the child has no EMPTY.',
   },
+  {
+    case: '#48 getDotenv loads process.env',
+    issueOrDecision: '#48',
+    note: 'getDotenv() no longer loads process.env by default: FOO is not set after the call.',
+  },
 ];

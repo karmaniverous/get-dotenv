@@ -27,7 +27,10 @@ export interface BaseRootOptionDefaultsScript {
 export interface BaseRootOptionDefaults {
   /** Dotenv token indicating a dotenv file (default `.env`). */
   dotenvToken: string;
-  /** When true, load composed values into `process.env`. */
+  /**
+   * When true, load composed values into `process.env`. This default applies
+   * to the CLI only; library `getDotenv()` defaults to false.
+   */
   loadProcess: boolean;
   /** Logger used by the host and plugins (console-compatible). */
   logger: Pick<Console, 'debug' | 'info' | 'warn' | 'error'>;

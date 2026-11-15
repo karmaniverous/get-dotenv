@@ -52,7 +52,11 @@ export const getDotenvOptionsSchemaRaw = z.object({
   excludePrivate: z.boolean().optional(),
   /** When true, skip public dotenv files. */
   excludePublic: z.boolean().optional(),
-  /** When true, merge the final composed environment into `process.env`. */
+  /**
+   * When true, copy the final composed environment into `process.env`
+   * (`undefined` values delete the key). Off by default for `getDotenv()`;
+   * the CLI turns it on by default.
+   */
   loadProcess: z.boolean().optional(),
   /** When true, log the final environment map via `logger`. */
   log: z.boolean().optional(),
