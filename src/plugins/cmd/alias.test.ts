@@ -2,8 +2,9 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 // Mock execa to capture invocations without spawning a shell. The shell
 // path calls execa(command, opts) with the command string as is.
-const execMock =
-  vi.fn<(command: string, opts: Record<string, unknown>) => Promise<void>>();
+const execMock = vi.fn<
+  (command: string, opts: Record<string, unknown>) => Promise<unknown>
+>(() => Promise.resolve({ exitCode: 0, stdout: '', stderr: '' }));
 vi.mock('execa', () => ({
   execa: (command: string, opts: Record<string, unknown>) =>
     execMock(command, opts),
