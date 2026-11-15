@@ -1,0 +1,3731 @@
+{
+  "#45 entropy-warn-off": {
+    "argv": [
+      "getdotenv",
+      "--entropy-warn-off",
+      "--trace",
+      "HIGH",
+      "cmd",
+      "node",
+      "probe.mjs"
+    ],
+    "bag": {
+      "defaultEnvKey": "DEFAULT_ENV",
+      "dotenvToken": ".env",
+      "entropyMinLength": 16,
+      "entropyThreshold": 3.8,
+      "entropyWhitelist": ["^GIT_", "^npm_", "^CI$", "SHLVL"],
+      "loadProcess": true,
+      "logger": "[logger]",
+      "paths": "./",
+      "pathsDelimiter": " ",
+      "privateToken": "local",
+      "scripts": {
+        "git-status": {
+          "cmd": "git branch --show-current && git status -s -u",
+          "shell": true
+        }
+      },
+      "shell": "/bin/bash",
+      "trace": ["HIGH", "cmd", "node", "probe.mjs"],
+      "vars": "",
+      "varsAssignor": "=",
+      "varsDelimiter": " ",
+      "warnEntropy": true
+    },
+    "children": [],
+    "exitCode": 0,
+    "source": "#45",
+    "stderr": "",
+    "stdout": ""
+  },
+  "#45 off flags": {
+    "argv": ["getdotenv", "-P", "-L", "-A", "cmd", "node", "probe.mjs"],
+    "bag": {
+      "defaultEnvKey": "DEFAULT_ENV",
+      "dotenvToken": ".env",
+      "entropyMinLength": 16,
+      "entropyThreshold": 3.8,
+      "entropyWhitelist": ["^GIT_", "^npm_", "^CI$", "SHLVL"],
+      "loadProcess": true,
+      "logger": "[logger]",
+      "paths": "./",
+      "pathsDelimiter": " ",
+      "privateToken": "local",
+      "scripts": {
+        "git-status": {
+          "cmd": "git branch --show-current && git status -s -u",
+          "shell": true
+        }
+      },
+      "shell": "/bin/bash",
+      "vars": "",
+      "varsAssignor": "=",
+      "varsDelimiter": " ",
+      "warnEntropy": true
+    },
+    "children": [
+      {
+        "argv": [],
+        "cwd": ".",
+        "env": {
+          "added": {
+            "APP": "cae662172fd4",
+            "getDotenvCliOptions": "ee90e48b8d2b"
+          },
+          "changed": {},
+          "removed": []
+        },
+        "getDotenvCliOptions": {
+          "defaultEnvKey": "DEFAULT_ENV",
+          "dotenvToken": ".env",
+          "entropyMinLength": 16,
+          "entropyThreshold": 3.8,
+          "entropyWhitelist": ["^GIT_", "^npm_", "^CI$", "SHLVL"],
+          "loadProcess": true,
+          "paths": "./",
+          "pathsDelimiter": " ",
+          "privateToken": "local",
+          "scripts": {
+            "git-status": {
+              "cmd": "git branch --show-current && git status -s -u",
+              "shell": true
+            }
+          },
+          "shell": "/bin/bash",
+          "vars": "",
+          "varsAssignor": "=",
+          "varsDelimiter": " ",
+          "warnEntropy": true
+        }
+      }
+    ],
+    "exitCode": 0,
+    "source": "#45",
+    "stderr": "",
+    "stdout": "probe: []\n"
+  },
+  "#45 redact-off": {
+    "argv": [
+      "getdotenv",
+      "--redact-off",
+      "--trace",
+      "SECRET",
+      "cmd",
+      "node",
+      "probe.mjs"
+    ],
+    "bag": {
+      "defaultEnvKey": "DEFAULT_ENV",
+      "dotenvToken": ".env",
+      "entropyMinLength": 16,
+      "entropyThreshold": 3.8,
+      "entropyWhitelist": ["^GIT_", "^npm_", "^CI$", "SHLVL"],
+      "loadProcess": true,
+      "logger": "[logger]",
+      "paths": "./",
+      "pathsDelimiter": " ",
+      "privateToken": "local",
+      "redact": true,
+      "redactOff": true,
+      "scripts": {
+        "git-status": {
+          "cmd": "git branch --show-current && git status -s -u",
+          "shell": true
+        }
+      },
+      "shell": "/bin/bash",
+      "trace": ["SECRET", "cmd", "node", "probe.mjs"],
+      "vars": "",
+      "varsAssignor": "=",
+      "varsDelimiter": " ",
+      "warnEntropy": true
+    },
+    "children": [],
+    "exitCode": 0,
+    "source": "#45",
+    "stderr": "",
+    "stdout": ""
+  },
+  "#46 entropy numbers": {
+    "argv": [
+      "getdotenv",
+      "--entropy-threshold",
+      "9",
+      "--entropy-min-length",
+      "64",
+      "--trace",
+      "HIGH",
+      "cmd",
+      "node",
+      "probe.mjs"
+    ],
+    "bag": {
+      "defaultEnvKey": "DEFAULT_ENV",
+      "dotenvToken": ".env",
+      "entropyMinLength": "64",
+      "entropyThreshold": "9",
+      "entropyWhitelist": ["^GIT_", "^npm_", "^CI$", "SHLVL"],
+      "loadProcess": true,
+      "logger": "[logger]",
+      "paths": "./",
+      "pathsDelimiter": " ",
+      "privateToken": "local",
+      "scripts": {
+        "git-status": {
+          "cmd": "git branch --show-current && git status -s -u",
+          "shell": true
+        }
+      },
+      "shell": "/bin/bash",
+      "trace": ["HIGH", "cmd", "node", "probe.mjs"],
+      "vars": "",
+      "varsAssignor": "=",
+      "varsDelimiter": " ",
+      "warnEntropy": true
+    },
+    "children": [],
+    "exitCode": 0,
+    "source": "#46",
+    "stderr": "",
+    "stdout": ""
+  },
+  "#46 log redact": {
+    "argv": ["getdotenv", "-l", "--redact"],
+    "bag": {
+      "defaultEnvKey": "DEFAULT_ENV",
+      "dotenvToken": ".env",
+      "entropyMinLength": 16,
+      "entropyThreshold": 3.8,
+      "entropyWhitelist": ["^GIT_", "^npm_", "^CI$", "SHLVL"],
+      "loadProcess": true,
+      "log": true,
+      "logger": "[logger]",
+      "paths": "./",
+      "pathsDelimiter": " ",
+      "privateToken": "local",
+      "redact": true,
+      "scripts": {
+        "git-status": {
+          "cmd": "git branch --show-current && git status -s -u",
+          "shell": true
+        }
+      },
+      "shell": "/bin/bash",
+      "vars": "",
+      "varsAssignor": "=",
+      "varsDelimiter": " ",
+      "warnEntropy": true
+    },
+    "children": [],
+    "exitCode": 0,
+    "source": "#46",
+    "stderr": "",
+    "stdout": "{ APP: 'base', SECRET: 'plainsecret' }\n"
+  },
+  "#46 redact-pattern": {
+    "argv": [
+      "getdotenv",
+      "--redact",
+      "--redact-pattern",
+      "SECRET",
+      "--trace",
+      "API_SECRET",
+      "cmd",
+      "node",
+      "probe.mjs"
+    ],
+    "bag": {
+      "defaultEnvKey": "DEFAULT_ENV",
+      "dotenvToken": ".env",
+      "entropyMinLength": 16,
+      "entropyThreshold": 3.8,
+      "entropyWhitelist": ["^GIT_", "^npm_", "^CI$", "SHLVL"],
+      "loadProcess": true,
+      "logger": "[logger]",
+      "paths": "./",
+      "pathsDelimiter": " ",
+      "privateToken": "local",
+      "redact": true,
+      "redactPattern": ["SECRET"],
+      "scripts": {
+        "git-status": {
+          "cmd": "git branch --show-current && git status -s -u",
+          "shell": true
+        }
+      },
+      "shell": "/bin/bash",
+      "trace": ["API_SECRET", "cmd", "node", "probe.mjs"],
+      "vars": "",
+      "varsAssignor": "=",
+      "varsDelimiter": " ",
+      "warnEntropy": true
+    },
+    "children": [],
+    "exitCode": 0,
+    "source": "#46",
+    "stderr": "",
+    "stdout": ""
+  },
+  "#47 undefined into process.env": {
+    "argv": ["getdotenv", "cmd", "node", "probe.mjs", "--print", "EMPTY"],
+    "bag": {
+      "defaultEnvKey": "DEFAULT_ENV",
+      "dotenvToken": ".env",
+      "entropyMinLength": 16,
+      "entropyThreshold": 3.8,
+      "entropyWhitelist": ["^GIT_", "^npm_", "^CI$", "SHLVL"],
+      "loadProcess": true,
+      "logger": "[logger]",
+      "paths": "./",
+      "pathsDelimiter": " ",
+      "privateToken": "local",
+      "scripts": {
+        "git-status": {
+          "cmd": "git branch --show-current && git status -s -u",
+          "shell": true
+        }
+      },
+      "shell": "/bin/bash",
+      "vars": "",
+      "varsAssignor": "=",
+      "varsDelimiter": " ",
+      "warnEntropy": true
+    },
+    "children": [
+      {
+        "argv": ["--print", "EMPTY"],
+        "cwd": ".",
+        "env": {
+          "added": {
+            "APP": "cae662172fd4",
+            "EMPTY": "eb045d78d273",
+            "getDotenvCliOptions": "ee90e48b8d2b"
+          },
+          "changed": {},
+          "removed": []
+        },
+        "getDotenvCliOptions": {
+          "defaultEnvKey": "DEFAULT_ENV",
+          "dotenvToken": ".env",
+          "entropyMinLength": 16,
+          "entropyThreshold": 3.8,
+          "entropyWhitelist": ["^GIT_", "^npm_", "^CI$", "SHLVL"],
+          "loadProcess": true,
+          "paths": "./",
+          "pathsDelimiter": " ",
+          "privateToken": "local",
+          "scripts": {
+            "git-status": {
+              "cmd": "git branch --show-current && git status -s -u",
+              "shell": true
+            }
+          },
+          "shell": "/bin/bash",
+          "vars": "",
+          "varsAssignor": "=",
+          "varsDelimiter": " ",
+          "warnEntropy": true
+        }
+      }
+    ],
+    "exitCode": 0,
+    "source": "#47",
+    "stderr": "",
+    "stdout": "probe: [\"--print\",\"EMPTY\"]\nprobe env: {\"EMPTY\":\"undefined\"}\n"
+  },
+  "#49 alias script": {
+    "argv": ["getdotenv", "-c", "hello"],
+    "bag": {
+      "cmd": ["hello"],
+      "defaultEnvKey": "DEFAULT_ENV",
+      "dotenvToken": ".env",
+      "entropyMinLength": 16,
+      "entropyThreshold": 3.8,
+      "entropyWhitelist": ["^GIT_", "^npm_", "^CI$", "SHLVL"],
+      "loadProcess": true,
+      "logger": "[logger]",
+      "paths": "./",
+      "pathsDelimiter": " ",
+      "privateToken": "local",
+      "scripts": {
+        "git-status": {
+          "cmd": "git branch --show-current && git status -s -u",
+          "shell": true
+        },
+        "hello": "node probe.mjs 42"
+      },
+      "shell": "/bin/bash",
+      "vars": "",
+      "varsAssignor": "=",
+      "varsDelimiter": " ",
+      "warnEntropy": true
+    },
+    "children": [],
+    "exitCode": 0,
+    "source": "#49",
+    "stderr": "",
+    "stdout": ""
+  },
+  "#49 cmd script": {
+    "argv": ["getdotenv", "cmd", "hello"],
+    "bag": {
+      "defaultEnvKey": "DEFAULT_ENV",
+      "dotenvToken": ".env",
+      "entropyMinLength": 16,
+      "entropyThreshold": 3.8,
+      "entropyWhitelist": ["^GIT_", "^npm_", "^CI$", "SHLVL"],
+      "loadProcess": true,
+      "logger": "[logger]",
+      "paths": "./",
+      "pathsDelimiter": " ",
+      "privateToken": "local",
+      "scripts": {
+        "git-status": {
+          "cmd": "git branch --show-current && git status -s -u",
+          "shell": true
+        },
+        "hello": "node probe.mjs 42"
+      },
+      "shell": "/bin/bash",
+      "vars": "",
+      "varsAssignor": "=",
+      "varsDelimiter": " ",
+      "warnEntropy": true
+    },
+    "children": [
+      {
+        "argv": ["42"],
+        "cwd": ".",
+        "env": {
+          "added": {
+            "APP": "cae662172fd4",
+            "getDotenvCliOptions": "10e70a9cd6b1"
+          },
+          "changed": {},
+          "removed": []
+        },
+        "getDotenvCliOptions": {
+          "defaultEnvKey": "DEFAULT_ENV",
+          "dotenvToken": ".env",
+          "entropyMinLength": 16,
+          "entropyThreshold": 3.8,
+          "entropyWhitelist": ["^GIT_", "^npm_", "^CI$", "SHLVL"],
+          "loadProcess": true,
+          "paths": "./",
+          "pathsDelimiter": " ",
+          "privateToken": "local",
+          "scripts": {
+            "git-status": {
+              "cmd": "git branch --show-current && git status -s -u",
+              "shell": true
+            },
+            "hello": "node probe.mjs 42"
+          },
+          "shell": "/bin/bash",
+          "vars": "",
+          "varsAssignor": "=",
+          "varsDelimiter": " ",
+          "warnEntropy": true
+        }
+      }
+    ],
+    "exitCode": 0,
+    "source": "#49",
+    "stderr": "",
+    "stdout": "probe: [\"42\"]\n"
+  },
+  "#50 alias conflict": {
+    "argv": ["getdotenv", "-c", "node probe.mjs", "cmd", "node", "probe.mjs"],
+    "bag": {
+      "cmd": ["node probe.mjs", "cmd", "node", "probe.mjs"],
+      "defaultEnvKey": "DEFAULT_ENV",
+      "dotenvToken": ".env",
+      "entropyMinLength": 16,
+      "entropyThreshold": 3.8,
+      "entropyWhitelist": ["^GIT_", "^npm_", "^CI$", "SHLVL"],
+      "loadProcess": true,
+      "logger": "[logger]",
+      "paths": "./",
+      "pathsDelimiter": " ",
+      "privateToken": "local",
+      "scripts": {
+        "git-status": {
+          "cmd": "git branch --show-current && git status -s -u",
+          "shell": true
+        }
+      },
+      "shell": "/bin/bash",
+      "vars": "",
+      "varsAssignor": "=",
+      "varsDelimiter": " ",
+      "warnEntropy": true
+    },
+    "children": [],
+    "exitCode": 0,
+    "mode": "child",
+    "source": "#50",
+    "stderr": "",
+    "stdout": ""
+  },
+  "#50 alias exit": {
+    "argv": ["getdotenv", "-c", "node probe.mjs --exit 4"],
+    "bag": {
+      "cmd": ["node probe.mjs --exit 4"],
+      "defaultEnvKey": "DEFAULT_ENV",
+      "dotenvToken": ".env",
+      "entropyMinLength": 16,
+      "entropyThreshold": 3.8,
+      "entropyWhitelist": ["^GIT_", "^npm_", "^CI$", "SHLVL"],
+      "loadProcess": true,
+      "logger": "[logger]",
+      "paths": "./",
+      "pathsDelimiter": " ",
+      "privateToken": "local",
+      "scripts": {
+        "git-status": {
+          "cmd": "git branch --show-current && git status -s -u",
+          "shell": true
+        }
+      },
+      "shell": "/bin/bash",
+      "vars": "",
+      "varsAssignor": "=",
+      "varsDelimiter": " ",
+      "warnEntropy": true
+    },
+    "children": [
+      {
+        "argv": ["--exit", "4"],
+        "cwd": ".",
+        "env": {
+          "added": {
+            "APP": "cae662172fd4",
+            "getDotenvCliOptions": "990d5d82d6e0"
+          },
+          "changed": {},
+          "removed": []
+        },
+        "getDotenvCliOptions": {
+          "cmd": ["node probe.mjs --exit 4"],
+          "defaultEnvKey": "DEFAULT_ENV",
+          "dotenvToken": ".env",
+          "entropyMinLength": 16,
+          "entropyThreshold": 3.8,
+          "entropyWhitelist": ["^GIT_", "^npm_", "^CI$", "SHLVL"],
+          "loadProcess": true,
+          "paths": "./",
+          "pathsDelimiter": " ",
+          "privateToken": "local",
+          "scripts": {
+            "git-status": {
+              "cmd": "git branch --show-current && git status -s -u",
+              "shell": true
+            }
+          },
+          "shell": "/bin/bash",
+          "vars": "",
+          "varsAssignor": "=",
+          "varsDelimiter": " ",
+          "warnEntropy": true
+        }
+      }
+    ],
+    "exitCode": 4,
+    "mode": "child",
+    "source": "#50",
+    "stderr": "",
+    "stdout": "probe: [\"--exit\",\"4\"]\n"
+  },
+  "#50 batch exit": {
+    "argv": ["getdotenv", "batch", "node", "probe.mjs", "--exit", "3"],
+    "bag": {
+      "defaultEnvKey": "DEFAULT_ENV",
+      "dotenvToken": ".env",
+      "entropyMinLength": 16,
+      "entropyThreshold": 3.8,
+      "entropyWhitelist": ["^GIT_", "^npm_", "^CI$", "SHLVL"],
+      "loadProcess": true,
+      "logger": "[logger]",
+      "paths": "./",
+      "pathsDelimiter": " ",
+      "privateToken": "local",
+      "scripts": {
+        "git-status": {
+          "cmd": "git branch --show-current && git status -s -u",
+          "shell": true
+        }
+      },
+      "shell": "/bin/bash",
+      "vars": "",
+      "varsAssignor": "=",
+      "varsDelimiter": " ",
+      "warnEntropy": true
+    },
+    "children": [
+      {
+        "argv": ["--exit", "3"],
+        "cwd": "pkgA",
+        "env": {
+          "added": {
+            "APP": "cae662172fd4",
+            "getDotenvCliOptions": "ee90e48b8d2b"
+          },
+          "changed": {},
+          "removed": []
+        },
+        "getDotenvCliOptions": {
+          "defaultEnvKey": "DEFAULT_ENV",
+          "dotenvToken": ".env",
+          "entropyMinLength": 16,
+          "entropyThreshold": 3.8,
+          "entropyWhitelist": ["^GIT_", "^npm_", "^CI$", "SHLVL"],
+          "loadProcess": true,
+          "paths": "./",
+          "pathsDelimiter": " ",
+          "privateToken": "local",
+          "scripts": {
+            "git-status": {
+              "cmd": "git branch --show-current && git status -s -u",
+              "shell": true
+            }
+          },
+          "shell": "/bin/bash",
+          "vars": "",
+          "varsAssignor": "=",
+          "varsDelimiter": " ",
+          "warnEntropy": true
+        }
+      },
+      {
+        "argv": ["--exit", "3"],
+        "cwd": "pkgB",
+        "env": {
+          "added": {
+            "APP": "cae662172fd4",
+            "getDotenvCliOptions": "ee90e48b8d2b"
+          },
+          "changed": {},
+          "removed": []
+        },
+        "getDotenvCliOptions": {
+          "defaultEnvKey": "DEFAULT_ENV",
+          "dotenvToken": ".env",
+          "entropyMinLength": 16,
+          "entropyThreshold": 3.8,
+          "entropyWhitelist": ["^GIT_", "^npm_", "^CI$", "SHLVL"],
+          "loadProcess": true,
+          "paths": "./",
+          "pathsDelimiter": " ",
+          "privateToken": "local",
+          "scripts": {
+            "git-status": {
+              "cmd": "git branch --show-current && git status -s -u",
+              "shell": true
+            }
+          },
+          "shell": "/bin/bash",
+          "vars": "",
+          "varsAssignor": "=",
+          "varsDelimiter": " ",
+          "warnEntropy": true
+        }
+      }
+    ],
+    "exitCode": 0,
+    "mode": "child",
+    "source": "#50",
+    "stderr": "",
+    "stdout": "\n<STARS>\nExecuting command batch...\n\nROOT:  <TMP>/\nGLOBS: *\nCMD:   node probe.mjs --exit 3\n\n<STARS>\nCWD:   <TMP>/pkgA\nCMD:   node probe.mjs --exit 3\nprobe: [\"--exit\",\"3\"]\n\n<STARS>\nCWD:   <TMP>/pkgB\nCMD:   node probe.mjs --exit 3\nprobe: [\"--exit\",\"3\"]\n\n"
+  },
+  "#50 batch no command": {
+    "argv": ["getdotenv", "batch"],
+    "bag": {
+      "defaultEnvKey": "DEFAULT_ENV",
+      "dotenvToken": ".env",
+      "entropyMinLength": 16,
+      "entropyThreshold": 3.8,
+      "entropyWhitelist": ["^GIT_", "^npm_", "^CI$", "SHLVL"],
+      "loadProcess": true,
+      "logger": "[logger]",
+      "paths": "./",
+      "pathsDelimiter": " ",
+      "privateToken": "local",
+      "scripts": {
+        "git-status": {
+          "cmd": "git branch --show-current && git status -s -u",
+          "shell": true
+        }
+      },
+      "shell": "/bin/bash",
+      "vars": "",
+      "varsAssignor": "=",
+      "varsDelimiter": " ",
+      "warnEntropy": true
+    },
+    "children": [],
+    "exitCode": 0,
+    "mode": "child",
+    "source": "#50",
+    "stderr": "No command provided. Use --command or --list.\n",
+    "stdout": ""
+  },
+  "#50 cmd exit": {
+    "argv": ["getdotenv", "cmd", "node", "probe.mjs", "--exit", "4"],
+    "bag": {
+      "defaultEnvKey": "DEFAULT_ENV",
+      "dotenvToken": ".env",
+      "entropyMinLength": 16,
+      "entropyThreshold": 3.8,
+      "entropyWhitelist": ["^GIT_", "^npm_", "^CI$", "SHLVL"],
+      "loadProcess": true,
+      "logger": "[logger]",
+      "paths": "./",
+      "pathsDelimiter": " ",
+      "privateToken": "local",
+      "scripts": {
+        "git-status": {
+          "cmd": "git branch --show-current && git status -s -u",
+          "shell": true
+        }
+      },
+      "shell": "/bin/bash",
+      "vars": "",
+      "varsAssignor": "=",
+      "varsDelimiter": " ",
+      "warnEntropy": true
+    },
+    "children": [
+      {
+        "argv": ["--exit", "4"],
+        "cwd": ".",
+        "env": {
+          "added": {
+            "APP": "cae662172fd4",
+            "getDotenvCliOptions": "ee90e48b8d2b"
+          },
+          "changed": {},
+          "removed": []
+        },
+        "getDotenvCliOptions": {
+          "defaultEnvKey": "DEFAULT_ENV",
+          "dotenvToken": ".env",
+          "entropyMinLength": 16,
+          "entropyThreshold": 3.8,
+          "entropyWhitelist": ["^GIT_", "^npm_", "^CI$", "SHLVL"],
+          "loadProcess": true,
+          "paths": "./",
+          "pathsDelimiter": " ",
+          "privateToken": "local",
+          "scripts": {
+            "git-status": {
+              "cmd": "git branch --show-current && git status -s -u",
+              "shell": true
+            }
+          },
+          "shell": "/bin/bash",
+          "vars": "",
+          "varsAssignor": "=",
+          "varsDelimiter": " ",
+          "warnEntropy": true
+        }
+      }
+    ],
+    "exitCode": 0,
+    "mode": "child",
+    "source": "#50",
+    "stderr": "",
+    "stdout": "probe: [\"--exit\",\"4\"]\n"
+  },
+  "#50 default exit": {
+    "argv": ["getdotenv", "node", "probe.mjs", "--exit", "4"],
+    "bag": {
+      "defaultEnvKey": "DEFAULT_ENV",
+      "dotenvToken": ".env",
+      "entropyMinLength": 16,
+      "entropyThreshold": 3.8,
+      "entropyWhitelist": ["^GIT_", "^npm_", "^CI$", "SHLVL"],
+      "loadProcess": true,
+      "logger": "[logger]",
+      "paths": "./",
+      "pathsDelimiter": " ",
+      "privateToken": "local",
+      "scripts": {
+        "git-status": {
+          "cmd": "git branch --show-current && git status -s -u",
+          "shell": true
+        }
+      },
+      "shell": "/bin/bash",
+      "vars": "",
+      "varsAssignor": "=",
+      "varsDelimiter": " ",
+      "warnEntropy": true
+    },
+    "children": [
+      {
+        "argv": ["--exit", "4"],
+        "cwd": ".",
+        "env": {
+          "added": {
+            "APP": "cae662172fd4",
+            "getDotenvCliOptions": "ee90e48b8d2b"
+          },
+          "changed": {},
+          "removed": []
+        },
+        "getDotenvCliOptions": {
+          "defaultEnvKey": "DEFAULT_ENV",
+          "dotenvToken": ".env",
+          "entropyMinLength": 16,
+          "entropyThreshold": 3.8,
+          "entropyWhitelist": ["^GIT_", "^npm_", "^CI$", "SHLVL"],
+          "loadProcess": true,
+          "paths": "./",
+          "pathsDelimiter": " ",
+          "privateToken": "local",
+          "scripts": {
+            "git-status": {
+              "cmd": "git branch --show-current && git status -s -u",
+              "shell": true
+            }
+          },
+          "shell": "/bin/bash",
+          "vars": "",
+          "varsAssignor": "=",
+          "varsDelimiter": " ",
+          "warnEntropy": true
+        }
+      }
+    ],
+    "exitCode": 0,
+    "mode": "child",
+    "source": "#50",
+    "stderr": "",
+    "stdout": "probe: [\"--exit\",\"4\"]\n"
+  },
+  "#51 batch argv quoting": {
+    "argv": [
+      "getdotenv",
+      "batch",
+      "-g",
+      "pkgA",
+      "node",
+      "probe.mjs",
+      "a b",
+      "x$y",
+      "q\"r"
+    ],
+    "bag": {
+      "defaultEnvKey": "DEFAULT_ENV",
+      "dotenvToken": ".env",
+      "entropyMinLength": 16,
+      "entropyThreshold": 3.8,
+      "entropyWhitelist": ["^GIT_", "^npm_", "^CI$", "SHLVL"],
+      "loadProcess": true,
+      "logger": "[logger]",
+      "paths": "./",
+      "pathsDelimiter": " ",
+      "privateToken": "local",
+      "scripts": {
+        "git-status": {
+          "cmd": "git branch --show-current && git status -s -u",
+          "shell": true
+        }
+      },
+      "shell": "/bin/bash",
+      "vars": "",
+      "varsAssignor": "=",
+      "varsDelimiter": " ",
+      "warnEntropy": true
+    },
+    "children": [
+      {
+        "argv": ["a b", "x$y", "q\"r"],
+        "cwd": "pkgA",
+        "env": {
+          "added": {
+            "APP": "cae662172fd4",
+            "getDotenvCliOptions": "ee90e48b8d2b"
+          },
+          "changed": {},
+          "removed": []
+        },
+        "getDotenvCliOptions": {
+          "defaultEnvKey": "DEFAULT_ENV",
+          "dotenvToken": ".env",
+          "entropyMinLength": 16,
+          "entropyThreshold": 3.8,
+          "entropyWhitelist": ["^GIT_", "^npm_", "^CI$", "SHLVL"],
+          "loadProcess": true,
+          "paths": "./",
+          "pathsDelimiter": " ",
+          "privateToken": "local",
+          "scripts": {
+            "git-status": {
+              "cmd": "git branch --show-current && git status -s -u",
+              "shell": true
+            }
+          },
+          "shell": "/bin/bash",
+          "vars": "",
+          "varsAssignor": "=",
+          "varsDelimiter": " ",
+          "warnEntropy": true
+        }
+      }
+    ],
+    "exitCode": 0,
+    "source": "#51",
+    "stderr": "",
+    "stdout": "\n<STARS>\nExecuting command batch...\n\nROOT:  <TMP>/\nGLOBS: pkgA\nCMD:   node probe.mjs a b x$y q\"r\n\n<STARS>\nCWD:   <TMP>/pkgA\nCMD:   node probe.mjs a b x$y q\"r\nprobe: [\"a b\",\"x$y\",\"q\\\"r\"]\n\n"
+  },
+  "#51 script shell true": {
+    "argv": ["getdotenv", "--debug", "cmd", "sh"],
+    "bag": {
+      "debug": true,
+      "defaultEnvKey": "DEFAULT_ENV",
+      "dotenvToken": ".env",
+      "entropyMinLength": 16,
+      "entropyThreshold": 3.8,
+      "entropyWhitelist": ["^GIT_", "^npm_", "^CI$", "SHLVL"],
+      "loadProcess": true,
+      "logger": "[logger]",
+      "paths": "./",
+      "pathsDelimiter": " ",
+      "privateToken": "local",
+      "scripts": {
+        "git-status": {
+          "cmd": "git branch --show-current && git status -s -u",
+          "shell": true
+        },
+        "sh": {
+          "cmd": "node probe.mjs sh",
+          "shell": true
+        }
+      },
+      "shell": "/bin/bash",
+      "vars": "",
+      "varsAssignor": "=",
+      "varsDelimiter": " ",
+      "warnEntropy": true
+    },
+    "children": [
+      {
+        "argv": ["sh"],
+        "cwd": ".",
+        "env": {
+          "added": {
+            "APP": "cae662172fd4",
+            "GETDOTENV_DEBUG": "6b86b273ff34",
+            "getDotenvCliOptions": "d78fd07456cd"
+          },
+          "changed": {},
+          "removed": []
+        },
+        "getDotenvCliOptions": {
+          "debug": true,
+          "defaultEnvKey": "DEFAULT_ENV",
+          "dotenvToken": ".env",
+          "entropyMinLength": 16,
+          "entropyThreshold": 3.8,
+          "entropyWhitelist": ["^GIT_", "^npm_", "^CI$", "SHLVL"],
+          "loadProcess": true,
+          "paths": "./",
+          "pathsDelimiter": " ",
+          "privateToken": "local",
+          "scripts": {
+            "git-status": {
+              "cmd": "git branch --show-current && git status -s -u",
+              "shell": true
+            },
+            "sh": {
+              "cmd": "node probe.mjs sh",
+              "shell": true
+            }
+          },
+          "shell": "/bin/bash",
+          "vars": "",
+          "varsAssignor": "=",
+          "varsDelimiter": " ",
+          "warnEntropy": true
+        }
+      }
+    ],
+    "exitCode": 0,
+    "source": "#51",
+    "stderr": "[getdotenv:alias] maybeRun:start\n[getdotenv:alias] maybeRun:rawArgs [\"node\",\"getdotenv\",\"--debug\",\"cmd\",\"sh\"]\n[getdotenv:alias] maybeRun:aliasKey cmd provided false value \n[getdotenv:rootHooks] preAction:rawArgs [\"node\",\"getdotenv\",\"--debug\",\"cmd\",\"sh\"]\n[getdotenv:rootHooks] preAction:merged {\"shell\":\"/bin/bash\"}\n[getdotenv:alias] maybeRun:start\n[getdotenv:alias] maybeRun:rawArgs [\"node\",\"getdotenv\",\"--debug\",\"cmd\",\"sh\"]\n[getdotenv:alias] maybeRun:aliasKey cmd provided false value \n[getdotenv:run] exec (shell) { command: 'node probe.mjs sh', shell: 'custom', stdio: 'pipe' }\n[getdotenv:run] exit (shell) { exitCode: 0 }\n",
+    "stdout": "\n*** command ***\n 'node probe.mjs sh'\nprobe: [\"sh\"]\n"
+  },
+  "#53 args-only argv": {
+    "argv": ["-v", "APP=hello", "cmd", "node", "probe.mjs", "--print", "APP"],
+    "bag": {
+      "defaultEnvKey": "DEFAULT_ENV",
+      "dotenvToken": ".env",
+      "entropyMinLength": 16,
+      "entropyThreshold": 3.8,
+      "entropyWhitelist": ["^GIT_", "^npm_", "^CI$", "SHLVL"],
+      "loadProcess": true,
+      "logger": "[logger]",
+      "paths": "./",
+      "pathsDelimiter": " ",
+      "privateToken": "local",
+      "scripts": {
+        "git-status": {
+          "cmd": "git branch --show-current && git status -s -u",
+          "shell": true
+        }
+      },
+      "shell": "/bin/bash",
+      "vars": "",
+      "varsAssignor": "=",
+      "varsDelimiter": " ",
+      "warnEntropy": true
+    },
+    "children": [
+      {
+        "argv": ["--print", "APP"],
+        "cwd": ".",
+        "env": {
+          "added": {
+            "APP": "cae662172fd4",
+            "getDotenvCliOptions": "ee90e48b8d2b"
+          },
+          "changed": {},
+          "removed": []
+        },
+        "getDotenvCliOptions": {
+          "defaultEnvKey": "DEFAULT_ENV",
+          "dotenvToken": ".env",
+          "entropyMinLength": 16,
+          "entropyThreshold": 3.8,
+          "entropyWhitelist": ["^GIT_", "^npm_", "^CI$", "SHLVL"],
+          "loadProcess": true,
+          "paths": "./",
+          "pathsDelimiter": " ",
+          "privateToken": "local",
+          "scripts": {
+            "git-status": {
+              "cmd": "git branch --show-current && git status -s -u",
+              "shell": true
+            }
+          },
+          "shell": "/bin/bash",
+          "vars": "",
+          "varsAssignor": "=",
+          "varsDelimiter": " ",
+          "warnEntropy": true
+        }
+      }
+    ],
+    "exitCode": 0,
+    "source": "#53",
+    "stderr": "",
+    "stdout": "probe: [\"--print\",\"APP\"]\nprobe env: {\"APP\":\"base\"}\n"
+  },
+  "#56 dotenv region overrides session": {
+    "argv": [
+      "getdotenv",
+      "aws",
+      "--strategy",
+      "none",
+      "--region",
+      "eu-west-3",
+      "configure",
+      "list"
+    ],
+    "aws": [
+      {
+        "command": ["aws", "configure", "list"],
+        "env": {
+          "added": {
+            "APP": "cae662172fd4",
+            "AWS_DEFAULT_REGION": "487d653406a6",
+            "AWS_REGION": "487d653406a6"
+          },
+          "changed": {},
+          "removed": []
+        },
+        "getDotenvCliOptions": null,
+        "kind": "run",
+        "shell": "/bin/bash"
+      }
+    ],
+    "bag": {
+      "defaultEnvKey": "DEFAULT_ENV",
+      "dotenvToken": ".env",
+      "entropyMinLength": 16,
+      "entropyThreshold": 3.8,
+      "entropyWhitelist": ["^GIT_", "^npm_", "^CI$", "SHLVL"],
+      "loadProcess": true,
+      "logger": "[logger]",
+      "paths": "./",
+      "pathsDelimiter": " ",
+      "privateToken": "local",
+      "scripts": {
+        "git-status": {
+          "cmd": "git branch --show-current && git status -s -u",
+          "shell": true
+        }
+      },
+      "shell": "/bin/bash",
+      "vars": "",
+      "varsAssignor": "=",
+      "varsDelimiter": " ",
+      "warnEntropy": true
+    },
+    "children": [],
+    "exitCode": 0,
+    "source": "#56",
+    "stderr": "",
+    "stdout": ""
+  },
+  "#56 profile flag on aws child": {
+    "argv": [
+      "getdotenv",
+      "aws",
+      "--profile",
+      "flag-profile",
+      "whoami",
+      "really"
+    ],
+    "aws": [
+      {
+        "command": [
+          "aws",
+          "configure",
+          "export-credentials",
+          "--profile",
+          "flag-profile",
+          "--format",
+          "process"
+        ],
+        "env": {
+          "added": {
+            "APP": "cae662172fd4",
+            "AWS_LOCAL_PROFILE": "5e649592b9e7",
+            "SECRET_IDENTITY": "1532e76dbe9d"
+          },
+          "changed": {},
+          "removed": []
+        },
+        "getDotenvCliOptions": null,
+        "kind": "result",
+        "shell": false
+      },
+      {
+        "command": [
+          "aws",
+          "configure",
+          "export-credentials",
+          "--profile",
+          "flag-profile",
+          "--format",
+          "env"
+        ],
+        "env": {
+          "added": {
+            "APP": "cae662172fd4",
+            "AWS_LOCAL_PROFILE": "5e649592b9e7",
+            "SECRET_IDENTITY": "1532e76dbe9d"
+          },
+          "changed": {},
+          "removed": []
+        },
+        "getDotenvCliOptions": null,
+        "kind": "result",
+        "shell": false
+      },
+      {
+        "command": [
+          "aws",
+          "configure",
+          "export-credentials",
+          "--profile",
+          "flag-profile"
+        ],
+        "env": {
+          "added": {
+            "APP": "cae662172fd4",
+            "AWS_LOCAL_PROFILE": "5e649592b9e7",
+            "SECRET_IDENTITY": "1532e76dbe9d"
+          },
+          "changed": {},
+          "removed": []
+        },
+        "getDotenvCliOptions": null,
+        "kind": "result",
+        "shell": false
+      },
+      {
+        "command": [
+          "aws",
+          "configure",
+          "get",
+          "sso_session",
+          "--profile",
+          "flag-profile"
+        ],
+        "env": {
+          "added": {
+            "APP": "cae662172fd4",
+            "AWS_LOCAL_PROFILE": "5e649592b9e7",
+            "SECRET_IDENTITY": "1532e76dbe9d"
+          },
+          "changed": {},
+          "removed": []
+        },
+        "getDotenvCliOptions": null,
+        "kind": "result",
+        "shell": false
+      },
+      {
+        "command": [
+          "aws",
+          "configure",
+          "get",
+          "sso_start_url",
+          "--profile",
+          "flag-profile"
+        ],
+        "env": {
+          "added": {
+            "APP": "cae662172fd4",
+            "AWS_LOCAL_PROFILE": "5e649592b9e7",
+            "SECRET_IDENTITY": "1532e76dbe9d"
+          },
+          "changed": {},
+          "removed": []
+        },
+        "getDotenvCliOptions": null,
+        "kind": "result",
+        "shell": false
+      },
+      {
+        "command": [
+          "aws",
+          "configure",
+          "get",
+          "aws_access_key_id",
+          "--profile",
+          "flag-profile"
+        ],
+        "env": {
+          "added": {
+            "APP": "cae662172fd4",
+            "AWS_LOCAL_PROFILE": "5e649592b9e7",
+            "SECRET_IDENTITY": "1532e76dbe9d"
+          },
+          "changed": {},
+          "removed": []
+        },
+        "getDotenvCliOptions": null,
+        "kind": "result",
+        "shell": false
+      },
+      {
+        "command": [
+          "aws",
+          "configure",
+          "get",
+          "aws_secret_access_key",
+          "--profile",
+          "flag-profile"
+        ],
+        "env": {
+          "added": {
+            "APP": "cae662172fd4",
+            "AWS_LOCAL_PROFILE": "5e649592b9e7",
+            "SECRET_IDENTITY": "1532e76dbe9d"
+          },
+          "changed": {},
+          "removed": []
+        },
+        "getDotenvCliOptions": null,
+        "kind": "result",
+        "shell": false
+      },
+      {
+        "command": [
+          "aws",
+          "configure",
+          "get",
+          "aws_session_token",
+          "--profile",
+          "flag-profile"
+        ],
+        "env": {
+          "added": {
+            "APP": "cae662172fd4",
+            "AWS_LOCAL_PROFILE": "5e649592b9e7",
+            "SECRET_IDENTITY": "1532e76dbe9d"
+          },
+          "changed": {},
+          "removed": []
+        },
+        "getDotenvCliOptions": null,
+        "kind": "result",
+        "shell": false
+      },
+      {
+        "command": [
+          "aws",
+          "configure",
+          "get",
+          "region",
+          "--profile",
+          "flag-profile"
+        ],
+        "env": {
+          "added": {
+            "APP": "cae662172fd4",
+            "AWS_LOCAL_PROFILE": "5e649592b9e7",
+            "SECRET_IDENTITY": "1532e76dbe9d"
+          },
+          "changed": {},
+          "removed": []
+        },
+        "getDotenvCliOptions": null,
+        "kind": "result",
+        "shell": false
+      },
+      {
+        "command": [
+          "aws",
+          "configure",
+          "export-credentials",
+          "--profile",
+          "dotenv-profile",
+          "--format",
+          "process"
+        ],
+        "env": {
+          "added": {
+            "APP": "cae662172fd4",
+            "AWS_DEFAULT_PROFILE": "31efda6f6332",
+            "AWS_LOCAL_PROFILE": "5e649592b9e7",
+            "AWS_PROFILE": "31efda6f6332",
+            "AWS_SDK_LOAD_CONFIG": "6b86b273ff34",
+            "SECRET_IDENTITY": "1532e76dbe9d"
+          },
+          "changed": {},
+          "removed": []
+        },
+        "getDotenvCliOptions": null,
+        "kind": "result",
+        "shell": false
+      },
+      {
+        "command": [
+          "aws",
+          "configure",
+          "export-credentials",
+          "--profile",
+          "dotenv-profile",
+          "--format",
+          "env"
+        ],
+        "env": {
+          "added": {
+            "APP": "cae662172fd4",
+            "AWS_DEFAULT_PROFILE": "31efda6f6332",
+            "AWS_LOCAL_PROFILE": "5e649592b9e7",
+            "AWS_PROFILE": "31efda6f6332",
+            "AWS_SDK_LOAD_CONFIG": "6b86b273ff34",
+            "SECRET_IDENTITY": "1532e76dbe9d"
+          },
+          "changed": {},
+          "removed": []
+        },
+        "getDotenvCliOptions": null,
+        "kind": "result",
+        "shell": false
+      },
+      {
+        "command": [
+          "aws",
+          "configure",
+          "export-credentials",
+          "--profile",
+          "dotenv-profile"
+        ],
+        "env": {
+          "added": {
+            "APP": "cae662172fd4",
+            "AWS_DEFAULT_PROFILE": "31efda6f6332",
+            "AWS_LOCAL_PROFILE": "5e649592b9e7",
+            "AWS_PROFILE": "31efda6f6332",
+            "AWS_SDK_LOAD_CONFIG": "6b86b273ff34",
+            "SECRET_IDENTITY": "1532e76dbe9d"
+          },
+          "changed": {},
+          "removed": []
+        },
+        "getDotenvCliOptions": null,
+        "kind": "result",
+        "shell": false
+      },
+      {
+        "command": [
+          "aws",
+          "configure",
+          "get",
+          "sso_session",
+          "--profile",
+          "dotenv-profile"
+        ],
+        "env": {
+          "added": {
+            "APP": "cae662172fd4",
+            "AWS_DEFAULT_PROFILE": "31efda6f6332",
+            "AWS_LOCAL_PROFILE": "5e649592b9e7",
+            "AWS_PROFILE": "31efda6f6332",
+            "AWS_SDK_LOAD_CONFIG": "6b86b273ff34",
+            "SECRET_IDENTITY": "1532e76dbe9d"
+          },
+          "changed": {},
+          "removed": []
+        },
+        "getDotenvCliOptions": null,
+        "kind": "result",
+        "shell": false
+      },
+      {
+        "command": [
+          "aws",
+          "configure",
+          "get",
+          "sso_start_url",
+          "--profile",
+          "dotenv-profile"
+        ],
+        "env": {
+          "added": {
+            "APP": "cae662172fd4",
+            "AWS_DEFAULT_PROFILE": "31efda6f6332",
+            "AWS_LOCAL_PROFILE": "5e649592b9e7",
+            "AWS_PROFILE": "31efda6f6332",
+            "AWS_SDK_LOAD_CONFIG": "6b86b273ff34",
+            "SECRET_IDENTITY": "1532e76dbe9d"
+          },
+          "changed": {},
+          "removed": []
+        },
+        "getDotenvCliOptions": null,
+        "kind": "result",
+        "shell": false
+      },
+      {
+        "command": [
+          "aws",
+          "configure",
+          "get",
+          "aws_access_key_id",
+          "--profile",
+          "dotenv-profile"
+        ],
+        "env": {
+          "added": {
+            "APP": "cae662172fd4",
+            "AWS_DEFAULT_PROFILE": "31efda6f6332",
+            "AWS_LOCAL_PROFILE": "5e649592b9e7",
+            "AWS_PROFILE": "31efda6f6332",
+            "AWS_SDK_LOAD_CONFIG": "6b86b273ff34",
+            "SECRET_IDENTITY": "1532e76dbe9d"
+          },
+          "changed": {},
+          "removed": []
+        },
+        "getDotenvCliOptions": null,
+        "kind": "result",
+        "shell": false
+      },
+      {
+        "command": [
+          "aws",
+          "configure",
+          "get",
+          "aws_secret_access_key",
+          "--profile",
+          "dotenv-profile"
+        ],
+        "env": {
+          "added": {
+            "APP": "cae662172fd4",
+            "AWS_DEFAULT_PROFILE": "31efda6f6332",
+            "AWS_LOCAL_PROFILE": "5e649592b9e7",
+            "AWS_PROFILE": "31efda6f6332",
+            "AWS_SDK_LOAD_CONFIG": "6b86b273ff34",
+            "SECRET_IDENTITY": "1532e76dbe9d"
+          },
+          "changed": {},
+          "removed": []
+        },
+        "getDotenvCliOptions": null,
+        "kind": "result",
+        "shell": false
+      },
+      {
+        "command": [
+          "aws",
+          "configure",
+          "get",
+          "aws_session_token",
+          "--profile",
+          "dotenv-profile"
+        ],
+        "env": {
+          "added": {
+            "APP": "cae662172fd4",
+            "AWS_DEFAULT_PROFILE": "31efda6f6332",
+            "AWS_LOCAL_PROFILE": "5e649592b9e7",
+            "AWS_PROFILE": "31efda6f6332",
+            "AWS_SDK_LOAD_CONFIG": "6b86b273ff34",
+            "SECRET_IDENTITY": "1532e76dbe9d"
+          },
+          "changed": {},
+          "removed": []
+        },
+        "getDotenvCliOptions": null,
+        "kind": "result",
+        "shell": false
+      },
+      {
+        "command": [
+          "aws",
+          "configure",
+          "get",
+          "region",
+          "--profile",
+          "dotenv-profile"
+        ],
+        "env": {
+          "added": {
+            "APP": "cae662172fd4",
+            "AWS_DEFAULT_PROFILE": "31efda6f6332",
+            "AWS_LOCAL_PROFILE": "5e649592b9e7",
+            "AWS_PROFILE": "31efda6f6332",
+            "AWS_SDK_LOAD_CONFIG": "6b86b273ff34",
+            "SECRET_IDENTITY": "1532e76dbe9d"
+          },
+          "changed": {},
+          "removed": []
+        },
+        "getDotenvCliOptions": null,
+        "kind": "result",
+        "shell": false
+      }
+    ],
+    "bag": {
+      "defaultEnvKey": "DEFAULT_ENV",
+      "dotenvToken": ".env",
+      "entropyMinLength": 16,
+      "entropyThreshold": 3.8,
+      "entropyWhitelist": ["^GIT_", "^npm_", "^CI$", "SHLVL"],
+      "loadProcess": true,
+      "logger": "[logger]",
+      "paths": "./",
+      "pathsDelimiter": " ",
+      "privateToken": "local",
+      "scripts": {
+        "git-status": {
+          "cmd": "git branch --show-current && git status -s -u",
+          "shell": true
+        }
+      },
+      "shell": "/bin/bash",
+      "vars": "",
+      "varsAssignor": "=",
+      "varsDelimiter": " ",
+      "warnEntropy": true
+    },
+    "children": [],
+    "exitCode": 0,
+    "source": "#56",
+    "stderr": "",
+    "stdout": "Your secret identity is batman.\n"
+  },
+  "#57 whoami really": {
+    "argv": ["getdotenv", "aws", "whoami", "really"],
+    "bag": {
+      "defaultEnvKey": "DEFAULT_ENV",
+      "dotenvToken": ".env",
+      "entropyMinLength": 16,
+      "entropyThreshold": 3.8,
+      "entropyWhitelist": ["^GIT_", "^npm_", "^CI$", "SHLVL"],
+      "loadProcess": true,
+      "logger": "[logger]",
+      "paths": "./",
+      "pathsDelimiter": " ",
+      "privateToken": "local",
+      "scripts": {
+        "git-status": {
+          "cmd": "git branch --show-current && git status -s -u",
+          "shell": true
+        }
+      },
+      "shell": "/bin/bash",
+      "vars": "",
+      "varsAssignor": "=",
+      "varsDelimiter": " ",
+      "warnEntropy": true
+    },
+    "children": [],
+    "exitCode": 0,
+    "source": "#57",
+    "stderr": "",
+    "stdout": "Your secret identity is batman.\n"
+  },
+  "#58 init dynamic": {
+    "argv": [
+      "getdotenv",
+      "init",
+      "dyn",
+      "--dynamic",
+      "--config-format",
+      "js",
+      "--yes"
+    ],
+    "bag": {
+      "defaultEnvKey": "DEFAULT_ENV",
+      "dotenvToken": ".env",
+      "entropyMinLength": 16,
+      "entropyThreshold": 3.8,
+      "entropyWhitelist": ["^GIT_", "^npm_", "^CI$", "SHLVL"],
+      "loadProcess": true,
+      "logger": "[logger]",
+      "paths": "./",
+      "pathsDelimiter": " ",
+      "privateToken": "local",
+      "scripts": {
+        "git-status": {
+          "cmd": "git branch --show-current && git status -s -u",
+          "shell": true
+        }
+      },
+      "shell": "/bin/bash",
+      "vars": "",
+      "varsAssignor": "=",
+      "varsDelimiter": " ",
+      "warnEntropy": true
+    },
+    "children": [],
+    "exitCode": 0,
+    "source": "#58",
+    "stderr": "",
+    "stdout": "Created dyn/getdotenv.config.js\nCreated dyn/src/cli/dyn/index.ts\nCreated dyn/src/cli/dyn/plugins/hello/index.ts\nCreated dyn/src/cli/dyn/plugins/hello/options.ts\nCreated dyn/src/cli/dyn/plugins/hello/defaultAction.ts\nCreated dyn/src/cli/dyn/plugins/hello/strangerAction.ts\nCreated dyn/src/cli/dyn/plugins/hello/types.ts\nCreated dyn/.gitignore\n",
+    "tree": [
+      ".env",
+      ".env.bali",
+      ".env.dev",
+      "dyn/.gitignore",
+      "dyn/getdotenv.config.js",
+      "dyn/src/cli/dyn/index.ts",
+      "dyn/src/cli/dyn/plugins/hello/defaultAction.ts",
+      "dyn/src/cli/dyn/plugins/hello/index.ts",
+      "dyn/src/cli/dyn/plugins/hello/options.ts",
+      "dyn/src/cli/dyn/plugins/hello/strangerAction.ts",
+      "dyn/src/cli/dyn/plugins/hello/types.ts",
+      "package.json",
+      "pkgA/probe.mjs",
+      "pkgB/probe.mjs",
+      "probe.mjs"
+    ]
+  },
+  "#58 init gitignore": {
+    "argv": ["getdotenv", "init", ".", "--yes"],
+    "bag": {
+      "defaultEnvKey": "DEFAULT_ENV",
+      "dotenvToken": ".env",
+      "entropyMinLength": 16,
+      "entropyThreshold": 3.8,
+      "entropyWhitelist": ["^GIT_", "^npm_", "^CI$", "SHLVL"],
+      "loadProcess": true,
+      "logger": "[logger]",
+      "paths": "./",
+      "pathsDelimiter": " ",
+      "privateToken": "local",
+      "scripts": {
+        "git-status": {
+          "cmd": "git branch --show-current && git status -s -u",
+          "shell": true
+        }
+      },
+      "shell": "/bin/bash",
+      "vars": "",
+      "varsAssignor": "=",
+      "varsDelimiter": " ",
+      "warnEntropy": true
+    },
+    "children": [],
+    "exitCode": 0,
+    "files": {
+      ".gitignore": "node_modules\n# build\ndist\ngetdotenv.config.local.*\n*.local\n"
+    },
+    "source": "#58",
+    "stderr": "",
+    "stdout": "Created getdotenv.config.json\nCreated src/cli/<TMPNAME>/index.ts\nCreated src/cli/<TMPNAME>/plugins/hello/index.ts\nCreated src/cli/<TMPNAME>/plugins/hello/options.ts\nCreated src/cli/<TMPNAME>/plugins/hello/defaultAction.ts\nCreated src/cli/<TMPNAME>/plugins/hello/strangerAction.ts\nCreated src/cli/<TMPNAME>/plugins/hello/types.ts\nUpdated .gitignore\n",
+    "tree": [
+      ".env",
+      ".env.bali",
+      ".env.dev",
+      ".gitignore",
+      "getdotenv.config.json",
+      "package.json",
+      "pkgA/probe.mjs",
+      "pkgB/probe.mjs",
+      "probe.mjs",
+      "src/cli/<TMPNAME>/index.ts",
+      "src/cli/<TMPNAME>/plugins/hello/defaultAction.ts",
+      "src/cli/<TMPNAME>/plugins/hello/index.ts",
+      "src/cli/<TMPNAME>/plugins/hello/options.ts",
+      "src/cli/<TMPNAME>/plugins/hello/strangerAction.ts",
+      "src/cli/<TMPNAME>/plugins/hello/types.ts"
+    ]
+  },
+  "#59 batch --command capture": {
+    "argv": ["getdotenv", "--capture", "batch", "--command", "node probe.mjs"],
+    "bag": {
+      "capture": true,
+      "defaultEnvKey": "DEFAULT_ENV",
+      "dotenvToken": ".env",
+      "entropyMinLength": 16,
+      "entropyThreshold": 3.8,
+      "entropyWhitelist": ["^GIT_", "^npm_", "^CI$", "SHLVL"],
+      "loadProcess": true,
+      "logger": "[logger]",
+      "paths": "./",
+      "pathsDelimiter": " ",
+      "privateToken": "local",
+      "scripts": {
+        "git-status": {
+          "cmd": "git branch --show-current && git status -s -u",
+          "shell": true
+        }
+      },
+      "shell": "/bin/bash",
+      "vars": "",
+      "varsAssignor": "=",
+      "varsDelimiter": " ",
+      "warnEntropy": true
+    },
+    "children": [
+      {
+        "argv": [],
+        "cwd": "pkgA",
+        "env": {
+          "added": {
+            "APP": "cae662172fd4",
+            "getDotenvCliOptions": "44136fa355b3"
+          },
+          "changed": {},
+          "removed": []
+        },
+        "getDotenvCliOptions": {}
+      },
+      {
+        "argv": [],
+        "cwd": "pkgB",
+        "env": {
+          "added": {
+            "APP": "cae662172fd4",
+            "getDotenvCliOptions": "44136fa355b3"
+          },
+          "changed": {},
+          "removed": []
+        },
+        "getDotenvCliOptions": {}
+      }
+    ],
+    "exitCode": 0,
+    "source": "#59",
+    "stderr": "",
+    "stdout": "\n<STARS>\nExecuting command batch...\n\nROOT:  <TMP>/\nGLOBS: *\nCMD:   node probe.mjs\n\n<STARS>\nCWD:   <TMP>/pkgA\nCMD:   node probe.mjs\nprobe: []\n\n<STARS>\nCWD:   <TMP>/pkgB\nCMD:   node probe.mjs\nprobe: []\n\n"
+  },
+  "#59 batch --list capture": {
+    "argv": ["getdotenv", "--capture", "batch", "--list"],
+    "bag": {
+      "capture": true,
+      "defaultEnvKey": "DEFAULT_ENV",
+      "dotenvToken": ".env",
+      "entropyMinLength": 16,
+      "entropyThreshold": 3.8,
+      "entropyWhitelist": ["^GIT_", "^npm_", "^CI$", "SHLVL"],
+      "loadProcess": true,
+      "logger": "[logger]",
+      "paths": "./",
+      "pathsDelimiter": " ",
+      "privateToken": "local",
+      "scripts": {
+        "git-status": {
+          "cmd": "git branch --show-current && git status -s -u",
+          "shell": true
+        }
+      },
+      "shell": "/bin/bash",
+      "vars": "",
+      "varsAssignor": "=",
+      "varsDelimiter": " ",
+      "warnEntropy": true
+    },
+    "children": [],
+    "exitCode": 0,
+    "source": "#59",
+    "stderr": "",
+    "stdout": "\n<STARS>\nListing working directories...\n\nROOT:  <TMP>/\nGLOBS: *\nCMD:   (list only)\nCWD:   <TMP>/pkgA\nCWD:   <TMP>/pkgB\n\n"
+  },
+  "#59 batch positional capture": {
+    "argv": ["getdotenv", "--capture", "batch", "node", "probe.mjs"],
+    "bag": {
+      "capture": true,
+      "defaultEnvKey": "DEFAULT_ENV",
+      "dotenvToken": ".env",
+      "entropyMinLength": 16,
+      "entropyThreshold": 3.8,
+      "entropyWhitelist": ["^GIT_", "^npm_", "^CI$", "SHLVL"],
+      "loadProcess": true,
+      "logger": "[logger]",
+      "paths": "./",
+      "pathsDelimiter": " ",
+      "privateToken": "local",
+      "scripts": {
+        "git-status": {
+          "cmd": "git branch --show-current && git status -s -u",
+          "shell": true
+        }
+      },
+      "shell": "/bin/bash",
+      "vars": "",
+      "varsAssignor": "=",
+      "varsDelimiter": " ",
+      "warnEntropy": true
+    },
+    "children": [
+      {
+        "argv": [],
+        "cwd": "pkgA",
+        "env": {
+          "added": {
+            "APP": "cae662172fd4",
+            "getDotenvCliOptions": "4cc0528a9cc9"
+          },
+          "changed": {},
+          "removed": []
+        },
+        "getDotenvCliOptions": {
+          "capture": true,
+          "defaultEnvKey": "DEFAULT_ENV",
+          "dotenvToken": ".env",
+          "entropyMinLength": 16,
+          "entropyThreshold": 3.8,
+          "entropyWhitelist": ["^GIT_", "^npm_", "^CI$", "SHLVL"],
+          "loadProcess": true,
+          "paths": "./",
+          "pathsDelimiter": " ",
+          "privateToken": "local",
+          "scripts": {
+            "git-status": {
+              "cmd": "git branch --show-current && git status -s -u",
+              "shell": true
+            }
+          },
+          "shell": "/bin/bash",
+          "vars": "",
+          "varsAssignor": "=",
+          "varsDelimiter": " ",
+          "warnEntropy": true
+        }
+      },
+      {
+        "argv": [],
+        "cwd": "pkgB",
+        "env": {
+          "added": {
+            "APP": "cae662172fd4",
+            "getDotenvCliOptions": "4cc0528a9cc9"
+          },
+          "changed": {},
+          "removed": []
+        },
+        "getDotenvCliOptions": {
+          "capture": true,
+          "defaultEnvKey": "DEFAULT_ENV",
+          "dotenvToken": ".env",
+          "entropyMinLength": 16,
+          "entropyThreshold": 3.8,
+          "entropyWhitelist": ["^GIT_", "^npm_", "^CI$", "SHLVL"],
+          "loadProcess": true,
+          "paths": "./",
+          "pathsDelimiter": " ",
+          "privateToken": "local",
+          "scripts": {
+            "git-status": {
+              "cmd": "git branch --show-current && git status -s -u",
+              "shell": true
+            }
+          },
+          "shell": "/bin/bash",
+          "vars": "",
+          "varsAssignor": "=",
+          "varsDelimiter": " ",
+          "warnEntropy": true
+        }
+      }
+    ],
+    "exitCode": 0,
+    "source": "#59",
+    "stderr": "",
+    "stdout": "\n<STARS>\nExecuting command batch...\n\nROOT:  <TMP>/\nGLOBS: *\nCMD:   node probe.mjs\n\n<STARS>\nCWD:   <TMP>/pkgA\nCMD:   node probe.mjs\nprobe: []\n\n<STARS>\nCWD:   <TMP>/pkgB\nCMD:   node probe.mjs\nprobe: []\n\n"
+  },
+  "#61 validation twice": {
+    "argv": ["getdotenv", "cmd", "node", "probe.mjs"],
+    "bag": {
+      "defaultEnvKey": "DEFAULT_ENV",
+      "dotenvToken": ".env",
+      "entropyMinLength": 16,
+      "entropyThreshold": 3.8,
+      "entropyWhitelist": ["^GIT_", "^npm_", "^CI$", "SHLVL"],
+      "loadProcess": true,
+      "logger": "[logger]",
+      "paths": "./",
+      "pathsDelimiter": " ",
+      "privateToken": "local",
+      "scripts": {
+        "git-status": {
+          "cmd": "git branch --show-current && git status -s -u",
+          "shell": true
+        }
+      },
+      "shell": "/bin/bash",
+      "vars": "",
+      "varsAssignor": "=",
+      "varsDelimiter": " ",
+      "warnEntropy": true
+    },
+    "children": [
+      {
+        "argv": [],
+        "cwd": ".",
+        "env": {
+          "added": {
+            "APP": "cae662172fd4",
+            "getDotenvCliOptions": "ee90e48b8d2b"
+          },
+          "changed": {},
+          "removed": []
+        },
+        "getDotenvCliOptions": {
+          "defaultEnvKey": "DEFAULT_ENV",
+          "dotenvToken": ".env",
+          "entropyMinLength": 16,
+          "entropyThreshold": 3.8,
+          "entropyWhitelist": ["^GIT_", "^npm_", "^CI$", "SHLVL"],
+          "loadProcess": true,
+          "paths": "./",
+          "pathsDelimiter": " ",
+          "privateToken": "local",
+          "scripts": {
+            "git-status": {
+              "cmd": "git branch --show-current && git status -s -u",
+              "shell": true
+            }
+          },
+          "shell": "/bin/bash",
+          "vars": "",
+          "varsAssignor": "=",
+          "varsDelimiter": " ",
+          "warnEntropy": true
+        }
+      }
+    ],
+    "exitCode": 0,
+    "source": "#61",
+    "stderr": "[requiredKeys] missing: MISSING_KEY\n[requiredKeys] missing: MISSING_KEY\n",
+    "stdout": "probe: []\n"
+  },
+  "#62 invalid config -h": {
+    "argv": ["getdotenv", "-h"],
+    "bag": null,
+    "children": [],
+    "exitCode": 0,
+    "rejected": "Error: run 1: Error: Failed to read/parse config: <TMP>/getdotenv.config.json.",
+    "source": "#62",
+    "stderr": "",
+    "stdout": ""
+  },
+  "#62 invalid config cmd": {
+    "argv": ["getdotenv", "cmd", "node", "probe.mjs"],
+    "bag": null,
+    "children": [],
+    "exitCode": 1,
+    "source": "#62",
+    "stderr": "Error: Failed to read/parse config: <TMP>/getdotenv.config.json.\n",
+    "stdout": ""
+  },
+  "#63 vars against process.env": {
+    "argv": ["getdotenv", "-c", "node probe.mjs --print CFGHOME,FILEV"],
+    "bag": {
+      "cmd": ["node probe.mjs --print CFGHOME,FILEV"],
+      "defaultEnvKey": "DEFAULT_ENV",
+      "dotenvToken": ".env",
+      "entropyMinLength": 16,
+      "entropyThreshold": 3.8,
+      "entropyWhitelist": ["^GIT_", "^npm_", "^CI$", "SHLVL"],
+      "loadProcess": true,
+      "logger": "[logger]",
+      "paths": "./",
+      "pathsDelimiter": " ",
+      "privateToken": "local",
+      "scripts": {
+        "git-status": {
+          "cmd": "git branch --show-current && git status -s -u",
+          "shell": true
+        }
+      },
+      "shell": "/bin/bash",
+      "vars": "",
+      "varsAssignor": "=",
+      "varsDelimiter": " ",
+      "warnEntropy": true
+    },
+    "children": [
+      {
+        "argv": ["--print", "CFGHOME,FILEV"],
+        "cwd": ".",
+        "env": {
+          "added": {
+            "APP": "cae662172fd4",
+            "CFGHOME": "2d711642b726",
+            "FILEV": "fe84c6646465",
+            "getDotenvCliOptions": "9a6d3fadfeb6"
+          },
+          "changed": {},
+          "removed": []
+        },
+        "getDotenvCliOptions": {
+          "cmd": ["node probe.mjs --print CFGHOME,FILEV"],
+          "defaultEnvKey": "DEFAULT_ENV",
+          "dotenvToken": ".env",
+          "entropyMinLength": 16,
+          "entropyThreshold": 3.8,
+          "entropyWhitelist": ["^GIT_", "^npm_", "^CI$", "SHLVL"],
+          "loadProcess": true,
+          "paths": "./",
+          "pathsDelimiter": " ",
+          "privateToken": "local",
+          "scripts": {
+            "git-status": {
+              "cmd": "git branch --show-current && git status -s -u",
+              "shell": true
+            }
+          },
+          "shell": "/bin/bash",
+          "vars": "",
+          "varsAssignor": "=",
+          "varsDelimiter": " ",
+          "warnEntropy": true
+        }
+      }
+    ],
+    "exitCode": 0,
+    "source": "#63",
+    "stderr": "",
+    "stdout": "probe: [\"--print\",\"CFGHOME,FILEV\"]\nprobe env: {\"CFGHOME\":\"x\",\"FILEV\":\"fambient-value\"}\n"
+  },
+  "#64 compositions": {
+    "argv": ["getdotenv", "cmd", "node", "probe.mjs"],
+    "bag": {
+      "defaultEnvKey": "DEFAULT_ENV",
+      "dotenvToken": ".env",
+      "entropyMinLength": 16,
+      "entropyThreshold": 3.8,
+      "entropyWhitelist": ["^GIT_", "^npm_", "^CI$", "SHLVL"],
+      "loadProcess": true,
+      "logger": "[logger]",
+      "paths": "./",
+      "pathsDelimiter": " ",
+      "privateToken": "local",
+      "scripts": {
+        "git-status": {
+          "cmd": "git branch --show-current && git status -s -u",
+          "shell": true
+        }
+      },
+      "shell": "/bin/bash",
+      "vars": "",
+      "varsAssignor": "=",
+      "varsDelimiter": " ",
+      "warnEntropy": true
+    },
+    "children": [
+      {
+        "argv": [],
+        "cwd": ".",
+        "env": {
+          "added": {
+            "APP": "cae662172fd4",
+            "DYN": "18ac3e7343f0",
+            "getDotenvCliOptions": "ee90e48b8d2b"
+          },
+          "changed": {},
+          "removed": []
+        },
+        "getDotenvCliOptions": {
+          "defaultEnvKey": "DEFAULT_ENV",
+          "dotenvToken": ".env",
+          "entropyMinLength": 16,
+          "entropyThreshold": 3.8,
+          "entropyWhitelist": ["^GIT_", "^npm_", "^CI$", "SHLVL"],
+          "loadProcess": true,
+          "paths": "./",
+          "pathsDelimiter": " ",
+          "privateToken": "local",
+          "scripts": {
+            "git-status": {
+              "cmd": "git branch --show-current && git status -s -u",
+              "shell": true
+            }
+          },
+          "shell": "/bin/bash",
+          "vars": "",
+          "varsAssignor": "=",
+          "varsDelimiter": " ",
+          "warnEntropy": true
+        }
+      }
+    ],
+    "exitCode": 0,
+    "source": "#64",
+    "stderr": "DYN-EVAL\nDYN-EVAL\n",
+    "stdout": "probe: []\n"
+  },
+  "#64 compositions -z": {
+    "argv": ["getdotenv", "-z", "cmd", "node", "probe.mjs"],
+    "bag": {
+      "defaultEnvKey": "DEFAULT_ENV",
+      "dotenvToken": ".env",
+      "entropyMinLength": 16,
+      "entropyThreshold": 3.8,
+      "entropyWhitelist": ["^GIT_", "^npm_", "^CI$", "SHLVL"],
+      "excludeDynamic": true,
+      "loadProcess": true,
+      "logger": "[logger]",
+      "paths": "./",
+      "pathsDelimiter": " ",
+      "privateToken": "local",
+      "scripts": {
+        "git-status": {
+          "cmd": "git branch --show-current && git status -s -u",
+          "shell": true
+        }
+      },
+      "shell": "/bin/bash",
+      "vars": "",
+      "varsAssignor": "=",
+      "varsDelimiter": " ",
+      "warnEntropy": true
+    },
+    "children": [
+      {
+        "argv": [],
+        "cwd": ".",
+        "env": {
+          "added": {
+            "APP": "cae662172fd4",
+            "getDotenvCliOptions": "8642eff6a492"
+          },
+          "changed": {},
+          "removed": []
+        },
+        "getDotenvCliOptions": {
+          "defaultEnvKey": "DEFAULT_ENV",
+          "dotenvToken": ".env",
+          "entropyMinLength": 16,
+          "entropyThreshold": 3.8,
+          "entropyWhitelist": ["^GIT_", "^npm_", "^CI$", "SHLVL"],
+          "excludeDynamic": true,
+          "loadProcess": true,
+          "paths": "./",
+          "pathsDelimiter": " ",
+          "privateToken": "local",
+          "scripts": {
+            "git-status": {
+              "cmd": "git branch --show-current && git status -s -u",
+              "shell": true
+            }
+          },
+          "shell": "/bin/bash",
+          "vars": "",
+          "varsAssignor": "=",
+          "varsDelimiter": " ",
+          "warnEntropy": true
+        }
+      }
+    ],
+    "exitCode": 0,
+    "source": "#64",
+    "stderr": "DYN-EVAL\n",
+    "stdout": "probe: []\n"
+  },
+  "#64 compositions alias": {
+    "argv": ["getdotenv", "-c", "node probe.mjs"],
+    "bag": {
+      "cmd": ["node probe.mjs"],
+      "defaultEnvKey": "DEFAULT_ENV",
+      "dotenvToken": ".env",
+      "entropyMinLength": 16,
+      "entropyThreshold": 3.8,
+      "entropyWhitelist": ["^GIT_", "^npm_", "^CI$", "SHLVL"],
+      "loadProcess": true,
+      "logger": "[logger]",
+      "paths": "./",
+      "pathsDelimiter": " ",
+      "privateToken": "local",
+      "scripts": {
+        "git-status": {
+          "cmd": "git branch --show-current && git status -s -u",
+          "shell": true
+        }
+      },
+      "shell": "/bin/bash",
+      "vars": "",
+      "varsAssignor": "=",
+      "varsDelimiter": " ",
+      "warnEntropy": true
+    },
+    "children": [
+      {
+        "argv": [],
+        "cwd": ".",
+        "env": {
+          "added": {
+            "APP": "cae662172fd4",
+            "DYN": "18ac3e7343f0",
+            "getDotenvCliOptions": "9b46f97a7a54"
+          },
+          "changed": {},
+          "removed": []
+        },
+        "getDotenvCliOptions": {
+          "cmd": ["node probe.mjs"],
+          "defaultEnvKey": "DEFAULT_ENV",
+          "dotenvToken": ".env",
+          "entropyMinLength": 16,
+          "entropyThreshold": 3.8,
+          "entropyWhitelist": ["^GIT_", "^npm_", "^CI$", "SHLVL"],
+          "loadProcess": true,
+          "paths": "./",
+          "pathsDelimiter": " ",
+          "privateToken": "local",
+          "scripts": {
+            "git-status": {
+              "cmd": "git branch --show-current && git status -s -u",
+              "shell": true
+            }
+          },
+          "shell": "/bin/bash",
+          "vars": "",
+          "varsAssignor": "=",
+          "varsDelimiter": " ",
+          "warnEntropy": true
+        }
+      }
+    ],
+    "exitCode": 0,
+    "source": "#64",
+    "stderr": "DYN-EVAL\nDYN-EVAL\nDYN-EVAL\n",
+    "stdout": "probe: []\n"
+  },
+  "#65 batch -l runs positionals": {
+    "argv": ["getdotenv", "batch", "-g", "pkgA", "-l", "node", "probe.mjs"],
+    "bag": {
+      "defaultEnvKey": "DEFAULT_ENV",
+      "dotenvToken": ".env",
+      "entropyMinLength": 16,
+      "entropyThreshold": 3.8,
+      "entropyWhitelist": ["^GIT_", "^npm_", "^CI$", "SHLVL"],
+      "loadProcess": true,
+      "logger": "[logger]",
+      "paths": "./",
+      "pathsDelimiter": " ",
+      "privateToken": "local",
+      "scripts": {
+        "git-status": {
+          "cmd": "git branch --show-current && git status -s -u",
+          "shell": true
+        }
+      },
+      "shell": "/bin/bash",
+      "vars": "",
+      "varsAssignor": "=",
+      "varsDelimiter": " ",
+      "warnEntropy": true
+    },
+    "children": [
+      {
+        "argv": [],
+        "cwd": "pkgA",
+        "env": {
+          "added": {
+            "APP": "cae662172fd4",
+            "getDotenvCliOptions": "ee90e48b8d2b"
+          },
+          "changed": {},
+          "removed": []
+        },
+        "getDotenvCliOptions": {
+          "defaultEnvKey": "DEFAULT_ENV",
+          "dotenvToken": ".env",
+          "entropyMinLength": 16,
+          "entropyThreshold": 3.8,
+          "entropyWhitelist": ["^GIT_", "^npm_", "^CI$", "SHLVL"],
+          "loadProcess": true,
+          "paths": "./",
+          "pathsDelimiter": " ",
+          "privateToken": "local",
+          "scripts": {
+            "git-status": {
+              "cmd": "git branch --show-current && git status -s -u",
+              "shell": true
+            }
+          },
+          "shell": "/bin/bash",
+          "vars": "",
+          "varsAssignor": "=",
+          "varsDelimiter": " ",
+          "warnEntropy": true
+        }
+      }
+    ],
+    "exitCode": 0,
+    "source": "#65",
+    "stderr": "",
+    "stdout": "\n<STARS>\nExecuting command batch...\n\nROOT:  <TMP>/\nGLOBS: pkgA\nCMD:   node probe.mjs\n\n<STARS>\nCWD:   <TMP>/pkgA\nCMD:   node probe.mjs\nprobe: []\n\n"
+  },
+  "#68 excludeAll default": {
+    "argv": ["getdotenv", "cmd", "node", "probe.mjs", "--print", "APP"],
+    "bag": {
+      "defaultEnvKey": "DEFAULT_ENV",
+      "dotenvToken": ".env",
+      "entropyMinLength": 16,
+      "entropyThreshold": 3.8,
+      "entropyWhitelist": ["^GIT_", "^npm_", "^CI$", "SHLVL"],
+      "loadProcess": true,
+      "logger": "[logger]",
+      "paths": "./",
+      "pathsDelimiter": " ",
+      "privateToken": "local",
+      "scripts": {
+        "git-status": {
+          "cmd": "git branch --show-current && git status -s -u",
+          "shell": true
+        }
+      },
+      "shell": "/bin/bash",
+      "vars": "",
+      "varsAssignor": "=",
+      "varsDelimiter": " ",
+      "warnEntropy": true
+    },
+    "children": [
+      {
+        "argv": ["--print", "APP"],
+        "cwd": ".",
+        "env": {
+          "added": {
+            "APP": "cae662172fd4",
+            "getDotenvCliOptions": "ee90e48b8d2b"
+          },
+          "changed": {},
+          "removed": []
+        },
+        "getDotenvCliOptions": {
+          "defaultEnvKey": "DEFAULT_ENV",
+          "dotenvToken": ".env",
+          "entropyMinLength": 16,
+          "entropyThreshold": 3.8,
+          "entropyWhitelist": ["^GIT_", "^npm_", "^CI$", "SHLVL"],
+          "loadProcess": true,
+          "paths": "./",
+          "pathsDelimiter": " ",
+          "privateToken": "local",
+          "scripts": {
+            "git-status": {
+              "cmd": "git branch --show-current && git status -s -u",
+              "shell": true
+            }
+          },
+          "shell": "/bin/bash",
+          "vars": "",
+          "varsAssignor": "=",
+          "varsDelimiter": " ",
+          "warnEntropy": true
+        }
+      }
+    ],
+    "exitCode": 0,
+    "source": "#68",
+    "stderr": "",
+    "stdout": "probe: [\"--print\",\"APP\"]\nprobe env: {\"APP\":\"base\"}\n"
+  },
+  "#69 aws forward bag": {
+    "argv": ["getdotenv", "aws", "sts", "get-caller-identity"],
+    "aws": [
+      {
+        "command": ["aws", "sts", "get-caller-identity"],
+        "env": {
+          "added": {
+            "APP": "cae662172fd4"
+          },
+          "changed": {},
+          "removed": []
+        },
+        "getDotenvCliOptions": null,
+        "kind": "run",
+        "shell": "/bin/bash"
+      }
+    ],
+    "bag": {
+      "defaultEnvKey": "DEFAULT_ENV",
+      "dotenvToken": ".env",
+      "entropyMinLength": 16,
+      "entropyThreshold": 3.8,
+      "entropyWhitelist": ["^GIT_", "^npm_", "^CI$", "SHLVL"],
+      "loadProcess": true,
+      "logger": "[logger]",
+      "paths": "./",
+      "pathsDelimiter": " ",
+      "privateToken": "local",
+      "scripts": {
+        "git-status": {
+          "cmd": "git branch --show-current && git status -s -u",
+          "shell": true
+        }
+      },
+      "shell": "/bin/bash",
+      "vars": "",
+      "varsAssignor": "=",
+      "varsDelimiter": " ",
+      "warnEntropy": true
+    },
+    "children": [],
+    "exitCode": 0,
+    "source": "#69",
+    "stderr": "",
+    "stdout": ""
+  },
+  "#70 alias value names a subcommand": {
+    "argv": ["getdotenv", "-c", "node", "probe.mjs", "init"],
+    "bag": {
+      "cmd": ["node", "probe.mjs", "init"],
+      "defaultEnvKey": "DEFAULT_ENV",
+      "dotenvToken": ".env",
+      "entropyMinLength": 16,
+      "entropyThreshold": 3.8,
+      "entropyWhitelist": ["^GIT_", "^npm_", "^CI$", "SHLVL"],
+      "loadProcess": true,
+      "logger": "[logger]",
+      "paths": "./",
+      "pathsDelimiter": " ",
+      "privateToken": "local",
+      "scripts": {
+        "git-status": {
+          "cmd": "git branch --show-current && git status -s -u",
+          "shell": true
+        }
+      },
+      "shell": "/bin/bash",
+      "vars": "",
+      "varsAssignor": "=",
+      "varsDelimiter": " ",
+      "warnEntropy": true
+    },
+    "children": [],
+    "exitCode": 0,
+    "source": "#70",
+    "stderr": "",
+    "stdout": ""
+  },
+  "#72 output path writer": {
+    "argv": ["getdotenv", "-o", "out.env"],
+    "bag": {
+      "defaultEnvKey": "DEFAULT_ENV",
+      "dotenvToken": ".env",
+      "entropyMinLength": 16,
+      "entropyThreshold": 3.8,
+      "entropyWhitelist": ["^GIT_", "^npm_", "^CI$", "SHLVL"],
+      "loadProcess": true,
+      "logger": "[logger]",
+      "outputPath": "out.env",
+      "paths": "./",
+      "pathsDelimiter": " ",
+      "privateToken": "local",
+      "scripts": {
+        "git-status": {
+          "cmd": "git branch --show-current && git status -s -u",
+          "shell": true
+        }
+      },
+      "shell": "/bin/bash",
+      "vars": "",
+      "varsAssignor": "=",
+      "varsDelimiter": " ",
+      "warnEntropy": true
+    },
+    "children": [],
+    "exitCode": 0,
+    "files": {
+      "out.env": "APP=base\nH=x #y\nW= lead\nM=\"line1\nline2 \"q\"\"\nB=C:\\new\\dir\n"
+    },
+    "source": "#72",
+    "stderr": "",
+    "stdout": ""
+  },
+  "#73 vars split": {
+    "argv": ["getdotenv", "-v", "A=b=c", "-c", "node probe.mjs --print A"],
+    "bag": {
+      "cmd": ["node probe.mjs --print A"],
+      "defaultEnvKey": "DEFAULT_ENV",
+      "dotenvToken": ".env",
+      "entropyMinLength": 16,
+      "entropyThreshold": 3.8,
+      "entropyWhitelist": ["^GIT_", "^npm_", "^CI$", "SHLVL"],
+      "loadProcess": true,
+      "logger": "[logger]",
+      "paths": "./",
+      "pathsDelimiter": " ",
+      "privateToken": "local",
+      "scripts": {
+        "git-status": {
+          "cmd": "git branch --show-current && git status -s -u",
+          "shell": true
+        }
+      },
+      "shell": "/bin/bash",
+      "vars": "A=b=c",
+      "varsAssignor": "=",
+      "varsDelimiter": " ",
+      "warnEntropy": true
+    },
+    "children": [
+      {
+        "argv": ["--print", "A"],
+        "cwd": ".",
+        "env": {
+          "added": {
+            "A": "3e23e8160039",
+            "APP": "cae662172fd4",
+            "getDotenvCliOptions": "7360ce95bcdb"
+          },
+          "changed": {},
+          "removed": []
+        },
+        "getDotenvCliOptions": {
+          "cmd": ["node probe.mjs --print A"],
+          "defaultEnvKey": "DEFAULT_ENV",
+          "dotenvToken": ".env",
+          "entropyMinLength": 16,
+          "entropyThreshold": 3.8,
+          "entropyWhitelist": ["^GIT_", "^npm_", "^CI$", "SHLVL"],
+          "loadProcess": true,
+          "paths": "./",
+          "pathsDelimiter": " ",
+          "privateToken": "local",
+          "scripts": {
+            "git-status": {
+              "cmd": "git branch --show-current && git status -s -u",
+              "shell": true
+            }
+          },
+          "shell": "/bin/bash",
+          "vars": "A=b=c",
+          "varsAssignor": "=",
+          "varsDelimiter": " ",
+          "warnEntropy": true
+        }
+      }
+    ],
+    "exitCode": 0,
+    "source": "#73",
+    "stderr": "",
+    "stdout": "probe: [\"--print\",\"A\"]\nprobe env: {\"A\":\"b\"}\n"
+  },
+  "#74 capture drops stderr": {
+    "argv": ["getdotenv", "--capture", "-c", "node probe.mjs --stderr 1111"],
+    "bag": {
+      "capture": true,
+      "cmd": ["node probe.mjs --stderr 1111"],
+      "defaultEnvKey": "DEFAULT_ENV",
+      "dotenvToken": ".env",
+      "entropyMinLength": 16,
+      "entropyThreshold": 3.8,
+      "entropyWhitelist": ["^GIT_", "^npm_", "^CI$", "SHLVL"],
+      "loadProcess": true,
+      "logger": "[logger]",
+      "paths": "./",
+      "pathsDelimiter": " ",
+      "privateToken": "local",
+      "scripts": {
+        "git-status": {
+          "cmd": "git branch --show-current && git status -s -u",
+          "shell": true
+        }
+      },
+      "shell": "/bin/bash",
+      "vars": "",
+      "varsAssignor": "=",
+      "varsDelimiter": " ",
+      "warnEntropy": true
+    },
+    "children": [
+      {
+        "argv": ["--stderr", "1111"],
+        "cwd": ".",
+        "env": {
+          "added": {
+            "APP": "cae662172fd4",
+            "getDotenvCliOptions": "fc5469a38e67"
+          },
+          "changed": {},
+          "removed": []
+        },
+        "getDotenvCliOptions": {
+          "capture": true,
+          "cmd": ["node probe.mjs --stderr 1111"],
+          "defaultEnvKey": "DEFAULT_ENV",
+          "dotenvToken": ".env",
+          "entropyMinLength": 16,
+          "entropyThreshold": 3.8,
+          "entropyWhitelist": ["^GIT_", "^npm_", "^CI$", "SHLVL"],
+          "loadProcess": true,
+          "paths": "./",
+          "pathsDelimiter": " ",
+          "privateToken": "local",
+          "scripts": {
+            "git-status": {
+              "cmd": "git branch --show-current && git status -s -u",
+              "shell": true
+            }
+          },
+          "shell": "/bin/bash",
+          "vars": "",
+          "varsAssignor": "=",
+          "varsDelimiter": " ",
+          "warnEntropy": true
+        }
+      }
+    ],
+    "exitCode": 0,
+    "source": "#74",
+    "stderr": "",
+    "stdout": "probe: [\"--stderr\",\"1111\"]\n"
+  },
+  "#75 alias spawn failure": {
+    "argv": ["getdotenv", "-S", "-c", "baseline-missing-command"],
+    "bag": {
+      "cmd": ["baseline-missing-command"],
+      "defaultEnvKey": "DEFAULT_ENV",
+      "dotenvToken": ".env",
+      "entropyMinLength": 16,
+      "entropyThreshold": 3.8,
+      "entropyWhitelist": ["^GIT_", "^npm_", "^CI$", "SHLVL"],
+      "loadProcess": true,
+      "logger": "[logger]",
+      "paths": "./",
+      "pathsDelimiter": " ",
+      "privateToken": "local",
+      "scripts": {
+        "git-status": {
+          "cmd": "git branch --show-current && git status -s -u",
+          "shell": true
+        }
+      },
+      "shell": false,
+      "vars": "",
+      "varsAssignor": "=",
+      "varsDelimiter": " ",
+      "warnEntropy": true
+    },
+    "children": [],
+    "exitCode": 1,
+    "mode": "child",
+    "source": "#75",
+    "stderr": "Error: The value of \"code\" is out of range. It must be an integer. Received NaN\n",
+    "stdout": ""
+  },
+  "#75 cmd spawn failure": {
+    "argv": ["getdotenv", "-S", "cmd", "baseline-missing-command"],
+    "bag": {
+      "defaultEnvKey": "DEFAULT_ENV",
+      "dotenvToken": ".env",
+      "entropyMinLength": 16,
+      "entropyThreshold": 3.8,
+      "entropyWhitelist": ["^GIT_", "^npm_", "^CI$", "SHLVL"],
+      "loadProcess": true,
+      "logger": "[logger]",
+      "paths": "./",
+      "pathsDelimiter": " ",
+      "privateToken": "local",
+      "scripts": {
+        "git-status": {
+          "cmd": "git branch --show-current && git status -s -u",
+          "shell": true
+        }
+      },
+      "shell": false,
+      "vars": "",
+      "varsAssignor": "=",
+      "varsDelimiter": " ",
+      "warnEntropy": true
+    },
+    "children": [],
+    "exitCode": 0,
+    "mode": "child",
+    "source": "#75",
+    "stderr": "",
+    "stdout": ""
+  },
+  "#76 root help": {
+    "argv": ["getdotenv", "-h"],
+    "bag": null,
+    "children": [],
+    "exitCode": 0,
+    "source": "#76",
+    "stderr": "",
+    "stdout": "getdotenv v<VERSION>\n\n\nUsage: getdotenv [options] [command]\n\nBase CLI.\n\nOptions:\n  -a, --exclude-all                   exclude all dotenv variables from loading\n                                      ON\n  -A, --exclude-all-off               exclude all dotenv variables from loading\n                                      OFF (default)\n  -e, --env <string>                  target environment (dotenv-expanded)\n  -g, --exclude-global                exclude global dotenv variables from\n                                      loading ON\n  -G, --exclude-global-off            exclude global dotenv variables from\n                                      loading OFF (default)\n  -l, --log                           console log loaded variables ON\n  -L, --log-off                       console log loaded variables OFF (default)\n  -n, --exclude-env                   exclude environment-specific dotenv\n                                      variables from loading ON\n  -N, --exclude-env-off               exclude environment-specific dotenv\n                                      variables from loading OFF (default)\n  -o, --output-path <string>          consolidated output file\n                                      (dotenv-expanded)\n  -p, --load-process                  load variables to process.env ON (default)\n  -P, --load-process-off              load variables to process.env OFF\n  -r, --exclude-private               exclude private dotenv variables from\n                                      loading ON\n  -R, --exclude-private-off           exclude private dotenv variables from\n                                      loading OFF (default)\n  -s, --shell [string]                command execution shell, no argument for\n                                      default OS shell or provide shell string\n                                      (default /bin/bash)\n  -S, --shell-off                     command execution shell OFF\n  -u, --exclude-public                exclude public dotenv variables from\n                                      loading ON\n  -U, --exclude-public-off            exclude public dotenv variables from\n                                      loading OFF (default)\n  -v, --vars <string>                 extra variables expressed as delimited\n                                      key-value pairs (dotenv-expanded):\n                                      KEY1=VAL1 KEY2=VAL2\n  -z, --exclude-dynamic               exclude dynamic dotenv variables from\n                                      loading ON\n  -Z, --exclude-dynamic-off           exclude dynamic dotenv variables from\n                                      loading OFF (default)\n  --capture                           capture child process stdio for commands\n                                      (tests/CI)\n  --debug                             enable debug logging to stderr ON\n  --debug-off                         enable debug logging to stderr OFF\n                                      (default)\n  --default-env <string>              default target environment\n  --default-env-key <string>          env var name in global dotenv files that\n                                      specifies the default environment\n                                      (dotenv-expanded)\n  --dotenv-token <string>             dotenv-expanded token indicating a dotenv\n                                      file\n  --dynamic-path <string>             dynamic variables path (.js or .ts; .ts is\n                                      auto-compiled when esbuild is available,\n                                      otherwise precompile)\n  --entropy-min-length <number>       min length to examine for entropy (default\n                                      16)\n  --entropy-threshold <number>        entropy bits/char threshold (default 3.8)\n  --entropy-warn                      enable entropy warnings (default on)\n  --entropy-warn-off                  disable entropy warnings\n  --entropy-whitelist <pattern...>    suppress entropy warnings when key matches\n                                      any regex pattern\n  --paths <string>                    dotenv-expanded delimited list of paths to\n                                      dotenv directory\n  --paths-delimiter <string>          paths delimiter string\n  --paths-delimiter-pattern <string>  paths delimiter regex pattern\n  --private-token <string>            dotenv-expanded token indicating private\n                                      variables\n  --redact                            presentation-time redaction for\n                                      secret-like keys ON\n  --redact-off                        presentation-time redaction for\n                                      secret-like keys OFF\n  --redact-pattern <pattern...>       additional key-match regex patterns to\n                                      trigger redaction\n  --strict                            fail on env validation errors\n                                      (schema/requiredKeys)\n  --trace [keys...]                   emit diagnostics for child env composition\n                                      (optional keys)\n  --vars-assignor <string>            vars assignment operator string\n  --vars-assignor-pattern <string>    vars assignment operator regex pattern\n  --vars-delimiter <string>           vars delimiter string\n  --vars-delimiter-pattern <string>   vars delimiter regex pattern\n\nPlugin options — cmd:\n  -c, --cmd <command...>  alias of cmd subcommand; provide command tokens (variadic)\n\nCommands:\n  cmd [command...]                    Execute command according to the --shell\n                                      option, conflicts with --command option\n                                      (default subcommand)\n  batch [options] [command...]        Batch command execution across multiple\n                                      working directories.\n  aws [options] [args...]             Establish an AWS session and optionally\n                                      forward to the AWS CLI\n  init [options] [dest]               Scaffold getdotenv config files and a\n                                      host-based CLI skeleton.\n\n"
+  },
+  "#79 backslash space": {
+    "argv": ["getdotenv", "-c", "node probe.mjs \"[a\\ b]\""],
+    "bag": {
+      "cmd": ["node probe.mjs \"[a\\ b]\""],
+      "defaultEnvKey": "DEFAULT_ENV",
+      "dotenvToken": ".env",
+      "entropyMinLength": 16,
+      "entropyThreshold": 3.8,
+      "entropyWhitelist": ["^GIT_", "^npm_", "^CI$", "SHLVL"],
+      "loadProcess": true,
+      "logger": "[logger]",
+      "paths": "./",
+      "pathsDelimiter": " ",
+      "privateToken": "local",
+      "scripts": {
+        "git-status": {
+          "cmd": "git branch --show-current && git status -s -u",
+          "shell": true
+        }
+      },
+      "shell": "/bin/bash",
+      "vars": "",
+      "varsAssignor": "=",
+      "varsDelimiter": " ",
+      "warnEntropy": true
+    },
+    "children": [
+      {
+        "argv": ["[a b]"],
+        "cwd": ".",
+        "env": {
+          "added": {
+            "APP": "cae662172fd4",
+            "getDotenvCliOptions": "7a786e8325af"
+          },
+          "changed": {},
+          "removed": []
+        },
+        "getDotenvCliOptions": {
+          "cmd": ["node probe.mjs \"[a\\ b]\""],
+          "defaultEnvKey": "DEFAULT_ENV",
+          "dotenvToken": ".env",
+          "entropyMinLength": 16,
+          "entropyThreshold": 3.8,
+          "entropyWhitelist": ["^GIT_", "^npm_", "^CI$", "SHLVL"],
+          "loadProcess": true,
+          "paths": "./",
+          "pathsDelimiter": " ",
+          "privateToken": "local",
+          "scripts": {
+            "git-status": {
+              "cmd": "git branch --show-current && git status -s -u",
+              "shell": true
+            }
+          },
+          "shell": "/bin/bash",
+          "vars": "",
+          "varsAssignor": "=",
+          "varsDelimiter": " ",
+          "warnEntropy": true
+        }
+      }
+    ],
+    "exitCode": 0,
+    "source": "#79",
+    "stderr": "",
+    "stdout": "probe: [\"[a b]\"]\n"
+  },
+  "#79 spaces collapsed": {
+    "argv": ["getdotenv", "-c", "node probe.mjs \"[x   y]\""],
+    "bag": {
+      "cmd": ["node probe.mjs \"[x   y]\""],
+      "defaultEnvKey": "DEFAULT_ENV",
+      "dotenvToken": ".env",
+      "entropyMinLength": 16,
+      "entropyThreshold": 3.8,
+      "entropyWhitelist": ["^GIT_", "^npm_", "^CI$", "SHLVL"],
+      "loadProcess": true,
+      "logger": "[logger]",
+      "paths": "./",
+      "pathsDelimiter": " ",
+      "privateToken": "local",
+      "scripts": {
+        "git-status": {
+          "cmd": "git branch --show-current && git status -s -u",
+          "shell": true
+        }
+      },
+      "shell": "/bin/bash",
+      "vars": "",
+      "varsAssignor": "=",
+      "varsDelimiter": " ",
+      "warnEntropy": true
+    },
+    "children": [
+      {
+        "argv": ["[x y]"],
+        "cwd": ".",
+        "env": {
+          "added": {
+            "APP": "cae662172fd4",
+            "getDotenvCliOptions": "79680e42f5d5"
+          },
+          "changed": {},
+          "removed": []
+        },
+        "getDotenvCliOptions": {
+          "cmd": ["node probe.mjs \"[x   y]\""],
+          "defaultEnvKey": "DEFAULT_ENV",
+          "dotenvToken": ".env",
+          "entropyMinLength": 16,
+          "entropyThreshold": 3.8,
+          "entropyWhitelist": ["^GIT_", "^npm_", "^CI$", "SHLVL"],
+          "loadProcess": true,
+          "paths": "./",
+          "pathsDelimiter": " ",
+          "privateToken": "local",
+          "scripts": {
+            "git-status": {
+              "cmd": "git branch --show-current && git status -s -u",
+              "shell": true
+            }
+          },
+          "shell": "/bin/bash",
+          "vars": "",
+          "varsAssignor": "=",
+          "varsDelimiter": " ",
+          "warnEntropy": true
+        }
+      }
+    ],
+    "exitCode": 0,
+    "source": "#79",
+    "stderr": "",
+    "stdout": "probe: [\"[x y]\"]\n"
+  },
+  "#81 help runs dynamic": {
+    "argv": ["getdotenv", "-h"],
+    "bag": null,
+    "children": [],
+    "exitCode": 0,
+    "source": "#81",
+    "stderr": "DYN-EVAL\n",
+    "stdout": "getdotenv v<VERSION>\n\n\nUsage: getdotenv [options] [command]\n\nBase CLI.\n\nOptions:\n  -a, --exclude-all                   exclude all dotenv variables from loading\n                                      ON\n  -A, --exclude-all-off               exclude all dotenv variables from loading\n                                      OFF (default)\n  -e, --env <string>                  target environment (dotenv-expanded)\n  -g, --exclude-global                exclude global dotenv variables from\n                                      loading ON\n  -G, --exclude-global-off            exclude global dotenv variables from\n                                      loading OFF (default)\n  -l, --log                           console log loaded variables ON\n  -L, --log-off                       console log loaded variables OFF (default)\n  -n, --exclude-env                   exclude environment-specific dotenv\n                                      variables from loading ON\n  -N, --exclude-env-off               exclude environment-specific dotenv\n                                      variables from loading OFF (default)\n  -o, --output-path <string>          consolidated output file\n                                      (dotenv-expanded)\n  -p, --load-process                  load variables to process.env ON (default)\n  -P, --load-process-off              load variables to process.env OFF\n  -r, --exclude-private               exclude private dotenv variables from\n                                      loading ON\n  -R, --exclude-private-off           exclude private dotenv variables from\n                                      loading OFF (default)\n  -s, --shell [string]                command execution shell, no argument for\n                                      default OS shell or provide shell string\n                                      (default /bin/bash)\n  -S, --shell-off                     command execution shell OFF\n  -u, --exclude-public                exclude public dotenv variables from\n                                      loading ON\n  -U, --exclude-public-off            exclude public dotenv variables from\n                                      loading OFF (default)\n  -v, --vars <string>                 extra variables expressed as delimited\n                                      key-value pairs (dotenv-expanded):\n                                      KEY1=VAL1 KEY2=VAL2\n  -z, --exclude-dynamic               exclude dynamic dotenv variables from\n                                      loading ON\n  -Z, --exclude-dynamic-off           exclude dynamic dotenv variables from\n                                      loading OFF (default)\n  --capture                           capture child process stdio for commands\n                                      (tests/CI)\n  --debug                             enable debug logging to stderr ON\n  --debug-off                         enable debug logging to stderr OFF\n                                      (default)\n  --default-env <string>              default target environment\n  --default-env-key <string>          env var name in global dotenv files that\n                                      specifies the default environment\n                                      (dotenv-expanded)\n  --dotenv-token <string>             dotenv-expanded token indicating a dotenv\n                                      file\n  --dynamic-path <string>             dynamic variables path (.js or .ts; .ts is\n                                      auto-compiled when esbuild is available,\n                                      otherwise precompile)\n  --entropy-min-length <number>       min length to examine for entropy (default\n                                      16)\n  --entropy-threshold <number>        entropy bits/char threshold (default 3.8)\n  --entropy-warn                      enable entropy warnings (default on)\n  --entropy-warn-off                  disable entropy warnings\n  --entropy-whitelist <pattern...>    suppress entropy warnings when key matches\n                                      any regex pattern\n  --paths <string>                    dotenv-expanded delimited list of paths to\n                                      dotenv directory\n  --paths-delimiter <string>          paths delimiter string\n  --paths-delimiter-pattern <string>  paths delimiter regex pattern\n  --private-token <string>            dotenv-expanded token indicating private\n                                      variables\n  --redact                            presentation-time redaction for\n                                      secret-like keys ON\n  --redact-off                        presentation-time redaction for\n                                      secret-like keys OFF\n  --redact-pattern <pattern...>       additional key-match regex patterns to\n                                      trigger redaction\n  --strict                            fail on env validation errors\n                                      (schema/requiredKeys)\n  --trace [keys...]                   emit diagnostics for child env composition\n                                      (optional keys)\n  --vars-assignor <string>            vars assignment operator string\n  --vars-assignor-pattern <string>    vars assignment operator regex pattern\n  --vars-delimiter <string>           vars delimiter string\n  --vars-delimiter-pattern <string>   vars delimiter regex pattern\n\nPlugin options — cmd:\n  -c, --cmd <command...>  alias of cmd subcommand; provide command tokens (variadic)\n\nCommands:\n  cmd [command...]                    Execute command according to the --shell\n                                      option, conflicts with --command option\n                                      (default subcommand)\n  batch [options] [command...]        Batch command execution across multiple\n                                      working directories.\n  aws [options] [args...]             Establish an AWS session and optionally\n                                      forward to the AWS CLI\n  init [options] [dest]               Scaffold getdotenv config files and a\n                                      host-based CLI skeleton.\n\n"
+  },
+  "#83 rootOptionDefaults dynamic": {
+    "argv": ["getdotenv", "cmd", "node", "probe.mjs", "--print", "RD"],
+    "bag": {
+      "defaultEnvKey": "DEFAULT_ENV",
+      "dotenvToken": ".env",
+      "dynamic": {
+        "RD": "from-rod-dynamic"
+      },
+      "entropyMinLength": 16,
+      "entropyThreshold": 3.8,
+      "entropyWhitelist": ["^GIT_", "^npm_", "^CI$", "SHLVL"],
+      "loadProcess": true,
+      "logger": "[logger]",
+      "paths": "./",
+      "pathsDelimiter": " ",
+      "privateToken": "local",
+      "scripts": {
+        "git-status": {
+          "cmd": "git branch --show-current && git status -s -u",
+          "shell": true
+        }
+      },
+      "shell": "/bin/bash",
+      "vars": "",
+      "varsAssignor": "=",
+      "varsDelimiter": " ",
+      "warnEntropy": true
+    },
+    "children": [
+      {
+        "argv": ["--print", "RD"],
+        "cwd": ".",
+        "env": {
+          "added": {
+            "APP": "cae662172fd4",
+            "RD": "d5cf6a85229b",
+            "getDotenvCliOptions": "ed3dffd07200"
+          },
+          "changed": {},
+          "removed": []
+        },
+        "getDotenvCliOptions": {
+          "defaultEnvKey": "DEFAULT_ENV",
+          "dotenvToken": ".env",
+          "dynamic": {
+            "RD": "from-rod-dynamic"
+          },
+          "entropyMinLength": 16,
+          "entropyThreshold": 3.8,
+          "entropyWhitelist": ["^GIT_", "^npm_", "^CI$", "SHLVL"],
+          "loadProcess": true,
+          "paths": "./",
+          "pathsDelimiter": " ",
+          "privateToken": "local",
+          "scripts": {
+            "git-status": {
+              "cmd": "git branch --show-current && git status -s -u",
+              "shell": true
+            }
+          },
+          "shell": "/bin/bash",
+          "vars": "",
+          "varsAssignor": "=",
+          "varsDelimiter": " ",
+          "warnEntropy": true
+        }
+      }
+    ],
+    "exitCode": 0,
+    "source": "#83",
+    "stderr": "",
+    "stdout": "probe: [\"--print\",\"RD\"]\nprobe env: {\"RD\":\"from-rod-dynamic\"}\n"
+  },
+  "#83 rootOptionDefaults dynamic -z": {
+    "argv": ["getdotenv", "-z", "cmd", "node", "probe.mjs", "--print", "RD"],
+    "bag": {
+      "defaultEnvKey": "DEFAULT_ENV",
+      "dotenvToken": ".env",
+      "dynamic": {
+        "RD": "from-rod-dynamic"
+      },
+      "entropyMinLength": 16,
+      "entropyThreshold": 3.8,
+      "entropyWhitelist": ["^GIT_", "^npm_", "^CI$", "SHLVL"],
+      "excludeDynamic": true,
+      "loadProcess": true,
+      "logger": "[logger]",
+      "paths": "./",
+      "pathsDelimiter": " ",
+      "privateToken": "local",
+      "scripts": {
+        "git-status": {
+          "cmd": "git branch --show-current && git status -s -u",
+          "shell": true
+        }
+      },
+      "shell": "/bin/bash",
+      "vars": "",
+      "varsAssignor": "=",
+      "varsDelimiter": " ",
+      "warnEntropy": true
+    },
+    "children": [
+      {
+        "argv": ["--print", "RD"],
+        "cwd": ".",
+        "env": {
+          "added": {
+            "APP": "cae662172fd4",
+            "getDotenvCliOptions": "a4bfff2cfe42"
+          },
+          "changed": {},
+          "removed": []
+        },
+        "getDotenvCliOptions": {
+          "defaultEnvKey": "DEFAULT_ENV",
+          "dotenvToken": ".env",
+          "dynamic": {
+            "RD": "from-rod-dynamic"
+          },
+          "entropyMinLength": 16,
+          "entropyThreshold": 3.8,
+          "entropyWhitelist": ["^GIT_", "^npm_", "^CI$", "SHLVL"],
+          "excludeDynamic": true,
+          "loadProcess": true,
+          "paths": "./",
+          "pathsDelimiter": " ",
+          "privateToken": "local",
+          "scripts": {
+            "git-status": {
+              "cmd": "git branch --show-current && git status -s -u",
+              "shell": true
+            }
+          },
+          "shell": "/bin/bash",
+          "vars": "",
+          "varsAssignor": "=",
+          "varsDelimiter": " ",
+          "warnEntropy": true
+        }
+      }
+    ],
+    "exitCode": 0,
+    "source": "#83",
+    "stderr": "",
+    "stdout": "probe: [\"--print\",\"RD\"]\nprobe env: {\"RD\":null}\n"
+  },
+  "#84 aws child help resolves session": {
+    "argv": ["getdotenv", "aws", "whoami", "really", "-h"],
+    "aws": [
+      {
+        "command": [
+          "aws",
+          "configure",
+          "export-credentials",
+          "--profile",
+          "dotenv-profile",
+          "--format",
+          "process"
+        ],
+        "env": {
+          "added": {
+            "APP": "cae662172fd4",
+            "AWS_LOCAL_PROFILE": "5e649592b9e7"
+          },
+          "changed": {},
+          "removed": []
+        },
+        "getDotenvCliOptions": null,
+        "kind": "result",
+        "shell": false
+      },
+      {
+        "command": [
+          "aws",
+          "configure",
+          "export-credentials",
+          "--profile",
+          "dotenv-profile",
+          "--format",
+          "env"
+        ],
+        "env": {
+          "added": {
+            "APP": "cae662172fd4",
+            "AWS_LOCAL_PROFILE": "5e649592b9e7"
+          },
+          "changed": {},
+          "removed": []
+        },
+        "getDotenvCliOptions": null,
+        "kind": "result",
+        "shell": false
+      },
+      {
+        "command": [
+          "aws",
+          "configure",
+          "export-credentials",
+          "--profile",
+          "dotenv-profile"
+        ],
+        "env": {
+          "added": {
+            "APP": "cae662172fd4",
+            "AWS_LOCAL_PROFILE": "5e649592b9e7"
+          },
+          "changed": {},
+          "removed": []
+        },
+        "getDotenvCliOptions": null,
+        "kind": "result",
+        "shell": false
+      },
+      {
+        "command": [
+          "aws",
+          "configure",
+          "get",
+          "sso_session",
+          "--profile",
+          "dotenv-profile"
+        ],
+        "env": {
+          "added": {
+            "APP": "cae662172fd4",
+            "AWS_LOCAL_PROFILE": "5e649592b9e7"
+          },
+          "changed": {},
+          "removed": []
+        },
+        "getDotenvCliOptions": null,
+        "kind": "result",
+        "shell": false
+      },
+      {
+        "command": [
+          "aws",
+          "configure",
+          "get",
+          "sso_start_url",
+          "--profile",
+          "dotenv-profile"
+        ],
+        "env": {
+          "added": {
+            "APP": "cae662172fd4",
+            "AWS_LOCAL_PROFILE": "5e649592b9e7"
+          },
+          "changed": {},
+          "removed": []
+        },
+        "getDotenvCliOptions": null,
+        "kind": "result",
+        "shell": false
+      },
+      {
+        "command": [
+          "aws",
+          "configure",
+          "get",
+          "aws_access_key_id",
+          "--profile",
+          "dotenv-profile"
+        ],
+        "env": {
+          "added": {
+            "APP": "cae662172fd4",
+            "AWS_LOCAL_PROFILE": "5e649592b9e7"
+          },
+          "changed": {},
+          "removed": []
+        },
+        "getDotenvCliOptions": null,
+        "kind": "result",
+        "shell": false
+      },
+      {
+        "command": [
+          "aws",
+          "configure",
+          "get",
+          "aws_secret_access_key",
+          "--profile",
+          "dotenv-profile"
+        ],
+        "env": {
+          "added": {
+            "APP": "cae662172fd4",
+            "AWS_LOCAL_PROFILE": "5e649592b9e7"
+          },
+          "changed": {},
+          "removed": []
+        },
+        "getDotenvCliOptions": null,
+        "kind": "result",
+        "shell": false
+      },
+      {
+        "command": [
+          "aws",
+          "configure",
+          "get",
+          "aws_session_token",
+          "--profile",
+          "dotenv-profile"
+        ],
+        "env": {
+          "added": {
+            "APP": "cae662172fd4",
+            "AWS_LOCAL_PROFILE": "5e649592b9e7"
+          },
+          "changed": {},
+          "removed": []
+        },
+        "getDotenvCliOptions": null,
+        "kind": "result",
+        "shell": false
+      },
+      {
+        "command": [
+          "aws",
+          "configure",
+          "get",
+          "region",
+          "--profile",
+          "dotenv-profile"
+        ],
+        "env": {
+          "added": {
+            "APP": "cae662172fd4",
+            "AWS_LOCAL_PROFILE": "5e649592b9e7"
+          },
+          "changed": {},
+          "removed": []
+        },
+        "getDotenvCliOptions": null,
+        "kind": "result",
+        "shell": false
+      }
+    ],
+    "bag": {
+      "defaultEnvKey": "DEFAULT_ENV",
+      "dotenvToken": ".env",
+      "entropyMinLength": 16,
+      "entropyThreshold": 3.8,
+      "entropyWhitelist": ["^GIT_", "^npm_", "^CI$", "SHLVL"],
+      "loadProcess": true,
+      "logger": "[logger]",
+      "paths": "./",
+      "pathsDelimiter": " ",
+      "privateToken": "local",
+      "scripts": {
+        "git-status": {
+          "cmd": "git branch --show-current && git status -s -u",
+          "shell": true
+        }
+      },
+      "shell": "/bin/bash",
+      "vars": "",
+      "varsAssignor": "=",
+      "varsDelimiter": " ",
+      "warnEntropy": true
+    },
+    "children": [],
+    "exitCode": 0,
+    "processExitCalled": true,
+    "source": "#84",
+    "stderr": "",
+    "stdout": "getdotenv v<VERSION>\n\n\nUsage: getdotenv aws whoami really [options]\n\nPrint SECRET_IDENTITY from the resolved dotenv context\n\n\n"
+  },
+  "#87 second run": {
+    "argv": ["getdotenv", "cmd", "node", "probe.mjs"],
+    "bag": {
+      "defaultEnvKey": "DEFAULT_ENV",
+      "dotenvToken": ".env",
+      "entropyMinLength": 16,
+      "entropyThreshold": 3.8,
+      "entropyWhitelist": ["^GIT_", "^npm_", "^CI$", "SHLVL"],
+      "loadProcess": true,
+      "logger": "[logger]",
+      "paths": "./",
+      "pathsDelimiter": " ",
+      "privateToken": "local",
+      "scripts": {
+        "git-status": {
+          "cmd": "git branch --show-current && git status -s -u",
+          "shell": true
+        }
+      },
+      "shell": "/bin/bash",
+      "vars": "",
+      "varsAssignor": "=",
+      "varsDelimiter": " ",
+      "warnEntropy": true
+    },
+    "children": [
+      {
+        "argv": [],
+        "cwd": ".",
+        "env": {
+          "added": {
+            "APP": "cae662172fd4",
+            "getDotenvCliOptions": "ee90e48b8d2b"
+          },
+          "changed": {},
+          "removed": []
+        },
+        "getDotenvCliOptions": {
+          "defaultEnvKey": "DEFAULT_ENV",
+          "dotenvToken": ".env",
+          "entropyMinLength": 16,
+          "entropyThreshold": 3.8,
+          "entropyWhitelist": ["^GIT_", "^npm_", "^CI$", "SHLVL"],
+          "loadProcess": true,
+          "paths": "./",
+          "pathsDelimiter": " ",
+          "privateToken": "local",
+          "scripts": {
+            "git-status": {
+              "cmd": "git branch --show-current && git status -s -u",
+              "shell": true
+            }
+          },
+          "shell": "/bin/bash",
+          "vars": "",
+          "varsAssignor": "=",
+          "varsDelimiter": " ",
+          "warnEntropy": true
+        }
+      }
+    ],
+    "exitCode": 0,
+    "rejected": "Error: run 2: Error: Cannot add option '-V, --version' to command 'getdotenv' due to conflicting flag '--version'\n-  already used by option '-V, --version'",
+    "source": "#87",
+    "stderr": "",
+    "stdout": "probe: []\n"
+  },
+  "#88 case-only key difference": {
+    "argv": [
+      "getdotenv",
+      "cmd",
+      "node",
+      "probe.mjs",
+      "--print",
+      "GDV_CASE,Gdv_Case"
+    ],
+    "bag": {
+      "defaultEnvKey": "DEFAULT_ENV",
+      "dotenvToken": ".env",
+      "entropyMinLength": 16,
+      "entropyThreshold": 3.8,
+      "entropyWhitelist": ["^GIT_", "^npm_", "^CI$", "SHLVL"],
+      "loadProcess": true,
+      "logger": "[logger]",
+      "paths": "./",
+      "pathsDelimiter": " ",
+      "privateToken": "local",
+      "scripts": {
+        "git-status": {
+          "cmd": "git branch --show-current && git status -s -u",
+          "shell": true
+        }
+      },
+      "shell": "/bin/bash",
+      "vars": "",
+      "varsAssignor": "=",
+      "varsDelimiter": " ",
+      "warnEntropy": true
+    },
+    "children": [
+      {
+        "argv": ["--print", "GDV_CASE,Gdv_Case"],
+        "cwd": ".",
+        "env": {
+          "added": {
+            "APP": "cae662172fd4",
+            "Gdv_Case": "0261167f888c",
+            "getDotenvCliOptions": "ee90e48b8d2b"
+          },
+          "changed": {},
+          "removed": []
+        },
+        "getDotenvCliOptions": {
+          "defaultEnvKey": "DEFAULT_ENV",
+          "dotenvToken": ".env",
+          "entropyMinLength": 16,
+          "entropyThreshold": 3.8,
+          "entropyWhitelist": ["^GIT_", "^npm_", "^CI$", "SHLVL"],
+          "loadProcess": true,
+          "paths": "./",
+          "pathsDelimiter": " ",
+          "privateToken": "local",
+          "scripts": {
+            "git-status": {
+              "cmd": "git branch --show-current && git status -s -u",
+              "shell": true
+            }
+          },
+          "shell": "/bin/bash",
+          "vars": "",
+          "varsAssignor": "=",
+          "varsDelimiter": " ",
+          "warnEntropy": true
+        }
+      }
+    ],
+    "exitCode": 0,
+    "source": "#88",
+    "stderr": "",
+    "stdout": "probe: [\"--print\",\"GDV_CASE,Gdv_Case\"]\nprobe env: {\"GDV_CASE\":\"ambient\",\"Gdv_Case\":\"dotenv\"}\n"
+  },
+  "#89 vars expanded twice": {
+    "argv": ["getdotenv", "-P", "-v", "P=\\$5 Q=\\\\$6 R=lit", "-l", "cmd"],
+    "bag": {
+      "defaultEnvKey": "DEFAULT_ENV",
+      "dotenvToken": ".env",
+      "entropyMinLength": 16,
+      "entropyThreshold": 3.8,
+      "entropyWhitelist": ["^GIT_", "^npm_", "^CI$", "SHLVL"],
+      "loadProcess": true,
+      "log": true,
+      "logger": "[logger]",
+      "paths": "./",
+      "pathsDelimiter": " ",
+      "privateToken": "local",
+      "scripts": {
+        "git-status": {
+          "cmd": "git branch --show-current && git status -s -u",
+          "shell": true
+        }
+      },
+      "shell": "/bin/bash",
+      "vars": "P=$5 Q=\\$6 R=lit",
+      "varsAssignor": "=",
+      "varsDelimiter": " ",
+      "warnEntropy": true
+    },
+    "children": [],
+    "exitCode": 0,
+    "source": "#89",
+    "stderr": "",
+    "stdout": "{ APP: 'base', P: undefined, Q: '$6', R: 'lit' }\n"
+  },
+  "#90 constructor": {
+    "argv": ["getdotenv", "-S", "constructor"],
+    "bag": {
+      "defaultEnvKey": "DEFAULT_ENV",
+      "dotenvToken": ".env",
+      "entropyMinLength": 16,
+      "entropyThreshold": 3.8,
+      "entropyWhitelist": ["^GIT_", "^npm_", "^CI$", "SHLVL"],
+      "loadProcess": true,
+      "logger": "[logger]",
+      "paths": "./",
+      "pathsDelimiter": " ",
+      "privateToken": "local",
+      "scripts": {
+        "git-status": {
+          "cmd": "git branch --show-current && git status -s -u",
+          "shell": true
+        }
+      },
+      "shell": false,
+      "vars": "",
+      "varsAssignor": "=",
+      "varsDelimiter": " ",
+      "warnEntropy": true
+    },
+    "children": [],
+    "exitCode": 0,
+    "source": "#90",
+    "stderr": "",
+    "stdout": ""
+  },
+  "#90 toString": {
+    "argv": ["getdotenv", "toString"],
+    "bag": {
+      "defaultEnvKey": "DEFAULT_ENV",
+      "dotenvToken": ".env",
+      "entropyMinLength": 16,
+      "entropyThreshold": 3.8,
+      "entropyWhitelist": ["^GIT_", "^npm_", "^CI$", "SHLVL"],
+      "loadProcess": true,
+      "logger": "[logger]",
+      "paths": "./",
+      "pathsDelimiter": " ",
+      "privateToken": "local",
+      "scripts": {
+        "git-status": {
+          "cmd": "git branch --show-current && git status -s -u",
+          "shell": true
+        }
+      },
+      "shell": "/bin/bash",
+      "vars": "",
+      "varsAssignor": "=",
+      "varsDelimiter": " ",
+      "warnEntropy": true
+    },
+    "children": [],
+    "exitCode": 0,
+    "source": "#90",
+    "stderr": "",
+    "stdout": ""
+  },
+  "4.4 row 16": {
+    "argv": ["getdotenv", "init", "x", "--cli-name", "--debug", "y"],
+    "bag": {
+      "defaultEnvKey": "DEFAULT_ENV",
+      "dotenvToken": ".env",
+      "entropyMinLength": 16,
+      "entropyThreshold": 3.8,
+      "entropyWhitelist": ["^GIT_", "^npm_", "^CI$", "SHLVL"],
+      "loadProcess": true,
+      "logger": "[logger]",
+      "paths": "./",
+      "pathsDelimiter": " ",
+      "privateToken": "local",
+      "scripts": {
+        "git-status": {
+          "cmd": "git branch --show-current && git status -s -u",
+          "shell": true
+        }
+      },
+      "shell": "/bin/bash",
+      "vars": "",
+      "varsAssignor": "=",
+      "varsDelimiter": " ",
+      "warnEntropy": true
+    },
+    "children": [],
+    "exitCode": 1,
+    "source": "4.4 row 16",
+    "stderr": "error: too many arguments for 'init'. Expected 1 argument but got 2: x, y.\nCommanderError: error: too many arguments for 'init'. Expected 1 argument but got 2: x, y.\n    at <frames>\n",
+    "stdout": "",
+    "tree": [
+      ".env",
+      ".env.bali",
+      ".env.dev",
+      "package.json",
+      "pkgA/probe.mjs",
+      "pkgB/probe.mjs",
+      "probe.mjs"
+    ]
+  },
+  "help getdotenv": {
+    "argv": ["getdotenv", "-h"],
+    "bag": null,
+    "children": [],
+    "exitCode": 0,
+    "source": "help",
+    "stderr": "",
+    "stdout": "getdotenv v<VERSION>\n\n\nUsage: getdotenv [options] [command]\n\nBase CLI.\n\nOptions:\n  -a, --exclude-all                   exclude all dotenv variables from loading\n                                      ON\n  -A, --exclude-all-off               exclude all dotenv variables from loading\n                                      OFF (default)\n  -e, --env <string>                  target environment (dotenv-expanded)\n  -g, --exclude-global                exclude global dotenv variables from\n                                      loading ON\n  -G, --exclude-global-off            exclude global dotenv variables from\n                                      loading OFF (default)\n  -l, --log                           console log loaded variables ON\n  -L, --log-off                       console log loaded variables OFF (default)\n  -n, --exclude-env                   exclude environment-specific dotenv\n                                      variables from loading ON\n  -N, --exclude-env-off               exclude environment-specific dotenv\n                                      variables from loading OFF (default)\n  -o, --output-path <string>          consolidated output file\n                                      (dotenv-expanded)\n  -p, --load-process                  load variables to process.env ON (default)\n  -P, --load-process-off              load variables to process.env OFF\n  -r, --exclude-private               exclude private dotenv variables from\n                                      loading ON\n  -R, --exclude-private-off           exclude private dotenv variables from\n                                      loading OFF (default)\n  -s, --shell [string]                command execution shell, no argument for\n                                      default OS shell or provide shell string\n                                      (default /bin/bash)\n  -S, --shell-off                     command execution shell OFF\n  -u, --exclude-public                exclude public dotenv variables from\n                                      loading ON\n  -U, --exclude-public-off            exclude public dotenv variables from\n                                      loading OFF (default)\n  -v, --vars <string>                 extra variables expressed as delimited\n                                      key-value pairs (dotenv-expanded):\n                                      KEY1=VAL1 KEY2=VAL2\n  -z, --exclude-dynamic               exclude dynamic dotenv variables from\n                                      loading ON\n  -Z, --exclude-dynamic-off           exclude dynamic dotenv variables from\n                                      loading OFF (default)\n  --capture                           capture child process stdio for commands\n                                      (tests/CI)\n  --debug                             enable debug logging to stderr ON\n  --debug-off                         enable debug logging to stderr OFF\n                                      (default)\n  --default-env <string>              default target environment\n  --default-env-key <string>          env var name in global dotenv files that\n                                      specifies the default environment\n                                      (dotenv-expanded)\n  --dotenv-token <string>             dotenv-expanded token indicating a dotenv\n                                      file\n  --dynamic-path <string>             dynamic variables path (.js or .ts; .ts is\n                                      auto-compiled when esbuild is available,\n                                      otherwise precompile)\n  --entropy-min-length <number>       min length to examine for entropy (default\n                                      16)\n  --entropy-threshold <number>        entropy bits/char threshold (default 3.8)\n  --entropy-warn                      enable entropy warnings (default on)\n  --entropy-warn-off                  disable entropy warnings\n  --entropy-whitelist <pattern...>    suppress entropy warnings when key matches\n                                      any regex pattern\n  --paths <string>                    dotenv-expanded delimited list of paths to\n                                      dotenv directory\n  --paths-delimiter <string>          paths delimiter string\n  --paths-delimiter-pattern <string>  paths delimiter regex pattern\n  --private-token <string>            dotenv-expanded token indicating private\n                                      variables\n  --redact                            presentation-time redaction for\n                                      secret-like keys ON\n  --redact-off                        presentation-time redaction for\n                                      secret-like keys OFF\n  --redact-pattern <pattern...>       additional key-match regex patterns to\n                                      trigger redaction\n  --strict                            fail on env validation errors\n                                      (schema/requiredKeys)\n  --trace [keys...]                   emit diagnostics for child env composition\n                                      (optional keys)\n  --vars-assignor <string>            vars assignment operator string\n  --vars-assignor-pattern <string>    vars assignment operator regex pattern\n  --vars-delimiter <string>           vars delimiter string\n  --vars-delimiter-pattern <string>   vars delimiter regex pattern\n\nPlugin options — cmd:\n  -c, --cmd <command...>  alias of cmd subcommand; provide command tokens (variadic)\n\nCommands:\n  cmd [command...]                    Execute command according to the --shell\n                                      option, conflicts with --command option\n                                      (default subcommand)\n  batch [options] [command...]        Batch command execution across multiple\n                                      working directories.\n  aws [options] [args...]             Establish an AWS session and optionally\n                                      forward to the AWS CLI\n  init [options] [dest]               Scaffold getdotenv config files and a\n                                      host-based CLI skeleton.\n\n"
+  },
+  "help getdotenv aws": {
+    "argv": ["getdotenv", "aws", "-h"],
+    "bag": {
+      "defaultEnvKey": "DEFAULT_ENV",
+      "dotenvToken": ".env",
+      "entropyMinLength": 16,
+      "entropyThreshold": 3.8,
+      "entropyWhitelist": ["^GIT_", "^npm_", "^CI$", "SHLVL"],
+      "loadProcess": true,
+      "logger": "[logger]",
+      "paths": "./",
+      "pathsDelimiter": " ",
+      "privateToken": "local",
+      "scripts": {
+        "git-status": {
+          "cmd": "git branch --show-current && git status -s -u",
+          "shell": true
+        }
+      },
+      "shell": "/bin/bash",
+      "vars": "",
+      "varsAssignor": "=",
+      "varsDelimiter": " ",
+      "warnEntropy": true
+    },
+    "children": [],
+    "exitCode": 0,
+    "processExitCalled": true,
+    "source": "help",
+    "stderr": "",
+    "stdout": "getdotenv v<VERSION>\n\n\nUsage: getdotenv aws [options] [command] [args...]\n\nEstablish an AWS session and optionally forward to the AWS CLI\n\nOptions:\n  --default-region <string>        fallback region\n  --login-on-demand                attempt aws sso login on-demand\n  --no-login-on-demand             disable sso login on-demand (default)\n  --profile <string>               AWS profile name\n  --profile-fallback-key <string>  fallback dotenv/config key for profile\n                                   (default: \"AWS_PROFILE\")\n  --profile-key <string>           dotenv/config key for local profile (default:\n                                   \"AWS_LOCAL_PROFILE\")\n  --region <string>                AWS region\n  --region-key <string>            dotenv/config key for region (default:\n                                   \"AWS_REGION\")\n  --strategy <string>              credential acquisition strategy:\n                                   cli-export|none (default: \"cli-export\")\n\nCommands:\n  whoami                           Print AWS caller identity (uses parent aws\n                                   session)\n\n\n"
+  },
+  "help getdotenv aws whoami": {
+    "argv": ["getdotenv", "aws", "whoami", "-h"],
+    "bag": {
+      "defaultEnvKey": "DEFAULT_ENV",
+      "dotenvToken": ".env",
+      "entropyMinLength": 16,
+      "entropyThreshold": 3.8,
+      "entropyWhitelist": ["^GIT_", "^npm_", "^CI$", "SHLVL"],
+      "loadProcess": true,
+      "logger": "[logger]",
+      "paths": "./",
+      "pathsDelimiter": " ",
+      "privateToken": "local",
+      "scripts": {
+        "git-status": {
+          "cmd": "git branch --show-current && git status -s -u",
+          "shell": true
+        }
+      },
+      "shell": "/bin/bash",
+      "vars": "",
+      "varsAssignor": "=",
+      "varsDelimiter": " ",
+      "warnEntropy": true
+    },
+    "children": [],
+    "exitCode": 0,
+    "processExitCalled": true,
+    "source": "help",
+    "stderr": "",
+    "stdout": "getdotenv v<VERSION>\n\n\nUsage: getdotenv aws whoami [options] [command]\n\nPrint AWS caller identity (uses parent aws session)\n\nCommands:\n  really  Print SECRET_IDENTITY from the resolved dotenv context\n\n\n"
+  },
+  "help getdotenv aws whoami really": {
+    "argv": ["getdotenv", "aws", "whoami", "really", "-h"],
+    "bag": {
+      "defaultEnvKey": "DEFAULT_ENV",
+      "dotenvToken": ".env",
+      "entropyMinLength": 16,
+      "entropyThreshold": 3.8,
+      "entropyWhitelist": ["^GIT_", "^npm_", "^CI$", "SHLVL"],
+      "loadProcess": true,
+      "logger": "[logger]",
+      "paths": "./",
+      "pathsDelimiter": " ",
+      "privateToken": "local",
+      "scripts": {
+        "git-status": {
+          "cmd": "git branch --show-current && git status -s -u",
+          "shell": true
+        }
+      },
+      "shell": "/bin/bash",
+      "vars": "",
+      "varsAssignor": "=",
+      "varsDelimiter": " ",
+      "warnEntropy": true
+    },
+    "children": [],
+    "exitCode": 0,
+    "processExitCalled": true,
+    "source": "help",
+    "stderr": "",
+    "stdout": "getdotenv v<VERSION>\n\n\nUsage: getdotenv aws whoami really [options]\n\nPrint SECRET_IDENTITY from the resolved dotenv context\n\n\n"
+  },
+  "help getdotenv batch": {
+    "argv": ["getdotenv", "batch", "-h"],
+    "bag": {
+      "defaultEnvKey": "DEFAULT_ENV",
+      "dotenvToken": ".env",
+      "entropyMinLength": 16,
+      "entropyThreshold": 3.8,
+      "entropyWhitelist": ["^GIT_", "^npm_", "^CI$", "SHLVL"],
+      "loadProcess": true,
+      "logger": "[logger]",
+      "paths": "./",
+      "pathsDelimiter": " ",
+      "privateToken": "local",
+      "scripts": {
+        "git-status": {
+          "cmd": "git branch --show-current && git status -s -u",
+          "shell": true
+        }
+      },
+      "shell": "/bin/bash",
+      "vars": "",
+      "varsAssignor": "=",
+      "varsDelimiter": " ",
+      "warnEntropy": true
+    },
+    "children": [],
+    "exitCode": 0,
+    "processExitCalled": true,
+    "source": "help",
+    "stderr": "",
+    "stdout": "getdotenv v<VERSION>\n\n\nUsage: getdotenv batch [options] [command] [command...]\n\nBatch command execution across multiple working directories.\n\nOptions:\n  -c, --command <string>    command executed according to the base shell\n                            resolution\n  -C, --concurrency <n>     max concurrent executions in parallel mode (default:\n                            <CPUS>)\n  -e, --ignore-errors       ignore errors and continue with next path\n  -g, --globs <string>      space-delimited globs from root path (default: \"*\")\n  -l, --list                list working directories without executing command\n  -P, --parallel            execute commands in parallel across directories\n  -p, --pkg-cwd             use nearest package directory as current working\n                            directory\n  -r, --root-path <string>  path to batch root directory from current working\n                            directory (default: \"./\")\n\nCommands:\n  cmd [command...]          execute command, conflicts with --command option\n                            (default subcommand)\n\n\n"
+  },
+  "help getdotenv batch cmd": {
+    "argv": ["getdotenv", "batch", "cmd", "-h"],
+    "bag": {
+      "defaultEnvKey": "DEFAULT_ENV",
+      "dotenvToken": ".env",
+      "entropyMinLength": 16,
+      "entropyThreshold": 3.8,
+      "entropyWhitelist": ["^GIT_", "^npm_", "^CI$", "SHLVL"],
+      "loadProcess": true,
+      "logger": "[logger]",
+      "paths": "./",
+      "pathsDelimiter": " ",
+      "privateToken": "local",
+      "scripts": {
+        "git-status": {
+          "cmd": "git branch --show-current && git status -s -u",
+          "shell": true
+        }
+      },
+      "shell": "/bin/bash",
+      "vars": "",
+      "varsAssignor": "=",
+      "varsDelimiter": " ",
+      "warnEntropy": true
+    },
+    "children": [],
+    "exitCode": 0,
+    "processExitCalled": true,
+    "source": "help",
+    "stderr": "",
+    "stdout": "getdotenv v<VERSION>\n\n\nUsage: getdotenv batch cmd [options] [command...]\n\nexecute command, conflicts with --command option (default subcommand)\n\nOptions:\n  -h, --help  display help for command\n"
+  },
+  "help getdotenv cmd": {
+    "argv": ["getdotenv", "cmd", "-h"],
+    "bag": {
+      "defaultEnvKey": "DEFAULT_ENV",
+      "dotenvToken": ".env",
+      "entropyMinLength": 16,
+      "entropyThreshold": 3.8,
+      "entropyWhitelist": ["^GIT_", "^npm_", "^CI$", "SHLVL"],
+      "loadProcess": true,
+      "logger": "[logger]",
+      "paths": "./",
+      "pathsDelimiter": " ",
+      "privateToken": "local",
+      "scripts": {
+        "git-status": {
+          "cmd": "git branch --show-current && git status -s -u",
+          "shell": true
+        }
+      },
+      "shell": "/bin/bash",
+      "vars": "",
+      "varsAssignor": "=",
+      "varsDelimiter": " ",
+      "warnEntropy": true
+    },
+    "children": [],
+    "exitCode": 0,
+    "processExitCalled": true,
+    "source": "help",
+    "stderr": "",
+    "stdout": "getdotenv v<VERSION>\n\n\nUsage: getdotenv cmd [options] [command...]\n\nExecute command according to the --shell option, conflicts with --command option\n(default subcommand)\n\n\n"
+  },
+  "help getdotenv init": {
+    "argv": ["getdotenv", "init", "-h"],
+    "bag": {
+      "defaultEnvKey": "DEFAULT_ENV",
+      "dotenvToken": ".env",
+      "entropyMinLength": 16,
+      "entropyThreshold": 3.8,
+      "entropyWhitelist": ["^GIT_", "^npm_", "^CI$", "SHLVL"],
+      "loadProcess": true,
+      "logger": "[logger]",
+      "paths": "./",
+      "pathsDelimiter": " ",
+      "privateToken": "local",
+      "scripts": {
+        "git-status": {
+          "cmd": "git branch --show-current && git status -s -u",
+          "shell": true
+        }
+      },
+      "shell": "/bin/bash",
+      "vars": "",
+      "varsAssignor": "=",
+      "varsDelimiter": " ",
+      "warnEntropy": true
+    },
+    "children": [],
+    "exitCode": 0,
+    "processExitCalled": true,
+    "source": "help",
+    "stderr": "",
+    "stdout": "getdotenv v<VERSION>\n\n\nUsage: getdotenv init [options] [dest]\n\nScaffold getdotenv config files and a host-based CLI skeleton.\n\nArguments:\n  dest                      destination path (default: ./) (default: \".\")\n\nOptions:\n  --cli-name <string>       CLI name for skeleton and tokens\n  --config-format <format>  config format: json|yaml|js|ts (default: \"json\")\n  --dynamic                 include dynamic examples (JS/TS configs)\n  --force                   overwrite all existing files\n  --with-local              include .local config variant\n  --yes                     skip all collisions (no overwrite)\n\n\n"
+  },
+  "version getdotenv": {
+    "argv": ["getdotenv", "-V"],
+    "bag": null,
+    "children": [],
+    "exitCode": 0,
+    "processExitCalled": true,
+    "source": "help",
+    "stderr": "",
+    "stdout": "<VERSION>\n\n"
+  }
+}
