@@ -204,6 +204,7 @@
   "scripts": {
     "generate:schema": "tsx tools/generate-schema.js",
     "build": "npm run generate:schema && rimraf dist && rollup --config rollup.config.ts --configPlugin @rollup/plugin-typescript",
+    "baseline:record": "node tools/baseline-record.js",
     "cli": "tsx src/cli/getdotenv",
     "cli:dist": "node dist/getdotenv.cli.mjs",
     "changelog": "git-cliff -o CHANGELOG.md",

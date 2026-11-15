@@ -34,6 +34,17 @@ jobs:
       - name: Test (with coverage)
         run: npm test -- --coverage
 
+      # The 7.0.11 behaviour baseline test writes the current output here on
+      # every run; upload it when tests fail so a differing case can be read.
+      - name: Upload baseline actual output
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: baseline-actual-${{ matrix.os }}
+          path: .tsbuild/baseline-actual
+          include-hidden-files: true
+          if-no-files-found: ignore
+
       - name: Build
         run: npm run build
 
