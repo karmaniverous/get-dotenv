@@ -4,7 +4,7 @@
  */
 import { describe, expect, it } from 'vitest';
 
-import { runFixtureCli } from '@/test/support/fixtureCli';
+import { runFixtureCli, withParentBag } from '@/test/support/fixtureCli';
 
 import { resolveCliOptions } from './resolveCliOptions';
 import type { RootOptionsShape } from './types';
@@ -44,21 +44,16 @@ describe('#91 parent shell: false reaches a child with a string default', () => 
   });
 
   it('a nested createCli child with a string default shell keeps the parent -S', async () => {
-    const prev = process.env.getDotenvCliOptions;
-    process.env.getDotenvCliOptions = JSON.stringify({ shell: false });
-    try {
-      const run = await runFixtureCli(
+    const run = await withParentBag({ shell: false }, () =>
+      runFixtureCli(
         ['probe'],
         {},
         {
           rootOptionDefaults: { shell: '/bin/zsh' },
         },
-      );
-      expect(run.error).toBeUndefined();
-      expect(run.bag?.shell).toBe(false);
-    } finally {
-      if (prev === undefined) delete process.env.getDotenvCliOptions;
-      else process.env.getDotenvCliOptions = prev;
-    }
+      ),
+    );
+    expect(run.error).toBeUndefined();
+    expect(run.bag?.shell).toBe(false);
   });
 });

@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import { runFixtureCli } from '@/test/support/fixtureCli';
+import { runFixtureCli, withEnv } from '@/test/support/fixtureCli';
 
 import { attachRootOptions } from './attachRootOptions';
 import { GetDotenvCli } from './GetDotenvCli';
@@ -120,28 +120,26 @@ describe('#60 visibility resolution (the help rendering half is S13)', () => {
 
   it('createCli top-level -h applies config true over createCli false', async () => {
     let program: GetDotenvCli | undefined;
-    const prev = process.env.GETDOTENV_STDOUT;
-    process.env.GETDOTENV_STDOUT = 'pipe';
     const write = vi
       .spyOn(process.stdout, 'write')
       .mockImplementation(() => true);
     try {
-      await runFixtureCli(
-        ['-h'],
-        {
-          'getdotenv.config.json': JSON.stringify({
-            rootOptionVisibility: { shell: true, trace: false },
-          }),
-        },
-        {
-          rootOptionVisibility: { shell: false, capture: false },
-          compose: (p) => (program = p),
-        },
+      await withEnv({ GETDOTENV_STDOUT: 'pipe' }, () =>
+        runFixtureCli(
+          ['-h'],
+          {
+            'getdotenv.config.json': JSON.stringify({
+              rootOptionVisibility: { shell: true, trace: false },
+            }),
+          },
+          {
+            rootOptionVisibility: { shell: false, capture: false },
+            compose: (p) => (program = p),
+          },
+        ),
       );
     } finally {
       write.mockRestore();
-      if (prev === undefined) delete process.env.GETDOTENV_STDOUT;
-      else process.env.GETDOTENV_STDOUT = prev;
     }
     expect(program).toBeDefined();
     if (!program) return;

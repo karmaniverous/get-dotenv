@@ -6,7 +6,7 @@
  */
 import { describe, expect, it } from 'vitest';
 
-import { runFixtureCli } from '@/test/support/fixtureCli';
+import { runFixtureCli, withParentBag } from '@/test/support/fixtureCli';
 
 import { GetDotenvCli } from './GetDotenvCli';
 
@@ -16,17 +16,6 @@ const files = {
   'getdotenv.config.json': JSON.stringify({
     rootOptionDefaults: { paths: './b' },
   }),
-};
-
-const withParent = async <T>(bag: unknown, fn: () => Promise<T>) => {
-  const prev = process.env.getDotenvCliOptions;
-  process.env.getDotenvCliOptions = JSON.stringify(bag);
-  try {
-    return await fn();
-  } finally {
-    if (prev === undefined) delete process.env.getDotenvCliOptions;
-    else process.env.getDotenvCliOptions = prev;
-  }
 };
 
 describe('#77 createCli rootOptionDefaults rank below config and the parent bag', () => {
@@ -49,7 +38,7 @@ describe('#77 createCli rootOptionDefaults rank below config and the parent bag'
 
   it('the parent bag beats createCli defaults', async () => {
     const { 'getdotenv.config.json': _cfg, ...noConfig } = files;
-    const run = await withParent({ paths: './b' }, () =>
+    const run = await withParentBag({ paths: './b' }, () =>
       runFixtureCli(['probe'], noConfig, {
         rootOptionDefaults: { paths: './a', dotenvToken: '.env' },
       }),
@@ -58,7 +47,7 @@ describe('#77 createCli rootOptionDefaults rank below config and the parent bag'
   });
 
   it('a CLI flag beats everything', async () => {
-    const run = await withParent({ paths: './b' }, () =>
+    const run = await withParentBag({ paths: './b' }, () =>
       runFixtureCli(['--paths', './a', 'probe'], files, {
         rootOptionDefaults: { paths: './b' },
       }),

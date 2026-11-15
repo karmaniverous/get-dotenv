@@ -75,6 +75,47 @@ export const inFixture = async <T>(
 };
 
 /**
+ * Run `fn` with the given `process.env` entries set (`undefined` unsets),
+ * restoring their previous values afterwards.
+ *
+ * @param vars - Entries to set for the duration of `fn`.
+ * @param fn - Work to run.
+ * @returns What `fn` returns.
+ */
+export const withEnv = async <T>(
+  vars: Record<string, string | undefined>,
+  fn: () => Promise<T>,
+): Promise<T> => {
+  const prev = Object.fromEntries(
+    Object.keys(vars).map((k) => [k, process.env[k]]),
+  );
+  const assign = (entries: Record<string, string | undefined>) => {
+    for (const [k, v] of Object.entries(entries)) {
+      if (v === undefined) Reflect.deleteProperty(process.env, k);
+      else process.env[k] = v;
+    }
+  };
+  assign(vars);
+  try {
+    return await fn();
+  } finally {
+    assign(prev);
+  }
+};
+
+/**
+ * Run `fn` as a nested run whose parent passed `bag` as its options.
+ *
+ * @param bag - The parent's options bag (`process.env.getDotenvCliOptions`).
+ * @param fn - Work to run.
+ * @returns What `fn` returns.
+ */
+export const withParentBag = <T>(
+  bag: unknown,
+  fn: () => Promise<T>,
+): Promise<T> => withEnv({ getDotenvCliOptions: JSON.stringify(bag) }, fn);
+
+/**
  * Record console and stderr output while `fn` runs.
  *
  * @param fn - Work to run.
