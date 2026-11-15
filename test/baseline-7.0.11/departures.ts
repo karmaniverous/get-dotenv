@@ -144,6 +144,16 @@ export const departures: Departure[] = [
     note: "The harness captures (GETDOTENV_STDIO=pipe), so PowerShell's parse error for the cmd.exe-quoted tokens now reaches stderr (win32).",
   },
   {
+    case: '#75 alias spawn failure',
+    issueOrDecision: '#75',
+    note: "Where the command can't spawn (linux: ENOENT), stderr is 'Error: Command failed with ENOENT: ...' and the exit code is 127, not process.exit(NaN)'s out-of-range error. Unchanged on win32, where cmd.exe reports the missing command (exit 1).",
+  },
+  {
+    case: '#75 cmd spawn failure',
+    issueOrDecision: '#75',
+    note: "Where the command can't spawn (linux: ENOENT), stderr is 'Error: Command failed with ENOENT: ...'. Unchanged on win32, where cmd.exe reports the missing command.",
+  },
+  {
     case: '#79 spaces collapsed',
     issueOrDecision: '#79',
     note: "The shell gets the command string untouched: the child's argv is '[x   y]' (three spaces kept).",

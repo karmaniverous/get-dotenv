@@ -64,10 +64,10 @@ export function attachAwsDefaultAction(
         env: buildSpawnEnv(process.env, ctx.dotenv),
         stdio: capture ? 'pipe' : 'inherit',
       });
-      // Deterministic termination (suppressed under tests)
-      if (!underTests) {
-        process.exit(typeof exit === 'number' ? exit : 0);
-      }
+      // Propagate the AWS CLI's exit code (a spawn failure is non-zero too,
+      // #75); terminate deterministically outside tests.
+      if (exit !== 0) process.exitCode = exit;
+      if (!underTests) process.exit(exit);
       return;
     }
 

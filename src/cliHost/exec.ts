@@ -25,7 +25,9 @@ export interface RunCommandResult {
   /**
    * Exit code of the child process.
    *
-   * Conventionally, `0` indicates success.
+   * Conventionally, `0` indicates success. A child that never ran (missing
+   * command or cwd, timeout kill) reports 127 for ENOENT and 1 otherwise,
+   * with `Error: <message>` in `stderr`.
    */
   exitCode: number;
   /**
@@ -126,17 +128,45 @@ const stripOuterQuotes = (s: string): string => {
   return out;
 };
 
-// Extract exitCode/stdout/stderr from execa result or error in a tolerant way.
-const pickResult = (
-  r: unknown,
-): { exitCode: number; stdout: string; stderr: string } => {
-  const exit = (r as { exitCode?: unknown }).exitCode;
-  const stdoutVal = (r as { stdout?: unknown }).stdout;
-  const stderrVal = (r as { stderr?: unknown }).stderr;
+/** An execution outcome; `failure` is set when the child never ran. */
+interface ExecOutcome extends RunCommandResult {
+  /** `Error: <message>` for a spawn failure, also appended to `stderr`. */
+  failure?: string;
+}
+
+/**
+ * Extract exitCode/stdout/stderr from an execa result or error.
+ *
+ * An error with no exit code means the child never ran (missing command or
+ * cwd, a timeout kill). It becomes exit code 127 for ENOENT and 1 otherwise,
+ * with `Error: <message>` as the failure (#75), never NaN.
+ */
+const pickResult = (r: unknown): ExecOutcome => {
+  const { exitCode, stdout, stderr, code, shortMessage, message } = r as {
+    exitCode?: unknown;
+    stdout?: unknown;
+    stderr?: unknown;
+    code?: unknown;
+    shortMessage?: unknown;
+    message?: unknown;
+  };
+  const out = typeof stdout === 'string' ? stdout : '';
+  const err = typeof stderr === 'string' ? stderr : '';
+  if (typeof exitCode === 'number') {
+    return { exitCode, stdout: out, stderr: err };
+  }
+  const reason =
+    typeof shortMessage === 'string'
+      ? shortMessage
+      : typeof message === 'string'
+        ? message
+        : 'the command could not be started';
+  const failure = `Error: ${reason}`;
   return {
-    exitCode: typeof exit === 'number' ? exit : Number.NaN,
-    stdout: typeof stdoutVal === 'string' ? stdoutVal : '',
-    stderr: typeof stderrVal === 'string' ? stderrVal : '',
+    exitCode: code === 'ENOENT' ? 127 : 1,
+    stdout: out,
+    stderr: err ? `${err}\n${failure}` : failure,
+    failure,
   };
 };
 
@@ -160,7 +190,7 @@ async function _execNormalized(
   command: string | readonly string[],
   shell: string | boolean | URL,
   opts: ExecNormalizedOptions = {},
-): Promise<RunCommandResult> {
+): Promise<ExecOutcome> {
   const envSan = sanitizeEnv(opts.env);
   // The supplied env is the child's complete env (#88): execa must not merge
   // process.env back in, or an ambient key that differs only in case wins
@@ -294,7 +324,12 @@ export async function runCommandResult(
     coreOpts.timeoutMs = opts.timeoutMs;
   }
 
-  return _execNormalized(command, shell, coreOpts);
+  const { exitCode, stdout, stderr } = await _execNormalized(
+    command,
+    shell,
+    coreOpts,
+  );
+  return { exitCode, stdout, stderr };
 }
 
 // Write captured child output, ending it with a newline.
@@ -308,7 +343,9 @@ const writeBuffered = (stream: NodeJS.WriteStream, text: string): void => {
  * @param command - Command string (shell) or argv array (shell-off supported).
  * @param shell - Shell setting (false for plain execution).
  * @param opts - Execution options (cwd/env/stdio).
- * @returns A promise resolving to the process exit code.
+ * @returns A promise resolving to the process exit code. When the child
+ * never ran, `Error: <message>` is written to stderr and the code is 127
+ * for ENOENT, else 1.
  */
 export function runCommand(
   command: readonly string[],
@@ -321,7 +358,9 @@ export function runCommand(
  * @param command - Command string (shell) or argv array (shell-off supported).
  * @param shell - Shell setting (false for plain execution).
  * @param opts - Execution options (cwd/env/stdio).
- * @returns A promise resolving to the process exit code.
+ * @returns A promise resolving to the process exit code. When the child
+ * never ran, `Error: <message>` is written to stderr and the code is 127
+ * for ENOENT, else 1.
  */
 export function runCommand(
   command: string | readonly string[],
@@ -334,7 +373,9 @@ export function runCommand(
  * @param command - Command string (shell) or argv array (shell-off supported).
  * @param shell - Shell setting (false for plain execution).
  * @param opts - Execution options (cwd/env/stdio).
- * @returns A promise resolving to the process exit code.
+ * @returns A promise resolving to the process exit code. When the child
+ * never ran, `Error: <message>` is written to stderr and the code is 127
+ * for ENOENT, else 1.
  */
 export async function runCommand(
   command: string | readonly string[],
@@ -356,6 +397,9 @@ export async function runCommand(
     // stderr to stderr.
     writeBuffered(process.stdout, ok.stdout);
     writeBuffered(process.stderr, ok.stderr);
+  } else if (ok.failure !== undefined) {
+    // A child that never ran printed nothing: report why (#75).
+    writeBuffered(process.stderr, ok.failure);
   }
-  return typeof ok.exitCode === 'number' ? ok.exitCode : Number.NaN;
+  return ok.exitCode;
 }
