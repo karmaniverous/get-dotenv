@@ -149,6 +149,48 @@ const buildNewAssignmentAtEnd = (args: {
 };
 
 /**
+ * Append an assignment for each update key that has a concrete value and no
+ * line in `segs`, in update-map order.
+ */
+const appendMissingKeys = (
+  segs: DotenvSegment[],
+  updates: DotenvUpdateMap,
+  fileEol: '\n' | '\r\n',
+  defaultSeparator: string,
+): DotenvSegment[] => {
+  const existingKeys = new Set<string>();
+  for (const s of segs) {
+    if (s.kind === 'assignment' || s.kind === 'bare') existingKeys.add(s.key);
+  }
+
+  // Use the document EOL when inserting new lines; final newline presence is handled by render().
+  const appended: DotenvSegment[] = [];
+  for (const key of Object.keys(updates)) {
+    if (existingKeys.has(key)) continue;
+    const v = updates[key];
+    if (v === undefined) continue;
+    if (v === null) continue;
+    appended.push(
+      buildNewAssignmentAtEnd({
+        key,
+        valueLf: coerceToString(v),
+        fileEol,
+        defaultSeparator,
+        endEol: fileEol,
+      }),
+    );
+  }
+  if (appended.length === 0) return segs;
+
+  // A last line with no EOL (no final newline) gets one, so the first new
+  // line starts on its own line (#66). render() still drops the final newline.
+  const out = segs.slice();
+  const last = out.at(-1);
+  if (last && last.raw !== '') out[out.length - 1] = withEndEol(last, fileEol);
+  return [...out, ...appended];
+};
+
+/**
  * Apply a set of key/value updates to a parsed dotenv document.
  *
  * @param doc - Parsed dotenv document.
@@ -249,39 +291,11 @@ export function applyDotenvEdits(
   }
 
   // Merge mode: append missing keys (only when provided with a concrete value).
-  if (mode === 'merge') {
-    const existingKeys = new Set<string>();
-    for (const s of out) {
-      if (s.kind === 'assignment' || s.kind === 'bare') existingKeys.add(s.key);
-    }
-
-    // Use the document EOL when inserting new lines; final newline presence is handled by render().
-    const endEol: '' | '\n' | '\r\n' = doc.fileEol;
-    const appended: DotenvSegment[] = [];
-    for (const key of Object.keys(updates)) {
-      if (existingKeys.has(key)) continue;
-      const v = updates[key];
-      if (v === undefined) continue;
-      if (v === null) continue;
-      const valueLf = coerceToString(v);
-      appended.push(
-        buildNewAssignmentAtEnd({
-          key,
-          valueLf,
-          fileEol: doc.fileEol,
-          defaultSeparator,
-          endEol,
-        }),
-      );
-    }
-    // A last line with no EOL (no final newline) gets one, so the first new
-    // line starts on its own line (#66). render() still drops the final newline.
-    const last = out.at(-1);
-    if (appended.length > 0 && last && last.raw !== '') {
-      out[out.length - 1] = withEndEol(last, doc.fileEol);
-    }
-    out.push(...appended);
-  }
-
-  return { ...doc, segments: out };
+  return {
+    ...doc,
+    segments:
+      mode === 'merge'
+        ? appendMissingKeys(out, updates, doc.fileEol, defaultSeparator)
+        : out,
+  };
 }
