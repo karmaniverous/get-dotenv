@@ -178,9 +178,18 @@ export interface DotenvKeySegmentBase {
 }
 
 /**
+ * A quote style dotenv recognises around a value: double quotes, single quotes
+ * or backticks.
+ *
+ * @public
+ */
+export type DotenvQuote = '"' | "'" | '`';
+
+/**
  * A KEY=VALUE assignment segment.
  *
- * Supports single-line and multi-line quoted values (double/single quotes).
+ * Supports single-line and multi-line quoted values (double quotes, single
+ * quotes and backticks).
  *
  * @public
  */
@@ -200,7 +209,7 @@ export interface DotenvAssignmentSegment extends DotenvKeySegmentBase {
   /**
    * Quote style when the value was quoted in the source.
    */
-  quote: '"' | "'" | null;
+  quote: DotenvQuote | null;
   /**
    * Value content (without surrounding quotes).
    *

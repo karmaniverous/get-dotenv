@@ -27,6 +27,7 @@ export type {
   DotenvEolMode,
   DotenvFs,
   DotenvPathSearchOrder,
+  DotenvQuote,
   DotenvSegment,
   DotenvTargetPrivacy,
   DotenvTargetScope,

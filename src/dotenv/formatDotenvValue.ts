@@ -1,25 +1,25 @@
 /**
  * @packageDocumentation
- * Dotenv value formatting: how a value is written to a dotenv line (bare or
- * quoted, and with what escaping).
+ * Dotenv value formatting, shared by get-dotenv's two dotenv writers: the
+ * format-preserving editor (`editDotenvText`/`editDotenvFile`) and the
+ * `outputPath` (`-o`) writer. A value is written so that dotenv's `parse`
+ * reads it back exactly (#72).
+ *
+ * dotenv's parser has quirks a writer must respect: a bare value ends at the
+ * first `#` and is trimmed; carriage returns in the source become line feeds;
+ * inside double quotes `\n` and `\r` are expanded and nothing else is
+ * unescaped (so `\\` and `\"` stay as written); single quotes and backticks
+ * unescape nothing; and a quote preceded by `\` doesn't close a value, which
+ * then runs on to a later line. Rather than re-implement those rules, each
+ * candidate form is checked with dotenv's own `parse` (the parser get-dotenv
+ * reads dotenv files with), and the first one that reads back unchanged, and
+ * that the editor's parser reads as the same single value, is written.
  */
 
-const needsQuoted = (value: string, hasInlineSuffix: boolean): boolean => {
-  if (value.includes('\n')) return true;
-  if (value.includes('\r')) return true;
-  // Preserve correctness: leading/trailing whitespace should be quoted.
-  if (/^\s|\s$/.test(value)) return true;
-  // Inline comment safety: if there is a suffix (comment) and the value contains '#', quote it.
-  if (hasInlineSuffix && value.includes('#')) return true;
-  return false;
-};
+import { parse } from 'dotenv';
 
-const escapeDoubleQuoted = (value: string): string =>
-  // Minimal escaping: escape only `"`. (Do not force-escape backslashes.)
-  value.replace(/"/g, '\\"');
-
-const toFileEol = (valueLf: string, fileEol: '\n' | '\r\n'): string =>
-  fileEol === '\n' ? valueLf : valueLf.replace(/\n/g, '\r\n');
+import { parseDotenvDocument } from './edit/parseDotenvDocument';
+import type { DotenvQuote } from './edit/types';
 
 /**
  * A formatted value: the token written after the separator and its quote style.
@@ -30,46 +30,99 @@ export interface FormattedDotenvValue {
   /** The text written after the separator (quotes included). */
   token: string;
   /** The quote style the token uses; `null` for a bare value. */
-  quote: '"' | "'" | null;
+  quote: DotenvQuote | null;
 }
 
+/** Quote styles in fallback order. */
+const QUOTES: readonly DotenvQuote[] = ['"', "'", '`'];
+
+const toFileEol = (valueLf: string, fileEol: '\n' | '\r\n'): string =>
+  fileEol === '\n' ? valueLf : valueLf.replace(/\n/g, '\r\n');
+
 /**
- * Render a value as the token written after `KEY=`.
+ * The token for a value in a quote style. In double quotes a carriage return
+ * is written as `\r` (dotenv expands it there); in every other form it would
+ * be read as a line feed, and the check below rejects that form.
+ */
+const tokenFor = (
+  value: string,
+  quote: DotenvQuote | null,
+  fileEol: '\n' | '\r\n',
+): string => {
+  if (quote === null) return value;
+  const body = quote === '"' ? value.replace(/\r/g, '\\r') : value;
+  return `${quote}${toFileEol(body, fileEol)}${quote}`;
+};
+
+/**
+ * Whether dotenv reads `token` back as `value`: on its own line, and when a
+ * later line ends in each quote character (where a value whose closing quote
+ * doesn't close would end instead).
+ */
+const readsBack = (token: string, value: string): boolean => {
+  const line = `K=${token}`;
+  return [line, ...QUOTES.map((q) => `${line}\nZ=1 # ${q}\n`)].every(
+    (text) => parse(text).K === value,
+  );
+};
+
+/**
+ * Whether the editor's own parser reads `token` as one value in quote style
+ * `quote`, closed at the token's end. Without this, a form dotenv happens to
+ * accept (`"a"b"`, read by dotenv as a bare value with its outer quotes
+ * stripped) would be mis-split the next time the editor edits the file.
+ */
+const editorReadsBack = (token: string, quote: DotenvQuote | null): boolean => {
+  const { segments } = parseDotenvDocument(`K=${token}`);
+  const [seg] = segments;
+  return (
+    segments.length === 1 &&
+    seg?.kind === 'assignment' &&
+    seg.quote === quote &&
+    seg.suffix === ''
+  );
+};
+
+/**
+ * Format a value as the token written after `KEY=`, so that dotenv's `parse`
+ * reads it back exactly.
  *
- * @param args - The value, the preferred quote style, whether the line has an
- * inline comment suffix, and the file EOL.
+ * Forms are tried in order and the first that dotenv reads back unchanged is
+ * used:
+ * - with `preferQuote` (the line's current quote style): that quote, then the
+ *   other quotes (double, single, backtick), then bare;
+ * - without: bare, then double quotes, single quotes, backticks.
+ *
+ * Line breaks inside a quoted value are written in `fileEol`.
+ *
+ * @param args - The key (for the error message), the value, the preferred
+ * quote style and the file EOL.
  * @returns The token and the quote style it uses.
+ * @throws Error when no form reads back unchanged (for example, a value that
+ * needs quotes and contains every quote character). The message names the
+ * key, never the value.
  *
  * @internal
  */
 export const formatDotenvValue = (args: {
+  key: string;
   value: string;
-  preferQuote: '"' | "'" | null;
-  hasInlineSuffix: boolean;
-  fileEol: '\n' | '\r\n';
+  preferQuote?: DotenvQuote | null;
+  fileEol?: '\n' | '\r\n';
 }): FormattedDotenvValue => {
-  const { value, preferQuote, hasInlineSuffix, fileEol } = args;
+  const { key, value, preferQuote = null, fileEol = '\n' } = args;
 
-  const multiline = value.includes('\n');
-  if (multiline) {
-    // Multiline correctness: use double quotes.
-    return {
-      token: `"${toFileEol(escapeDoubleQuoted(value), fileEol)}"`,
-      quote: '"',
-    };
+  const order: Array<DotenvQuote | null> =
+    preferQuote === null
+      ? [null, ...QUOTES]
+      : [preferQuote, ...QUOTES.filter((q) => q !== preferQuote), null];
+
+  for (const quote of order) {
+    const token = tokenFor(value, quote, fileEol);
+    if (editorReadsBack(token, quote) && readsBack(token, value))
+      return { token, quote };
   }
-
-  const mustQuote = needsQuoted(value, hasInlineSuffix);
-  if (!mustQuote && preferQuote === null) return { token: value, quote: null };
-
-  // Try to preserve original quote style when safe.
-  if (preferQuote === "'" && !value.includes("'") && !mustQuote) {
-    return { token: `'${value}'`, quote: "'" };
-  }
-  if (preferQuote === "'" && !value.includes("'")) {
-    return { token: `'${value}'`, quote: "'" };
-  }
-
-  // Prefer double quotes as the general safe fallback.
-  return { token: `"${escapeDoubleQuoted(value)}"`, quote: '"' };
+  throw new Error(
+    `Unable to write dotenv key "${key}": dotenv cannot read its value back unchanged in any quote style.`,
+  );
 };

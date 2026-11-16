@@ -6,7 +6,8 @@
  * - Duplicate key strategy: all/first/last.
  * - undefined behavior: skip (default).
  * - null behavior: delete (default).
- * - Quote preservation where safe; upgrade quoting when required (multiline, whitespace safety, inline comment safety).
+ * - Values are written so dotenv reads them back exactly (formatDotenvValue): the line's quote
+ *   style is kept when it can hold the value; otherwise another quote style, or bare.
  *
  * @packageDocumentation
  */
@@ -76,9 +77,9 @@ const rebuildAssignmentRaw = (args: {
 }): DotenvAssignmentSegment => {
   const { seg, valueLf, fileEol } = args;
   const { token, quote } = formatDotenvValue({
+    key: seg.key,
     value: valueLf,
     preferQuote: seg.quote,
-    hasInlineSuffix: seg.suffix.length > 0,
     fileEol,
   });
   const line = `${seg.prefix}${seg.key}${seg.separator}${seg.valuePadding}${token}${seg.suffix}`;
@@ -95,9 +96,8 @@ const rebuildBareAsAssignment = (args: {
 }): DotenvAssignmentSegment => {
   const { seg, valueLf, fileEol, defaultSeparator } = args;
   const { token, quote } = formatDotenvValue({
+    key: seg.key,
     value: valueLf,
-    preferQuote: null,
-    hasInlineSuffix: seg.suffix.length > 0,
     fileEol,
   });
   const separator = defaultSeparator;
@@ -127,9 +127,8 @@ const buildNewAssignmentAtEnd = (args: {
 }): DotenvAssignmentSegment => {
   const { key, valueLf, fileEol, defaultSeparator, endEol } = args;
   const { token, quote } = formatDotenvValue({
+    key,
     value: valueLf,
-    preferQuote: null,
-    hasInlineSuffix: false,
     fileEol,
   });
   const line = `${key}${defaultSeparator}${token}`;

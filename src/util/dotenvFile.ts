@@ -1,24 +1,38 @@
 import fs from 'fs-extra';
 
 import type { ProcessEnv } from '@/src/core';
+import { formatDotenvValue } from '@/src/dotenv/formatDotenvValue';
 
 /**
- * Serialize a dotenv record to a file with minimal quoting (multiline values are quoted).
- * Future-proofs for ordering/sorting changes (currently insertion order).
+ * Serialize a dotenv record to text: one `KEY=value` line per key, in
+ * insertion order, with `undefined` written as an empty value. Each value is
+ * quoted and escaped as needed (the editor's rules, {@link formatDotenvValue})
+ * so that dotenv's `parse` reads the text back to the same record.
+ *
+ * @param data - Env-like map of values to write (values may be `undefined`).
+ * @returns The dotenv text.
+ * @throws Error when a value can't be written so that dotenv reads it back
+ * unchanged (the message names the key).
+ */
+export const formatDotenvRecord = (data: ProcessEnv): string =>
+  Object.keys(data).reduce(
+    (acc, key) =>
+      `${acc}${key}=${formatDotenvValue({ key, value: data[key] ?? '' }).token}\n`,
+    '',
+  );
+
+/**
+ * Write a dotenv record to a file (see {@link formatDotenvRecord}).
  *
  * @param filename - Destination dotenv file path.
  * @param data - Env-like map of values to write (values may be `undefined`).
  * @returns A `Promise\<void\>` which resolves when the file has been written.
+ * @throws Error when a value can't be written so that dotenv reads it back
+ * unchanged; nothing is written then.
  */
 export async function writeDotenvFile(
   filename: string,
   data: ProcessEnv,
 ): Promise<void> {
-  // Serialize: key=value with quotes only for multiline values.
-  const body = Object.keys(data).reduce((acc, key) => {
-    const v = data[key] ?? '';
-    const val = v.includes('\n') ? `"${v}"` : v;
-    return `${acc}${key}=${val}\n`;
-  }, '');
-  await fs.writeFile(filename, body, { encoding: 'utf-8' });
+  await fs.writeFile(filename, formatDotenvRecord(data), { encoding: 'utf-8' });
 }

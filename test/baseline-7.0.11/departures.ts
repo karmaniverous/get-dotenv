@@ -438,4 +438,14 @@ export const departures: Departure[] = [
     issueOrDecision: '#67',
     note: "sync upserts (Decision 22): 'A=1\\nC=3\\n' with { A: '9', B: '2' } gives 'A=9\\nB=2\\n' (A updated, C removed, B appended), not 'A=9\\n'.",
   },
+  {
+    case: '#72 editor writers',
+    issueOrDecision: '#72',
+    note: `Values are written so dotenv reads them back exactly: B="x #y" (quoted for the #); C='a"b' (double quotes can't hold the ", so single quotes); P='C:\\new\\dir' (double quotes would expand the \\n, so single quotes).`,
+  },
+  {
+    case: '#72 output path writer',
+    issueOrDecision: '#72',
+    note: `-o writes each value so dotenv reads it back exactly: H="x #y"; W=" lead"; M in single quotes (they hold the line break and the "); B=C:\\new\\dir bare (already exact).`,
+  },
 ];

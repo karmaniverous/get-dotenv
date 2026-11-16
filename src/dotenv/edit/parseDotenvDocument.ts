@@ -4,7 +4,7 @@
  * Requirements addressed:
  * - Preserve comments, blank lines, ordering, and unknown lines verbatim.
  * - Preserve separator spacing around `=`.
- * - Support multiline quoted values (double/single quotes) by grouping physical lines.
+ * - Support multiline quoted values (double/single quotes, backticks) by grouping physical lines.
  *
  * @packageDocumentation
  */
@@ -13,9 +13,13 @@ import type {
   DotenvAssignmentSegment,
   DotenvBareKeySegment,
   DotenvDocument,
+  DotenvQuote,
   DotenvRawSegment,
   DotenvSegment,
 } from './types';
+
+/** Quote characters that open a quoted value. */
+const QUOTES: readonly DotenvQuote[] = ['"', "'", '`'];
 
 type LineWithEol = { line: string; eol: '' | '\n' | '\r\n' };
 
@@ -81,7 +85,7 @@ const tryParseQuotedValueAcrossLines = (
   lines: LineWithEol[],
   startIndex: number,
   startRhs: string,
-  quote: '"' | "'",
+  quote: DotenvQuote,
 ): QuotedParseResult | null => {
   // Parse the quoted value beginning at the first quote in startRhs.
   // Returns null if a closing quote is never found (to avoid corrupting segmentation).
@@ -141,7 +145,7 @@ const parseKeyPrefix = (
 ): { prefix: string; key: string; rest: string } | null => {
   // Allow: indentation + optional "export " + KEY
   // KEY must be a shell-ish identifier.
-  const m = /^(\s*(?:export\s+)?)([A-Za-z_][A-Za-z0-9_]*)(.*)$/.exec(line);
+  const m = /^(\s*(?:export\s+)?)([A-Za-z_][A-Za-z0-9_]*)(.*)$/s.exec(line);
   if (!m) return null;
   const prefix = m[1] ?? '';
   const key = m[2] ?? '';
@@ -179,7 +183,7 @@ export function parseDotenvDocument(text: string): DotenvDocument {
     }
 
     const { prefix, key, rest } = parsed;
-    const mAssign = /^(\s*=\s*)(.*)$/.exec(rest);
+    const mAssign = /^(\s*=\s*)(.*)$/s.exec(rest);
     if (mAssign) {
       const separator = mAssign[1] ?? '=';
       const rhs = mAssign[2] ?? '';
@@ -190,8 +194,8 @@ export function parseDotenvDocument(text: string): DotenvDocument {
       const tokenStart = nonWs >= 0 ? rhs.charAt(nonWs) : '';
 
       // Try quoted parsing first (single-line or multiline).
-      if (tokenStart === '"' || tokenStart === "'") {
-        const quote: '"' | "'" = tokenStart === '"' ? '"' : "'";
+      const quote = QUOTES.find((q) => q === tokenStart);
+      if (quote) {
         const parsedQuoted = tryParseQuotedValueAcrossLines(
           lines,
           i,
@@ -248,7 +252,7 @@ export function parseDotenvDocument(text: string): DotenvDocument {
     }
 
     // Bare-key placeholder (KEY or KEY # comment). Only accept whitespace/comment in rest.
-    const mBare = /^(\s*)(#.*)?$/.exec(rest);
+    const mBare = /^(\s*)(#.*)?$/s.exec(rest);
     if (mBare) {
       const suffix = (mBare[1] ?? '') + (mBare[2] ?? '');
       const seg: DotenvBareKeySegment = {
