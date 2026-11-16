@@ -11,6 +11,7 @@
  * @packageDocumentation
  */
 
+import { formatDotenvValue } from '../formatDotenvValue';
 import type {
   DotenvAssignmentSegment,
   DotenvBareKeySegment,
@@ -31,55 +32,6 @@ const coerceToString = (v: DotenvUpdateValue): string => {
   if (typeof v === 'boolean') return v ? 'true' : 'false';
   if (v === null || v === undefined) return '';
   return JSON.stringify(v);
-};
-
-const needsQuoted = (value: string, hasInlineSuffix: boolean): boolean => {
-  if (value.includes('\n')) return true;
-  if (value.includes('\r')) return true;
-  // Preserve correctness: leading/trailing whitespace should be quoted.
-  if (/^\s|\s$/.test(value)) return true;
-  // Inline comment safety: if there is a suffix (comment) and the value contains '#', quote it.
-  if (hasInlineSuffix && value.includes('#')) return true;
-  return false;
-};
-
-const escapeDoubleQuoted = (value: string): string =>
-  // Minimal escaping: escape only `"`. (Do not force-escape backslashes.)
-  value.replace(/"/g, '\\"');
-
-const toFileEol = (valueLf: string, fileEol: '\n' | '\r\n'): string =>
-  fileEol === '\n' ? valueLf : valueLf.replace(/\n/g, '\r\n');
-
-const renderValueToken = (args: {
-  value: string;
-  preferQuote: '"' | "'" | null;
-  hasInlineSuffix: boolean;
-  fileEol: '\n' | '\r\n';
-}): { token: string; quote: '"' | "'" | null } => {
-  const { value, preferQuote, hasInlineSuffix, fileEol } = args;
-
-  const multiline = value.includes('\n');
-  if (multiline) {
-    // Multiline correctness: use double quotes.
-    return {
-      token: `"${toFileEol(escapeDoubleQuoted(value), fileEol)}"`,
-      quote: '"',
-    };
-  }
-
-  const mustQuote = needsQuoted(value, hasInlineSuffix);
-  if (!mustQuote && preferQuote === null) return { token: value, quote: null };
-
-  // Try to preserve original quote style when safe.
-  if (preferQuote === "'" && !value.includes("'") && !mustQuote) {
-    return { token: `'${value}'`, quote: "'" };
-  }
-  if (preferQuote === "'" && !value.includes("'")) {
-    return { token: `'${value}'`, quote: "'" };
-  }
-
-  // Prefer double quotes as the general safe fallback.
-  return { token: `"${escapeDoubleQuoted(value)}"`, quote: '"' };
 };
 
 const pickIndexes = (
@@ -113,7 +65,7 @@ const rebuildAssignmentRaw = (args: {
   fileEol: '\n' | '\r\n';
 }): DotenvAssignmentSegment => {
   const { seg, valueLf, fileEol } = args;
-  const { token, quote } = renderValueToken({
+  const { token, quote } = formatDotenvValue({
     value: valueLf,
     preferQuote: seg.quote,
     hasInlineSuffix: seg.suffix.length > 0,
@@ -132,7 +84,7 @@ const rebuildBareAsAssignment = (args: {
   defaultSeparator: string;
 }): DotenvAssignmentSegment => {
   const { seg, valueLf, fileEol, defaultSeparator } = args;
-  const { token, quote } = renderValueToken({
+  const { token, quote } = formatDotenvValue({
     value: valueLf,
     preferQuote: null,
     hasInlineSuffix: seg.suffix.length > 0,
@@ -164,7 +116,7 @@ const buildNewAssignmentAtEnd = (args: {
   endEol: '' | '\n' | '\r\n';
 }): DotenvAssignmentSegment => {
   const { key, valueLf, fileEol, defaultSeparator, endEol } = args;
-  const { token, quote } = renderValueToken({
+  const { token, quote } = formatDotenvValue({
     value: valueLf,
     preferQuote: null,
     hasInlineSuffix: false,
