@@ -23,15 +23,10 @@ export const logComposedEnv = (
   logger: Pick<Logger, 'info'>,
 ): void => {
   logger.info(redactObject(env, options));
+  // Every key of the composed map comes from it (an unset value never warns).
   for (const [key, value] of Object.entries(env)) {
-    maybeWarnEntropy(
-      key,
-      value,
-      value !== undefined ? 'dotenv' : 'unset',
-      options,
-      (line) => {
-        logger.info(line);
-      },
-    );
+    maybeWarnEntropy(key, value, 'dotenv', options, (line) => {
+      logger.info(line);
+    });
   }
 };
