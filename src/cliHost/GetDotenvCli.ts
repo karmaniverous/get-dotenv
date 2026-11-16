@@ -406,7 +406,7 @@ export class GetDotenvCli<
    *   first) and registers each command's hidden terminator. Building the
    *   table throws on a qualified-name collision or a plain long option that
    *   starts with `<alias>-`. Later calls reuse the table.
-   * - {@link normalizeArgv} moves every qualified option to its owner. A
+   * - `normalizeArgv` moves every qualified option to its owner. A
    *   normalization error is reported through `this.error()`: exit code 1,
    *   or a thrown `CommanderError` under `exitOverride()`.
    * - `-h` that the argv walk leaves with the root renders top-level help
