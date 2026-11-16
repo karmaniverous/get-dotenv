@@ -450,6 +450,11 @@ export const departures: Departure[] = [
   },
   // S12: normalization and parseAsync
   {
+    case: '#62 invalid config -h',
+    issueOrDecision: '#62',
+    note: 'The error boundary covers top-level help: the config error prints one line on stderr with exit code 1; run() no longer rejects.',
+  },
+  {
     case: '#53 args-only argv',
     issueOrDecision: '#53',
     note: "An explicit runner argv is user arguments only: run(['-v', 'APP=hello', 'cmd', ...]) keeps -v APP=hello, so the child prints hello instead of losing the first two entries.",
