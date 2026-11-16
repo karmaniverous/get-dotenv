@@ -62,6 +62,7 @@ Key behaviors:
 
 - Unknown/unparsed lines are preserved verbatim.
 - Ordering is preserved; new keys are appended at the end, in update-map order (both modes).
+- A new key must be one dotenv reads: letters, digits, `_`, `.` and `-` (`[\w.-]+`). Any other key (a space, `=`, a line break, an empty key) throws `can't add dotenv key "..."` instead of writing a line dotenv would never read back as that key.
 - A new key always starts on its own line: when the file's last line has no final newline, the editor ends that line first (in the file's EOL style) and the file still ends without a final newline.
 - Inline comment spacing is preserved when updating existing assignment lines.
 

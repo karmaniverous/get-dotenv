@@ -413,8 +413,9 @@ Batch exit codes are in [Exit codes](#exit-codes).
 - **Appends go on their own line** ([#66]). A key appended to a file with no final newline starts a new line (`A=1` plus `B` gives `A=1\nB=2`, not `A=1B=2`).
 - **Values round-trip, or the write throws** ([#72]). The editor and the `-o`/`outputPath` writer quote each value so dotenv reads it back exactly: `x #y` is written `"x #y"`, a Windows path with `\n` in single quotes. A value that no quote style can hold, such as one with `"`, `'`, `` ` `` and a line break, throws `Unable to write dotenv key "K": dotenv cannot read its value back unchanged in any quote style.` In 7.x it was written and read back wrong.
 - **A `$` in a written value is escaped** ([#72] follow-up; independent review of #93, finding 4). get-dotenv expands what it reads, so the writers escape each `$` the expander would act on: `pa$$word` is written `pa$\$word`, `$HOME/x` is written `\$HOME/x`. A `$` that starts no reference (`cost $`) is left alone. In 7.x, and earlier on this branch, `pa$$word` was written as is and read back as `pa$`. A value is literal: the editor no longer writes a reference that get-dotenv expands.
+- **A new key must be one dotenv reads** (independent review of #93). The editor appends a key only if it matches `[\w.-]+`; any other key throws `can't add dotenv key "..."`. In 7.x such a key was appended as a line dotenv never read back as that key.
 
-**Who is affected:** code that edits dotenv files with arbitrary values. Catch the error, or keep such values out of dotenv files. Code that wrote `${VAR}` references through the editor: write those lines yourself.
+**Who is affected:** code that edits dotenv files with arbitrary values or keys. Catch the error, or keep such values out of dotenv files. Code that wrote `${VAR}` references through the editor: write those lines yourself.
 
 ## Help
 

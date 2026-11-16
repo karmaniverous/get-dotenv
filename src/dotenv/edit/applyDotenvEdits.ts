@@ -118,6 +118,9 @@ const rebuildBareAsAssignment = (args: {
   };
 };
 
+/** The keys dotenv reads: `[\w.-]+`. */
+const DOTENV_KEY = /^[\w.-]+$/;
+
 const buildNewAssignmentAtEnd = (args: {
   key: string;
   valueLf: string;
@@ -126,6 +129,12 @@ const buildNewAssignmentAtEnd = (args: {
   endEol: '' | '\n' | '\r\n';
 }): DotenvAssignmentSegment => {
   const { key, valueLf, fileEol, defaultSeparator, endEol } = args;
+  // A key dotenv can't read would be written as a line it never reads back
+  // as that key (review 5916926264).
+  if (!DOTENV_KEY.test(key))
+    throw new Error(
+      `can't add dotenv key ${JSON.stringify(key)}: dotenv reads keys made of letters, digits, _, . and - only.`,
+    );
   const { token, quote } = formatDotenvValue({
     key,
     value: valueLf,
