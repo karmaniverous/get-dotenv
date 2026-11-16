@@ -4,7 +4,7 @@
  * - instance-bound readConfig and createPluginDynamicOption
  * - sibling namespace uniqueness guard at composition time
  */
-import type { Command, OptionValues } from '@commander-js/extra-typings';
+import type { OptionValues } from '@commander-js/extra-typings';
 import { z, type ZodObject } from 'zod';
 
 import type { GetDotenvOptions } from '@/src/core';
@@ -18,6 +18,7 @@ import type {
 } from './contracts';
 import type { PluginNamespaceOverride } from './contracts';
 import type { ResolvedHelpConfig } from './helpConfig';
+import { commandPathOf } from './qualified/names';
 import { assertUniqueNamespaces } from './registerPlugin';
 
 /**
@@ -100,16 +101,8 @@ export function definePlugin<TOptions extends GetDotenvOptions>(
     parser?: (value: string, previous?: unknown) => unknown,
     defaultValue?: unknown,
   ) {
-    // Derive realized path strictly from the provided mount (leaf-up).
-    const realizedPath = (() => {
-      const parts: string[] = [];
-      let node = cli as unknown as Command;
-      while (node.parent) {
-        parts.push(node.name());
-        node = node.parent as Command;
-      }
-      return parts.reverse().join('/');
-    })();
+    // Derive the realized path strictly from the provided mount.
+    const realizedPath = commandPathOf(cli).join('/');
 
     return cli.createDynamicOption<Usage>(
       flags,

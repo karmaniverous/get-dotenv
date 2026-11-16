@@ -2,6 +2,7 @@ import type { CommandUnknownOpts } from '@commander-js/extra-typings';
 
 import { GetDotenvCli } from './GetDotenvCli';
 import type { GetDotenvCliOptions } from './GetDotenvCliOptions';
+import { getRootCommand } from './getRootCommand';
 
 /**
  * Retrieve the merged root options bag from the current command context.
@@ -13,9 +14,7 @@ import type { GetDotenvCliOptions } from './GetDotenvCliOptions';
 export const readMergedOptions = (
   cmd: CommandUnknownOpts,
 ): GetDotenvCliOptions => {
-  // Climb to the true root
-  let root = cmd;
-  while (root.parent) root = root.parent;
+  const root = getRootCommand(cmd);
 
   // Assert we ended at our host
   if (!(root instanceof GetDotenvCli)) {

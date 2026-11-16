@@ -10,6 +10,7 @@
  */
 import type { CommandUnknownOpts, Option } from '@commander-js/extra-typings';
 
+import { commandTree } from '../commandTree';
 import {
   commandLabel,
   commandPathOf,
@@ -50,12 +51,6 @@ export interface QualifiedNameTable {
 
 const TABLES = new WeakMap<CommandUnknownOpts, QualifiedNameTable>();
 
-/** Pre-order walk of the command tree. */
-const walk = (cmd: CommandUnknownOpts): CommandUnknownOpts[] => [
-  cmd,
-  ...cmd.commands.flatMap((c) => walk(c)),
-];
-
 /** An entry's owner, for messages. */
 const describe = (alias: string, e: QualifiedNameEntry): string =>
   e.kind === 'terminator'
@@ -88,7 +83,7 @@ export const buildQualifiedNameTable = (
   };
 
   const pending: Array<[CommandUnknownOpts, Option]> = [];
-  for (const command of walk(root)) {
+  for (const command of commandTree(root)) {
     const path = commandPathOf(command);
     const flag = terminatorName(alias, path);
     const terminator = findTerminator(command, flag) ?? createTerminator(flag);

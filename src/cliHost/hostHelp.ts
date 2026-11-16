@@ -32,6 +32,8 @@ import {
   type Option,
 } from '@commander-js/extra-typings';
 
+import { commandTree } from './commandTree';
+import { getRootCommand } from './getRootCommand';
 import { GROUP_TAG } from './groups';
 import {
   commandLabel,
@@ -53,12 +55,6 @@ interface Section {
   rows: Array<[string, string]>;
 }
 
-const rootOf = (cmd: CommandUnknownOpts): CommandUnknownOpts => {
-  let node = cmd;
-  while (node.parent) node = node.parent;
-  return node;
-};
-
 /** Table entries by option, per table. */
 const ENTRIES = new WeakMap<
   QualifiedNameTable,
@@ -71,7 +67,7 @@ const qualifiedOf = (
 ):
   | { table: QualifiedNameTable; byOption: Map<Option, QualifiedNameEntry> }
   | undefined => {
-  const table = qualifiedNameTableOf(rootOf(cmd));
+  const table = qualifiedNameTableOf(getRootCommand(cmd));
   if (!table) return undefined;
   let byOption = ENTRIES.get(table);
   if (!byOption) {
@@ -304,6 +300,5 @@ export const configureHostHelp = (cmd: CommandUnknownOpts): void => {
  * @param root - The host root.
  */
 export const configureHostHelpTree = (root: CommandUnknownOpts): void => {
-  configureHostHelp(root);
-  for (const sub of root.commands) configureHostHelpTree(sub);
+  for (const cmd of commandTree(root)) configureHostHelp(cmd);
 };

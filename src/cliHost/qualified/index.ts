@@ -12,7 +12,6 @@ export {
   normalizeArgv,
   normalizeQualified,
 } from './normalize';
-export { isTerminatorOption } from './register';
 export {
   ensureQualifiedNameTable,
   type QualifiedNameEntry,

@@ -5,11 +5,7 @@ import type { OptionValues } from '@commander-js/extra-typings';
 
 import type { GetDotenvOptions } from '@/src/core';
 
-import type {
-  GetDotenvCliPlugin,
-  GetDotenvCliPublic,
-  PluginChildEntry,
-} from './contracts';
+import type { GetDotenvCliPlugin, PluginChildEntry } from './contracts';
 
 /**
  * Determine the effective namespace for a child plugin (override \> default).
@@ -25,32 +21,6 @@ export const effectiveNs = (child: {
     o && typeof o.ns === 'string' && o.ns.length > 0 ? o.ns : child.plugin.ns
   ).trim();
 };
-
-/**
- * Compute the realized path for a command mount (leaf-up to root).
- * Excludes the root application alias.
- *
- * @param cli - The mounted command instance.
- */
-export function realizedPathForMount(
-  cli: GetDotenvCliPublic<
-    GetDotenvOptions,
-    unknown[],
-    OptionValues,
-    OptionValues
-  >,
-): string {
-  const parts: string[] = [];
-  let node = cli as unknown as { name: () => string; parent?: unknown };
-  while ((node as { parent?: unknown }).parent) {
-    parts.push(node.name());
-    node = (node as { parent?: unknown }).parent as {
-      name: () => string;
-      parent?: unknown;
-    };
-  }
-  return parts.reverse().join('/');
-}
 
 /**
  * A flattened plugin entry with its realized path.

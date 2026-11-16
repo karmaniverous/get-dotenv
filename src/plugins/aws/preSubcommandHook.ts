@@ -1,6 +1,6 @@
 import type { CommandUnknownOpts } from '@commander-js/extra-typings';
 
-import type { GetDotenvCliPublic } from '@/src/cliHost';
+import { type GetDotenvCliPublic, getRootCommand } from '@/src/cliHost';
 import { helpTargetOf } from '@/src/cliHost/qualified/walk';
 
 import type { AwsPlugin } from '.';
@@ -14,8 +14,7 @@ import { establishAwsSession } from './session';
  * @returns Whether it does.
  */
 const helpTargetIsWithin = (command: CommandUnknownOpts): boolean => {
-  let root = command;
-  while (root.parent) root = root.parent;
+  const root = getRootCommand(command);
   const rawArgs = (root as unknown as { rawArgs?: string[] }).rawArgs ?? [];
   let c: CommandUnknownOpts | null | undefined = helpTargetOf(root, rawArgs);
   for (; c; c = c.parent) if (c === command) return true;

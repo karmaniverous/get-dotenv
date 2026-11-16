@@ -13,17 +13,12 @@
  */
 import type { CommandUnknownOpts } from '@commander-js/extra-typings';
 
+import { getRootCommand } from './getRootCommand';
+
 /** get-dotenv's own module URL: the host root of a host that sets none. */
 const OWN_META_URL = import.meta.url;
 
 const HOST_META_URLS = new WeakMap<object, string>();
-
-/** Climb to the root command. */
-const rootOf = (cli: CommandUnknownOpts): CommandUnknownOpts => {
-  let node = cli;
-  while (node.parent) node = node.parent;
-  return node;
-};
 
 /**
  * Set the host's `import.meta.url` on the root of `cli`.
@@ -35,7 +30,7 @@ export const setHostMetaUrl = (
   cli: CommandUnknownOpts,
   importMetaUrl: string,
 ): void => {
-  HOST_META_URLS.set(rootOf(cli), importMetaUrl);
+  HOST_META_URLS.set(getRootCommand(cli), importMetaUrl);
 };
 
 /**
@@ -46,4 +41,4 @@ export const setHostMetaUrl = (
  * @returns The URL whose package root is the host root.
  */
 export const hostMetaUrlOf = (cli: CommandUnknownOpts): string =>
-  HOST_META_URLS.get(rootOf(cli)) ?? OWN_META_URL;
+  HOST_META_URLS.get(getRootCommand(cli)) ?? OWN_META_URL;

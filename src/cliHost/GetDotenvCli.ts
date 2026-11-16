@@ -35,6 +35,7 @@ import {
   makeDynamicOption,
 } from './dynamicOptions';
 import type { GetDotenvCliOptions } from './GetDotenvCliOptions';
+import { getRootCommand } from './getRootCommand';
 import { GROUP_TAG } from './groups';
 import type { ResolvedHelpConfig } from './helpConfig';
 import { hostMetaUrlOf, setHostMetaUrl } from './hostRoot';
@@ -210,14 +211,7 @@ export class GetDotenvCli<
 
   /** Internal: climb to the true root (host) command. */
   private _root(): GetDotenvCli {
-    let node: CommandUnknownOpts | null = this.parent;
-
-    if (!node) return this as unknown as GetDotenvCli;
-
-    while (node.parent) {
-      node = node.parent;
-    }
-    return node as unknown as GetDotenvCli;
+    return getRootCommand(this) as unknown as GetDotenvCli;
   }
 
   /**
