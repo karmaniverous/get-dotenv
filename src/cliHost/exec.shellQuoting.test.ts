@@ -159,6 +159,17 @@ describe('hostile arguments arrive byte for byte (review 5916926264 #1)', () => 
     });
   });
 
+  // cmd.exe exists only on Windows (review 5916926264 #2). It can't carry
+  // a line break; joinForShell throws for those (see shell.test.ts).
+  it.skipIf(process.platform !== 'win32')('cmd.exe', async () => {
+    const args = HOSTILE.filter((a) => !/[\r\n]/.test(a));
+    expect(await echoBack('cmd.exe', args)).toEqual({
+      argv: args,
+      stderr: '',
+      exitCode: 0,
+    });
+  });
+
   // Skipped where pwsh is not installed (review 5916926264 #1).
   it.skipIf(!hasPwsh)('pwsh', async () => {
     expect(await echoBack('pwsh', HOSTILE)).toEqual({

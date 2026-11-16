@@ -363,10 +363,11 @@ Under the default Windows shell, `powershell.exe -Command` reports any failure a
 - `shell: true` in a script or plugin config means the OS default shell: `/bin/bash` on POSIX, `powershell.exe` on Windows. In 7.x it passed `true` to execa, which used `/bin/sh` or `cmd.exe`.
 - Argument tokens (batch positionals, the aws forward) are quoted for the resolved shell. On Windows they were quoted with `cmd.exe` rules even under PowerShell, so `"a b"` and `x$y` broke.
 - Under PowerShell every argument token is single-quoted, with each of PowerShell's single-quote characters (`'` and U+2018 to U+201B) doubled, and a `--%` token is passed as `@('--%')`. Earlier on this branch a curly quote or a bare `--%` let a token break out of its quotes (independent review of #93, finding 1).
+- Under `cmd.exe` every argument token is escaped for the program's argv parser, then each `cmd.exe` metacharacter gets a `^` (cross-spawn's rules), so `%VAR%`, `&`, `|` and quotes arrive literally. A token list with a line break, or with a `%name:...%` edit `cmd.exe` would expand, throws an error naming the problem. In 7.x, and earlier on this branch, tokens were only double-quoted, so `%VAR%` expanded and a `"` could end the quotes (independent review of #93, finding 2).
 - An empty argument token is kept, under every shell (`''`, or `""` for `cmd.exe`). In 7.x it vanished from the joined command (independent review of #93, finding 3).
 - The built-in `git-status` script is `git status -s -u -b` ([#51] follow-up). The 7.x `git branch --show-current && git status -s -u` fails under PowerShell 5.1, which has no `&&`.
 
-**Who is affected:** scripts with `shell: true` that use `cmd.exe` syntax on Windows, or `sh`-only syntax that bash treats differently.
+**Who is affected:** scripts with `shell: true` that use `cmd.exe` syntax on Windows, or `sh`-only syntax that bash treats differently; argv tokens that relied on the shell reading them (a `$VAR`, `%VAR%` or `--%` in a token is now passed literally).
 
 **What to do:** set the shell explicitly (`shell: 'cmd.exe'`) where a script needs one.
 

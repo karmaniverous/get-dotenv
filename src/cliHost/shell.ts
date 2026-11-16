@@ -33,7 +33,22 @@ const shellKind = (shell: string | URL): ShellKind => {
  *
  * - POSIX shells: single quotes; an embedded `'` becomes `'\''`. An argument
  *   with nothing the shell would read is returned as is.
- * - `cmd.exe`: double quotes; an embedded `"` becomes `\"`.
+ * - `cmd.exe`: every argument is escaped for the command's argv parser
+ *   (the MSVCRT / `CommandLineToArgvW` rules: wrapped in `"`, an embedded
+ *   `"` becomes `\"`, and the backslashes before a `"` or the end double),
+ *   then every cmd.exe metacharacter, the quotes included, gets a `^`. This
+ *   is cross-spawn's `escapeArgument` (`lib/util/escape.js`), after
+ *   {@link https://qntm.org/cmd | qntm.org/cmd}. cmd.exe expands `%name%`
+ *   before it reads carets, so a caret can't stop it: an escaped `%PATH%`
+ *   leaves the name `PATH^`, which no ordinary variable has, but
+ *   `%name:old=new%` and `%name:~n,m%` act on `name` alone. The argument
+ *   (or argv) throws where such an edit could expand (two `%` enclosing a
+ *   `:` with no caret before it), and for a line break, which ends a
+ *   cmd.exe command. A command name is bare when plain, else in real
+ *   quotes, and throws if it holds `"`, `%` or a line break. Not covered: a
+ *   variable whose name contains `^`; `!name!` when delayed expansion is
+ *   turned on in the registry (off by default); and a batch file (`.cmd`,
+ *   `.bat`), which parses its arguments again.
  * - PowerShell (`powershell.exe`, `pwsh` 7.3 or later): every argument is a
  *   single-quoted string, so PowerShell reads nothing in it. Each character
  *   PowerShell takes as a single quote (`'` and the curly quotes U+2018 to
@@ -56,9 +71,7 @@ export const quoteForShell = (arg: string, shell: string | URL): string => {
   if (arg === '') return EMPTY_ARGUMENT[kind];
   switch (kind) {
     case 'cmd':
-      return /[\s"'&|<>^()!%+,;=]/.test(arg)
-        ? `"${arg.replace(/"/g, '\\"')}"`
-        : arg;
+      return assertNoCmdVariableEdit(quoteCmd(arg));
     case 'powershell':
       return quotePowerShell(arg, powerShell51Argument(arg));
     case 'pwsh':
@@ -92,6 +105,69 @@ const powerShellLiteral = (text: string): string =>
 const quotePowerShell = (arg: string, text: string): string =>
   arg === '--%' ? "@('--%')" : powerShellLiteral(text);
 
+// cmd.exe metacharacters, each escaped with `^` (cross-spawn's
+// `lib/util/escape.js`).
+const CMD_METACHARACTERS = /([()\][%!^"`<>&|;, *?])/g;
+
+// An argument for the MSVCRT / CommandLineToArgvW parser: in quotes, a `"`
+// as `\"`, and each run of backslashes doubled before a `"` or the end.
+// Backslashes anywhere else are literal. A linear scan, no backtracking.
+const argvQuote = (arg: string): string => {
+  let out = '"';
+  let slashes = 0;
+  for (const ch of arg) {
+    if (ch === '\\') {
+      slashes += 1;
+      continue;
+    }
+    out +=
+      ch === '"'
+        ? '\\'.repeat(slashes * 2 + 1) + '"'
+        : '\\'.repeat(slashes) + ch;
+    slashes = 0;
+  }
+  return `${out}${'\\'.repeat(slashes * 2)}"`;
+};
+
+// The error for a token cmd.exe can't carry. It names the problem, never
+// the token, which may hold a secret.
+const cmdError = (problem: string): Error =>
+  new Error(
+    `cmd.exe can't pass this argv safely: ${problem}. Run it with shell: false or another shell.`,
+  );
+
+// One cmd.exe argument (review 5916926264 #2).
+const quoteCmd = (arg: string): string => {
+  if (/[\r\n]/.test(arg)) throw cmdError('an argument contains a line break');
+  return argvQuote(arg).replace(CMD_METACHARACTERS, '^$1');
+};
+
+// cmd.exe expands `%...%` before it reads carets. Every escaped `%` is
+// `^%`, so the text between two `%` ends in `^` and names no ordinary
+// variable, unless it holds `:`, which makes it `%name:old=new%` or
+// `%name:~n,m%` acting on the name before the `:`. That name is safe only
+// when it holds a caret (any escaped metacharacter, space or token
+// boundary). Checked across the whole command: a pair can span tokens.
+const assertNoCmdVariableEdit = (line: string): string => {
+  const parts = line.split('%');
+  const edits = parts.slice(1, -1).some((between) => {
+    const colon = between.indexOf(':');
+    return colon >= 0 && !between.slice(0, colon).includes('^');
+  });
+  if (edits) throw cmdError('a %name:...% variable edit would expand');
+  return line;
+};
+
+// A cmd.exe command name: bare when plain, else in real quotes (a caret-
+// quoted name with a space doesn't run). Inside real quotes a caret is
+// literal, so a `"`, `%` or line break can't be escaped there.
+const quoteCmdCommand = (file: string): string => {
+  if (/^[\w\-.:\\/]+$/.test(file)) return file;
+  if (/["%\r\n]/.test(file))
+    throw cmdError('the command path contains ", % or a line break');
+  return `"${file}"`;
+};
+
 // A PowerShell command name that can stand bare; any other runs through the
 // call operator.
 const POWERSHELL_BARE_COMMAND = /^[\w./:\\][\w\-./:\\]*$/;
@@ -123,6 +199,13 @@ export const joinForShell = (
   const [file, ...args] = argv;
   if (file === undefined) return '';
   const kind = shellKind(shell);
+  if (kind === 'cmd')
+    return assertNoCmdVariableEdit(
+      [
+        quoteCmdCommand(file),
+        ...args.map((arg) => quoteForShell(arg, shell)),
+      ].join(' '),
+    );
   let head = quoteForShell(file, shell);
   if (kind === 'powershell' || kind === 'pwsh')
     head = POWERSHELL_BARE_COMMAND.test(file)

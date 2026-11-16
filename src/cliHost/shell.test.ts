@@ -12,12 +12,55 @@ describe('quoteForShell / joinForShell (#51)', () => {
     );
   });
 
-  it('cmd.exe keeps its double-quote rules', () => {
+  it('cmd.exe: argv escaping, then a caret before every metacharacter (review 5916926264 #2)', () => {
     expect(quoteForShell('a b', 'C:\\Windows\\System32\\cmd.exe')).toBe(
-      '"a b"',
+      '^"a^ b^"',
     );
-    expect(quoteForShell('q"r', 'cmd')).toBe('"q\\"r"');
-    expect(quoteForShell('plain', 'cmd.exe')).toBe('plain');
+    expect(quoteForShell('q"r', 'cmd')).toBe('^"q\\^"r^"');
+    expect(quoteForShell('plain', 'cmd.exe')).toBe('^"plain^"');
+    // Backslashes double only before a quote, including the closing one.
+    expect(quoteForShell('a\\b', 'cmd.exe')).toBe('^"a\\b^"');
+    expect(quoteForShell('tail\\', 'cmd.exe')).toBe('^"tail\\\\^"');
+    expect(quoteForShell('a\\"b', 'cmd.exe')).toBe('^"a\\\\\\^"b^"');
+    expect(quoteForShell('%PATH%!x!&|<>()^', 'cmd.exe')).toBe(
+      '^"^%PATH^%^!x^!^&^|^<^>^(^)^^^"',
+    );
+    expect(joinForShell(['node', 'x'], 'cmd.exe')).toBe('node ^"x^"');
+    expect(joinForShell(['C:\\Program Files\\node.exe', 'x'], 'cmd.exe')).toBe(
+      '"C:\\Program Files\\node.exe" ^"x^"',
+    );
+  });
+
+  it('cmd.exe: throws, without echoing the token, where it cannot stop expansion (review 5916926264 #2)', () => {
+    const fails = (argv: string[]) => {
+      try {
+        joinForShell(argv, 'cmd.exe');
+      } catch (e) {
+        return (e as Error).message;
+      }
+      return undefined;
+    };
+    expect(fails(['node', 'a\nSECRET'])).toMatch(/line break/);
+    expect(fails(['node', 'a\rSECRET'])).toMatch(/line break/);
+    expect(fails(['node', '%PATH:SECRET=b%'])).toMatch(/%name:/);
+    // The pair can span two tokens.
+    expect(fails(['node', 'a%SECRET:c', 'd%'])).toMatch(/%name:/);
+    // A name holding a caret (an escaped space or token boundary) is no
+    // ordinary variable, so its edit can't expand.
+    expect(fails(['node', 'x%', 'y:z%'])).toBeUndefined();
+    expect(fails(['node', '%a b:c%'])).toBeUndefined();
+    expect(fails(['C:\\a%SECRET%\\x.exe'])).toMatch(/command path/);
+    expect(fails(['a"SECRET'])).toMatch(/command path/);
+    for (const argv of [
+      ['node', 'a\nSECRET'],
+      ['node', '%PATH:SECRET=b%'],
+      ['node', 'a%SECRET:c', 'd%'],
+      ['C:\\a%SECRET%\\x.exe'],
+    ])
+      expect(fails(argv)).not.toContain('SECRET');
+    // A `%` pair without `:` is safe: the escaped name ends in `^`.
+    expect(fails(['node', '%PATH%', 'a:b'])).toBeUndefined();
+    expect(() => quoteForShell('%a:b%', 'cmd.exe')).toThrow(/%name:/);
   });
 
   it('PowerShell quoting by executable name', () => {
