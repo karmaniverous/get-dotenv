@@ -115,7 +115,7 @@ Under `--debug` (or `--vc-debug`, or `GETDOTENV_DEBUG`), the CLI prints the type
 [getdotenv:argv] typed: ["echo","hi","--vc-shell"] normalized: ["--shell","--vc-q1r1s","cmd","echo","hi"]
 ```
 
-`--vc-q1r1s` is the root's _terminator_: a hidden boolean that stops a bare optional option (here `--shell`) from taking the next token (`cmd`) as its value. Each command has one, named from a hash of its path. Normalization writes one only where a value would otherwise be taken; you never need to type one, and a typed terminator is dropped. See [Terminators](./authoring/qualified-names.md#terminators).
+`--vc-q1r1s` is the root's _terminator_: a hidden boolean that stops a bare optional option (here `--shell`) from taking the next token (`cmd`) as its value. Each command has one, named from a hash of its path. Normalization writes one wherever the next token it writes would otherwise be taken as a value. That also covers a default subcommand written in after an open variadic value: `vc -c npm test --watch` becomes `vc -c npm test --vc-q1r1s cmd --watch`, so `cmd` isn't read as part of the `-c` command. You never need to type one, and a typed terminator is dropped. See [Terminators](./authoring/qualified-names.md#terminators).
 
 ## Errors
 
@@ -132,7 +132,11 @@ Each is a usage error: one line on stderr, exit code 1.
 | `vc -e x --vc-env y`                                   | `'--env' given twice (as -e and --vc-env)`                                               |
 | `vc aws --no-login-on-demand --vc-aws-login-on-demand` | `'--login-on-demand' given twice (as --no-login-on-demand and --vc-aws-login-on-demand)` |
 
-The `--<alias>-` prefix is reserved: any token that starts with it must be one of the CLI's qualified names. A get-dotenv CLI run under another (`vc cmd vc-test …`) therefore can't take the outer CLI's prefix: `--vc-test-env` fails in `vc` as an unknown `--vc-` option.
+The `--<alias>-` prefix is reserved: any token that starts with it must be one of the CLI's qualified names, and it is never passed to a child process. A get-dotenv CLI run under another (`vc cmd vc-test …`) therefore can't take the outer CLI's prefix: `--vc-test-env` fails in `vc` as an unknown `--vc-` option. Pick an alias that doesn't start with another CLI's alias followed by a dash ([Nested CLIs](./authoring/qualified-names.md#nested-clis-choosing-an-alias)).
+
+## Known limitation
+
+A plugin's own `new Command()` parent that doesn't use positional options keeps parsing its options after its subcommand. If it declares the same plain flag as its child, it takes the child's qualified option (`--vc-deploy-run-verbose` sets `deploy`'s `--verbose`). No shipped command has this shape. See [Known limitation](./authoring/qualified-names.md#known-limitation-a-parent-that-parses-options-after-its-subcommand) for the workaround.
 
 ## Custom hosts: `normalizeArgv`
 
