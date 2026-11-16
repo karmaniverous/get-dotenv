@@ -48,6 +48,7 @@ export {
   type TraceChildEnvOptions,
 } from './diagnostics';
 export type {
+  BuildDotenvTargetFilenameOptions,
   DotenvAssignmentSegment,
   DotenvBareKeySegment,
   DotenvDocument,
@@ -64,9 +65,12 @@ export type {
   DotenvUpdateValue,
   EditDotenvFileOptions,
   EditDotenvFileResult,
+  ResolveDotenvTargetOptions,
+  ResolveDotenvTargetResult,
 } from './dotenv';
 export {
   applyDotenvEdits,
+  buildDotenvTargetFilename,
   dotenvExpand,
   dotenvExpandAll,
   dotenvExpandFromProcessEnv,
@@ -74,6 +78,7 @@ export {
   editDotenvText,
   parseDotenvDocument,
   renderDotenvDocument,
+  resolveDotenvTarget,
 } from './dotenv';
 export type {
   DotenvConfigProvenanceEntry,

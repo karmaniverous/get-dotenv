@@ -49,6 +49,18 @@ const main = async () => {
       );
     }
 
+    // #55: the dotenv editor's target-selection helpers are public.
+    const indexPath = 'dist/index.mjs';
+    if (await fs.pathExists(indexPath)) {
+      const index = await import(pathToFileURL(indexPath).href);
+      for (const name of ['buildDotenvTargetFilename', 'resolveDotenvTarget']) {
+        assert(
+          typeof index[name] === 'function',
+          `${indexPath}: must export "${name}"`,
+        );
+      }
+    }
+
     // Removed exports stay removed (Decision 19 / 4.1 item 3: no `z` from cliHost).
     const cliHostPath = 'dist/cliHost.mjs';
     if (await fs.pathExists(cliHostPath)) {

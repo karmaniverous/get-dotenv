@@ -423,4 +423,9 @@ export const departures: Departure[] = [
     issueOrDecision: '#54',
     note: 'An existing target in any path beats a template in any path: b/.env.local is edited (Y=1, then X=1) and a/.env.local is not created from a/.env.local.template.',
   },
+  {
+    case: '#55 exports',
+    issueOrDecision: '#55',
+    note: 'buildDotenvTargetFilename and resolveDotenvTarget are exported from the package entry (both true).',
+  },
 ];
