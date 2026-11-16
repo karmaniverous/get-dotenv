@@ -10,6 +10,7 @@ title: 'Authoring Hosts & Plugins'
 - Resolved context is available via `cli.getCtx()` inside any plugin mount/action.
 - Root hooks persist a merged “root options bag”: `readMergedOptions(thisCommand)`.
 - The first `parseAsync()` installs the plugins and builds the qualified-name table (call `brand()` first on a direct host). It throws on a qualified-name collision or a plain long option that starts with `<alias>-`, and registers each command's hidden terminator (`terminatorName(alias, path)`). See the Qualified Names authoring guide.
+- Every `parseAsync(argv?, { from })` normalizes argv first (`normalizeArgv`, exported from `cliHost`): each qualified option (`--vc-aws-profile p`) moves to its owner as `--profile=p`, typed terminators are dropped, and a default subcommand entered at a token is written in (`vc node -h` → `vc cmd node -h`). Normalization errors go through `this.error()` (exit 1). `-h` left with the root renders top-level help. The root's `rawArgs` is the normalized user arguments. Sync `parse()` throws. See the Qualified options guide.
 
 ## Minimal plugin pattern
 
