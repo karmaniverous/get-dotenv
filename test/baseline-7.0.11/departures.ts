@@ -386,4 +386,14 @@ export const departures: Departure[] = [
     issueOrDecision: '#56',
     note: "One resolution, with the aws flags: only the 9 flag-profile probes run (the second round, 9 dotenv-profile probes from afterResolve, is gone), and the child sees AWS_PROFILE and ctx.plugins.aws profile 'flag-profile', not 'dotenv-profile'.",
   },
+  {
+    case: '#69 aws forward bag',
+    issueOrDecision: '#69',
+    note: "The aws forward passes getDotenvCliOptions: the forwarded env gains it (the merged bag, whose git-status script is the 8.0 one, per the bag's field departure).",
+  },
+  {
+    case: 'D28 row 03',
+    issueOrDecision: '#69',
+    note: "The aws forward passes getDotenvCliOptions: the forwarded env gains it (the merged bag, whose git-status script is the 8.0 one, per the bag's field departure).",
+  },
 ];

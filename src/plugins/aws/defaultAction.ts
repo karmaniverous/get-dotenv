@@ -1,5 +1,6 @@
 import {
   buildSpawnEnv,
+  composeNestedEnv,
   type GetDotenvCliPublic,
   readMergedOptions,
   resolveShell,
@@ -54,8 +55,10 @@ export function attachAwsDefaultAction(
         // The session's AWS_* entries go over the dotenv overlay, so its
         // region and credentials win and the two credential sources stay
         // exclusive (#56).
+        // Like every spawn path, the child gets the dotenv values and
+        // getDotenvCliOptions (#69).
         env: buildSpawnEnv(process.env, {
-          ...ctx.dotenv,
+          ...composeNestedEnv(bag, ctx.dotenv),
           ...awsSessionEnv(out, process.env),
         }),
         stdio: capture ? 'pipe' : 'inherit',
