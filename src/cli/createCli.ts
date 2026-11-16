@@ -272,13 +272,8 @@ export function createCli(
 
   // Runner: an explicit argv is user arguments only unless `from` says
   // otherwise (#53); no argv reads process.argv as Commander does.
-  return async function run(
-    argvInput?: string[],
-    options?: { from?: 'node' | 'electron' | 'user' },
-  ) {
-    const argv = userArgsOf(argvInput, {
-      from: options?.from ?? (argvInput === undefined ? undefined : 'user'),
-    });
+  // Install, top-level help and the parse (everything a run does).
+  const runArgs = async (argv: string[]) => {
     // Ensure plugin commands/options are installed before inspecting argv for
     // help-time routing (subcommand vs root help).
     dbg('argv', argv);
@@ -373,9 +368,19 @@ export function createCli(
     }
     dbg('parseAsync start');
     await brandHost();
+    await program.parseAsync(['node', alias, ...argv]);
+  };
 
+  return async function run(
+    argvInput?: string[],
+    options?: { from?: 'node' | 'electron' | 'user' },
+  ) {
+    const argv = userArgsOf(argvInput, {
+      from: options?.from ?? (argvInput === undefined ? undefined : 'user'),
+    });
+    // The error boundary covers the whole run (#62).
     try {
-      await program.parseAsync(['node', alias, ...argv]);
+      await runArgs(argv);
     } catch (err: unknown) {
       handleCliError(err, argv);
     }
