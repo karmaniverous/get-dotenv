@@ -14,6 +14,7 @@ import {
   type InferCommandArguments,
   type Option,
   type OptionValues,
+  type ParseOptions,
 } from '@commander-js/extra-typings';
 
 import type { GetDotenvOptions } from '@/src/core';
@@ -40,6 +41,7 @@ import type { ResolvedHelpConfig } from './helpConfig';
 import { hostMetaUrlOf, setHostMetaUrl } from './hostRoot';
 import { initializeInstance } from './initializeInstance';
 import { flattenPluginTreeByPath, joinRealizedPath } from './paths';
+import { ensureQualifiedNameTable } from './qualified';
 import { setupPluginTree } from './registerPlugin';
 import { resolveAndComputeContext } from './resolveAndComputeContext';
 import { runAfterResolveTree } from './runAfterResolve';
@@ -389,6 +391,29 @@ export class GetDotenvCli<
     } finally {
       // leave _installing as resolved; subsequent calls return early via _installed
     }
+  }
+
+  /**
+   * Parse `argv` (Commander's `parseAsync`) after installing the plugin tree
+   * and building the qualified-name table.
+   *
+   * On the first call the host installs its plugins, then builds its
+   * qualified-name table from the root's current name (so call `brand()`
+   * first) and registers each command's hidden terminator. Building the
+   * table throws on a qualified-name collision or a plain long option that
+   * starts with `<alias>-`. Later calls reuse the table.
+   *
+   * @param argv - Arguments, as for Commander's `parseAsync`.
+   * @param parseOptions - Commander's parse options (`from`).
+   * @returns This command.
+   */
+  override async parseAsync(
+    argv?: readonly string[],
+    parseOptions?: ParseOptions,
+  ): Promise<this> {
+    await this.install();
+    ensureQualifiedNameTable(this);
+    return super.parseAsync(argv, parseOptions);
   }
 
   /**

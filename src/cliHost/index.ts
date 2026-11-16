@@ -36,6 +36,7 @@ export {
   stripOne,
 } from './invoke';
 export type { PluginFlattenedEntry } from './paths';
+export { terminatorName } from './qualified';
 export { readMergedOptions } from './readMergedOptions';
 export { resolveCommand, resolveShell } from './resolve';
 export {

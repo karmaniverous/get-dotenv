@@ -7,6 +7,7 @@ import type { Command, Option } from '@commander-js/extra-typings';
 
 import type { GetDotenvCli } from './GetDotenvCli';
 import { GROUP_TAG } from './groups';
+import { isTerminatorOption } from './qualified';
 import { hasRootHooks } from './rootHooksState';
 
 /**
@@ -34,7 +35,8 @@ export function initializeInstance(
             const group = GROUP_TAG.get(opt);
             return group === 'base';
           })
-        : all.slice();
+        : // Terminators never appear in help (Decision 28).
+          all.filter((opt) => !isTerminatorOption(opt));
       // Sort: short-aliased options first, then long-only; stable by flags.
       const hasShort = (opt: Option) => {
         const flags = opt.flags;
