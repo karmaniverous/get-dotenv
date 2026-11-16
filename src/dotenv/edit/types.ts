@@ -372,10 +372,10 @@ export interface EditDotenvFileOptions extends DotenvEditOptions {
    * default token `'env'`, the shared template for `.env.<env>.local` is
    * `.env.env.local.template`, and for `.env.<env>` it is `.env.env.template`.
    *
-   * The shared env template is used as a last-resort fallback when neither the
+   * The shared env template is the last tier: it is used only when neither the
    * env-scoped target nor its env-specific template (`<target>.<templateExtension>`)
-   * exists anywhere under `paths`. An env-specific template always takes priority
-   * over the shared one. This option has no effect for `scope: 'global'`.
+   * exists in any path. An env-specific template in any path beats a shared
+   * template in any path. This option has no effect for `scope: 'global'`.
    *
    * @defaultValue `'env'`
    */

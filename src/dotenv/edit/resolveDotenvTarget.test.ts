@@ -398,7 +398,7 @@ describe('dotenv/edit/resolveDotenvTarget', () => {
       expect(out.templatePath).toBeUndefined();
     });
 
-    it('error lists every candidate filename checked, including the shared template', async () => {
+    it('error lists every candidate filename checked, tier by tier, including the shared template', async () => {
       const d1 = path.join(ROOT, 'shared12', 'p1');
       const d2 = path.join(ROOT, 'shared12', 'p2');
       await fs.remove(path.join(ROOT, 'shared12'));
@@ -417,8 +417,8 @@ describe('dotenv/edit/resolveDotenvTarget', () => {
         new RegExp(
           [
             path.resolve(d2, '.env.dev.local'),
-            path.resolve(d2, '.env.dev.local.template'),
             path.resolve(d1, '.env.dev.local'),
+            path.resolve(d2, '.env.dev.local.template'),
             path.resolve(d1, '.env.dev.local.template'),
             path.resolve(d2, '.env.env.local.template'),
             path.resolve(d1, '.env.env.local.template'),

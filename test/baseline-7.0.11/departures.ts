@@ -417,4 +417,10 @@ export const departures: Departure[] = [
     issueOrDecision: '#87',
     note: "The second run() works: brand() registers -V, --version once, so there is no 'Cannot add option' rejection and both runs record a child (git-status per the bag's field departure).",
   },
+  // S10: editor
+  {
+    case: '#54 editor target',
+    issueOrDecision: '#54',
+    note: 'An existing target in any path beats a template in any path: b/.env.local is edited (Y=1, then X=1) and a/.env.local is not created from a/.env.local.template.',
+  },
 ];
