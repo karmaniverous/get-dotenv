@@ -44,6 +44,7 @@ import { resolveAndComputeContext } from './resolveAndComputeContext';
 import { runAfterResolveTree } from './runAfterResolve';
 import { tagAppOptionsAround } from './tagAppOptionsHelper';
 import type { BrandOptions, GetDotenvCliCtx, RootOptionsShape } from './types';
+import { setVersion } from './versionOption';
 
 const HOST_META_URL = import.meta.url;
 
@@ -294,13 +295,17 @@ export class GetDotenvCli<
    * Branding helper: set CLI name/description/version and optional help header.
    * If version is omitted and importMetaUrl is provided, attempts to read the
    * nearest package.json version (best-effort; non-fatal on failure).
+   *
+   * `-V, --version` is registered once, the first time a version is known. A
+   * later `brand()` only updates the version it prints, so calling `brand()`
+   * again (as every `createCli` run does) is safe (#87).
    */
   async brand(args: BrandOptions): Promise<this> {
     const { name, description, version, importMetaUrl, helpHeader } = args;
     if (typeof name === 'string' && name.length > 0) this.name(name);
     if (typeof description === 'string') this.description(description);
     const v = version ?? (await readHostPackage(importMetaUrl))?.version;
-    if (v) this.version(v);
+    if (v) setVersion(this, v);
     // Help header:
     // - If caller provides helpHeader, use it.
     // - Otherwise, when a version is known, default to "<name> v<version>".

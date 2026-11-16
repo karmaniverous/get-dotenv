@@ -396,4 +396,10 @@ export const departures: Departure[] = [
     issueOrDecision: '#69',
     note: "The aws forward passes getDotenvCliOptions: the forwarded env gains it (the merged bag, whose git-status script is the 8.0 one, per the bag's field departure).",
   },
+  // S9: host identity
+  {
+    case: '#87 second run',
+    issueOrDecision: '#87',
+    note: "The second run() works: brand() registers -V, --version once, so there is no 'Cannot add option' rejection and both runs record a child (git-status per the bag's field departure).",
+  },
 ];
