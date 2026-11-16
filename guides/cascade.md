@@ -70,7 +70,7 @@ See the API docs for `dotenvExpand` and `dotenvExpandAll` for precise behavior.
 
 ## Output file
 
-If `outputPath` is set, the fully expanded variables are written to a single dotenv file at the resolved path. Multiline values are quoted. The returned object from `getDotenv` matches the file contents.
+If `outputPath` is set, the fully expanded variables are written to a single dotenv file at the resolved path. Each value is quoted and escaped as needed (the dotenv editor's formatter; see [Quoting](./dotenv-editor.md#quoting-multiline-and-comment-safety)) so that dotenv reads the file back to exactly the returned object; a value no quote style can hold throws, naming the key.
 
 ## Logging and process.env
 

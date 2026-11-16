@@ -166,15 +166,17 @@ Notes:
 - Dedicated guide: see [Dotenv editor (format-preserving)](../dotenv-editor.md) for the full contract, examples, and edge cases.
 - Update map semantics:
   - `null` deletes key assignment lines (default).
-  - `undefined` skips (default); in `mode: 'sync'` an own key with `undefined` counts as present (so it is not deleted).
+  - `undefined` skips (default); in `mode: 'sync'` an own key with `undefined` counts as present (so it is not deleted, and not added if missing).
+- Modes: `mode: 'merge'` (default) updates and appends; `mode: 'sync'` upserts, so the file ends up with exactly the given keys (updated in place, missing ones appended, others deleted; comments kept).
+- New keys always start on their own line, also after a last line with no final newline.
+- Values are quoted so dotenv reads them back exactly (one formatter, shared with `-o`); a value no quote style can hold throws, naming the key.
   - Objects/arrays are supported and are written via `JSON.stringify`.
 - Duplicate keys: `duplicateKeys: 'all' | 'first' | 'last'` (default: `'all'`).
 - EOL: `eol: 'preserve' | 'lf' | 'crlf'` (default: `'preserve'`), and trailing newline presence/absence is preserved.
 - Target selection (`editDotenvFile`) is deterministic and uses `paths` only (directories), matching get-dotenv’s precedence model by default:
   - `searchOrder: 'reverse'` (default): last path wins (highest precedence).
   - `searchOrder: 'forward'`: first path wins.
-- Template bootstrap: if the selected target is missing but `<target>.<templateExtension>` exists (default extension: `template`), the template is copied first and then edited in place.
-- Shared env template fallback (`scope: 'env'` only): if neither the target nor its env-specific template exists anywhere under `paths`, a shared template named with a fixed token in place of the env name (`sharedEnvTemplateToken`, default `'env'`) is tried next — e.g. `.env.env.local.template` for `.env.<env>.local`. An env-specific template always wins over the shared one; global scope never uses this fallback. See [Dotenv editor](../dotenv-editor.md#shared-env-template-fallback-only) for the full resolution order.
+- Resolution order, in tiers, each checking every path in search order before the next: an existing target in any path; else the env-specific template `<target>.<templateExtension>` (default extension: `template`); else (`scope: 'env'` only) the shared env template, named with a fixed token in place of the env name (`sharedEnvTemplateToken`, default `'env'`), e.g. `.env.env.local.template` for `.env.<env>.local`. A template is copied to the target beside it, then edited in place. So an existing target in any path beats a template in any path, and an env-specific template in any path beats a shared one. See [Dotenv editor](../dotenv-editor.md#resolution-order) for the table.
 - Return shape: `editDotenvFile` returns `{ path, createdFromTemplate, changed }` where `path` is absolute.
 
 Selector mapping (filename construction):
@@ -189,8 +191,9 @@ If `scope: 'env'` and neither `env` nor `defaultEnv` can be resolved, `editDoten
 Low-level building blocks (advanced use):
 
 - `parseDotenvDocument(text)` → parse into a format-preserving segment model.
-- `applyDotenvEdits(doc, updates, opts?)` → apply merge/sync edits while preserving formatting.
+- `applyDotenvEdits(doc, updates, opts?)` → apply merge/sync (upsert) edits while preserving formatting.
 - `renderDotenvDocument(doc, eolMode?)` → render back to text with EOL policy.
+- `buildDotenvTargetFilename(opts)` / `resolveDotenvTarget(opts)` → the target selection `editDotenvFile` uses (existing target in any path, then env-specific template, then shared env template).
 
 ## Programmatic API: `getDotenv()`
 

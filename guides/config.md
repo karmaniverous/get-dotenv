@@ -109,7 +109,7 @@ The overlay flow:
 1. Base: resolve file cascade using getDotenv (exclude dynamic; ignore programmatic vars).
 2. Overlay config sources in order: packaged (public only) → project public → project local.
 3. Apply dynamic in order: programmatic dynamic (if provided) → config dynamic from JS/TS (packaged → project public → project local) → file dynamicPath (lowest dynamic tier).
-4. Optional effects: outputPath (write consolidated dotenv; quote multiline), log (print final map), loadProcess (copy into process.env: a string sets the key; an unset value, or a key deleted by a dynamic `null`, deletes it).
+4. Optional effects: outputPath (write consolidated dotenv; values quoted so dotenv reads them back exactly), log (print final map), loadProcess (copy into process.env: a string sets the key; an unset value, or a key deleted by a dynamic `null`, deletes it).
 
 ## Environment resolution order
 

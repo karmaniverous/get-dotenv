@@ -45,10 +45,13 @@ import { readDotenv } from './readDotenv';
  *   deleted, deletes the key). It defaults to false: `getDotenv()` does not touch
  *   `process.env` unless asked to.
  * - When {@link GetDotenvOptions | outputPath} is provided, a consolidated dotenv file is written.
- *   The path is resolved after expansion, so it may reference previously loaded vars.
+ *   The path is resolved after expansion, so it may reference previously loaded vars. Each
+ *   value is quoted and escaped as needed so that dotenv reads the file back to the result.
  *
  * @throws Error when a dynamic module is present but cannot be imported.
  * @throws Error when an output path was requested but could not be resolved.
+ * @throws Error when an output value can't be written so that dotenv reads it back
+ *   unchanged (the message names the key).
  */
 export function getDotenv<Vars extends ProcessEnv = ProcessEnv>(
   options?: Partial<GetDotenvOptions>,
