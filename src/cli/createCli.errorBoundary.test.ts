@@ -63,6 +63,30 @@ describe('error boundary (#62)', () => {
     expect(r.output).toContain('Error: setup failed');
   });
 
+  it('an install error reads the typed argv: --<alias>-debug prints the stack', async () => {
+    const broken = definePlugin({
+      ns: 'broken',
+      setup() {
+        throw new Error('setup failed');
+      },
+    });
+    const r = await runHost(['--fixture-debug', 'broken'], {}, (p) =>
+      p.use(broken),
+    );
+    expect(r.exitCode).toBe(1);
+    expect(r.output.some((l) => /^\s+at /.test(l))).toBe(true);
+  });
+
+  it('a normalization error is a usage error: one line, exit 1, no stack', async () => {
+    const r = await runHost(['--fixture-envv', 'x']);
+    expect(r.rejected).toBeUndefined();
+    expect(r.exitCode).toBe(1);
+    expect(r.output).toContain(
+      "Unknown option '--fixture-envv' (the '--fixture-' prefix is reserved for fixture)",
+    );
+    expect(r.output.some((l) => /^\s+at /.test(l))).toBe(false);
+  });
+
   it('prints the stack under --debug', async () => {
     const broken = definePlugin({
       ns: 'broken',

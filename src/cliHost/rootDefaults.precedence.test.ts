@@ -55,12 +55,12 @@ describe('#77 createCli rootOptionDefaults rank below config and the parent bag'
     expect(run.ctx?.dotenv.FOO).toBe('fromA');
   });
 
-  it('root flags carry no Commander defaults (bare host included)', () => {
+  it('root flags carry no Commander defaults (bare host included)', async () => {
     const host = new GetDotenvCli('bare').attachRootOptions();
     const withDefault = host.options
       .filter((o) => o.defaultValue !== undefined)
       .map((o) => o.flags);
     expect(withDefault).toEqual([]);
-    expect(host.parse([], { from: 'node' }).opts()).toEqual({});
+    expect((await host.parseAsync([], { from: 'user' })).opts()).toEqual({});
   });
 });

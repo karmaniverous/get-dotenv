@@ -64,8 +64,9 @@ const EXPECTED: Array<[string, string, string]> = [
   ['--vc-redact-pattern', 'vc', '--redact-pattern <pattern...>'],
   ['--vc-redact', 'vc', '--redact'],
   ['--vc-redact-off', 'vc', '--redact-off'],
-  ['--vc-cmd', 'vc', '-c, --cmd <command...>'],
+  // brand() (the version option) runs before install() (the cmd alias).
   ['--vc-version', 'vc', '-V, --version'],
+  ['--vc-cmd', 'vc', '-c, --cmd <command...>'],
   ['--vc-k99ix', 'vc cmd', 'terminator'],
   ['--vc-a7lhd', 'vc batch', 'terminator'],
   ['--vc-batch-pkg-cwd', 'vc batch', '-p, --pkg-cwd'],

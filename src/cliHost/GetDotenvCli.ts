@@ -40,8 +40,8 @@ import { GROUP_TAG } from './groups';
 import type { ResolvedHelpConfig } from './helpConfig';
 import { hostMetaUrlOf, setHostMetaUrl } from './hostRoot';
 import { initializeInstance } from './initializeInstance';
+import { parseHost } from './parseHost';
 import { flattenPluginTreeByPath, joinRealizedPath } from './paths';
-import { ensureQualifiedNameTable } from './qualified';
 import { setupPluginTree } from './registerPlugin';
 import { resolveAndComputeContext } from './resolveAndComputeContext';
 import { runAfterResolveTree } from './runAfterResolve';
@@ -394,14 +394,28 @@ export class GetDotenvCli<
   }
 
   /**
-   * Parse `argv` (Commander's `parseAsync`) after installing the plugin tree
-   * and building the qualified-name table.
+   * Parse `argv`: install the plugin tree, build the qualified-name table,
+   * normalize the argv, render top-level help or hand the normalized argv to
+   * Commander (spec 4.4).
    *
-   * On the first call the host installs its plugins, then builds its
-   * qualified-name table from the root's current name (so call `brand()`
-   * first) and registers each command's hidden terminator. Building the
-   * table throws on a qualified-name collision or a plain long option that
-   * starts with `<alias>-`. Later calls reuse the table.
+   * - `argv` and `{ from }` work as in Commander (including `node -e`/`-p`
+   *   and Electron detection when both are omitted); only the user arguments
+   *   are normalized, and Commander parses them with `{ from: 'user' }`.
+   * - On the first call the host installs its plugins, then builds its
+   *   qualified-name table from the root's current name (so call `brand()`
+   *   first) and registers each command's hidden terminator. Building the
+   *   table throws on a qualified-name collision or a plain long option that
+   *   starts with `<alias>-`. Later calls reuse the table.
+   * - {@link normalizeArgv} moves every qualified option to its owner. A
+   *   normalization error is reported through `this.error()`: exit code 1,
+   *   or a thrown `CommanderError` under `exitOverride()`.
+   * - `-h` that the argv walk leaves with the root renders top-level help
+   *   (its context resolved without side effects) instead of a parse.
+   * - Under `--debug` (or `--<alias>-debug`) or `GETDOTENV_DEBUG`, one
+   *   `[getdotenv:argv] typed: [...] normalized: [...]` line goes to stderr.
+   *
+   * Commander sets `rawArgs` only on the command being parsed (this root),
+   * to the normalized user arguments; subcommands keep an empty `rawArgs`.
    *
    * @param argv - Arguments, as for Commander's `parseAsync`.
    * @param parseOptions - Commander's parse options (`from`).
@@ -411,9 +425,25 @@ export class GetDotenvCli<
     argv?: readonly string[],
     parseOptions?: ParseOptions,
   ): Promise<this> {
-    await this.install();
-    ensureQualifiedNameTable(this);
-    return super.parseAsync(argv, parseOptions);
+    await parseHost(
+      this as unknown as GetDotenvCli,
+      argv,
+      parseOptions,
+      (userArgs) => super.parseAsync(userArgs, { from: 'user' }),
+    );
+    return this;
+  }
+
+  /**
+   * Not supported: a get-dotenv host installs plugins and resolves its
+   * context asynchronously.
+   *
+   * @throws Always; call `parseAsync()` instead.
+   */
+  override parse(): this {
+    throw new Error(
+      'parse() is not supported on a get-dotenv host; use parseAsync().',
+    );
   }
 
   /**

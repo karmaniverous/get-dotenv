@@ -6,7 +6,11 @@
  * accessor, and the help filter for terminators.
  */
 export { NormalizeArgvError } from './errors';
-export { normalizeArgv, normalizeQualified } from './normalize';
+export {
+  type Normalization,
+  normalizeArgv,
+  normalizeQualified,
+} from './normalize';
 export { isTerminatorOption } from './register';
 export {
   ensureQualifiedNameTable,

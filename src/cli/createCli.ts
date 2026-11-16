@@ -1,19 +1,13 @@
-import {
-  GetDotenvCli,
-  type RootOptionsShape,
-  toHelpConfig,
-} from '@/src/cliHost';
+import { GetDotenvCli, type RootOptionsShape } from '@/src/cliHost';
 import { attachRootOptions as attachRootOptionsBuilder } from '@/src/cliHost/attachRootOptions';
-import { hostMetaUrlOf } from '@/src/cliHost/hostRoot';
+import { recordRunArgv, runArgvRequestsDebug } from '@/src/cliHost/parseHost';
 import { installRootHooks } from '@/src/cliHost/rootHooks';
-import { resolveRootOptionsBag } from '@/src/cliHost/rootOptionsStack';
-import { userArgsOf } from '@/src/cliHost/userArgs';
 import {
-  applyRootVisibility,
-  mergeRootVisibility,
-} from '@/src/cliHost/visibility';
-import { resolveGetDotenvConfigSources } from '@/src/config';
-import { getDotenvCliOptions2Options } from '@/src/core';
+  configureTopLevelHelp,
+  underTestRunner,
+} from '@/src/cliHost/topLevelHelp';
+import { userArgsOf } from '@/src/cliHost/userArgs';
+import { applyRootVisibility } from '@/src/cliHost/visibility';
 import {
   awsPlugin,
   awsWhoamiPlugin,
@@ -44,11 +38,11 @@ export const composeShippedPlugins = (program: GetDotenvCli): GetDotenvCli =>
  * Presents errors as clean one-line messages by default.
  * When GETDOTENV_DEBUG is set, prints the full stack trace.
  */
-function handleCliError(err: unknown, argv?: string[]): void {
+function handleCliError(err: unknown, debugArgv: boolean): void {
   const isDebug =
     process.env.GETDOTENV_DEBUG === '1' ||
     process.env.GETDOTENV_DEBUG === 'true' ||
-    (Array.isArray(argv) && argv.includes('--debug'));
+    debugArgv;
 
   const message = err instanceof Error ? err.message : String(err);
 
@@ -201,9 +195,7 @@ export function createCli(
   const visibility = opts.rootOptionVisibility ?? {};
 
   // Tests-only: avoid process.exit during help/version flows under Vitest.
-  const underTests =
-    process.env.GETDOTENV_TEST === '1' ||
-    typeof process.env.VITEST_WORKER_ID === 'string';
+  const underTests = underTestRunner();
   const dbg = (...args: unknown[]) => {
     if (process.env.GETDOTENV_DEBUG) {
       try {
@@ -247,6 +239,8 @@ export function createCli(
   attachRootOptionsBuilder(program, rootDefaults);
   // 2) Install resolution hooks (preSubcommand/preAction).
   installRootHooks(program, rootDefaults);
+  // Top-level help (rendered by parseAsync) uses the same defaults.
+  configureTopLevelHelp(program, { rootDefaults, visibility });
   // Apply visibility (hide selected options) after flags are declared.
   if (Object.keys(visibility).length > 0) {
     applyRootVisibility(program, visibility);
@@ -274,92 +268,17 @@ export function createCli(
     });
   };
 
-  // Runner: an explicit argv is user arguments only unless `from` says
-  // otherwise (#53); no argv reads process.argv as Commander does.
-  // Install, top-level help and the parse (everything a run does).
+  // Brand, then parseAsync: install, table, normalization, top-level help
+  // and the parse (spec 4.4).
   const runArgs = async (argv: string[]) => {
-    // Ensure plugin commands/options are installed before inspecting argv for
-    // help-time routing (subcommand vs root help).
     dbg('argv', argv);
-    await program.install();
-    // Help handling:
-    // - Short-circuit ONLY for true top-level -h/--help (no subcommand before flag).
-    // - If a subcommand token appears before -h/--help, defer to Commander
-    //   to render that subcommand's help.
-    const helpIdx = argv.findIndex((a) => a === '-h' || a === '--help');
-    if (helpIdx >= 0) {
-      // Build a set of known subcommand names/aliases on the root.
-      const subs = new Set<string>();
-      for (const c of program.commands) {
-        subs.add(c.name());
-        for (const a of c.aliases()) subs.add(a);
-      }
-      dbg('helpIdx', helpIdx, 'knownSubs', Array.from(subs.values()));
-      const hasSubBeforeHelp = argv
-        .slice(0, helpIdx)
-        .some((tok) => subs.has(tok));
-
-      if (!hasSubBeforeHelp) {
-        await brandHost();
-        dbg('top-level -h, render root help');
-        // The help context and the labels come from one defaults stack
-        // (createCli < config rootOptionDefaults < parent bag, no CLI
-        // flags), resolved without side effects: no dynamic, no process
-        // env, no logging, no output file (#81).
-        const sources = await resolveGetDotenvConfigSources(
-          hostMetaUrlOf(program),
-        );
-        const helpMerged = resolveRootOptionsBag({}, rootDefaults, sources);
-        const { outputPath: _outputPath, ...helpOptions } =
-          getDotenvCliOptions2Options(helpMerged);
-        const ctx = await program.resolveAndLoad(
-          {
-            ...helpOptions,
-            excludeDynamic: true,
-            loadProcess: false,
-            log: false,
-          },
-          { runAfterResolve: false },
-        );
-        const helpCfg = toHelpConfig(helpMerged, ctx.pluginConfigs);
-        // Evaluate dynamic labels
-        program.evaluateDynamicOptions(helpCfg);
-        // Suppress output only during unit tests; allow E2E to capture.
-        const piping =
-          process.env.GETDOTENV_STDIO === 'pipe' ||
-          process.env.GETDOTENV_STDOUT === 'pipe';
-        if (!(underTests && !piping)) {
-          dbg('outputHelp()');
-          // Merge visibility for help-time using precedence:
-          // createCli(rootOptionVisibility) < packaged/public < project/public < project/local
-          try {
-            const sources = await resolveGetDotenvConfigSources(
-              hostMetaUrlOf(program),
-            );
-            const mergedVis = mergeRootVisibility(
-              visibility,
-              sources.packaged?.rootOptionVisibility ?? undefined,
-              sources.project?.public?.rootOptionVisibility ?? undefined,
-              sources.project?.local?.rootOptionVisibility ?? undefined,
-            );
-            if (Object.keys(mergedVis).length > 0) {
-              applyRootVisibility(program, mergedVis);
-            }
-          } catch {
-            // best-effort; do not block help
-          }
-          program.outputHelp();
-        }
-        return;
-      }
-      // Subcommand token exists before -h: fall through to normal parsing,
-      // letting Commander print that subcommand's help.
-    }
-    dbg('parseAsync start');
+    recordRunArgv(program, argv, false);
     await brandHost();
-    await program.parseAsync(['node', alias, ...argv]);
+    await program.parseAsync(argv, { from: 'user' });
   };
 
+  // Runner: an explicit argv is user arguments only unless `from` says
+  // otherwise (#53); no argv reads process.argv as Commander does.
   return async function run(
     argvInput?: string[],
     options?: { from?: 'node' | 'electron' | 'user' },
@@ -371,7 +290,7 @@ export function createCli(
     try {
       await runArgs(argv);
     } catch (err: unknown) {
-      handleCliError(err, argv);
+      handleCliError(err, runArgvRequestsDebug(program));
     }
   };
 }

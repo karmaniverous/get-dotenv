@@ -186,11 +186,11 @@ describe('#52 createCli host identity', () => {
     );
     expect(out).toMatch(/^host v9\.9\.9\n/);
     expect(out).toContain('\n\nFixture host CLI.\n');
-    // Context, help-time defaults and help-time visibility: three discoveries.
+    // Help-time defaults and visibility (one discovery), then the context.
     const urls = vi
       .mocked(resolveGetDotenvConfigSources)
       .mock.calls.map(([u]) => u);
-    expect(urls).toEqual([hostUrl, hostUrl, hostUrl]);
+    expect(urls).toEqual([hostUrl, hostUrl]);
   });
 });
 

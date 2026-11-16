@@ -450,6 +450,33 @@ export const departures: Departure[] = [
   },
   // S12: normalization and parseAsync
   {
+    case: '#81 help runs dynamic',
+    issueOrDecision: '#81',
+    note: 'Top-level help resolves its context without config dynamic: the DYN-EVAL side effect no longer runs, so stderr is empty.',
+  },
+  ...['#51 script shell true', '4.4 row 05', '4.4 row 17', 'D28 row 04'].map(
+    (c): Departure => ({
+      case: c,
+      issueOrDecision: 'D28',
+      note: "Under --debug, parseAsync prints '[getdotenv:argv] typed: [...] normalized: [...]' first (spec 4.4, '--debug and rawArgs'; here both are the typed argv), and the root's rawArgs line shows the user arguments with no leading node/alias entries ({ from: 'user' }, #53).",
+    }),
+  ),
+  {
+    case: 'D28 row 06',
+    issueOrDecision: 'D30',
+    note: "--shell takes cmd as its value, as in 7.x; the default cmd is then written in before node (Decision 30), so the [getdotenv:argv] line and the rawArgs line show '--debug --shell cmd cmd node probe.mjs hi'. rawArgs has no leading node/alias entries (#53). The run is unchanged.",
+  },
+  {
+    case: '4.4 row 09',
+    issueOrDecision: 'D30',
+    note: "vc node -h is normalized to vc cmd node -h, which runs node -h (Decisions 30, 31) instead of rendering root help: stdout is node's help and the bag is recorded.",
+  },
+  {
+    case: '4.4 row 12',
+    issueOrDecision: 'D30',
+    note: "vc --bogus -h is normalized to vc cmd --bogus -h (Decision 30), so Commander renders cmd's help (and exits 0) instead of root help; migration-noted in 4.4.",
+  },
+  {
     case: '#62 invalid config -h',
     issueOrDecision: '#62',
     note: 'The error boundary covers top-level help: the config error prints one line on stderr with exit code 1; run() no longer rejects.',
