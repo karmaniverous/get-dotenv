@@ -108,13 +108,7 @@ describe('plugins/init', () => {
       compose: (p) => p.use(initPlugin()),
     });
 
-    await run([
-      'init',
-      dir,
-      '--config-format',
-      'json',
-      '--force',
-    ]);
+    await run(['init', dir, '--config-format', 'json', '--force']);
 
     const cfg = path.posix.join(dir, 'getdotenv.config.json');
     await fs.writeFile(cfg, 'CHANGED', 'utf-8');
@@ -139,13 +133,7 @@ describe('plugins/init', () => {
       compose: (p) => p.use(initPlugin()),
     });
 
-    await run([
-      'init',
-      dir,
-      '--config-format',
-      'ts',
-      '--force',
-    ]);
+    await run(['init', dir, '--config-format', 'ts', '--force']);
 
     const cfg = path.posix.join(dir, 'getdotenv.config.ts');
     expect(await fs.pathExists(cfg)).toBe(true);
@@ -190,13 +178,7 @@ describe('plugins/init', () => {
       compose: (p) => p.use(initPlugin()),
     });
 
-    await run([
-      'init',
-      dir,
-      '--config-format',
-      'json',
-      '--force',
-    ]);
+    await run(['init', dir, '--config-format', 'json', '--force']);
 
     const after = await fs.readFile(cfg, 'utf-8');
     expect(after).not.toBe('OLD'); // overwritten

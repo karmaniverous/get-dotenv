@@ -151,15 +151,7 @@ describe('plugins/cmd option alias', () => {
         ),
     });
 
-    await run([
-      '--cmd',
-      'echo',
-      'OK',
-      '--',
-      'cmd',
-      'echo',
-      'X',
-    ]);
+    await run(['--cmd', 'echo', 'OK', '--', 'cmd', 'echo', 'X']);
 
     const exitCode = process.exitCode;
     process.exitCode = savedExitCode;

@@ -51,7 +51,7 @@ const sourceOf = (
  */
 export const userArgsOf = (
   argv: readonly string[] | undefined,
-  parseOptions?: { from?: ArgvFrom | undefined },
+  parseOptions?: { from?: 'node' | 'electron' | 'user' | undefined },
 ): string[] => {
   if (argv !== undefined && !Array.isArray(argv))
     throw new Error('first parameter to parse must be array or undefined');

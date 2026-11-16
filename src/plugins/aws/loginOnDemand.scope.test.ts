@@ -90,12 +90,7 @@ describe('loginOnDemand scoping (CLI integration)', () => {
       compose: (program) => program.use(awsPlugin()),
     });
 
-    await run([
-      'aws',
-      '--login-on-demand',
-      '--region',
-      'us-east-1',
-    ]);
+    await run(['aws', '--login-on-demand', '--region', 'us-east-1']);
 
     // resolveAwsContext should be called, and at least one call should have loginOnDemand: true
     expect(resolveAwsContextMock).toHaveBeenCalled();
@@ -114,13 +109,7 @@ describe('loginOnDemand scoping (CLI integration)', () => {
       compose: (program) => program.use(awsPlugin().use(awsWhoamiPlugin())),
     });
 
-    await run([
-      'aws',
-      '--login-on-demand',
-      '--region',
-      'us-east-1',
-      'whoami',
-    ]);
+    await run(['aws', '--login-on-demand', '--region', 'us-east-1', 'whoami']);
 
     expect(resolveAwsContextMock).toHaveBeenCalled();
     const lodValues = resolveAwsContextMock.mock.calls.map(

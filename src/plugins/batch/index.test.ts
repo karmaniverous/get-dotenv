@@ -24,14 +24,7 @@ describe('plugins/batch', () => {
       compose: (p) => p.use(batchPlugin()),
     });
 
-    await run([
-      'batch',
-      '--list',
-      '--globs',
-      'a b',
-      '--root-path',
-      './',
-    ]);
+    await run(['batch', '--list', '--globs', 'a b', '--root-path', './']);
 
     expect(execMock).toHaveBeenCalledTimes(1);
     // Safe after call-count assertion
@@ -97,12 +90,7 @@ describe('plugins/batch', () => {
       compose: (p) => p.use(batchPlugin()),
     });
 
-    await run([
-      'batch',
-      '--command',
-      'echo ok',
-      '--ignore-errors',
-    ]);
+    await run(['batch', '--command', 'echo ok', '--ignore-errors']);
 
     expect(execMock).toHaveBeenCalledTimes(1);
     const firstCall = execMock.mock.calls[0] as

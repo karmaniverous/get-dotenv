@@ -15,7 +15,10 @@ import { resolveCliOptions } from './resolveCliOptions';
 import type { RootOptionsShape, ScriptsTable } from './types';
 
 /** A merged root options bag, with the config `scripts` merged in. */
-export type RootOptionsBag = RootOptionsShape & { scripts?: ScriptsTable };
+export type RootOptionsBag = RootOptionsShape & {
+  /** The scripts table: the bag's own, then the config scripts. */
+  scripts?: ScriptsTable;
+};
 
 /**
  * The defaults part of the stack: base \< host root defaults \< config
