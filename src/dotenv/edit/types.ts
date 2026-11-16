@@ -367,6 +367,20 @@ export interface EditDotenvFileOptions extends DotenvEditOptions {
    */
   templateExtension?: string;
   /**
+   * Env name token substituted in place of the real env name when building the
+   * shared env template filename (`scope: 'env'` only). For example, with the
+   * default token `'env'`, the shared template for `.env.<env>.local` is
+   * `.env.env.local.template`, and for `.env.<env>` it is `.env.env.template`.
+   *
+   * The shared env template is used as a last-resort fallback when neither the
+   * env-scoped target nor its env-specific template (`<target>.<templateExtension>`)
+   * exists anywhere under `paths`. An env-specific template always takes priority
+   * over the shared one. This option has no effect for `scope: 'global'`.
+   *
+   * @defaultValue `'env'`
+   */
+  sharedEnvTemplateToken?: string;
+  /**
    * Optional filesystem port override (defaults to a Node FS adapter).
    */
   fs?: DotenvFs;

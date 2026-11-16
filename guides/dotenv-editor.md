@@ -147,7 +147,43 @@ If the target file does not exist anywhere under `paths`, but a template exists 
 
 - `templateExtension: 'template'` by default, producing patterns like `.env.local.template`.
 
-If neither the target nor the template exists under any provided path, `editDotenvFile` throws.
+If neither the target nor the template exists under any provided path, `editDotenvFile` throws, and the error message lists every candidate filename it checked.
+
+### Shared env template fallback (`scope: 'env'` only)
+
+Env-scoped templates are usually identical across environments (`dev`, `stg`, `prod`, ...), which means keeping separate `.env.<env>.local.template` files per environment just invites drift. When an env-scoped target is missing *and* it has no env-specific template, `resolveDotenvTarget` falls back to a **shared env template** before throwing.
+
+The shared template filename is built the same way as the env target, but with a fixed token in place of the actual env name. That token is configurable via `sharedEnvTemplateToken` (default `'env'`), and it respects `dotenvToken`, `privateToken`, and `templateExtension`:
+
+- `.env.<env>.local` → shared template `.env.env.local.template`
+- `.env.<env>` → shared template `.env.env.template`
+
+Resolution order per path, in the configured `searchOrder`:
+
+1. The target itself (e.g. `.env.dev.local`) — if it exists anywhere under `paths`, it wins outright.
+2. The env-specific template (e.g. `.env.dev.local.template`) — this **always** takes priority over the shared template when present, in any searched path.
+3. Only when neither of the above is found anywhere under `paths`: the shared env template (e.g. `.env.env.local.template`), searched again across the same ordered paths.
+
+Notes:
+
+- This fallback only applies to `scope: 'env'`. Global-scoped targets (`.env`, `.env.local`) never use it — `.env.local.template` remains the template for `.env.local` only.
+- When a shared template is selected, `resolveDotenvTarget` returns the env target path (in the directory where the shared template was found) as `targetPath`, and the shared template path as `templatePath`. `editDotenvFile` bootstraps from it exactly like any other template, reporting `createdFromTemplate: true`.
+
+```ts
+import { editDotenvFile } from '@karmaniverous/get-dotenv';
+
+// With `.env.env.local.template` committed at the repo root, this works for
+// every env without a per-env template file.
+await editDotenvFile(
+  { API_URL: 'https://example.com' },
+  {
+    paths: ['./'],
+    scope: 'env',
+    privacy: 'private',
+    env: 'dev',
+  },
+);
+```
 
 ### Example: create `.env.local` from template and set keys
 
