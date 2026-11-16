@@ -60,7 +60,7 @@ getdotenv options (anywhere):
 
 getdotenv batch options (anywhere):
   --getdotenv-batch-command <string>            command executed according to the base shell resolution
-  --getdotenv-batch-concurrency <n>             max concurrent executions in parallel mode (default: 8)
+  --getdotenv-batch-concurrency <n>             max concurrent executions in parallel mode (default: <CPUS>)
   --getdotenv-batch-globs <string>              space-delimited globs from root path (default: "*")
   --getdotenv-batch-ignore-errors               ignore errors and continue with next path
   --getdotenv-batch-list                        list working directories without executing command

@@ -60,7 +60,7 @@ vc options (anywhere):
 
 vc batch options (anywhere):
   --vc-batch-command <string>            command executed according to the base shell resolution
-  --vc-batch-concurrency <n>             max concurrent executions in parallel mode (default: 8)
+  --vc-batch-concurrency <n>             max concurrent executions in parallel mode (default: <CPUS>)
   --vc-batch-globs <string>              space-delimited globs from root path (default: "*")
   --vc-batch-ignore-errors               ignore errors and continue with next path
   --vc-batch-list                        list working directories without executing command

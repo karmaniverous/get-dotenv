@@ -4,8 +4,9 @@
  * The run happens in a throwaway project (`inFixture`) whose
  * `getdotenv.config.json` pins the root `shell` default, so the dynamic
  * `--shell` label is the same on every OS. stdout is captured with
- * `GETDOTENV_STDIO=pipe` (top-level help prints under Vitest), and the
- * version in the help header is replaced with `<VERSION>`.
+ * `GETDOTENV_STDIO=pipe` (top-level help prints under Vitest), the version
+ * in the help header is replaced with `<VERSION>`, and batch's
+ * `--concurrency` default (the machine's CPU count) with `<CPUS>`.
  */
 import { vi } from 'vitest';
 
@@ -50,6 +51,10 @@ export const helpText = (
         return writes
           .join('')
           .replace(/\r\n/g, '\n')
-          .replace(/^(\S+) v\d+\.\d+\.\d+\S*$/m, '$1 v<VERSION>');
+          .replace(/^(\S+) v\d+\.\d+\.\d+\S*$/m, '$1 v<VERSION>')
+          .replace(
+            /(max concurrent executions in parallel mode \(default: )\d+\)/g,
+            '$1<CPUS>)',
+          );
       }),
   );
