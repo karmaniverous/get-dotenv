@@ -36,6 +36,37 @@ describe('env/readDotenvCascadeWithProvenance', () => {
     expect(first.file).toBe('.testenv'); // global public token
   });
 
+  it('env beats defaultEnv', async () => {
+    const res = await readDotenvCascadeWithProvenance({
+      dotenvToken: '.testenv',
+      privateToken: 'secret',
+      paths: ['./test/full'],
+      env: 'test',
+      defaultEnv: 'dev',
+    });
+    expect(res.dotenv.ENV_SETTING).toBe('deep_test_setting');
+  });
+
+  it.each([
+    [
+      'excludePublic',
+      { APP_SECRET: 'deep_app_secret', ENV_SECRET: 'deep_test_secret' },
+    ],
+    [
+      'excludeEnv',
+      { APP_SETTING: 'deep_app_setting', APP_SECRET: 'deep_app_secret' },
+    ],
+  ])('%s leaves out the public env file', async (flag, expected) => {
+    const res = await readDotenvCascadeWithProvenance({
+      dotenvToken: '.testenv',
+      privateToken: 'secret',
+      paths: ['./test/full'],
+      env: 'test',
+      [flag]: true,
+    });
+    expect(res.dotenv).toEqual(expected);
+  });
+
   it('stacks file provenance across multiple paths (ascending precedence)', async () => {
     const base = path.posix.join(ROOT, 'multi');
     const p1 = path.posix.join(base, 'p1');

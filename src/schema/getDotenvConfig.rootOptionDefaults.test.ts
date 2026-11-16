@@ -25,6 +25,15 @@ describe('#83 rootOptionDefaults rejects dynamic and logger', () => {
     ).toEqual({ rootOptionDefaults: { log: true, paths: './' } });
   });
 
+  it.each([[true], [['API_URL', 'DB_HOST']]])(
+    'trace takes a boolean or a key list: %j',
+    (trace) => {
+      expect(parseResolveConfig({ rootOptionDefaults: { trace } })).toEqual({
+        rootOptionDefaults: { trace },
+      });
+    },
+  );
+
   it.each([
     ['getdotenv.config.json', DYN_JSON],
     [

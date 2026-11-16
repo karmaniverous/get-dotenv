@@ -191,6 +191,36 @@ describe('getDotenv', function () {
       expect(process.env.APP_SECRET).toBeUndefined();
     });
 
+    it('exclude public drops the public env file too', async function () {
+      const output = await getDotenv({
+        dotenvToken: '.testenv',
+        env: 'test',
+        excludePublic: true,
+        paths: ['./test/full'],
+        privateToken: 'secret',
+      });
+
+      expect(output).toEqual({
+        APP_SECRET: 'deep_app_secret',
+        ENV_SECRET: 'deep_test_secret',
+      });
+    });
+
+    it('exclude env drops the public and private env files', async function () {
+      const output = await getDotenv({
+        dotenvToken: '.testenv',
+        env: 'test',
+        excludeEnv: true,
+        paths: ['./test/full'],
+        privateToken: 'secret',
+      });
+
+      expect(output).toEqual({
+        APP_SETTING: 'deep_app_setting',
+        APP_SECRET: 'deep_app_secret',
+      });
+    });
+
     it('exclude public & private', async function () {
       const output = await getDotenv({
         dotenvToken: '.testenv',

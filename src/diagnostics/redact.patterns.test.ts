@@ -32,6 +32,13 @@ describe('redaction patterns (#46)', () => {
     },
   );
 
+  it.each(['V2TOKEN', 'MD5PASS', 'X9SECRET', 'TOKEN2', 'KEY9X'])(
+    'leaves %s alone (a digit next to the word makes it part of a longer word)',
+    (key) => {
+      expect(redactDisplay(key, 'value', on)).toBe('value');
+    },
+  );
+
   it('custom patterns add to the built-in ones', () => {
     const opts = { redact: true, redactPatterns: ['^MYCODE$', /^pin$/i] };
     expect(
