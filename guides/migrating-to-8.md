@@ -337,6 +337,8 @@ The runner's error boundary now covers plugin install and top-level help too ([#
 
 **What changed:** [#88]. A child gets the composed environment as its complete environment; `process.env` is not merged in again. On Windows, a dotenv key whose name differs from an ambient variable only in case now wins in the child.
 
+The same holds for `runCommand`/`runCommandResult` called with an `env` that has no string values, such as `env: {}` (independent review of #93, finding 7): the child gets that empty environment plus only the platform minimum (on Windows, the variables libuv copies from the parent: `HOMEDRIVE`, `HOMEPATH`, `LOGONSERVER`, `PATH`, `SYSTEMDRIVE`, `SYSTEMROOT`, `TEMP`, `USERDOMAIN`, `USERNAME`, `USERPROFILE`, `WINDIR`; on POSIX, nothing). In 7.x, and earlier on this branch, such an env meant "inherit all of `process.env`". Leave `env` out to inherit.
+
 ### Script names are the scripts table's own keys
 
 **What changed:** [#90]. A command named after an inherited object property (`toString`, `constructor`) runs as typed. In 7.x `getdotenv toString` crashed with `command.map is not a function`.

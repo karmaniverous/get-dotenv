@@ -54,8 +54,12 @@ export interface RunCommandResultOptions {
   cwd?: string | URL;
   /**
    * Environment variables for the child process. Undefined values are dropped.
-   * When given, this is the child's complete environment: `process.env` is not
-   * merged back in (build it with `buildSpawnEnv`).
+   * When given, even as `{}`, this is the child's complete environment:
+   * `process.env` is not merged back in (build it with `buildSpawnEnv`). The
+   * only additions are the platform minimum: on Windows, libuv copies
+   * `HOMEDRIVE`, `HOMEPATH`, `LOGONSERVER`, `PATH`, `SYSTEMDRIVE`,
+   * `SYSTEMROOT`, `TEMP`, `USERDOMAIN`, `USERNAME`, `USERPROFILE` and `WINDIR`
+   * from the parent when the env lacks them; POSIX adds nothing.
    */
   env?: NodeJS.ProcessEnv;
   /**
@@ -76,8 +80,12 @@ export interface RunCommandOptions {
   cwd?: string | URL;
   /**
    * Environment variables for the child process. Undefined values are dropped.
-   * When given, this is the child's complete environment: `process.env` is not
-   * merged back in (build it with `buildSpawnEnv`).
+   * When given, even as `{}`, this is the child's complete environment:
+   * `process.env` is not merged back in (build it with `buildSpawnEnv`). The
+   * only additions are the platform minimum: on Windows, libuv copies
+   * `HOMEDRIVE`, `HOMEPATH`, `LOGONSERVER`, `PATH`, `SYSTEMDRIVE`,
+   * `SYSTEMROOT`, `TEMP`, `USERDOMAIN`, `USERNAME`, `USERPROFILE` and `WINDIR`
+   * from the parent when the env lacks them; POSIX adds nothing.
    */
   env?: NodeJS.ProcessEnv;
   /**
@@ -154,14 +162,17 @@ const pickResult = (r: unknown): ExecOutcome => {
 
 // Convert NodeJS.ProcessEnv (string | undefined values) to the shape execa
 // expects (Readonly<Partial<Record<string, string>>>), dropping undefineds.
+// A given env stays given when nothing is left: `{}` is an empty env, not
+// "inherit process.env" (review 5916926264 #7).
 const sanitizeEnv = (
   env?: NodeJS.ProcessEnv,
 ): Readonly<Partial<Record<string, string>>> | undefined => {
   if (!env) return undefined;
-  const entries = Object.entries(env).filter(
-    (e): e is [string, string] => typeof e[1] === 'string',
+  return Object.fromEntries(
+    Object.entries(env).filter(
+      (e): e is [string, string] => typeof e[1] === 'string',
+    ),
   );
-  return entries.length > 0 ? Object.fromEntries(entries) : undefined;
 };
 
 /** The outcome of a command with nothing to run. */

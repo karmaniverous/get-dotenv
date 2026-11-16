@@ -55,7 +55,7 @@ Always use `buildSpawnEnv(process.env, ctx.dotenv)` to compose and normalize the
 
 - On Windows, dedupe keys case‑insensitively and ensure HOME/TMP/TEMP are coherent.
 - On POSIX, populate TMPDIR if a temp key is present.
-- `runCommand`/`runCommandResult` pass the built env as the child's complete environment (`process.env` is not merged back in), so on Windows a dotenv key wins even when an ambient variable differs from it only in case.
+- `runCommand`/`runCommandResult` pass the built env as the child's complete environment (`process.env` is not merged back in), so on Windows a dotenv key wins even when an ambient variable differs from it only in case. An explicit `env: {}` is an empty environment, not "inherit": the child gets only the platform minimum. On Windows that is what libuv copies from the parent when the env lacks it (`HOMEDRIVE`, `HOMEPATH`, `LOGONSERVER`, `PATH`, `SYSTEMDRIVE`, `SYSTEMROOT`, `TEMP`, `USERDOMAIN`, `USERNAME`, `USERPROFILE`, `WINDIR`); on POSIX it is nothing. Leave `env` out to inherit `process.env`.
 
 ```ts
 import { buildSpawnEnv } from '@karmaniverous/get-dotenv';

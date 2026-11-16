@@ -16,6 +16,51 @@ const printCase = [
   'const k=Object.keys(process.env).filter(k=>k.toLowerCase()==="gdv_case");console.log(JSON.stringify(k.map(x=>[x,process.env[x]])))',
 ];
 
+const printKeys = [
+  process.execPath,
+  '-e',
+  'console.log(JSON.stringify(Object.keys(process.env)))',
+];
+
+/**
+ * The variables libuv copies from the parent into a Windows child's
+ * environment block when the given env lacks them (`required_vars` in
+ * libuv's `src/win/process.c`). POSIX adds nothing.
+ */
+const WINDOWS_MINIMUM = [
+  'HOMEDRIVE',
+  'HOMEPATH',
+  'LOGONSERVER',
+  'PATH',
+  'SYSTEMDRIVE',
+  'SYSTEMROOT',
+  'TEMP',
+  'USERDOMAIN',
+  'USERNAME',
+  'USERPROFILE',
+  'WINDIR',
+];
+
+describe('an explicit env with no values (review 5916926264 #7)', () => {
+  it.each([
+    ['{}', {}],
+    ['all undefined', { GDV_GONE: undefined }],
+  ])(
+    'env %s gives the child only the platform minimum',
+    async (_label, env: NodeJS.ProcessEnv) => {
+      const keys = await withEnv({ GDV_AMBIENT: 'leak' }, async () => {
+        const { stdout } = await runCommandResult(printKeys, false, { env });
+        return JSON.parse(stdout) as string[];
+      });
+      const minimum = process.platform === 'win32' ? WINDOWS_MINIMUM : [];
+      expect(keys).not.toContain('GDV_AMBIENT');
+      expect(keys.filter((k) => !minimum.includes(k.toUpperCase()))).toEqual(
+        [],
+      );
+    },
+  );
+});
+
 describe('child env is not re-extended with process.env (#88)', () => {
   // Windows-only by nature (#88): on POSIX, keys are case-sensitive and
   // GDV_CASE and Gdv_Case are two different variables.
