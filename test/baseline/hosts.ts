@@ -28,7 +28,7 @@
 import { Command } from '@commander-js/extra-typings';
 
 import { createCli } from '@/src/cli';
-import { definePlugin } from '@/src/cliHost';
+import { definePlugin, type GetDotenvCli } from '@/src/cliHost';
 import { awsPlugin, batchPlugin, cmdPlugin } from '@/src/plugins';
 
 /** A `createCli()` runner. */
@@ -152,26 +152,39 @@ export const createGetdotenvHost = (): Runner =>
   createCli({ importMetaUrl: import.meta.url, alias: 'getdotenv' });
 
 /**
+ * Compose the `vc` fixture tree onto a host.
+ *
+ * @param program - The host root.
+ * @returns The host, with the fixture plugins registered.
+ */
+export const composeVcFixture = (program: GetDotenvCli): GetDotenvCli =>
+  program
+    .use(cmdPlugin({ asDefault: true, optionAlias: '-c, --cmd <command...>' }))
+    .use(batchPlugin())
+    .use(
+      awsPlugin()
+        .use(cmdPlugin({ optionAlias: '-c, --cmd <command...>' }))
+        .use(secretsFixturePlugin()),
+    )
+    .use(smozFixturePlugin());
+
+/**
  * The `vc` fixture host.
  *
+ * @param onProgram - Receives the host root before composition (tests read
+ *   its qualified-name table).
  * @returns Its runner.
  */
-export const createVcHost = (): Runner =>
+export const createVcHost = (
+  onProgram?: (program: GetDotenvCli) => void,
+): Runner =>
   createCli({
     importMetaUrl: import.meta.url,
     alias: 'vc',
-    compose: (program) =>
-      program
-        .use(
-          cmdPlugin({ asDefault: true, optionAlias: '-c, --cmd <command...>' }),
-        )
-        .use(batchPlugin())
-        .use(
-          awsPlugin()
-            .use(cmdPlugin({ optionAlias: '-c, --cmd <command...>' }))
-            .use(secretsFixturePlugin()),
-        )
-        .use(smozFixturePlugin()),
+    compose: (program) => {
+      onProgram?.(program);
+      return composeVcFixture(program);
+    },
   });
 
 /** Host factories by name. */
