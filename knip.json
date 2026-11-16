@@ -10,6 +10,5 @@
   ],
   "project": ["src/**/*.ts", "build/**/*.ts"],
   "ignore": ["**/*.infer.ts"],
-  "ignoreBinaries": ["Write-Output"],
   "rules": { "exports": "off", "types": "off", "duplicates": "off" }
 }
