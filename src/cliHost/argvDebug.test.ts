@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Review 5916926264 #5: the `[getdotenv:argv]` debug line (spec 3.10.5)
  * masks secrets when redaction is on: each `-v`/`--vars` value whole, and
  * the value of any `KEY=VALUE` token whose key matches the redaction
