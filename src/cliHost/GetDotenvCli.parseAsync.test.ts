@@ -213,6 +213,16 @@ describe('stack-trace rule: the argv it reads', () => {
     expect(runArgvRequestsDebug(ok.host)).toBe(true);
     await ok.host.parseAsync(['greet'], { from: 'user' });
     expect(runArgvRequestsDebug(ok.host)).toBe(false);
+
+    // After normalization it reads the normalized argv: a qualified option
+    // written as --debug counts there, though the typed argv has neither
+    // --debug nor --tool-debug.
+    const sub = directHost();
+    sub.host.commands[0]?.option('--debug', 'greet debug');
+    await sub.host.parseAsync(['greet', '--tool-greet-debug'], {
+      from: 'user',
+    });
+    expect(runArgvRequestsDebug(sub.host)).toBe(true);
     expect(runArgvRequestsDebug(new GetDotenvCli('fresh'))).toBe(false);
   });
 });
