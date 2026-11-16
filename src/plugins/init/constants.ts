@@ -1,7 +1,6 @@
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
 
-import { packageDirectory } from 'package-directory';
+import { resolvePackageRoot } from '@/src/util/packageRoot';
 
 /**
  * Resolve the absolute path to the shipped templates directory.
@@ -12,6 +11,7 @@ import { packageDirectory } from 'package-directory';
  * @remarks
  * Resolution strategy:
  * - Determine the nearest package root relative to the current module (`import.meta.url`).
+ *   This is get-dotenv's own root, never the host CLI's root (Decision 23).
  * - Return `<packageRoot>/templates`.
  *
  * This works for:
@@ -22,11 +22,10 @@ import { packageDirectory } from 'package-directory';
 export async function resolveTemplatesRoot(
   importMetaUrl: string,
 ): Promise<string> {
-  const fromUrl = fileURLToPath(importMetaUrl);
-  const pkgRoot = await packageDirectory({ cwd: fromUrl });
+  const pkgRoot = await resolvePackageRoot(importMetaUrl);
   if (!pkgRoot) {
     throw new Error(
-      `Unable to resolve get-dotenv package root from ${fromUrl}.`,
+      `Unable to resolve get-dotenv package root from ${importMetaUrl}.`,
     );
   }
   return path.join(pkgRoot, 'templates');

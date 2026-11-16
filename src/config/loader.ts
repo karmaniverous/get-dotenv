@@ -7,7 +7,7 @@
 import fs from 'fs-extra';
 import { packageDirectory } from 'package-directory';
 import path, { extname, join } from 'path';
-import { fileURLToPath, pathToFileURL } from 'url';
+import { pathToFileURL } from 'url';
 import YAML from 'yaml';
 
 import {
@@ -16,6 +16,7 @@ import {
   getDotenvConfigSchemaResolved,
 } from '@/src/schema';
 import { loadModuleDefault } from '@/src/util';
+import { resolvePackageRoot } from '@/src/util/packageRoot';
 
 // Discovery candidates (first match wins per scope/privacy).
 // Order preserves historical JSON/YAML precedence; JS/TS added afterwards.
@@ -82,8 +83,7 @@ export const discoverConfigFiles = async (
 
   // Packaged root via importMetaUrl (optional)
   if (importMetaUrl) {
-    const fromUrl = fileURLToPath(importMetaUrl);
-    const packagedRoot = await packageDirectory({ cwd: fromUrl });
+    const packagedRoot = await resolvePackageRoot(importMetaUrl);
     if (packagedRoot) {
       for (const name of PUBLIC_FILENAMES) {
         const p = join(packagedRoot, name);

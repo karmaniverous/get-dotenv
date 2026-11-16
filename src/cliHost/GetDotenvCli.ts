@@ -18,6 +18,7 @@ import {
 
 import type { GetDotenvOptions } from '@/src/core';
 import { baseRootOptionDefaults } from '@/src/defaults';
+import { readHostPackage } from '@/src/util/packageRoot';
 
 import { attachRootOptions as attachRootOptionsBuilder } from './attachRootOptions';
 import { buildHelpInformation } from './buildHelpInformation';
@@ -43,7 +44,6 @@ import { resolveAndComputeContext } from './resolveAndComputeContext';
 import { runAfterResolveTree } from './runAfterResolve';
 import { tagAppOptionsAround } from './tagAppOptionsHelper';
 import type { BrandOptions, GetDotenvCliCtx, RootOptionsShape } from './types';
-import { readPkgVersion } from './version';
 
 const HOST_META_URL = import.meta.url;
 
@@ -299,7 +299,7 @@ export class GetDotenvCli<
     const { name, description, version, importMetaUrl, helpHeader } = args;
     if (typeof name === 'string' && name.length > 0) this.name(name);
     if (typeof description === 'string') this.description(description);
-    const v = version ?? (await readPkgVersion(importMetaUrl));
+    const v = version ?? (await readHostPackage(importMetaUrl))?.version;
     if (v) this.version(v);
     // Help header:
     // - If caller provides helpHeader, use it.
