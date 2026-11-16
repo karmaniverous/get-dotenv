@@ -1,5 +1,7 @@
 import type { ProcessEnv } from '@/src/core';
 
+import { parseReference } from './dotenvReference';
+
 /**
  * Dotenv expansion utilities.
  *
@@ -27,59 +29,6 @@ import type { ProcessEnv } from '@/src/core';
  *   So `P=${P:/usr/bin}:/x` expands to `/usr/bin:/x` when nothing earlier
  *   sets `P`.
  */
-
-/** A reference parsed at a `$`. */
-interface Reference {
-  /** The variable name. */
-  name: string;
-  /** The raw default, when one is given. */
-  fallback: string | undefined;
-  /** Index just past the reference. */
-  end: number;
-}
-
-const UNBRACED = /\$(\w+)(?::(\S*))?/y;
-const BRACED_HEAD = /\$\{(\w+)(:?)/y;
-
-/**
- * Find the `}` that closes a braced default starting at `from`, skipping
- * escaped dollars and nested `${…}` references.
- */
-const closingBrace = (text: string, from: number): number => {
-  let depth = 0;
-  for (let i = from; i < text.length; i++) {
-    if (text.startsWith('\\$', i)) i++;
-    else if (text.startsWith('${', i)) {
-      depth++;
-      i++;
-    } else if (text[i] === '}') {
-      if (depth === 0) return i;
-      depth--;
-    }
-  }
-  return -1;
-};
-
-/** Parse the reference that starts at `text[at]` (a `$`), if any. */
-const parseReference = (text: string, at: number): Reference | undefined => {
-  UNBRACED.lastIndex = at;
-  const plain = UNBRACED.exec(text);
-  if (plain?.[1])
-    return { name: plain[1], fallback: plain[2], end: UNBRACED.lastIndex };
-
-  BRACED_HEAD.lastIndex = at;
-  const head = BRACED_HEAD.exec(text);
-  if (!head?.[1]) return undefined;
-  const start = BRACED_HEAD.lastIndex;
-  if (!head[2])
-    return text[start] === '}'
-      ? { name: head[1], fallback: undefined, end: start + 1 }
-      : undefined;
-  const close = closingBrace(text, start);
-  return close === -1
-    ? undefined
-    : { name: head[1], fallback: text.slice(start, close), end: close + 1 };
-};
 
 /**
  * Expand `text` against `ref`. Referenced values are substituted verbatim;
