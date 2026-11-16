@@ -450,6 +450,11 @@ export const departures: Departure[] = [
   },
   // S12: normalization and parseAsync
   {
+    case: '#84 aws child help resolves session',
+    issueOrDecision: '#84',
+    note: 'The aws help guard reads the argv being parsed (the root rawArgs), so aws session show -h with an explicit argv resolves no session: no aws export-credentials calls are recorded.',
+  },
+  {
     case: '#81 help runs dynamic',
     issueOrDecision: '#81',
     note: 'Top-level help resolves its context without config dynamic: the DYN-EVAL side effect no longer runs, so stderr is empty.',
