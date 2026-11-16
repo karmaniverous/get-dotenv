@@ -56,6 +56,13 @@ describe('readHostPackage', () => {
     expect(await readHostPackage(url)).toEqual({ root });
   });
 
+  it('is undefined for a module with no package.json above it', async () => {
+    // The filesystem root has no package.json above it on any runner.
+    const url = pathToFileURL(path.parse(tmp()).root).href;
+    expect(await resolvePackageRoot(url)).toBeUndefined();
+    expect(await readHostPackage(url)).toBeUndefined();
+  });
+
   it('is undefined without a URL or with an unreadable package.json', async () => {
     expect(await readHostPackage(undefined)).toBeUndefined();
     expect(await readHostPackage('')).toBeUndefined();

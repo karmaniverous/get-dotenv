@@ -11,7 +11,11 @@ import { runFixtureCli } from '@/test/support/fixtureCli';
 import { definePlugin } from '../definePlugin';
 import { GetDotenvCli } from '../GetDotenvCli';
 import { qualifiableLong, qualifiedName } from './names';
-import { isTerminatorOption } from './register';
+import {
+  createTerminator,
+  isTerminatorOption,
+  registerTerminator,
+} from './register';
 import { buildQualifiedNameTable, qualifiedNameTableOf } from './table';
 import { terminatorName } from './terminator';
 
@@ -46,6 +50,25 @@ describe('qualified names (4.2)', () => {
     expect(qualifiableLong(new Option('-h, --help'))).toBeUndefined();
     expect(qualifiableLong(new Option('-x'))).toBeUndefined();
     expect(qualifiableLong(new Option('-V, --version'))).toBe('--version');
+  });
+
+  it('a built table has no entry for a short-only option', () => {
+    const cli = new Command('vc');
+    cli.option('-x').option('--long-one');
+    const table = buildQualifiedNameTable(cli);
+    const names = [...table.entries.values()]
+      .filter((e) => e.kind === 'option')
+      .map((e) => e.name);
+    expect(names).toEqual(['--vc-long-one']);
+  });
+
+  it('two terminators on one command both stay out of opts()', () => {
+    const cmd = new Command('vc');
+    cmd.option('--keep');
+    registerTerminator(cmd, createTerminator('--vc-aaaaa'));
+    registerTerminator(cmd, createTerminator('--vc-bbbbb'));
+    cmd.parse(['--keep', '--vc-aaaaa', '--vc-bbbbb'], { from: 'user' });
+    expect(cmd.opts()).toEqual({ keep: true });
   });
 });
 
