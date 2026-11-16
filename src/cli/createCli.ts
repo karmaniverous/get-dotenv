@@ -24,6 +24,21 @@ import {
 import { readHostPackage } from '@/src/util/packageRoot';
 
 /**
+ * Compose the shipped plugins (the `getdotenv` CLI's tree): `cmd` (the
+ * default subcommand, with its `-c, --cmd` alias on the root), `batch`,
+ * `aws` with its `whoami` child, and `init`.
+ *
+ * @param program - The host root.
+ * @returns The host.
+ */
+export const composeShippedPlugins = (program: GetDotenvCli): GetDotenvCli =>
+  program
+    .use(cmdPlugin({ asDefault: true, optionAlias: '-c, --cmd <command...>' }))
+    .use(batchPlugin())
+    .use(awsPlugin().use(awsWhoamiPlugin()))
+    .use(initPlugin());
+
+/**
  * Top-level error boundary for the CLI runner.
  *
  * Presents errors as clean one-line messages by default.
@@ -238,17 +253,8 @@ export function createCli(
   }
 
   // Compose wiring: user-provided composer wins; otherwise apply shipped defaults.
-  if (typeof opts.compose === 'function') {
-    opts.compose(program);
-  } else {
-    program
-      .use(
-        cmdPlugin({ asDefault: true, optionAlias: '-c, --cmd <command...>' }),
-      )
-      .use(batchPlugin())
-      .use(awsPlugin().use(awsWhoamiPlugin()))
-      .use(initPlugin());
-  }
+  if (typeof opts.compose === 'function') opts.compose(program);
+  else composeShippedPlugins(program);
 
   // Host identity (Decision 23): name, description and version from the
   // host package unless overridden. The constructor set the host root, so
