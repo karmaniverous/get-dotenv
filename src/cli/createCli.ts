@@ -253,8 +253,9 @@ export function createCli(
 
   // Host identity (Decision 23): name, description and version from the
   // host package unless overridden. The constructor set the host root, so
-  // brand() gets no URL (it would re-read the same package.json). Runs after
-  // install() on every run; brand() registers -V, --version only once (#87).
+  // brand() gets no URL (it would re-read the same package.json). Runs on
+  // every run, before parseAsync() and so before install(); brand()
+  // registers -V, --version only once (#87).
   const brandHost = async () => {
     const pkg = await readHostPackage(importMetaUrl);
     const version = opts.version ?? pkg?.version;
