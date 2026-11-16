@@ -78,6 +78,8 @@ await createCli({ alias: 'toolbox', importMetaUrl: import.meta.url })();
 
 `importMetaUrl` is required. Its package (the nearest `package.json` above it) is your CLI's host package: it supplies the packaged config layer (`getdotenv.config.*` next to that `package.json`), the `--version` and the help description. `version` and `description` options override the last two.
 
+Every long option also has a qualified form, `--<alias>-<command path>-<option>`, that works anywhere on the command line, so you can add options to the end of an npm script: with `"test": "toolbox cmd vitest run"`, `npm run test -- --toolbox-env dev` runs `toolbox --env=dev cmd vitest run`, and the forwarded command never sees the option. See [Qualified options](./guides/qualified-options.md).
+
 More first steps and tips at [Getting Started](./guides/getting-started.md)
 
 ## Configuration & overlays

@@ -54,6 +54,10 @@ const run = createCli({
 await run(); // or await run(process.argv.slice(2));
 ```
 
+The runner takes user arguments only (`run(['-e', 'dev', 'cmd', 'npm', 'test'])`). Pass a full process argv with Commander's `from`: `run(process.argv, { from: 'node' })`. Called without arguments it reads `process.argv` and detects `node -e`/`-p` and Electron as Commander does.
+
+A host built directly from `GetDotenvCli` parses with `await program.parseAsync(argv, { from })`, which installs plugins, normalizes [qualified options](../qualified-options.md) and renders top-level help. Sync `program.parse()` throws: `parse() is not supported on a get-dotenv host; use parseAsync().` During a parse, Commander sets `rawArgs` only on the root, to the normalized user arguments (no leading `node`/script entries); subcommands keep `[]`.
+
 ### Grouping plugins under a namespace (groupPlugins)
 
 If you want to expose shipped (or third-party) plugins under a non-root “group” command without forking or “calling” another plugin, use the namespace-only parent helper `groupPlugins`. This is useful for patterns like:

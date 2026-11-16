@@ -6,7 +6,7 @@ title: Qualified Names
 
 Every long option in a get-dotenv host has a second, _qualified_ name that carries the CLI alias and the full command path. Plugins don't declare anything to get one. This page is the reference for how the names are built and which rules a plugin's options must follow.
 
-> Accepting qualified names on the command line (argv normalization) arrives with the next step of the 8.0 work. Today the host builds the table of names, checks it and registers the terminators; command-line parsing is unchanged.
+Users can give any of these names anywhere on the command line; `parseAsync()` normalizes argv so each reaches its command. How that works for users (values, `--debug` output, errors) is in the [Qualified options](../qualified-options.md) guide, which also covers `normalizeArgv` for custom hosts.
 
 ## The naming rule
 
