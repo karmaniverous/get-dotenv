@@ -59,6 +59,16 @@ const segmentEndEol = (seg: DotenvSegment): '' | '\n' | '\r\n' => {
   return '';
 };
 
+/** Give a segment whose last line has no EOL the file EOL; other segments are returned as is. */
+const withEndEol = (
+  seg: DotenvSegment,
+  fileEol: '\n' | '\r\n',
+): DotenvSegment => {
+  if (segmentEndEol(seg) !== '') return seg;
+  const raw = seg.raw + fileEol;
+  return seg.kind === 'raw' ? { ...seg, raw } : { ...seg, raw, eol: fileEol };
+};
+
 const rebuildAssignmentRaw = (args: {
   seg: DotenvAssignmentSegment;
   valueLf: string;
@@ -247,13 +257,14 @@ export function applyDotenvEdits(
 
     // Use the document EOL when inserting new lines; final newline presence is handled by render().
     const endEol: '' | '\n' | '\r\n' = doc.fileEol;
+    const appended: DotenvSegment[] = [];
     for (const key of Object.keys(updates)) {
       if (existingKeys.has(key)) continue;
       const v = updates[key];
       if (v === undefined) continue;
       if (v === null) continue;
       const valueLf = coerceToString(v);
-      out.push(
+      appended.push(
         buildNewAssignmentAtEnd({
           key,
           valueLf,
@@ -263,6 +274,13 @@ export function applyDotenvEdits(
         }),
       );
     }
+    // A last line with no EOL (no final newline) gets one, so the first new
+    // line starts on its own line (#66). render() still drops the final newline.
+    const last = out.at(-1);
+    if (appended.length > 0 && last && last.raw !== '') {
+      out[out.length - 1] = withEndEol(last, doc.fileEol);
+    }
+    out.push(...appended);
   }
 
   return { ...doc, segments: out };

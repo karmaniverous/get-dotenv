@@ -428,4 +428,9 @@ export const departures: Departure[] = [
     issueOrDecision: '#55',
     note: 'buildDotenvTargetFilename and resolveDotenvTarget are exported from the package entry (both true).',
   },
+  {
+    case: '#66 no final newline',
+    issueOrDecision: '#66',
+    note: "A key appended to a file with no final newline goes on its own line: 'A=1' + B gives 'A=1\\nB=2' (still no final newline), not 'A=1B=2'.",
+  },
 ];
