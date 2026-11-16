@@ -126,7 +126,7 @@ const buildVc = () =>
     });
     const out = vi.spyOn(process.stdout, 'write').mockReturnValue(true);
     try {
-      await run(['node', 'vc', 'smoz', 'openapi']);
+      await run(['smoz', 'openapi']);
     } finally {
       out.mockRestore();
     }

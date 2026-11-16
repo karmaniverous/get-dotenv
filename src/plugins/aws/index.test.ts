@@ -42,7 +42,7 @@ describe('plugins/aws subcommand', () => {
       alias: 'test',
       compose: (program) => program.use(awsPlugin()),
     });
-    await run(['node', 'test', 'aws', '--region', 'us-east-1']);
+    await run(['aws', '--region', 'us-east-1']);
     // No forwarding
     expect(runCommandMock).not.toHaveBeenCalled();
     // Region set
@@ -58,7 +58,7 @@ describe('plugins/aws subcommand', () => {
       alias: 'test',
       compose: (program) => program.use(awsPlugin()),
     });
-    await run(['node', 'test', 'aws', '--', 'sts', 'get-caller-identity']);
+    await run(['aws', '--', 'sts', 'get-caller-identity']);
 
     expect(runCommandMock).toHaveBeenCalledTimes(1);
     const [cmd, _shell, opts] = runCommandMock.mock.calls[0] as [

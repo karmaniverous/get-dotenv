@@ -28,7 +28,7 @@ describe('plugins/cmd default subcommand (asDefault)', () => {
           cmdPlugin({ asDefault: true, optionAlias: '--cmd <command...>' }),
         ),
     });
-    await run(['node', 'test', 'echo', 'hello']);
+    await run(['echo', 'hello']);
 
     expect(execMock).toHaveBeenCalledTimes(1);
     const [command] = execMock.mock.calls[0] as [
@@ -50,7 +50,7 @@ describe('plugins/cmd default subcommand (asDefault)', () => {
 
     // Without asDefault, positional args hit the root no-op action;
     // the cmd subcommand never fires.
-    await run(['node', 'test', 'echo', 'hello']);
+    await run(['echo', 'hello']);
     expect(execMock).not.toHaveBeenCalled();
   });
 });
@@ -70,7 +70,7 @@ describe('plugins/cmd option alias', () => {
           cmdPlugin({ asDefault: true, optionAlias: '--cmd <command...>' }),
         ),
     });
-    await run(['node', 'test', '--cmd', 'echo', 'OK']);
+    await run(['--cmd', 'echo', 'OK']);
 
     expect(execMock).toHaveBeenCalledTimes(1);
     const [command, opts] = execMock.mock.calls[0] as [
@@ -91,7 +91,7 @@ describe('plugins/cmd option alias', () => {
           cmdPlugin({ asDefault: true, optionAlias: '--cmd <command...>' }),
         ),
     });
-    await run(['node', 'test', '--cmd', 'echo', '$FOO']);
+    await run(['--cmd', 'echo', '$FOO']);
 
     expect(execMock).toHaveBeenCalledTimes(1);
     const [command] = execMock.mock.calls[0] as [
@@ -123,7 +123,7 @@ describe('plugins/cmd option alias', () => {
         ),
     });
 
-    await run(['node', 'test', '-c', 'echo', 'OK']);
+    await run(['-c', 'echo', 'OK']);
 
     expect(execMock).toHaveBeenCalledTimes(1);
     const [, opts] = execMock.mock.calls[0] as [
@@ -152,8 +152,6 @@ describe('plugins/cmd option alias', () => {
     });
 
     await run([
-      'node',
-      'test',
       '--cmd',
       'echo',
       'OK',

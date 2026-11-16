@@ -8,6 +8,7 @@ import {
 import { attachRootOptions as attachRootOptionsBuilder } from '@/src/cliHost/attachRootOptions';
 import { hostMetaUrlOf } from '@/src/cliHost/hostRoot';
 import { installRootHooks } from '@/src/cliHost/rootHooks';
+import { userArgsOf } from '@/src/cliHost/userArgs';
 import {
   applyRootVisibility,
   mergeRootVisibility,
@@ -126,13 +127,23 @@ export type CreateCliOptions = {
  * Applies defaults, installs root hooks, and composes plugins.
  * Returns a runner function that accepts an argv array.
  *
+ * The runner's argv is the user arguments only, as in
+ * `run(['-e', 'dev', 'cmd', 'npm', 'test'])`, unless its second parameter
+ * gives Commander's `from`: `run(process.argv, { from: 'node' })` drops the
+ * first two entries. Called without an argv it reads `process.argv` and
+ * detects the convention as Commander does (`node -e`/`-p`, Electron).
+ *
  * @param opts - Host options; `importMetaUrl` is required.
- * @returns The runner. It may be called more than once.
+ * @returns The runner. It takes an optional argv and optional parse options
+ *   (`from`), and may be called more than once.
  * @throws When `importMetaUrl` is missing or empty.
  */
 export function createCli(
   opts: CreateCliOptions,
-): (argv?: string[]) => Promise<void> {
+): (
+  argv?: string[],
+  options?: { from?: 'node' | 'electron' | 'user' },
+) => Promise<void> {
   const importMetaUrl = (opts as Partial<CreateCliOptions> | undefined)
     ?.importMetaUrl;
   if (typeof importMetaUrl !== 'string' || importMetaUrl.length === 0) {
@@ -259,18 +270,15 @@ export function createCli(
     });
   };
 
-  // Runner function: accepts full argv or args-only; defaults to process.argv.
-  return async function run(argvInput?: string[]) {
-    const argvAll = Array.isArray(argvInput) ? argvInput : process.argv;
-    // Derive args-only from a possible full process argv
-    const deriveArgsOnly = (v: string[]) => {
-      if (v.length >= 2) {
-        // Common Node/Electron convention: [node, script, ...args]
-        return v.slice(2);
-      }
-      return v.slice();
-    };
-    const argv = deriveArgsOnly(argvAll);
+  // Runner: an explicit argv is user arguments only unless `from` says
+  // otherwise (#53); no argv reads process.argv as Commander does.
+  return async function run(
+    argvInput?: string[],
+    options?: { from?: 'node' | 'electron' | 'user' },
+  ) {
+    const argv = userArgsOf(argvInput, {
+      from: options?.from ?? (argvInput === undefined ? undefined : 'user'),
+    });
     // Ensure plugin commands/options are installed before inspecting argv for
     // help-time routing (subcommand vs root help).
     dbg('argv', argv);

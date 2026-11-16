@@ -173,11 +173,11 @@ describe('cliHost .use(plugin, { ns }) overrides (#44)', () => {
       });
 
     it('runs the invoked sibling override only, with its own config', async () => {
-      await siblings()(['node', 'test', 'deploy-api', 'go']);
+      await siblings()(['deploy-api', 'go']);
       expect(events).toEqual(['afterResolve:api', 'go:api:api']);
 
       events.length = 0;
-      await siblings()(['node', 'test', 'deploy-web', 'go']);
+      await siblings()(['deploy-web', 'go']);
       expect(events).toEqual(['afterResolve:web', 'go:web:web']);
     });
 
@@ -193,7 +193,7 @@ describe('cliHost .use(plugin, { ns }) overrides (#44)', () => {
           ),
       });
 
-      await run(['node', 'test', 'parent', 'who2', 'go']);
+      await run(['parent', 'who2', 'go']);
 
       expect(events).toEqual([
         'afterResolve:parent',

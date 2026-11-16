@@ -25,8 +25,6 @@ describe('plugins/batch', () => {
     });
 
     await run([
-      'node',
-      'test',
       'batch',
       '--list',
       '--globs',
@@ -59,8 +57,6 @@ describe('plugins/batch', () => {
     });
 
     await run([
-      'node',
-      'test',
       'batch',
       '--command',
       'build',
@@ -85,7 +81,7 @@ describe('plugins/batch', () => {
       compose: (p) => p.use(batchPlugin()),
     });
 
-    await run(['node', 'test', 'batch', '--command', 'echo ok', '--pkg-cwd']);
+    await run(['batch', '--command', 'echo ok', '--pkg-cwd']);
 
     expect(execMock).toHaveBeenCalledTimes(1);
     const firstCall = execMock.mock.calls[0] as
@@ -102,8 +98,6 @@ describe('plugins/batch', () => {
     });
 
     await run([
-      'node',
-      'test',
       'batch',
       '--command',
       'echo ok',
@@ -124,7 +118,7 @@ describe('plugins/batch', () => {
       compose: (p) => p.use(batchPlugin()),
     });
 
-    await run(['node', 'test', 'batch', 'echo', 'OK']);
+    await run(['batch', 'echo', 'OK']);
 
     expect(execMock).toHaveBeenCalledTimes(1);
     const firstCall = execMock.mock.calls[0] as
@@ -141,7 +135,7 @@ describe('plugins/batch', () => {
       compose: (p) => p.use(batchPlugin()),
     });
 
-    await run(['node', 'test', 'batch', '--command', 'echo ok', '--parallel']);
+    await run(['batch', '--command', 'echo ok', '--parallel']);
 
     expect(execMock).toHaveBeenCalledTimes(1);
     const firstCall = execMock.mock.calls[0] as
@@ -158,8 +152,6 @@ describe('plugins/batch', () => {
     });
 
     await run([
-      'node',
-      'test',
       'batch',
       '--command',
       'echo ok',
@@ -183,7 +175,7 @@ describe('plugins/batch', () => {
       compose: (p) => p.use(batchPlugin()),
     });
 
-    await run(['node', 'test', 'batch', '--command', 'echo ok']);
+    await run(['batch', '--command', 'echo ok']);
 
     expect(execMock).toHaveBeenCalledTimes(1);
     const firstCall = execMock.mock.calls[0] as

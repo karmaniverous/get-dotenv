@@ -354,7 +354,10 @@ const runCliInProcess = async (c: CliCase): Promise<Capture> => {
     const errors: string[] = [];
     for (let i = 0; i < (c.runs ?? 1) && !stopped(); i++) {
       try {
-        await runner([...argv]);
+        // The full form is process.argv-shaped: { from: 'node' } (#53).
+        await (c.argvForm === 'args'
+          ? runner([...argv])
+          : runner([...argv], { from: 'node' }));
       } catch (e) {
         if (e instanceof BaselineExit) throw e;
         if (!stopped())

@@ -448,4 +448,10 @@ export const departures: Departure[] = [
     issueOrDecision: '#72',
     note: `-o writes each value so dotenv reads it back exactly: H="x #y"; W=" lead"; M in single quotes (they hold the line break and the "); B=C:\\new\\dir bare (already exact).`,
   },
+  // S12: normalization and parseAsync
+  {
+    case: '#53 args-only argv',
+    issueOrDecision: '#53',
+    note: "An explicit runner argv is user arguments only: run(['-v', 'APP=hello', 'cmd', ...]) keeps -v APP=hello, so the child prints hello instead of losing the first two entries.",
+  },
 ];

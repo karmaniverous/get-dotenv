@@ -20,8 +20,6 @@ describe('plugins/init', () => {
     });
 
     await run([
-      'node',
-      'test',
       'init',
       dir,
       '--config-format',
@@ -111,8 +109,6 @@ describe('plugins/init', () => {
     });
 
     await run([
-      'node',
-      'test',
       'init',
       dir,
       '--config-format',
@@ -127,7 +123,7 @@ describe('plugins/init', () => {
       importMetaUrl: import.meta.url,
       alias: 'test',
       compose: (p) => p.use(initPlugin()),
-    })(['node', 'test', 'init', dir, '--config-format', 'json', '--yes']);
+    })(['init', dir, '--config-format', 'json', '--yes']);
 
     const after = await fs.readFile(cfg, 'utf-8');
     expect(after).toBe('CHANGED');
@@ -144,8 +140,6 @@ describe('plugins/init', () => {
     });
 
     await run([
-      'node',
-      'test',
       'init',
       dir,
       '--config-format',
@@ -197,8 +191,6 @@ describe('plugins/init', () => {
     });
 
     await run([
-      'node',
-      'test',
       'init',
       dir,
       '--config-format',
@@ -228,7 +220,7 @@ describe('plugins/init', () => {
         compose: (p) => p.use(initPlugin()),
       });
 
-      await run(['node', 'test', 'init', dir, '--config-format', 'json']);
+      await run(['init', dir, '--config-format', 'json']);
 
       const after = await fs.readFile(cfg, 'utf-8');
       expect(after).toBe('OLD'); // skipped

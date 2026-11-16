@@ -64,7 +64,7 @@ describe('preAction propagates resolved env for subcommand flows', () => {
     });
 
     // Invoke without explicit -e flag — env should resolve from DEFAULT_ENV=dev
-    await run(['node', 'test', 'capture']);
+    await run(['capture']);
 
     // The critical assertion: bag.env must be populated from the resolved context,
     // not undefined due to preAction overwriting the bag without propagation.

@@ -61,6 +61,6 @@ describe('#77 createCli rootOptionDefaults rank below config and the parent bag'
       .filter((o) => o.defaultValue !== undefined)
       .map((o) => o.flags);
     expect(withDefault).toEqual([]);
-    expect(host.parse(['node', 'bare'], { from: 'node' }).opts()).toEqual({});
+    expect(host.parse([], { from: 'node' }).opts()).toEqual({});
   });
 });

@@ -48,8 +48,8 @@ describe('#87 brand() registers -V, --version once', () => {
       },
     });
     await inFixture({}, async () => {
-      await run(['node', 'gdv5', 'noop']);
-      await run(['node', 'gdv5', 'noop']);
+      await run(['noop']);
+      await run(['noop']);
     });
     expect(ran).toEqual(['noop', 'noop']);
   });
@@ -117,8 +117,8 @@ describe('#87 brand() registers -V, --version once', () => {
     });
     await inFixture({}, async () => {
       await captureOutput(async () => {
-        await run(['node', 'gdv6']);
-        await run(['node', 'gdv6']);
+        await run([]);
+        await run([]);
       });
     });
     expect(program?.options.filter((o) => o.long === '--version')).toHaveLength(

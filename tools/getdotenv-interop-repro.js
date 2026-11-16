@@ -93,8 +93,8 @@ await withCleanEnv(async () => {
           compose: (program) => program.use(reproPlugin),
         });
 
-        // Full argv; createCli runner slices argv[2..]
-        await run(['node', 'gdrepro', 'repro']);
+        // User arguments only (the runner's default for an explicit argv)
+        await run(['repro']);
       },
     );
 
@@ -107,7 +107,7 @@ await withCleanEnv(async () => {
           compose: (program) => program.use(awsPlugin()),
         });
 
-        await run(['node', 'gdrepro', 'aws']);
+        await run(['aws']);
       },
     );
 

@@ -45,7 +45,7 @@ const run = async (
       p.use(cmdPlugin({ asDefault: true, ...cmd }));
       return extra.compose ? extra.compose(p) : p;
     },
-  })(['node', 'test', ...args]);
+  })([...args]);
 };
 
 describe('the alias runs the cmd action (#49, #70)', () => {

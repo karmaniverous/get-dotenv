@@ -113,11 +113,7 @@ describe('#52 createCli host identity', () => {
   it("--version prints the host package's version", async () => {
     const out = await inFixture({}, async () =>
       withStdout(() =>
-        createCli({ importMetaUrl: hostUrl, alias: 'host' })([
-          'node',
-          'host',
-          '--version',
-        ]),
+        createCli({ importMetaUrl: hostUrl, alias: 'host' })(['--version']),
       ),
     );
     expect(out.trim()).toBe('9.9.9');
@@ -184,11 +180,7 @@ describe('#52 createCli host identity', () => {
     const out = await inFixture({}, () =>
       withEnv({ GETDOTENV_STDOUT: 'pipe' }, () =>
         withStdout(() =>
-          createCli({ importMetaUrl: hostUrl, alias: 'host' })([
-            'node',
-            'host',
-            '-h',
-          ]),
+          createCli({ importMetaUrl: hostUrl, alias: 'host' })(['-h']),
         ),
       ),
     );
@@ -226,7 +218,7 @@ describe('#52 host root = project root (D23 addendum)', () => {
           importMetaUrl: pathToFileURL(path.join(dir, 'cli.js')).href,
           alias: 'local',
           compose: (p) => p.use(probePlugin(rec)),
-        })(['node', 'local', 'probe']),
+        })(['probe']),
       );
       expect(rec.ctx?.dotenv.DYN).toBe('x');
       expect(g.__gdvDynCount).toBe(1);
@@ -251,7 +243,7 @@ describe('#52 init under a host keeps get-dotenv templates', () => {
           importMetaUrl: hostUrl,
           alias: 'host',
           compose: (p) => p.use(initPlugin()),
-        })(['node', 'host', 'init', '.', '--cli-name', 'acme', '--force']),
+        })(['init', '.', '--cli-name', 'acme', '--force']),
       );
       const index = await readFile(
         path.join(dir, 'src', 'cli', 'acme', 'index.ts'),

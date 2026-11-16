@@ -195,7 +195,7 @@ export const runFixtureCli = (
     const prevExitCode = process.exitCode;
     const { output } = await captureOutput(async () => {
       try {
-        await run(['node', 'fixture', ...args]);
+        await run([...args]);
       } catch (e) {
         rec.error = e instanceof Error ? e.message : String(e);
       }

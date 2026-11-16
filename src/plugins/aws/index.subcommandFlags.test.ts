@@ -46,8 +46,6 @@ describe('plugins/aws subcommand flags', () => {
     });
 
     await run([
-      'node',
-      'test',
       'aws',
       '--profile',
       'JGS-SSO',

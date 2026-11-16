@@ -77,7 +77,7 @@ describe('loginOnDemand scoping (CLI integration)', () => {
         ),
     });
 
-    await run(['node', 'test', 'cmd', 'echo', 'hello']);
+    await run(['cmd', 'echo', 'hello']);
 
     // afterResolve is scoped: aws plugin should NOT be called for non-aws commands.
     expect(resolveAwsContextMock).not.toHaveBeenCalled();
@@ -91,8 +91,6 @@ describe('loginOnDemand scoping (CLI integration)', () => {
     });
 
     await run([
-      'node',
-      'test',
       'aws',
       '--login-on-demand',
       '--region',
@@ -117,8 +115,6 @@ describe('loginOnDemand scoping (CLI integration)', () => {
     });
 
     await run([
-      'node',
-      'test',
       'aws',
       '--login-on-demand',
       '--region',

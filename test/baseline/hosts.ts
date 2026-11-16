@@ -32,7 +32,10 @@ import { definePlugin, type GetDotenvCli } from '@/src/cliHost';
 import { awsPlugin, batchPlugin, cmdPlugin } from '@/src/plugins';
 
 /** A `createCli()` runner. */
-export type Runner = (argv?: string[]) => Promise<void>;
+export type Runner = (
+  argv?: string[],
+  options?: { from?: 'node' | 'electron' | 'user' },
+) => Promise<void>;
 
 const report = (name: string, payload: unknown) => {
   process.stdout.write(`[fixture:${name}] ${JSON.stringify(payload)}\n`);
