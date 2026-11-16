@@ -23,6 +23,8 @@ A long option `--<opt>` declared on the command at path `p1 … pn` has the qual
 - **Short flags** have no qualified form.
 - **`--help`** is the only long option that is never qualified. The root `--version` (registered by `brand()`) is qualified like any other option.
 
+Help shows every qualified name: each option line ends with `(anywhere: --<name>)`, added when help is rendered (so dynamic descriptions keep it), and each subcommand's help has one `<owner> options (anywhere)` section per command above it. Every command in the tree renders this way, plain `new Command()` mounts included. Options hidden with `hideHelp()` or `rootOptionVisibility` appear in none of it. See [Qualified options](../qualified-options.md#help-output).
+
 | Declared on                               | Option                       | Qualified name                      |
 | ----------------------------------------- | ---------------------------- | ----------------------------------- |
 | root `vc`                                 | `-e, --env <string>`         | `--vc-env`                          |

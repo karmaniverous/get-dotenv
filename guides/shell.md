@@ -99,6 +99,7 @@ Root and plugin flags display effective defaults derived from the same resolved 
 
 - Top‑level `-h/--help` computes a read‑only resolved config and evaluates dynamic descriptions (no logging; no `process.env` mutation).
 - Subcommand help is rendered with `getdotenv <cmd> -h` / `--help`. Only top-level `-h/--help` is guaranteed to run with side effects suppressed.
+- Every help shows each option's qualified name (`(anywhere: --getdotenv-env)`), and a subcommand's help lists the options of the commands above it by qualified name. See [Qualified options](./qualified-options.md#help-output).
 
 Examples (concise excerpts):
 

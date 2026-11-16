@@ -241,7 +241,7 @@ Key points:
 
 - createPluginDynamicOption(cli, flags, (cfg, pluginCfg) => string, parser?, defaultValue?) attaches to the current plugin, injecting that plugin’s validated config slice (pluginCfg).
 - The callback receives a read‑only resolved help config (top‑level flags) and the instance‑bound plugin config slice. Avoid by‑id lookups (e.g., cfg.plugins.<id>); rely on pluginCfg instead.
-- Top‑level “-h/--help” computes a read‑only config and evaluates dynamic text; “help <cmd>” refreshes dynamic text after preSubcommand resolution.
+- Top‑level “-h/--help” computes a read‑only config and evaluates dynamic text; “help <cmd>” refreshes dynamic text after preSubcommand resolution. Both apply the merged `rootOptionVisibility` (createCli \< packaged \< project/public \< project/local) before rendering, and the host appends each option's qualified name at render time, so a dynamic description keeps its `(anywhere: --<name>)`.
 
 Example (plugin flag with ON/OFF default label using instance‑bound config):
 

@@ -40,6 +40,45 @@ vc aws s3 ls --vc-aws-profile dev          # runs: vc aws --profile=dev s3 ls
 
 Plain options keep their exact positional behaviour. Qualified forms are only added.
 
+## Help output
+
+Every command's help shows the qualified names a user can type, in two ways.
+
+**Its own options** end with their qualified name, `(anywhere: --<name>)`. `-h, --help` is the only line without one. Root help also lists `-h, --help`, `-V, --version` and every root option a plugin or host adds:
+
+```text
+Options:
+  -e, --env <string>          target environment (dotenv-expanded) (anywhere: --vc-env)
+  -h, --help                  display help for command
+  -V, --version               output the version number (anywhere: --vc-version)
+  …
+
+Plugin options — cmd:
+  -c, --cmd <command...>      alias of cmd subcommand; provide command tokens (variadic) (anywhere: --vc-cmd)
+```
+
+**The options of the commands above it** follow, one section per command, root first, each option listed by its qualified name (the plain form isn't accepted at that point). `vc aws -h`, abridged:
+
+```text
+Options:
+  -h, --help                display help for command
+  --profile <string>        AWS profile name (anywhere: --vc-aws-profile)
+  …
+
+vc options (anywhere):
+  --vc-env <string>         target environment (dotenv-expanded)
+  --vc-shell [string]       command execution shell, …
+  …
+
+Commands:
+  cmd [command...]          Execute command according to the --shell option, …
+  secrets                   Fixture: AWS Secrets Manager commands
+```
+
+`vc aws secrets pull -h` has a `vc options (anywhere)` and a `vc aws options (anywhere)` section. Every command gets this help, including plain `new Command()` mounts such as `batch cmd`.
+
+Hidden options are left out everywhere: options hidden with `rootOptionVisibility` (from `createCli` or config, [Config files](./config.md)) disappear from root help _and_ from every inherited section, and terminators never appear. Visibility merges `createCli` \< packaged \< project/public \< project/local, so a config `true` shows an option a `createCli` `false` hid.
+
 ## Values
 
 - A required single value (`--env <name>`) takes the next token or `=value`: `--vc-env bali` or `--vc-env=bali`. The next token must not start with `--`; use `=` for such a value (`--vc-env=--odd`).
