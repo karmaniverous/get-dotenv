@@ -5,7 +5,7 @@ import { createCli } from '@/src/cli';
 describe('GetDotenvCli root dynamic help', () => {
   it('shows dynamic labels for key root toggles (shell/log/load-process)', async () => {
     // Build a CLI and render top-level help via the factory runner.
-    const run = createCli({ alias: 'test' });
+    const run = createCli({ importMetaUrl: import.meta.url, alias: 'test' });
 
     // Capture stdout written by help output.
     const writes: string[] = [];

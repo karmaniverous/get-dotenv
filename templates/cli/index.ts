@@ -12,6 +12,7 @@ import {
 import { helloPlugin } from './plugins/hello';
 
 await createCli({
+  importMetaUrl: import.meta.url,
   alias: 'mycli',
   compose: (program) =>
     program

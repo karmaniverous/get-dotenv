@@ -5,7 +5,11 @@ import { pathToFileURL } from 'node:url';
 
 import { afterEach, describe, expect, it } from 'vitest';
 
-import { readHostPackage, resolvePackageRoot } from './packageRoot';
+import {
+  isSameDirectory,
+  readHostPackage,
+  resolvePackageRoot,
+} from './packageRoot';
 
 const dirs: string[] = [];
 const tmp = () => {
@@ -57,5 +61,20 @@ describe('readHostPackage', () => {
     expect(await readHostPackage('')).toBeUndefined();
     const { url } = pkgWith('{ not json');
     expect(await readHostPackage(url)).toBeUndefined();
+  });
+});
+
+describe('isSameDirectory', () => {
+  it('compares resolved directories', () => {
+    const d = tmp();
+    expect(isSameDirectory(d, path.join(d, '.'))).toBe(true);
+    expect(isSameDirectory(d, path.join(d, 'sub'))).toBe(false);
+    expect(isSameDirectory(d, path.dirname(d))).toBe(false);
+  });
+
+  it('is case-insensitive on Windows only', () => {
+    expect(isSameDirectory('/Repo/App', '/repo/app')).toBe(
+      process.platform === 'win32',
+    );
   });
 });

@@ -88,6 +88,7 @@ await withCleanEnv(async () => {
       async () => {
         const reproPlugin = makeAfterResolveReadConfigPlugin();
         const run = createCli({
+          importMetaUrl: import.meta.url,
           alias: 'gdrepro',
           compose: (program) => program.use(reproPlugin),
         });
@@ -101,6 +102,7 @@ await withCleanEnv(async () => {
       'Case B: createCli(/cli) + awsPlugin from /plugins',
       async () => {
         const run = createCli({
+          importMetaUrl: import.meta.url,
           alias: 'gdrepro',
           compose: (program) => program.use(awsPlugin()),
         });

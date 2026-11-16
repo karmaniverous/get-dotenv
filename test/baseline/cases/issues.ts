@@ -281,6 +281,7 @@ export const issuesCorpus: BaselineCase[] = [
   gd(60, 'visibility shell capture trace', {
     host: () =>
       createCli({
+        importMetaUrl: import.meta.url,
         alias: 'getdotenv',
         rootOptionVisibility: { shell: false, capture: false, trace: false },
       }),
@@ -289,6 +290,7 @@ export const issuesCorpus: BaselineCase[] = [
   gd(60, 'visibility env debug', {
     host: () =>
       createCli({
+        importMetaUrl: import.meta.url,
         alias: 'getdotenv',
         rootOptionVisibility: { env: false, debug: false },
       }),
@@ -348,6 +350,7 @@ export const issuesCorpus: BaselineCase[] = [
   gd(70, 'optionAlias expand false', {
     host: () =>
       createCli({
+        importMetaUrl: import.meta.url,
         alias: 'getdotenv',
         compose: (p) =>
           p.use(
@@ -395,6 +398,7 @@ export const issuesCorpus: BaselineCase[] = [
   gd(77, 'createCli defaults beat config', {
     host: () =>
       createCli({
+        importMetaUrl: import.meta.url,
         alias: 'scr',
         compose: (p) => p,
         rootOptionDefaults: { paths: './a' },
@@ -407,7 +411,12 @@ export const issuesCorpus: BaselineCase[] = [
     },
   }),
   gd(77, 'config defaults alone', {
-    host: () => createCli({ alias: 'scr', compose: (p) => p }),
+    host: () =>
+      createCli({
+        importMetaUrl: import.meta.url,
+        alias: 'scr',
+        compose: (p) => p,
+      }),
     args: ['-l'],
     files: {
       'a/.env': 'FOO=fromA\n',

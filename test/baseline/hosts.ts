@@ -2,7 +2,7 @@
  * The two hosts of the 7.0.11 behaviour baseline.
  *
  * - `getdotenv`: the shipped CLI, built exactly as `src/cli/getdotenv/index.ts`
- *   builds it (`createCli({ alias: 'getdotenv' })`).
+ *   builds it (`createCli({ importMetaUrl: import.meta.url,  alias: 'getdotenv' })`).
  * - `vc`: a fixture modelled on smoz-user's `cli/vc.ts` (origin/dev). It uses
  *   only get-dotenv's own plugins plus the local fixture plugins below, so no
  *   external package is needed. Tree:
@@ -138,6 +138,7 @@ export const awsChildFixturePlugin = () =>
  */
 export const createAwsChildHost = (): Runner =>
   createCli({
+    importMetaUrl: import.meta.url,
     alias: 'getdotenv',
     compose: (program) => program.use(awsPlugin().use(awsChildFixturePlugin())),
   });
@@ -148,7 +149,7 @@ export const createAwsChildHost = (): Runner =>
  * @returns Its runner.
  */
 export const createGetdotenvHost = (): Runner =>
-  createCli({ alias: 'getdotenv' });
+  createCli({ importMetaUrl: import.meta.url, alias: 'getdotenv' });
 
 /**
  * The `vc` fixture host.
@@ -157,6 +158,7 @@ export const createGetdotenvHost = (): Runner =>
  */
 export const createVcHost = (): Runner =>
   createCli({
+    importMetaUrl: import.meta.url,
     alias: 'vc',
     compose: (program) =>
       program

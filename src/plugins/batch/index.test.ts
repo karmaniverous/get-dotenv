@@ -19,6 +19,7 @@ describe('plugins/batch', () => {
 
   it('invokes list mode with globs and root path', async () => {
     const run = createCli({
+      importMetaUrl: import.meta.url,
       alias: 'test',
       compose: (p) => p.use(batchPlugin()),
     });
@@ -46,6 +47,7 @@ describe('plugins/batch', () => {
 
   it('resolves shell from script override', async () => {
     const run = createCli({
+      importMetaUrl: import.meta.url,
       alias: 'test',
       compose: (p) =>
         p.use(
@@ -78,6 +80,7 @@ describe('plugins/batch', () => {
 
   it('propagates pkg-cwd flag', async () => {
     const run = createCli({
+      importMetaUrl: import.meta.url,
       alias: 'test',
       compose: (p) => p.use(batchPlugin()),
     });
@@ -93,6 +96,7 @@ describe('plugins/batch', () => {
 
   it('propagates ignore-errors', async () => {
     const run = createCli({
+      importMetaUrl: import.meta.url,
       alias: 'test',
       compose: (p) => p.use(batchPlugin()),
     });
@@ -115,6 +119,7 @@ describe('plugins/batch', () => {
 
   it('executes positional command without explicit subcommand', async () => {
     const run = createCli({
+      importMetaUrl: import.meta.url,
       alias: 'test',
       compose: (p) => p.use(batchPlugin()),
     });
@@ -131,6 +136,7 @@ describe('plugins/batch', () => {
 
   it('propagates parallel flag', async () => {
     const run = createCli({
+      importMetaUrl: import.meta.url,
       alias: 'test',
       compose: (p) => p.use(batchPlugin()),
     });
@@ -146,6 +152,7 @@ describe('plugins/batch', () => {
 
   it('propagates concurrency flag', async () => {
     const run = createCli({
+      importMetaUrl: import.meta.url,
       alias: 'test',
       compose: (p) => p.use(batchPlugin()),
     });
@@ -171,6 +178,7 @@ describe('plugins/batch', () => {
 
   it('defaults parallel to false when not specified', async () => {
     const run = createCli({
+      importMetaUrl: import.meta.url,
       alias: 'test',
       compose: (p) => p.use(batchPlugin()),
     });

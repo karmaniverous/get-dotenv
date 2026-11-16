@@ -38,6 +38,7 @@ describe('#87 brand() registers -V, --version once', () => {
   it('a createCli runner runs twice (issue repro)', async () => {
     const ran: string[] = [];
     const run = createCli({
+      importMetaUrl: import.meta.url,
       alias: 'gdv5',
       compose: (p) => {
         p.command('noop').action(() => {
@@ -110,6 +111,7 @@ describe('#87 brand() registers -V, --version once', () => {
   it('a runner second run keeps one --version option', async () => {
     let program: GetDotenvCli | undefined;
     const run = createCli({
+      importMetaUrl: import.meta.url,
       alias: 'gdv6',
       compose: (p) => (program = p),
     });

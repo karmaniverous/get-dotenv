@@ -21,6 +21,7 @@ describe('plugins/cmd default subcommand (asDefault)', () => {
 
   it('routes positional args to cmd when asDefault is true', async () => {
     const run = createCli({
+      importMetaUrl: import.meta.url,
       alias: 'test',
       compose: (p) =>
         p.use(
@@ -39,6 +40,7 @@ describe('plugins/cmd default subcommand (asDefault)', () => {
 
   it('does not route positional args when asDefault is false', async () => {
     const run = createCli({
+      importMetaUrl: import.meta.url,
       alias: 'test',
       compose: (p) =>
         p.use(
@@ -61,6 +63,7 @@ describe('plugins/cmd option alias', () => {
 
   it('executes alias when provided on parent (variadic join)', async () => {
     const run = createCli({
+      importMetaUrl: import.meta.url,
       alias: 'test',
       compose: (p) =>
         p.use(
@@ -81,6 +84,7 @@ describe('plugins/cmd option alias', () => {
   it('expands alias value with dotenv expansion by default', async () => {
     process.env.FOO = 'BAR';
     const run = createCli({
+      importMetaUrl: import.meta.url,
       alias: 'test',
       compose: (p) =>
         p.use(
@@ -105,6 +109,7 @@ describe('plugins/cmd option alias', () => {
     // correctly-resolved context from root hooks with incomplete defaults,
     // losing env-specific variables.
     const run = createCli({
+      importMetaUrl: import.meta.url,
       alias: 'test',
       rootOptionDefaults: {
         paths: './test/full',
@@ -138,6 +143,7 @@ describe('plugins/cmd option alias', () => {
     // The conflict is a usage error (#50): exit code 1, nothing runs.
     const savedExitCode = process.exitCode;
     const run = createCli({
+      importMetaUrl: import.meta.url,
       alias: 'test',
       compose: (p) =>
         p.use(

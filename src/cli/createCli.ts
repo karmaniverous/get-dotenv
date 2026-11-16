@@ -6,6 +6,7 @@ import {
   toHelpConfig,
 } from '@/src/cliHost';
 import { attachRootOptions as attachRootOptionsBuilder } from '@/src/cliHost/attachRootOptions';
+import { hostMetaUrlOf } from '@/src/cliHost/hostRoot';
 import { installRootHooks } from '@/src/cliHost/rootHooks';
 import {
   applyRootVisibility,
@@ -21,6 +22,7 @@ import {
   initPlugin,
 } from '@/src/plugins';
 import { defaultsDeep } from '@/src/util';
+import { readHostPackage } from '@/src/util/packageRoot';
 
 /**
  * Top-level error boundary for the CLI runner.
@@ -49,25 +51,48 @@ function handleCliError(err: unknown, argv?: string[]): void {
  * Create a get-dotenv CLI host with included plugins.
  *
  * Options:
+ * - importMetaUrl (required): the host module's `import.meta.url`; its package
+ *   root is the host root (packaged config, version, description)
  * - alias: command name used for help/argv scaffolding (default: "getdotenv")
  * - branding: optional help header; when omitted, brand() uses "<alias> v<version>"
  *
  * Usage:
  * ```ts
- * import { createCli } from '@karmaniverous/get-dotenv';
+ * import { createCli } from '@karmaniverous/get-dotenv/cli';
  *
  * await createCli({
- *    alias: 'getdotenv',
- *    branding: 'getdotenv vX.Y.Z'
+ *    alias: 'mycli',
+ *    importMetaUrl: import.meta.url,
  * })();
  * ```
  */
 export type CreateCliOptions = {
   /**
+   * The host module's `import.meta.url` (required). The host root is the
+   * nearest `package.json` directory above it. It supplies:
+   * - the packaged config layer, `<hostRoot>/getdotenv.config.*` (it replaces
+   *   get-dotenv's own; when the host root is the project root, the packaged
+   *   layer is skipped so the same file isn't applied twice);
+   * - the version (`package.json` `version`, unless `version` is given);
+   * - the description (`package.json` `description`, unless `description`
+   *   is given).
+   */
+  importMetaUrl: string;
+  /**
    * CLI command name used for help and argv scaffolding.
    * Defaults to `'getdotenv'` when omitted.
    */
   alias?: string;
+  /**
+   * Version printed by `-V, --version` and shown in the default help header.
+   * Overrides the host package's `package.json` `version`.
+   */
+  version?: string;
+  /**
+   * Root command description shown in help. Overrides the host package's
+   * `package.json` `description`.
+   */
+  description?: string;
   /**
    * Optional help header text. When omitted, brand() uses
    * `"<alias> v<resolved-version>"` if a version can be read.
@@ -100,17 +125,27 @@ export type CreateCliOptions = {
  * Create a configured get-dotenv CLI host.
  * Applies defaults, installs root hooks, and composes plugins.
  * Returns a runner function that accepts an argv array.
+ *
+ * @param opts - Host options; `importMetaUrl` is required.
+ * @returns The runner. It may be called more than once.
+ * @throws When `importMetaUrl` is missing or empty.
  */
 export function createCli(
-  opts: CreateCliOptions = {},
+  opts: CreateCliOptions,
 ): (argv?: string[]) => Promise<void> {
-  // Pre-compose aws parent/child to avoid nested call-site typing/lint issues
+  const importMetaUrl = (opts as Partial<CreateCliOptions> | undefined)
+    ?.importMetaUrl;
+  if (typeof importMetaUrl !== 'string' || importMetaUrl.length === 0) {
+    throw new Error(
+      'createCli requires importMetaUrl: pass createCli({ importMetaUrl: import.meta.url, ... }) so the host CLI reports its own package (packaged config, version, description).',
+    );
+  }
   const alias =
     typeof opts.alias === 'string' && opts.alias.length > 0
       ? opts.alias
       : 'getdotenv';
 
-  const program: GetDotenvCli = new GetDotenvCli(alias);
+  const program: GetDotenvCli = new GetDotenvCli(alias, { importMetaUrl });
   // Default output: normalize help prints so they always end with a blank line.
   // This keeps E2E assertions (CRLF and >=2 trailing newlines) portable across
   // runtimes and capture modes without altering Commander internals.
@@ -206,6 +241,24 @@ export function createCli(
       .use(initPlugin());
   }
 
+  // Host identity (Decision 23): name, description and version from the
+  // host package unless overridden. Runs after install() on every run;
+  // brand() registers -V, --version only once (#87).
+  const brandHost = async () => {
+    const pkg = await readHostPackage(importMetaUrl);
+    const version = opts.version ?? pkg?.version;
+    const description = opts.description ?? pkg?.description;
+    await program.brand({
+      name: alias,
+      importMetaUrl,
+      ...(version !== undefined ? { version } : {}),
+      ...(description !== undefined ? { description } : {}),
+      ...(typeof opts.branding === 'string' && opts.branding.length > 0
+        ? { helpHeader: opts.branding }
+        : {}),
+    });
+  };
+
   // Runner function: accepts full argv or args-only; defaults to process.argv.
   return async function run(argvInput?: string[]) {
     const argvAll = Array.isArray(argvInput) ? argvInput : process.argv;
@@ -240,14 +293,7 @@ export function createCli(
         .some((tok) => subs.has(tok));
 
       if (!hasSubBeforeHelp) {
-        await program.brand({
-          name: alias,
-          importMetaUrl: import.meta.url,
-          description: 'Base CLI.',
-          ...(typeof opts.branding === 'string' && opts.branding.length > 0
-            ? { helpHeader: opts.branding }
-            : {}),
-        });
+        await brandHost();
         dbg('top-level -h, render root help');
         // Resolve context once without side effects for help rendering.
         const ctx = await program.resolveAndLoad(
@@ -261,7 +307,9 @@ export function createCli(
         // baseRootOptionDefaults < createCli rootOptionDefaults < config.rootOptionDefaults
         let cfgDefaults: Partial<RootOptionsShape> = {};
         try {
-          const sources = await resolveGetDotenvConfigSources(import.meta.url);
+          const sources = await resolveGetDotenvConfigSources(
+            hostMetaUrlOf(program),
+          );
           cfgDefaults = defaultsDeep<Partial<RootOptionsShape>>(
             {},
             sources.packaged?.rootOptionDefaults ?? {},
@@ -294,7 +342,7 @@ export function createCli(
           // createCli(rootOptionVisibility) < packaged/public < project/public < project/local
           try {
             const sources = await resolveGetDotenvConfigSources(
-              import.meta.url,
+              hostMetaUrlOf(program),
             );
             const mergedVis = mergeRootVisibility(
               visibility,
@@ -316,14 +364,7 @@ export function createCli(
       // letting Commander print that subcommand's help.
     }
     dbg('parseAsync start');
-    await program.brand({
-      name: alias,
-      importMetaUrl: import.meta.url,
-      description: 'Base CLI.',
-      ...(typeof opts.branding === 'string' && opts.branding.length > 0
-        ? { helpHeader: opts.branding }
-        : {}),
-    });
+    await brandHost();
 
     try {
       await program.parseAsync(['node', alias, ...argv]);

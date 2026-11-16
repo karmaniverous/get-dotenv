@@ -54,6 +54,7 @@ describe('groupPlugins afterResolve scoping', () => {
 
   it('invoking tools alpha echo → only alpha afterResolve fires', async () => {
     const run = createCli({
+      importMetaUrl: import.meta.url,
       alias: 'test',
       compose: (program) =>
         program.use(
@@ -71,6 +72,7 @@ describe('groupPlugins afterResolve scoping', () => {
 
   it('invoking tools beta echo → only beta afterResolve fires', async () => {
     const run = createCli({
+      importMetaUrl: import.meta.url,
       alias: 'test',
       compose: (program) =>
         program.use(
@@ -97,6 +99,7 @@ describe('groupPlugins afterResolve scoping', () => {
     groupPlugin.use(spyPlugin('alpha')).use(spyPlugin('beta'));
 
     const run = createCli({
+      importMetaUrl: import.meta.url,
       alias: 'test',
       compose: (program) => program.use(groupPlugin),
     });

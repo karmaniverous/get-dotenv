@@ -14,6 +14,7 @@ describe('plugins/init', () => {
     await fs.remove(dir);
 
     const run = createCli({
+      importMetaUrl: import.meta.url,
       alias: 'test',
       compose: (p) => p.use(initPlugin()),
     });
@@ -104,6 +105,7 @@ describe('plugins/init', () => {
     await fs.remove(dir);
 
     const run = createCli({
+      importMetaUrl: import.meta.url,
       alias: 'test',
       compose: (p) => p.use(initPlugin()),
     });
@@ -121,15 +123,11 @@ describe('plugins/init', () => {
     const cfg = path.posix.join(dir, 'getdotenv.config.json');
     await fs.writeFile(cfg, 'CHANGED', 'utf-8');
 
-    await createCli({ alias: 'test', compose: (p) => p.use(initPlugin()) })([
-      'node',
-      'test',
-      'init',
-      dir,
-      '--config-format',
-      'json',
-      '--yes',
-    ]);
+    await createCli({
+      importMetaUrl: import.meta.url,
+      alias: 'test',
+      compose: (p) => p.use(initPlugin()),
+    })(['node', 'test', 'init', dir, '--config-format', 'json', '--yes']);
 
     const after = await fs.readFile(cfg, 'utf-8');
     expect(after).toBe('CHANGED');
@@ -140,6 +138,7 @@ describe('plugins/init', () => {
     await fs.remove(dir);
 
     const run = createCli({
+      importMetaUrl: import.meta.url,
       alias: 'test',
       compose: (p) => p.use(initPlugin()),
     });
@@ -192,6 +191,7 @@ describe('plugins/init', () => {
     await fs.writeFile(cfg, 'OLD', 'utf-8');
 
     const run = createCli({
+      importMetaUrl: import.meta.url,
       alias: 'test',
       compose: (p) => p.use(initPlugin()),
     });
@@ -223,6 +223,7 @@ describe('plugins/init', () => {
     process.env.CI = 'true';
     try {
       const run = createCli({
+        importMetaUrl: import.meta.url,
         alias: 'test',
         compose: (p) => p.use(initPlugin()),
       });

@@ -164,6 +164,7 @@ describe('cliHost .use(plugin, { ns }) overrides (#44)', () => {
   describe('afterResolve scoping (A3)', () => {
     const siblings = () =>
       createCli({
+        importMetaUrl: import.meta.url,
         alias: 'test',
         compose: (p) =>
           p
@@ -182,6 +183,7 @@ describe('cliHost .use(plugin, { ns }) overrides (#44)', () => {
 
     it('runs the parent and the invoked nested override only', async () => {
       const run = createCli({
+        importMetaUrl: import.meta.url,
         alias: 'test',
         compose: (p) =>
           p.use(

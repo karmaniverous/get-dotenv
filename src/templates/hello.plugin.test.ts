@@ -41,6 +41,7 @@ describe('templates/cli/plugins/hello', () => {
     try {
       await withCwd(dir, async () => {
         const run = createCli({
+          importMetaUrl: import.meta.url,
           alias: 'test',
           compose: (p) => p.use(helloPlugin()),
         });
@@ -65,6 +66,7 @@ describe('templates/cli/plugins/hello', () => {
     try {
       await withCwd(dir, async () => {
         const run = createCli({
+          importMetaUrl: import.meta.url,
           alias: 'test',
           compose: (p) => p.use(helloPlugin()),
         });
@@ -90,6 +92,7 @@ describe('templates/cli/plugins/hello', () => {
     try {
       await withCwd(dir, async () => {
         const run = createCli({
+          importMetaUrl: import.meta.url,
           alias: 'test',
           compose: (p) => p.use(helloPlugin()),
         });
@@ -114,6 +117,7 @@ describe('templates/cli/plugins/hello', () => {
     try {
       await withCwd(dir, async () => {
         const run = createCli({
+          importMetaUrl: import.meta.url,
           alias: 'test',
           compose: (p) => p.use(helloPlugin()),
         });

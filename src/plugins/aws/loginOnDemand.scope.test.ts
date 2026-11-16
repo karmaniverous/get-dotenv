@@ -66,6 +66,7 @@ describe('loginOnDemand scoping (CLI integration)', () => {
 
   it('non-aws command: afterResolve does not fire for aws plugin', async () => {
     const run = createCli({
+      importMetaUrl: import.meta.url,
       alias: 'test',
       compose: (program) =>
         program.use(awsPlugin()).use(
@@ -84,6 +85,7 @@ describe('loginOnDemand scoping (CLI integration)', () => {
 
   it('aws command: afterResolve fires with full config including loginOnDemand', async () => {
     const run = createCli({
+      importMetaUrl: import.meta.url,
       alias: 'test',
       compose: (program) => program.use(awsPlugin()),
     });
@@ -109,6 +111,7 @@ describe('loginOnDemand scoping (CLI integration)', () => {
     const logSpy = vi.spyOn(console, 'log').mockImplementation(() => undefined);
 
     const run = createCli({
+      importMetaUrl: import.meta.url,
       alias: 'test',
       compose: (program) => program.use(awsPlugin().use(awsWhoamiPlugin())),
     });

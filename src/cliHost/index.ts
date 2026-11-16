@@ -48,6 +48,7 @@ export {
   type BrandOptions,
   defineScripts,
   type GetDotenvCliCtx,
+  type GetDotenvCliHostOptions,
   type RootOptionsShape,
   type ScriptDef,
 } from './types';

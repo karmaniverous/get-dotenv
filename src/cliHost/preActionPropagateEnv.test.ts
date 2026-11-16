@@ -52,6 +52,7 @@ describe('preAction propagates resolved env for subcommand flows', () => {
     });
 
     const run = createCli({
+      importMetaUrl: import.meta.url,
       alias: 'test',
       rootOptionDefaults: {
         dotenvToken: '.testenv',

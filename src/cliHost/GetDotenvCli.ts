@@ -37,16 +37,20 @@ import {
 import type { GetDotenvCliOptions } from './GetDotenvCliOptions';
 import { GROUP_TAG } from './groups';
 import type { ResolvedHelpConfig } from './helpConfig';
+import { hostMetaUrlOf, setHostMetaUrl } from './hostRoot';
 import { initializeInstance } from './initializeInstance';
 import { flattenPluginTreeByPath, joinRealizedPath } from './paths';
 import { setupPluginTree } from './registerPlugin';
 import { resolveAndComputeContext } from './resolveAndComputeContext';
 import { runAfterResolveTree } from './runAfterResolve';
 import { tagAppOptionsAround } from './tagAppOptionsHelper';
-import type { BrandOptions, GetDotenvCliCtx, RootOptionsShape } from './types';
+import type {
+  BrandOptions,
+  GetDotenvCliCtx,
+  GetDotenvCliHostOptions,
+  RootOptionsShape,
+} from './types';
 import { setVersion } from './versionOption';
-
-const HOST_META_URL = import.meta.url;
 
 const CTX_SYMBOL = Symbol('GetDotenvCli.ctx');
 const OPTS_SYMBOL = Symbol('GetDotenvCli.options');
@@ -93,8 +97,17 @@ export class GetDotenvCli<
     return new GetDotenvCli(name);
   }
 
-  constructor(alias = 'getdotenv') {
+  /**
+   * @param alias - The command name (default `getdotenv`).
+   * @param options - Host options. `importMetaUrl` (the host module's
+   *   `import.meta.url`) sets the host root, the package whose
+   *   `getdotenv.config.*` is the packaged config layer (Decision 23). Without
+   *   it (and without `brand({ importMetaUrl })`) the host root is
+   *   get-dotenv's own package root.
+   */
+  constructor(alias = 'getdotenv', options?: GetDotenvCliHostOptions) {
     super(alias);
+    if (options?.importMetaUrl) setHostMetaUrl(this, options.importMetaUrl);
     this.enablePositionalOptions();
     // Delegate the heavy setup to a helper to keep the constructor lean.
     initializeInstance(
@@ -138,7 +151,7 @@ export class GetDotenvCli<
       customOptions,
       // Entries carry namespace overrides, which key config by realized path.
       this._plugins,
-      HOST_META_URL,
+      hostMetaUrlOf(this),
     );
 
     // Persist context on the instance for later access.
@@ -296,6 +309,9 @@ export class GetDotenvCli<
    * If version is omitted and importMetaUrl is provided, attempts to read the
    * nearest package.json version (best-effort; non-fatal on failure).
    *
+   * `importMetaUrl` also sets the host root (the packaged config layer,
+   * Decision 23); the last of the constructor and `brand()` to give one wins.
+   *
    * `-V, --version` is registered once, the first time a version is known. A
    * later `brand()` only updates the version it prints, so calling `brand()`
    * again (as every `createCli` run does) is safe (#87).
@@ -304,6 +320,7 @@ export class GetDotenvCli<
     const { name, description, version, importMetaUrl, helpHeader } = args;
     if (typeof name === 'string' && name.length > 0) this.name(name);
     if (typeof description === 'string') this.description(description);
+    if (importMetaUrl) setHostMetaUrl(this, importMetaUrl);
     const v = version ?? (await readHostPackage(importMetaUrl))?.version;
     if (v) setVersion(this, v);
     // Help header:

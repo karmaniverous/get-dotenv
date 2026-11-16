@@ -38,6 +38,7 @@ describe('plugins/aws subcommand', () => {
 
   it('session-only establishes region via flag without forwarding', async () => {
     const run = createCli({
+      importMetaUrl: import.meta.url,
       alias: 'test',
       compose: (program) => program.use(awsPlugin()),
     });
@@ -53,6 +54,7 @@ describe('plugins/aws subcommand', () => {
   it('forwards args after "--" to AWS CLI with env injection and capture honored', async () => {
     process.env.GETDOTENV_STDIO = 'pipe'; // force capture
     const run = createCli({
+      importMetaUrl: import.meta.url,
       alias: 'test',
       compose: (program) => program.use(awsPlugin()),
     });

@@ -16,7 +16,7 @@ import {
   getDotenvConfigSchemaResolved,
 } from '@/src/schema';
 import { loadModuleDefault } from '@/src/util';
-import { resolvePackageRoot } from '@/src/util/packageRoot';
+import { isSameDirectory, resolvePackageRoot } from '@/src/util/packageRoot';
 
 // Discovery candidates (first match wins per scope/privacy).
 // Order preserves historical JSON/YAML precedence; JS/TS added afterwards.
@@ -74,17 +74,33 @@ export interface ConfigFile {
 }
 
 /**
- * Discover JSON/YAML config files in the packaged root and project root.
- * Order: packaged public → project public → project local. */
+ * Discover config files in the packaged root and project root.
+ * Order: packaged public → project public → project local.
+ *
+ * The packaged root is the host package root: the nearest `package.json`
+ * directory above `importMetaUrl` (Decision 23). When it is the project root
+ * (a repo-local host), the packaged layer is skipped, so the same file isn't
+ * applied twice.
+ *
+ * @param importMetaUrl - The host's `import.meta.url`; when omitted there is
+ *   no packaged layer.
+ */
 export const discoverConfigFiles = async (
   importMetaUrl?: string,
 ): Promise<ConfigFile[]> => {
   const files: ConfigFile[] = [];
 
-  // Packaged root via importMetaUrl (optional)
+  // Project root (from current working directory)
+  const projectRoot = await packageDirectory();
+
+  // Packaged root via importMetaUrl (optional); skipped when it is the
+  // project root.
   if (importMetaUrl) {
     const packagedRoot = await resolvePackageRoot(importMetaUrl);
-    if (packagedRoot) {
+    if (
+      packagedRoot &&
+      !(projectRoot && isSameDirectory(packagedRoot, projectRoot))
+    ) {
       for (const name of PUBLIC_FILENAMES) {
         const p = join(packagedRoot, name);
         if (await fs.pathExists(p)) {
@@ -96,8 +112,6 @@ export const discoverConfigFiles = async (
     }
   }
 
-  // Project root (from current working directory)
-  const projectRoot = await packageDirectory();
   if (projectRoot) {
     for (const name of PUBLIC_FILENAMES) {
       const p = join(projectRoot, name);

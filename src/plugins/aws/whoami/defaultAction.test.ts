@@ -29,6 +29,7 @@ describe('plugins/aws/whoami defaultAction', () => {
     };
 
     const run = createCli({
+      importMetaUrl: import.meta.url,
       alias: 'test',
       compose: (program) => program.use(awsBucket()),
     });

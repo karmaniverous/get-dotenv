@@ -38,6 +38,7 @@ const run = async (
   extra: Partial<CreateCliOptions> = {},
 ) => {
   await createCli({
+    importMetaUrl: import.meta.url,
     alias: 'test',
     ...extra,
     compose: (p) => {

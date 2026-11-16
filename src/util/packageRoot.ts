@@ -67,3 +67,14 @@ export const readHostPackage = async (
     return undefined;
   }
 };
+
+/**
+ * Whether two directories are the same (case-insensitive on Windows, where
+ * `path.relative` compares that way).
+ *
+ * @param a - A directory.
+ * @param b - Another directory.
+ * @returns `true` when they are the same directory.
+ */
+export const isSameDirectory = (a: string, b: string): boolean =>
+  path.relative(a, b) === '';

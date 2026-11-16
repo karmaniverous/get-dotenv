@@ -202,8 +202,29 @@ export interface BrandOptions {
   description?: string;
   /** CLI version string. */
   version?: string;
-  /** Import URL for resolving package version. */
+  /**
+   * The host module's `import.meta.url`. Its package root (the nearest
+   * `package.json` above it) supplies the version when `version` is omitted,
+   * and becomes the host root: the package whose `getdotenv.config.*` is the
+   * packaged config layer (Decision 23).
+   */
   importMetaUrl?: string;
   /** Custom help header text. */
   helpHeader?: string;
+}
+
+/**
+ * Options for constructing a `GetDotenvCli` host directly.
+ *
+ * @public
+ */
+export interface GetDotenvCliHostOptions {
+  /**
+   * The host module's `import.meta.url`. Its package root (the nearest
+   * `package.json` above it) is the host root, whose `getdotenv.config.*` is
+   * the packaged config layer. When omitted (and `brand()` gives none), the
+   * host root is get-dotenv's own package root. When the host root is the
+   * project root, the packaged layer is skipped.
+   */
+  importMetaUrl?: string;
 }

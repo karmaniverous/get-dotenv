@@ -175,16 +175,18 @@ export const probePlugin = (into: Partial<FixtureRun>) =>
  * @param args - Arguments after the command name, e.g. `['-L', 'probe']`.
  * @param files - Fixture project files.
  * @param options - `createCli` options; `compose` runs before `probe` is added.
+ *   `importMetaUrl` defaults to this module's URL (get-dotenv's own root).
  * @returns What the run recorded.
  */
 export const runFixtureCli = (
   args: string[],
   files: FixtureFiles = {},
-  options: CreateCliOptions = {},
+  options: Partial<CreateCliOptions> = {},
 ): Promise<FixtureRun> =>
   inFixture(files, async () => {
     const rec: Partial<FixtureRun> = {};
     const run = createCli({
+      importMetaUrl: import.meta.url,
       alias: 'fixture',
       ...options,
       compose: (p: GetDotenvCli) =>

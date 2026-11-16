@@ -10,6 +10,7 @@ import { defaultsDeep } from '@/src/util';
 import type { GetDotenvCli } from './GetDotenvCli';
 import type { GetDotenvCliOptions } from './GetDotenvCliOptions';
 import { toHelpConfig } from './helpConfig';
+import { hostMetaUrlOf } from './hostRoot';
 import { resolveCliOptions } from './resolveCliOptions';
 import {
   composedThisParse,
@@ -114,7 +115,7 @@ export function installRootHooks<TOptions extends GetDotenvOptions>(
 
   // Hook: preSubcommand â€” always runs for subcommand flows.
   program.hook('preSubcommand', async (thisCommand, _actionCommand) => {
-    const sources = await resolveGetDotenvConfigSources(import.meta.url);
+    const sources = await resolveGetDotenvConfigSources(hostMetaUrlOf(program));
     const rawArgs =
       (thisCommand as unknown as { rawArgs?: string[] }).rawArgs ?? [];
     dbg('preSubcommand:rawArgs', rawArgs);
@@ -181,14 +182,14 @@ export function installRootHooks<TOptions extends GetDotenvOptions>(
     // Global validation (once after overlays). Honor --strict.
     reportEnvIssues(
       program,
-      await resolveGetDotenvConfigSources(import.meta.url),
+      await resolveGetDotenvConfigSources(hostMetaUrlOf(program)),
       merged as unknown as GetDotenvCliOptions,
     );
   });
 
   // Hook: preAction â€” root-only and parent-alias flows + scoped afterResolve.
   program.hook('preAction', async (thisCommand, actionCommand) => {
-    const sources = await resolveGetDotenvConfigSources(import.meta.url);
+    const sources = await resolveGetDotenvConfigSources(hostMetaUrlOf(program));
     const rawArgs =
       (thisCommand as unknown as { rawArgs?: string[] }).rawArgs ?? [];
     dbg('preAction:rawArgs', rawArgs);

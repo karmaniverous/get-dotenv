@@ -397,6 +397,21 @@ export const departures: Departure[] = [
     note: "The aws forward passes getDotenvCliOptions: the forwarded env gains it (the merged bag, whose git-status script is the 8.0 one, per the bag's field departure).",
   },
   // S9: host identity
+  ...[
+    'help getdotenv',
+    '#76 root help',
+    '#81 help runs dynamic',
+    '#60 visibility shell capture trace',
+    '#60 visibility env debug',
+    'help vc',
+    '4.4 row 09',
+    '4.4 row 11',
+    '4.4 row 12',
+  ].map((c): Departure => ({
+    case: c,
+    issueOrDecision: '#52',
+    note: "Root help shows the host package's description: the corpus hosts are modules of the get-dotenv package, so it is get-dotenv's package.json description, not the hard-coded 'Base CLI.'. Nothing else in the help changes.",
+  })),
   {
     case: '#87 second run',
     issueOrDecision: '#87',
