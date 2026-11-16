@@ -29,12 +29,30 @@ describe('quoteForShell / joinForShell (#51)', () => {
     expect(quoteForShell('q"r', 'pwsh')).toBe("'q\"r'");
     expect(quoteForShell('q"r', 'powershell')).toBe("'q\\\"r'");
     expect(quoteForShell('a "b"', 'powershell.exe')).toBe('\'"a ""b"""\'');
-    expect(quoteForShell('plain-1.0', 'pwsh')).toBe('plain-1.0');
+    expect(quoteForShell('plain-1.0', 'pwsh')).toBe("'plain-1.0'");
+  });
+
+  it('PowerShell: every quote character doubled, --% as an array (review 5916926264 #1)', () => {
+    for (const shell of ['pwsh', 'powershell.exe']) {
+      expect(quoteForShell('a\u2018b\u2019c\u201Ad\u201Be', shell)).toBe(
+        "'a\u2018\u2018b\u2019\u2019c\u201A\u201Ad\u201B\u201Be'",
+      );
+      expect(quoteForShell('--%', shell)).toBe("@('--%')");
+      expect(quoteForShell('--%x', shell)).toBe("'--%x'");
+      expect(quoteForShell('plain', shell)).toBe("'plain'");
+    }
+    // A curly double quote ends no single-quoted string.
+    expect(quoteForShell('\u201Cx\u201D', 'pwsh')).toBe("'\u201Cx\u201D'");
+    // A command name PowerShell would read as an operator or alias runs
+    // through the call operator.
+    expect(joinForShell(['%', 'x'], 'pwsh')).toBe("& '%' 'x'");
+    expect(joinForShell(['-x', 'y'], 'pwsh')).toBe("& '-x' 'y'");
+    expect(joinForShell(['./bin/x.exe'], 'pwsh')).toBe('./bin/x.exe');
   });
 
   it('PowerShell runs a quoted command name through the call operator', () => {
     expect(joinForShell(['C:\\Program Files\\node.exe', '-v'], 'pwsh')).toBe(
-      "& 'C:\\Program Files\\node.exe' -v",
+      "& 'C:\\Program Files\\node.exe' '-v'",
     );
     expect(
       joinForShell(['C:\\Program Files\\node.exe', 'a b'], 'powershell.exe'),

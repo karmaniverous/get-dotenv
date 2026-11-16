@@ -47,8 +47,10 @@ describe('aws forward with no AWS CLI (#75)', () => {
       args,
     });
     expect(r.exitCode).toBe(127);
+    // Under PowerShell (the Windows default shell) each argument is
+    // single-quoted (review 5916926264 #1).
     expect(r.stderr).toMatch(
-      /Error: Command failed with ENOENT: aws sts get-caller-identity/,
+      /Error: Command failed with ENOENT: aws '?sts'? '?get-caller-identity'?/,
     );
   });
 });

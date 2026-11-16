@@ -31,16 +31,21 @@ const shellKind = (shell: string | URL): ShellKind => {
 /**
  * Quote one argument so the given shell passes it to the command intact.
  *
- * - POSIX shells: single quotes; an embedded `'` becomes `'\''`.
+ * - POSIX shells: single quotes; an embedded `'` becomes `'\''`. An argument
+ *   with nothing the shell would read is returned as is.
  * - `cmd.exe`: double quotes; an embedded `"` becomes `\"`.
- * - PowerShell (`powershell.exe`, `pwsh`): single quotes; an embedded `'` is
- *   doubled. Windows PowerShell 5.1 hands a native command its argument
- *   text without escaping embedded double quotes, so for `powershell.exe` the
- *   argument text is escaped for the command's own argv parser.
+ * - PowerShell (`powershell.exe`, `pwsh` 7.3 or later): every argument is a
+ *   single-quoted string, so PowerShell reads nothing in it. Each character
+ *   PowerShell takes as a single quote (`'` and the curly quotes U+2018 to
+ *   U+201B) is doubled. The argument `--%` is passed as `@('--%')`:
+ *   PowerShell takes any argument whose value is `--%`, quoted or not, as
+ *   its stop-parsing marker, and an array holding it is passed as text.
+ *   Windows PowerShell 5.1 hands a native command its argument text without
+ *   escaping embedded double quotes, so for `powershell.exe` the argument
+ *   text is first escaped for the command's own argv parser.
  *
- * An argument with nothing the shell would read is returned as is. An empty
- * argument is kept: `''` (POSIX, `pwsh`), `""` (`cmd.exe`), or `'""'` for
- * `powershell.exe`, which drops an empty native argument.
+ * An empty argument is kept: `''` (POSIX, `pwsh`), `""` (`cmd.exe`), or
+ * `'""'` for `powershell.exe`, which drops an empty native argument.
  *
  * @param arg - One argument.
  * @param shell - The shell (a path or name, or a file URL).
@@ -73,10 +78,23 @@ const EMPTY_ARGUMENT: Record<ShellKind, string> = {
   powershell: `'""'`,
 };
 
-// PowerShell single quotes, applied when the argument holds anything but word
-// characters and `-./:=+%\`; `text` is what goes inside the quotes.
+// Every character PowerShell takes as a single quote: a single-quoted string
+// ends at any of them unless it is doubled (review 5916926264 #1).
+const POWERSHELL_SINGLE_QUOTES = /['\u2018-\u201B]/g;
+
+// A PowerShell single-quoted string holding `text` literally.
+const powerShellLiteral = (text: string): string =>
+  `'${text.replace(POWERSHELL_SINGLE_QUOTES, '$&$&')}'`;
+
+// One PowerShell argument; `text` is what goes inside the quotes. The value
+// `--%` turns on stop-parsing even when quoted (PowerShell's
+// NativeCommandParameterBinder compares the value), so it goes as an array.
 const quotePowerShell = (arg: string, text: string): string =>
-  /[^\w\-./:=+%\\]/.test(arg) ? `'${text.replace(/'/g, "''")}'` : arg;
+  arg === '--%' ? "@('--%')" : powerShellLiteral(text);
+
+// A PowerShell command name that can stand bare; any other runs through the
+// call operator.
+const POWERSHELL_BARE_COMMAND = /^[\w./:\\][\w\-./:\\]*$/;
 
 // Windows PowerShell 5.1 passes an argument's text to a native command as is,
 // adding outer double quotes only when it sees whitespace after an even
@@ -91,8 +109,8 @@ const powerShell51Argument = (arg: string): string =>
 /**
  * Join an argv array into one command string for the given shell, each
  * argument quoted by {@link quoteForShell}. PowerShell runs a quoted command
- * name only through the call operator, so a command name that needs quotes
- * is single-quoted and prefixed with `& `.
+ * name only through the call operator, so a command name that is not plain
+ * (word characters and `-./:\`) is single-quoted and prefixed with `& `.
  *
  * @param argv - Command and arguments.
  * @param shell - The shell (a path or name, or a file URL).
@@ -106,9 +124,9 @@ export const joinForShell = (
   if (file === undefined) return '';
   const kind = shellKind(shell);
   let head = quoteForShell(file, shell);
-  if (kind === 'powershell' || kind === 'pwsh') {
-    const quoted = quotePowerShell(file, file);
-    head = quoted === file ? file : `& ${quoted}`;
-  }
+  if (kind === 'powershell' || kind === 'pwsh')
+    head = POWERSHELL_BARE_COMMAND.test(file)
+      ? file
+      : `& ${powerShellLiteral(file)}`;
   return [head, ...args.map((arg) => quoteForShell(arg, shell))].join(' ');
 };

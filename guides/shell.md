@@ -67,6 +67,7 @@ TypeScript note: When you author scripts in code, a helper `defineScripts<TShell
 - POSIX shells: prefer single quotes when possible; escape `$` for literal dollar signs.
 - PowerShell: double-quotes perform interpolation; single quotes are literal.
 - Argv forms (batch positionals, the aws forward) are joined into one string for the shell with each token quoted by that shell's own rules: single quotes for POSIX shells and PowerShell, double quotes for `cmd.exe`. A PowerShell command name that needs quotes runs through the call operator (`& '...'`). An empty argument is kept (`''`, or `""` for `cmd.exe`).
+- PowerShell argv tokens (`powershell.exe`, and `pwsh` 7.3 or later with its default `$PSNativeCommandArgumentPassing`): every token is single-quoted, so PowerShell reads nothing in it. Each character PowerShell treats as a single quote (`'` and the curly quotes U+2018 to U+201B) is doubled. A token that is exactly `--%` is passed as `@('--%')`, because PowerShell takes any argument whose value is `--%`, quoted or not, as its stop-parsing marker. Under `pwsh`'s default `Windows` mode, arguments to `cmd.exe` and batch files use PowerShell's legacy passing, which these rules don't cover.
 
 ## Exit codes
 

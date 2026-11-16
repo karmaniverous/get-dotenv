@@ -3,6 +3,8 @@
  * plugin config, the executor), and an argv array joined for a shell is
  * quoted by that shell's own rules.
  */
+import { spawnSync } from 'node:child_process';
+
 import { describe, expect, it } from 'vitest';
 
 import { runCase } from '@/test/baseline/harness';
@@ -68,6 +70,102 @@ describe('an empty argument survives every shell (review 5916926264 #3)', () => 
     );
     expect(exitCode).toBe(0);
     expect(JSON.parse(stdout)).toEqual(args);
+  });
+});
+
+/**
+ * Arguments built to break out of a shell's quoting (review 5916926264 #1,
+ * #2): PowerShell's curly single quotes and `--%`, command substitution,
+ * escapes, separators, line breaks, empty and blank arguments, trailing
+ * backslashes, variable references and quotes.
+ */
+const HOSTILE = [
+  'x\u2019; Write-Output PWNED; \u2019',
+  '\u2018',
+  '\u2019',
+  '\u201A',
+  '\u201B',
+  "'",
+  "it's",
+  '--%',
+  'x|hostname;#',
+  '$(whoami)',
+  '${env:PATH}',
+  '`t',
+  '`',
+  ';',
+  '&',
+  '|',
+  'a && echo PWNED',
+  'line1\nline2',
+  'cr\r\nlf',
+  '',
+  ' ',
+  '\t',
+  'tail\\',
+  'a b\\',
+  'a\\\\b',
+  '%PATH%',
+  '%PATH%x',
+  '!PATH!',
+  '"',
+  '\\"',
+  'q"r',
+  'a "b" c',
+  '"quoted words"',
+  'a"b & echo PWNED',
+  '^',
+  '<in>',
+  '(x)',
+  '{y}',
+  '@z',
+  '#c',
+  '-a.b',
+  '-foo:bar',
+  '\u00e9',
+  '\u201C\u201D',
+];
+
+// Prints argv as JSON with every non-ASCII character escaped, so the
+// comparison is exact whatever the console code page.
+const printArgvAscii = [
+  process.execPath,
+  '-e',
+  'console.log(JSON.stringify(process.argv.slice(1)).replace(/[\\u0080-\\uffff]/g,(c)=>"\\\\u"+c.charCodeAt(0).toString(16).padStart(4,"0")))',
+];
+
+const echoBack = async (shell: string, args: readonly string[]) => {
+  const { stdout, stderr, exitCode } = await runCommandResult(
+    [...printArgvAscii, ...args],
+    shell,
+  );
+  return { argv: JSON.parse(stdout) as unknown, stderr, exitCode };
+};
+
+// pwsh is optional on a developer machine; both CI legs have it.
+const hasPwsh =
+  spawnSync('pwsh', ['-NoProfile', '-Command', 'exit 0']).status === 0;
+
+describe('hostile arguments arrive byte for byte (review 5916926264 #1)', () => {
+  it.each(
+    process.platform === 'win32'
+      ? ['powershell.exe']
+      : ['/bin/bash', '/bin/sh'],
+  )('%s', async (shell) => {
+    expect(await echoBack(shell, HOSTILE)).toEqual({
+      argv: HOSTILE,
+      stderr: '',
+      exitCode: 0,
+    });
+  });
+
+  // Skipped where pwsh is not installed (review 5916926264 #1).
+  it.skipIf(!hasPwsh)('pwsh', async () => {
+    expect(await echoBack('pwsh', HOSTILE)).toEqual({
+      argv: HOSTILE,
+      stderr: '',
+      exitCode: 0,
+    });
   });
 });
 
