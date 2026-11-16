@@ -7,10 +7,11 @@
  * error is reported through Commander's `error()`: exit code 1, honouring
  * `exitOverride()`. Under `--debug` (the root's, plain or qualified) or
  * `GETDOTENV_DEBUG`, one `[getdotenv:argv]` line on stderr shows the typed
- * and the normalized argv.
+ * and the normalized argv, masked when redaction is on (see `argvDebug`).
  */
 import type { Option } from '@commander-js/extra-typings';
 
+import { argvDebugLine } from './argvDebug';
 import type { GetDotenvCli } from './GetDotenvCli';
 import { configureHostHelpTree } from './hostHelp';
 import {
@@ -107,9 +108,7 @@ export const parseHost = async (
   }
   recordRunArgv(program, n.argv, true);
   if (process.env.GETDOTENV_DEBUG || rootDebug(program, n))
-    process.stderr.write(
-      `[getdotenv:argv] typed: ${JSON.stringify(typed)} normalized: ${JSON.stringify(n.argv)}\n`,
-    );
+    process.stderr.write(await argvDebugLine(program, typed, n));
   if (n.walk.help === program) {
     await renderTopLevelHelp(program);
     return;

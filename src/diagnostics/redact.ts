@@ -49,7 +49,9 @@ const compile = (patterns?: Array<string | RegExp>) =>
 const shouldRedactKey = (key: string, regs: RegExp[]) =>
   regs.some((re) => re.test(key));
 
-const MASK = '[redacted]';
+/** What a redacted value is shown as. */
+export const REDACTION_MASK = '[redacted]';
+const MASK = REDACTION_MASK;
 
 /**
  * Redact a single displayed value according to key/patterns.

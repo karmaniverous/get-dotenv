@@ -84,6 +84,32 @@ export const applyHelpVisibility = (
   );
 };
 
+/** A host's root options, resolved outside the root hooks. */
+export interface HostRootOptions {
+  /** The resolved root options bag. */
+  merged: ReturnType<typeof resolveRootOptionsBag>;
+  /** The host's config sources. */
+  sources: ResolvedConfigSources;
+}
+
+/**
+ * Resolve a host's root options outside the root hooks, by the hooks' stack:
+ * `raw` (the CLI flags) over the parent's bag, config and the host's
+ * defaults.
+ *
+ * @param program - The host root.
+ * @param raw - The root's CLI flags, by attribute name.
+ * @returns The resolved options and the config sources.
+ */
+export const resolveHostRootOptions = async (
+  program: GetDotenvCli,
+  raw: Record<string, unknown>,
+): Promise<HostRootOptions> => {
+  const rootDefaults = SETTINGS.get(program)?.rootDefaults ?? {};
+  const sources = await resolveGetDotenvConfigSources(hostMetaUrlOf(program));
+  return { merged: resolveRootOptionsBag(raw, rootDefaults, sources), sources };
+};
+
 /**
  * Render top-level help.
  *
@@ -92,9 +118,10 @@ export const applyHelpVisibility = (
 export const renderTopLevelHelp = async (
   program: GetDotenvCli,
 ): Promise<void> => {
-  const rootDefaults = SETTINGS.get(program)?.rootDefaults ?? {};
-  const sources = await resolveGetDotenvConfigSources(hostMetaUrlOf(program));
-  const helpMerged = resolveRootOptionsBag({}, rootDefaults, sources);
+  const { merged: helpMerged, sources } = await resolveHostRootOptions(
+    program,
+    {},
+  );
   const { outputPath: _outputPath, ...helpOptions } =
     getDotenvCliOptions2Options(helpMerged);
   const ctx = await program.resolveAndLoad(

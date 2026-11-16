@@ -95,6 +95,11 @@ export interface WalkAssignment {
   flag: string;
   /** The item that held it. */
   item: number;
+  /** The values Commander gives it, as typed: the next token, the text
+   *  after `=` or after a short flag in a group, then each later token of a
+   *  variadic run. Empty for a flag that takes no value, or an optional
+   *  value left out. */
+  values: string[];
 }
 
 /** What the walk saw. */
@@ -176,6 +181,8 @@ interface LevelParse {
   first: FirstOperand | undefined;
   /** The rest of a combined short-flag group, still to parse. */
   group: { arg: string; item: number } | undefined;
+  /** The last option taken: a variadic run adds its values to it. */
+  last: WalkAssignment | undefined;
 }
 
 /** The walk over one argv: Commander's parse, replayed command by command. */
@@ -233,6 +240,7 @@ class Walker {
       bare: false,
       first: undefined,
       group: undefined,
+      last: undefined,
     };
     p.dest = p.operands;
     if (this.parseOptions(p)) this.dispatch(p, pre);
@@ -246,8 +254,15 @@ class Walker {
   }
 
   /** Record a plain option taken by the command being parsed. */
-  private assign(p: LevelParse, option: Option, flag: string, item: number) {
-    this.walk.assigned.push({ command: p.cmd, option, flag, item });
+  private assign(
+    p: LevelParse,
+    option: Option,
+    flag: string,
+    item: number,
+    values: string[] = [],
+  ) {
+    p.last = { command: p.cmd, option, flag, item, values };
+    this.walk.assigned.push(p.last);
     p.defaultName = defaultSwitchOf(option) ?? p.defaultName;
   }
 
@@ -283,7 +298,10 @@ class Walker {
         p.dest.push(...this.rest(p, false));
         break;
       }
-      if (p.variadic && canBeValue(p.cmd, arg)) continue;
+      if (p.variadic && canBeValue(p.cmd, arg)) {
+        p.last?.values.push(arg);
+        continue;
+      }
       p.variadic = false;
 
       const taken = this.takeOption(p, arg, item);
@@ -309,6 +327,7 @@ class Walker {
     if (maybeOption(arg)) {
       const option = findOption(cmd, arg);
       if (option) {
+        const values: string[] = [];
         if (option.required) {
           const value = p.list[p.k++];
           if (value === undefined) {
@@ -319,17 +338,19 @@ class Walker {
             throw new NormalizeArgvError(
               `missing value for ${arg} (the next token, '${this.textAt(value)}', is a qualified option)`,
             );
+          values.push(this.textAt(value));
         } else if (option.optional) {
           const value = p.list[p.k];
           if (
             value !== undefined &&
             !this.isGap(value) &&
             canBeValue(cmd, this.textAt(value))
-          )
+          ) {
+            values.push(this.textAt(value));
             p.k++;
-          else p.bare = true;
+          } else p.bare = true;
         }
-        this.assign(p, option, arg, item);
+        this.assign(p, option, arg, item, values);
         p.variadic = option.variadic;
         return true;
       }
@@ -339,9 +360,9 @@ class Walker {
       const flag = `-${arg[1] as string}`;
       const option = findOption(cmd, flag);
       if (option) {
-        this.assign(p, option, flag, item);
-        if (!(option.required || (option.optional && p.flags.combine)))
-          p.group = { arg: `-${arg.slice(2)}`, item };
+        const inline = option.required || (option.optional && p.flags.combine);
+        this.assign(p, option, flag, item, inline ? [arg.slice(2)] : []);
+        if (!inline) p.group = { arg: `-${arg.slice(2)}`, item };
         return true;
       }
     }
@@ -350,7 +371,7 @@ class Walker {
       const flag = arg.slice(0, arg.indexOf('='));
       const option = findOption(cmd, flag);
       if (option && takesValue(option)) {
-        this.assign(p, option, flag, item);
+        this.assign(p, option, flag, item, [arg.slice(flag.length + 1)]);
         return true;
       }
     }

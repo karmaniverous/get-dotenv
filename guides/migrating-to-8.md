@@ -225,7 +225,7 @@ This is an addition. The next item is the change it brings.
 
 ### `--debug` prints the argv
 
-**What changed:** D28. Under `--debug` (or `--vc-debug`, or `GETDOTENV_DEBUG`), `parseAsync` first prints `[getdotenv:argv] typed: [...] normalized: [...]` to stderr. The normalized argv can contain a hidden _terminator_, such as `--vc-q1r1s`, that ends an optional option's value ([Terminators](./authoring/qualified-names.md#terminators)). Tools that parse `--debug` output may need to skip this line.
+**What changed:** D28. Under `--debug` (or `--vc-debug`, or `GETDOTENV_DEBUG`), `parseAsync` first prints `[getdotenv:argv] typed: [...] normalized: [...]` to stderr. The normalized argv can contain a hidden _terminator_, such as `--vc-q1r1s`, that ends an optional option's value ([Terminators](./authoring/qualified-names.md#terminators)). Tools that parse `--debug` output may need to skip this line. With redaction on, the line masks each `-v`/`--vars` value and the value of any `KEY=VALUE` token whose key matches the redaction patterns; with it off, the line shows the argv as given (independent review of #93, finding 5).
 
 ### Errors are usage errors
 
