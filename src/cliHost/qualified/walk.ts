@@ -34,14 +34,24 @@ import {
 } from './commander';
 import { NormalizeArgvError } from './errors';
 
+/** A token left after extraction. */
+export interface WalkToken {
+  /** Always `token`. */
+  kind: 'token';
+  /** The token. */
+  text: string;
+}
+
+/** The gap a claimed qualified token left (Decision 34). */
+export interface WalkGap {
+  /** Always `gap`. */
+  kind: 'gap';
+  /** The claimed token as typed, for messages. */
+  text: string;
+}
+
 /** A token left after extraction, or the gap a claimed token left. */
-export type WalkItem =
-  | { kind: 'token'; text: string }
-  | {
-      kind: 'gap';
-      /** The claimed token as typed, for messages. */
-      text: string;
-    };
+export type WalkItem = WalkToken | WalkGap;
 
 /** How the walk entered a command. */
 export type WalkEntryKind =

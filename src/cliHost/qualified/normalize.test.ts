@@ -469,9 +469,9 @@ describe('normalizeArgv: steps 5 and 6 (owners and duplicates)', () => {
         ?.commands.find((c) => c.name() === 'openapi')
         ?.addOption(new Option('--env <name>', 'an openapi env'));
     });
-    expect(
-      normalizeArgv(vc, words('smoz openapi --env a --vc-env b')),
-    ).toEqual(words('--env=b smoz openapi --env a'));
+    expect(normalizeArgv(vc, words('smoz openapi --env a --vc-env b'))).toEqual(
+      words('--env=b smoz openapi --env a'),
+    );
   });
 
   it('a plain form assigned to another command does not count', async () => {

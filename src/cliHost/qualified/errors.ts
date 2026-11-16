@@ -10,7 +10,7 @@
  *
  * `GetDotenvCli.parseAsync` reports it through Commander's `error()` (exit
  * code 1, honouring `exitOverride()`); a custom host calling
- * {@link normalizeArgv} can do the same with `program.error(err.message)`.
+ * `normalizeArgv` can do the same with `program.error(err.message)`.
  */
 export class NormalizeArgvError extends Error {
   /**

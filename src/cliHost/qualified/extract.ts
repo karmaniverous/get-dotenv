@@ -15,8 +15,8 @@ import type { WalkItem } from './walk';
 
 /** One claimed qualified option. */
 export interface Claim {
-  /** Its table entry (owner and option). */
-  entry: QualifiedNameEntry & { kind: 'option' };
+  /** Its table entry (an option entry: owner and option). */
+  entry: QualifiedNameEntry;
   /** The qualified name as typed, without any `=value`. */
   name: string;
   /** Its value; `undefined` for a boolean or a bare optional option. */
@@ -82,7 +82,7 @@ export const extractQualified = (
     }
     items.push({ kind: 'gap', text: token });
     claims.push({
-      entry: entry as QualifiedNameEntry & { kind: 'option' },
+      entry,
       name,
       value,
       gap: items.length - 1,
