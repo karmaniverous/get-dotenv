@@ -214,7 +214,7 @@
     "lint": "eslint . eslint.config.ts",
     "lint:fix": "eslint --fix . eslint.config.ts",
     "release": "dotenvx run -f .env.local -- release-it",
-    "release:pre": "dotenvx run -f .env.local -- release-it --no-git.requireBranch --github.prerelease --preRelease",
+    "release:pre": "dotenvx run -f .env.local -- release-it --no-git.requireBranch --preRelease",
     "test": "vitest run",
     "typecheck": "tsc",
     "verify:types": "node tools/verify-types.js",
