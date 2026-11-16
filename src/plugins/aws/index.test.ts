@@ -23,6 +23,7 @@ vi.mock('../../cliHost/exec', () => {
 });
 
 import { createCli } from '@/src/cli';
+import { withEnv } from '@/test/support/fixtureCli';
 
 import { awsPlugin } from './index';
 
@@ -69,5 +70,53 @@ describe('plugins/aws subcommand', () => {
     expect(Array.isArray(cmd) ? cmd.slice(0, 2) : []).toEqual(['aws', 'sts']);
     expect(opts.stdio).toBe('pipe');
     expect(typeof opts.env).toBe('object');
+  });
+
+  it("outside a test runner, forwarding exits with the AWS CLI's exit code", async () => {
+    runCommandMock.mockResolvedValue(3);
+    const exit = vi
+      .spyOn(process, 'exit')
+      .mockImplementation((() => undefined) as never);
+    const prevExitCode = process.exitCode;
+    try {
+      await withEnv(
+        {
+          GETDOTENV_TEST: undefined,
+          VITEST_WORKER_ID: undefined,
+          GETDOTENV_STDIO: 'pipe',
+        },
+        () =>
+          createCli({
+            importMetaUrl: import.meta.url,
+            alias: 'test',
+            compose: (program) => program.use(awsPlugin()),
+          })(['aws', '--', 'sts', 'get-caller-identity']),
+      );
+      expect(runCommandMock).toHaveBeenCalledTimes(1);
+      expect(exit).toHaveBeenCalledWith(3);
+    } finally {
+      exit.mockRestore();
+      process.exitCode = prevExitCode;
+    }
+  });
+
+  it('under a test runner, forwarding sets the exit code without exiting', async () => {
+    runCommandMock.mockResolvedValue(3);
+    const exit = vi
+      .spyOn(process, 'exit')
+      .mockImplementation((() => undefined) as never);
+    const prevExitCode = process.exitCode;
+    try {
+      await createCli({
+        importMetaUrl: import.meta.url,
+        alias: 'test',
+        compose: (program) => program.use(awsPlugin()),
+      })(['aws', '--', 'sts', 'get-caller-identity']);
+      expect(process.exitCode).toBe(3);
+      expect(exit).not.toHaveBeenCalled();
+    } finally {
+      exit.mockRestore();
+      process.exitCode = prevExitCode;
+    }
   });
 });

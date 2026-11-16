@@ -164,6 +164,22 @@ describe('plugins/init', () => {
     );
   });
 
+  it('an unknown --config-format falls back to json', async () => {
+    const dir = path.posix.join(TROOT, 'case6');
+    await fs.remove(dir);
+
+    await createCli({
+      importMetaUrl: import.meta.url,
+      alias: 'test',
+      compose: (p) => p.use(initPlugin()),
+    })(['init', dir, '--config-format', 'toml', '--force']);
+
+    const written = (await fs.readdir(dir)).filter((f) =>
+      f.startsWith('getdotenv.config.'),
+    );
+    expect(written).toEqual(['getdotenv.config.json']);
+  });
+
   it('forces overwrite in non-interactive/CI scenarios (force precedence)', async () => {
     const dir = path.posix.join(TROOT, 'case4');
     await fs.remove(dir);
