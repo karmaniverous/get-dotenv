@@ -14,11 +14,7 @@ afterEach(() => {
 describe('resolveRootOptionsBag', () => {
   it('with no host defaults and no config, gives the base defaults and base scripts', () => {
     delete process.env.getDotenvCliOptions;
-    const bag = resolveRootOptionsBag(
-      {},
-      undefined,
-      {},
-    );
+    const bag = resolveRootOptionsBag({}, undefined, {});
     expect(bag.scripts).toEqual(baseRootOptionDefaults.scripts);
     expect(bag.paths).toEqual(baseRootOptionDefaults.paths);
   });
