@@ -1,6 +1,7 @@
 /**
  * The reference syntax the dotenv expander reads: `$VAR[:default]` and
- * `${VAR[:default]}`. Internal: shared by the expander and the writer.
+ * `${VAR[:default]}`, with `\$` a literal `$`. Internal: shared by the
+ * expander and the writer.
  */
 
 /** A reference parsed at a `$`. */
@@ -63,4 +64,32 @@ export const parseReference = (
   return close === -1
     ? undefined
     : { name: head[1], fallback: text.slice(start, close), end: close + 1 };
+};
+
+/**
+ * Escape `value` so the expander gives it back unchanged: a `\` goes before
+ * each `$` the expander would act on (review 5916926264 #4). That is a `$`
+ * after a `\` (the pair would read as `\$`) and a `$` that starts a
+ * reference. Any other `$` (`cost $`, `$!`) is left alone.
+ *
+ * Whether a `$` starts a reference depends on the text after it, escapes
+ * included (an escaped `\$` hides a `}` from a braced default's search), so
+ * the scan runs right to left over the already-escaped tail.
+ *
+ * @param value - A literal value.
+ * @returns The text to write, which expands to `value` whatever the
+ * variables.
+ */
+export const escapeExpansion = (value: string): string => {
+  let out = '';
+  for (let i = value.length - 1; i >= 0; i--) {
+    const ch = value.charAt(i);
+    out = ch + out;
+    if (
+      ch === '$' &&
+      (value.charAt(i - 1) === '\\' || parseReference(out, 0) !== undefined)
+    )
+      out = `\\${out}`;
+  }
+  return out;
 };

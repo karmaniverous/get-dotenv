@@ -2,8 +2,10 @@
  * @packageDocumentation
  * Dotenv value formatting, shared by get-dotenv's two dotenv writers: the
  * format-preserving editor (`editDotenvText`/`editDotenvFile`) and the
- * `outputPath` (`-o`) writer. A value is written so that dotenv's `parse`
- * reads it back exactly (#72).
+ * `outputPath` (`-o`) writer. A value is written so that get-dotenv's read
+ * path, dotenv's `parse` and then get-dotenv's expander, reads it back
+ * exactly (#72). A `$` the expander would act on is escaped as `\$` first
+ * (review 5916926264 #4); dotenv reads `\$` verbatim in every form.
  *
  * dotenv's parser has quirks a writer must respect: a bare value ends at the
  * first `#` and is trimmed; carriage returns in the source become line feeds;
@@ -18,6 +20,7 @@
 
 import { parse } from 'dotenv';
 
+import { escapeExpansion } from './dotenvReference';
 import { parseDotenvDocument } from './edit/parseDotenvDocument';
 import type { DotenvQuote } from './edit/types';
 
@@ -85,10 +88,12 @@ const editorReadsBack = (token: string, quote: DotenvQuote | null): boolean => {
 
 /**
  * Format a value as the token written after `KEY=`, so that dotenv's `parse`
- * reads it back exactly.
+ * and then get-dotenv's expander read it back exactly.
  *
- * Forms are tried in order and the first that dotenv reads back unchanged is
- * used:
+ * A `$` the expander would act on (one that starts a reference, or follows a
+ * `\`) is written as `\$`, so the value is literal: a reference can't be
+ * written through this function. Forms of that text are tried in order and
+ * the first that dotenv reads back unchanged is used:
  * - with `preferQuote` (the line's current quote style): that quote, then the
  *   other quotes (double, single, backtick), then bare;
  * - without: bare, then double quotes, single quotes, backticks.
@@ -110,7 +115,8 @@ export const formatDotenvValue = (args: {
   preferQuote?: DotenvQuote | null;
   fileEol?: '\n' | '\r\n';
 }): FormattedDotenvValue => {
-  const { key, value, preferQuote = null, fileEol = '\n' } = args;
+  const { key, preferQuote = null, fileEol = '\n' } = args;
+  const value = escapeExpansion(args.value);
 
   const order: Array<DotenvQuote | null> =
     preferQuote === null

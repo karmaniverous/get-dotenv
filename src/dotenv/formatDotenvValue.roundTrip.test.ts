@@ -1,18 +1,27 @@
 /**
  * #72: get-dotenv's dotenv writers (the editor and the `-o` writer) write
- * every value so that dotenv 18's `parse` reads it back exactly.
+ * every value so that get-dotenv's read path, dotenv 18's `parse` then
+ * get-dotenv's expander, reads it back exactly (review 5916926264 #4: a `$`
+ * the expander would act on is escaped).
  *
  * Property-style: values are generated from a fixed alphabet of awkward
  * characters with a fixed-seed PRNG (deterministic, no flakiness), written,
- * parsed with dotenv (both its parsers) in several surrounding contexts, and
- * compared. A value the writer refuses must be one that no quote style can
- * represent, checked against every candidate form independently.
+ * parsed with dotenv (both its parsers) in several surrounding contexts,
+ * expanded, and compared. A value the writer refuses must be one that no
+ * quote style can represent, checked against every candidate form
+ * independently.
  */
+import { mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import path from 'node:path';
+
 import { parse } from 'dotenv';
 import { describe, expect, it } from 'vitest';
 
+import { getDotenv } from '@/src/core';
 import { formatDotenvRecord } from '@/src/util/dotenvFile';
 
+import { dotenvExpandAll } from './dotenvExpand';
 import { editDotenvText } from './edit/editDotenvText';
 import { parseDotenvDocument } from './edit/parseDotenvDocument';
 import { formatDotenvValue } from './formatDotenvValue';
@@ -47,6 +56,10 @@ const ALPHABET = [
   '\r\n',
   '=',
   '$',
+  '$A',
+  '${',
+  '}',
+  ':',
   'é',
   '\u2028',
   'C:\\new\\dir',
@@ -70,6 +83,22 @@ const VALUES = generate(3000, 72);
 /** Parse with both dotenv parsers. */
 const parseBoth = (text: string) => [parse(text), parse(text, { fast: true })];
 
+// A snapshot: spreading `process.env` itself is slow, and the values are
+// the same.
+const REF = { ...process.env };
+
+/**
+ * get-dotenv's read path: each dotenv parser, then the expander as
+ * `getDotenv` runs it (progressive, against `process.env`). An empty value
+ * reads as `undefined` there; it is compared as `''`.
+ */
+const readBoth = (text: string, progressive = true) =>
+  parseBoth(text).map((p) => dotenvExpandAll(p, { ref: REF, progressive }));
+
+// Whole files are read without progressive expansion, which is quadratic in
+// the key count; the getDotenv test reads one file the progressive way.
+const readFile = (text: string) => readBoth(text, false);
+
 /**
  * Lines the value's line is checked between: alone, after another key, and
  * before a line whose last character is each quote (an unterminated value
@@ -84,19 +113,23 @@ const contexts = (line: string, eol: string): string[] => [
 
 const readsBack = (token: string, value: string, eol = '\n'): boolean =>
   contexts(`K=${token}`, eol).every((text) =>
-    parseBoth(text).every((p) => p.K === value),
+    readBoth(text).every((p) => (p.K ?? '') === value),
   );
 
 /**
  * Every form a writer could choose, built independently of the writer, with
  * the quote style the editor's parser must see when it reads the line again.
+ * Every `$` is escaped, so the expander reads none of them.
  */
-const candidates = (v: string): Array<[string, string | null]> => [
-  [v, null],
-  [`"${v.replace(/\r/g, '\\r')}"`, '"'],
-  [`'${v}'`, "'"],
-  [`\`${v}\``, '`'],
-];
+const candidates = (value: string): Array<[string, string | null]> => {
+  const v = value.replace(/\$/g, '\\$');
+  return [
+    [v, null],
+    [`"${v.replace(/\r/g, '\\r')}"`, '"'],
+    [`'${v}'`, "'"],
+    [`\`${v}\``, '`'],
+  ];
+};
 
 /** The editor reads the line back as one value in that quote style, closed at the end. */
 const editorReadsBack = (token: string, quote: string | null): boolean => {
@@ -191,6 +224,23 @@ describe('formatDotenvValue round trip (#72)', () => {
     // U+2028 is ordinary content to dotenv and to the editor's parser.
     expect(fmt('a\u2028b', null)).toBe('a\u2028b');
   });
+
+  it('escapes a $ the expander would act on, and only that (review 5916926264 #4)', () => {
+    const fmt = (value: string) => formatDotenvValue({ key: 'K', value }).token;
+    expect(fmt('pa$$word')).toBe('pa$\\$word');
+    expect(fmt('$HOME/x')).toBe('\\$HOME/x');
+    expect(fmt('${A:-x}')).toBe('\\${A:-x}');
+    // A `\` before a `$` would read as `\$`.
+    expect(fmt('a\\$')).toBe('a\\\\$');
+    // A `$` that starts no reference is left alone.
+    expect(fmt('cost $')).toBe('cost $');
+    expect(fmt('$!')).toBe('$!');
+    // An unclosed default is no reference, until a later escape would
+    // hide its `}` from the closing-brace search: the scan is right to left.
+    expect(fmt('${a:${b}')).toBe('\\${a:\\${b}');
+    for (const v of ['pa$$word', '$HOME/x', 'a\\$', '${a:${b}', 'x$'])
+      expect(readsBack(fmt(v), v)).toBe(true);
+  });
 });
 
 describe('dotenv writers round-trip whole files (#72)', () => {
@@ -206,9 +256,25 @@ describe('dotenv writers round-trip whole files (#72)', () => {
     representable.map((v, i) => [`K${String(i)}`, v]),
   );
 
+  // get-dotenv reads an empty value as undefined.
+  const read = Object.fromEntries(
+    Object.entries(record).map(([k, v]) => [k, v === '' ? undefined : v]),
+  );
+
   it('-o writer: formatDotenvRecord reads back as the record', () => {
-    for (const p of parseBoth(formatDotenvRecord(record)))
-      expect(p).toEqual(record);
+    for (const p of readFile(formatDotenvRecord(record)))
+      expect(p).toEqual(read);
+  });
+
+  it('-o writer: getDotenv reads the written file back as the record (review 5916926264 #4)', async () => {
+    const dir = await mkdtemp(path.join(tmpdir(), 'gd-roundtrip-'));
+    try {
+      await writeFile(path.join(dir, '.env'), formatDotenvRecord(record));
+      const vars = await getDotenv({ dotenvToken: '.env', paths: [dir] });
+      expect(Object.fromEntries(Object.entries(vars))).toEqual(read);
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
   });
 
   it('-o writer: undefined is written as an empty value', () => {
@@ -234,8 +300,8 @@ describe('dotenv writers round-trip whole files (#72)', () => {
 
   it('editor: new keys in an empty file read back as the record (LF and CRLF)', () => {
     for (const eol of ['lf', 'crlf'] as const)
-      for (const p of parseBoth(editDotenvText('', record, { eol })))
-        expect(p).toEqual(record);
+      for (const p of readFile(editDotenvText('', record, { eol })))
+        expect(p).toEqual(read);
   });
 
   it('editor: updates to existing lines of every quote style read back', () => {
@@ -245,7 +311,7 @@ describe('dotenv writers round-trip whole files (#72)', () => {
       .map((k, i) => (styles[i % styles.length] ?? '').replace('K', k))
       .join('\n');
     const out = editDotenvText(`${text}\n`, record);
-    for (const p of parseBoth(out)) expect(p).toEqual(record);
+    for (const p of readFile(out)) expect(p).toEqual(read);
   });
 
   it('editor: issue repros', () => {

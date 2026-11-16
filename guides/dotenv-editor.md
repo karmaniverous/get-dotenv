@@ -102,7 +102,7 @@ When the same key appears multiple times, you can choose how to update/delete oc
 
 ## Quoting, multiline, and comment safety
 
-Every value is written so that dotenv's `parse` reads it back exactly. The editor and the `outputPath` (`-o`) writer share one formatter, which tries these forms in order and writes the first that dotenv reads back unchanged (and that the editor reads as the same single value the next time it edits the file):
+Every value is written so that get-dotenv reads it back exactly: dotenv's `parse`, then get-dotenv's expander. A value is literal, so a `$` the expander would act on (one that starts a reference such as `$HOME` or `${A:-x}`, or one after a `\`) is written `\$`: `pa$$word` becomes `pa$\$word`. A `$` that starts no reference (`cost $`) is left alone. To write a reference that get-dotenv expands, write that line yourself. The editor and the `outputPath` (`-o`) writer share one formatter, which tries these forms of the escaped value in order and writes the first that dotenv reads back unchanged (and that the editor reads as the same single value the next time it edits the file):
 
 - An existing line: its current quote style, then double quotes, single quotes, backticks, then bare.
 - A new key, or an unquoted line: bare, then double quotes, single quotes, backticks.
