@@ -20,7 +20,7 @@ Key idea: treat the “resolved dotenv context” (`ctx.dotenv`) as the source o
 
 ## Install + import rules
 
-- Node: >= 20
+- Node: >= 22.12.0
 - Package is ESM-only (CommonJS must use dynamic `import()`).
 - Recommended imports (public API):
   - Programmatic core: `import { getDotenv } from '@karmaniverous/get-dotenv'`
@@ -48,11 +48,11 @@ Use this section when you need a “what do I import?” answer quickly.
   - Env composition: `getDotenv`, `defineDynamic`, `defineGetDotenvConfig`
   - Defaults: `baseRootOptionDefaults`
   - Expansion: `dotenvExpand`, `dotenvExpandAll`, `dotenvExpandFromProcessEnv`
-  - Dotenv editing: `editDotenvText`, `editDotenvFile` (format-preserving)
+  - Dotenv editing: `editDotenvText`, `editDotenvFile` (format-preserving), `resolveDotenvTarget`, `buildDotenvTargetFilename`
   - Diagnostics: `traceChildEnv`, `redactDisplay`, `redactObject`, `maybeWarnEntropy`
   - Utilities: `interpolateDeep`, `writeDotenvFile`, `defaultsDeep`, `tokenize`, `applyIncludeExclude`, `requireString`, `assertByteLimit`, `silentLogger`, `assertLogger`, `toNumber`, `parseFiniteNumber`, `parsePositiveInt`, `parseNonNegativeInt`
 - CLI factory (`@karmaniverous/get-dotenv/cli`):
-  - `createCli({ importMetaUrl, alias?, version?, description?, branding?, compose?, rootOptionDefaults?, rootOptionVisibility? }) -> (argv?) => Promise<void>`
+  - `createCli({ importMetaUrl, alias?, version?, description?, branding?, compose?, rootOptionDefaults?, rootOptionVisibility? }) -> (argv?, { from }?) => Promise<void>` (an explicit argv is user arguments only; `{ from: 'node' }` takes a full process argv)
 - CLI host (`@karmaniverous/get-dotenv/cliHost`):
   - Host class: `GetDotenvCli`
   - Plugin authoring: `definePlugin` (returns a plugin with `readConfig` and `createPluginDynamicOption`)
@@ -60,6 +60,7 @@ Use this section when you need a “what do I import?” answer quickly.
   - Option bag: `readMergedOptions`
   - Shell/scripting: `resolveCommand`, `resolveShell`, `defineScripts`
   - Helpers: `getRootCommand`, `composeNestedEnv`, `maybePreserveNodeEvalArgv`
+  - Qualified options: `normalizeArgv`, `NormalizeArgvError`, `terminatorName`
 - Config (`@karmaniverous/get-dotenv/config`):
   - `resolveGetDotenvConfigSources(...)` and validation helpers
 
@@ -79,7 +80,7 @@ Key idea: treat the “resolved dotenv context” (`ctx.dotenv`) as the source o
 
 ## Install + import rules
 
-- Node: >= 20
+- Node: >= 22.12.0
 - Package is ESM-only (CommonJS must use dynamic `import()`).
 - Recommended imports (public API):
   - Programmatic core: `import { getDotenv } from '@karmaniverous/get-dotenv'`
@@ -594,11 +595,11 @@ Use this section when you need a “what do I import?” answer quickly.
   - Env composition: `getDotenv`, `defineDynamic`, `defineGetDotenvConfig`
   - Defaults: `baseRootOptionDefaults`
   - Expansion: `dotenvExpand`, `dotenvExpandAll`, `dotenvExpandFromProcessEnv`
-  - Dotenv editing: `editDotenvText`, `editDotenvFile` (format-preserving)
+  - Dotenv editing: `editDotenvText`, `editDotenvFile` (format-preserving), `resolveDotenvTarget`, `buildDotenvTargetFilename`
   - Diagnostics: `traceChildEnv`, `redactDisplay`, `redactObject`, `maybeWarnEntropy`
   - Utilities: `interpolateDeep` (deep string-leaf interpolation), `writeDotenvFile`, `defaultsDeep`, `tokenize`, `assertLogger`, `silentLogger`
 - CLI factory (`@karmaniverous/get-dotenv/cli`):
-  - `createCli({ importMetaUrl, alias?, version?, description?, branding?, compose?, rootOptionDefaults?, rootOptionVisibility? }) -> (argv?) => Promise<void>`
+  - `createCli({ importMetaUrl, alias?, version?, description?, branding?, compose?, rootOptionDefaults?, rootOptionVisibility? }) -> (argv?, { from }?) => Promise<void>` (an explicit argv is user arguments only; `{ from: 'node' }` takes a full process argv)
 - CLI host (`@karmaniverous/get-dotenv/cliHost`):
   - Host class: `GetDotenvCli`
   - Plugin authoring: `definePlugin` (returns a plugin with `readConfig` and `createPluginDynamicOption`)
@@ -606,6 +607,7 @@ Use this section when you need a “what do I import?” answer quickly.
   - Option bag: `readMergedOptions`
   - Shell/scripting: `resolveCommand`, `resolveShell`, `defineScripts`
   - Helpers: `getRootCommand`, `composeNestedEnv`, `maybePreserveNodeEvalArgv`
+  - Qualified options: `normalizeArgv`, `NormalizeArgvError`, `terminatorName`
 - Plugins (`@karmaniverous/get-dotenv/plugins`):
   - `cmdPlugin`, `batchPlugin`, `awsPlugin`, `awsWhoamiPlugin`, `initPlugin`
 - Config (`@karmaniverous/get-dotenv/config`):

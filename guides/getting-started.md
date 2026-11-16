@@ -4,7 +4,9 @@ title: Getting Started
 
 # Getting Started
 
-This page gives you four fast on‑ramps. Each section includes a minimal snippet and links to the right deep‑dive.
+This page gives you four fast on‑ramps. Each section includes a minimal snippet and links to the right deep‑dive. Requires Node.js 22.12 or later.
+
+Upgrading from 7.x? See [Migrating to 8.0](./migrating-to-8.md).
 
 ## Importing `z`
 

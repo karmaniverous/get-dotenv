@@ -12,6 +12,18 @@ title: 'Authoring Hosts & Plugins'
 - The first `parseAsync()` installs the plugins and builds the qualified-name table (call `brand()` first on a direct host). It throws on a qualified-name collision or a plain long option that starts with `<alias>-`, and registers each command's hidden terminator (`terminatorName(alias, path)`). See the Qualified Names authoring guide.
 - Every `parseAsync(argv?, { from })` normalizes argv first (`normalizeArgv`, exported from `cliHost`): each qualified option (`--vc-aws-profile p`) moves to its owner as `--profile=p`, typed terminators are dropped, and a default subcommand entered at a token is written in (`vc node -h` → `vc cmd node -h`). Normalization errors go through `this.error()` (exit 1). `-h` left with the root renders top-level help. The root's `rawArgs` is the normalized user arguments. Sync `parse()` throws. See the Qualified options guide.
 - Help (every command, plain `new Command()` mounts included): own option lines end with `(anywhere: --<qualified name>)` (not `--help`); each subcommand lists its ancestors' visible options by qualified name in `<owner> options (anywhere)` sections; root help lists `-h`, `-V` and every untagged root option; hidden options (`hideHelp()`, `rootOptionVisibility` from createCli and config, terminators) appear nowhere.
+- Terminators are written wherever the next written token would be taken as a value: after a bare optional option, and before a default subcommand written in after an open variadic or optional value (`vc -c npm test --watch` → `vc -c npm test --vc-q1r1s cmd --watch`).
+- Nested CLI aliases: pick one that doesn't start with another CLI's alias followed by a dash (`vc-test` under `vc` fails: `vc` claims every `--vc-*` token). There is no separate check.
+- Known limitation: a plugin's `new Command()` parent without positional options keeps parsing its options after its subcommand, so if it declares the child's plain flag it takes the child's qualified option. Don't reuse the flag, or call `.enablePositionalOptions()` on the parent.
+
+## Packaging a plugin (get-dotenv as an optional peer)
+
+- `@karmaniverous/get-dotenv` is an optional `peerDependency` `^8` (`peerDependenciesMeta: { optional: true }`) plus a `devDependency`, never a `dependency`.
+- The main entry (`.`) never imports get-dotenv, not even `import type`. The plugin and its config schema live in a `./get-dotenv` subpath. `Logger`/`ProcessEnv` types the main entry exposes are defined locally.
+- Import `z` from `zod` (cliHost no longer re-exports it) and declare `zod` as a `dependency`, kept external.
+- A bin is a launcher that loads the CLI module with a dynamic `import()`; on `ERR_MODULE_NOT_FOUND` for get-dotenv it prints the local/global/npx install routes and exits 1.
+- `createCli({ importMetaUrl: import.meta.url })` is required.
+- See the Packaging authoring guide and the Migrating to 8.0 guide.
 
 ## Minimal plugin pattern
 

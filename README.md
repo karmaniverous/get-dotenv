@@ -17,10 +17,15 @@ get‑dotenv helps you:
 - Add dynamic variables (JS/TS) that compute from the composed env.
 - Run commands with normalized shell behavior and a consistent child environment.
 - Compose your own CLI from shipped plugins or your own.
+- Give any command's option anywhere on the command line with its qualified name (`--vc-env`, `--vc-aws-profile`), so you can add options to the end of an npm script.
+
+Upgrading from 7.x? See [Migrating to 8.0](./guides/migrating-to-8.md).
 
 See full guides:
 
 - [Getting started](./guides/getting-started.md)
+- [Migrating to 8.0](./guides/migrating-to-8.md) (every breaking and behaviour change from 7.x)
+- [Qualified options](./guides/qualified-options.md) (options anywhere on the command line)
 - [Config and overlays](./guides/config.md) (dynamic, validation, defaults):
 - [Dotenv editor (format-preserving)](./guides/dotenv-editor.md)
 - [Shell execution behavior, quoting, capture, exit codes](./guides/shell.md)
@@ -42,7 +47,7 @@ See full guides:
 
 ## Requirements
 
-- Node.js ≥ 20 (this repository pins 22.19.0 for CI/reproducibility)
+- Node.js ≥ 22.12.0 (this repository pins 22.23.5 for CI/reproducibility)
 
 ## Installation
 
@@ -118,7 +123,7 @@ The shipped CLI is plugin‑first:
   - Quoting, alias conflicts, expansion behavior. [More info...](./guides/shipped/cmd.md)
 - Normalize shell behavior across platforms; use `--shell` (default OS shell) or `--shell-off`, and enable capture for CI:
   - [Shell guide](./guides/shell.md)
-- Execute across multiple working directories with the [`batch` plugin][guides/shipped/batch.md](./guides/shipped/batch.md)
+- Execute across multiple working directories with the [`batch` plugin](./guides/shipped/batch.md)
 
 ## Diagnostics (trace, capture, redact, entropy)
 
@@ -149,6 +154,8 @@ The host resolves dotenv context once per invocation, overlays config, validates
 - [Lifecycle & wiring](./guides/authoring/lifecycle.md)
 - [Executing shell commands](./guides/authoring/exec.md) from plugins
 - [Config & validation](./guides/authoring/config.md) for plugins
+- [Qualified names](./guides/authoring/qualified-names.md): naming, the reserved `<alias>-` prefix, terminators and nested CLI aliases
+- [Packaging](./guides/authoring/packaging.md): get-dotenv as an optional peer, the `./get-dotenv` subpath and a bin launcher
 
 ## API Reference
 

@@ -19,7 +19,7 @@ This page documents the root shell behavior controlled by the host’s global `-
 
 ## Plain vs shell mode
 
-- Plain (no shell): safer for simple commands; pipes, redirects, and globbing are not available unless the command itself implements them. When `get-dotenv` is given a *string* command in shell-off mode, it tokenizes it using a minimal tokenizer; for complex quoting or `node -e/--eval` payloads, prefer passing argv tokens (or use the `cmd`/`batch` positional token forms) so payloads are preserved precisely.
+- Plain (no shell): safer for simple commands; pipes, redirects, and globbing are not available unless the command itself implements them. When `get-dotenv` is given a _string_ command in shell-off mode, it tokenizes it using a minimal tokenizer; for complex quoting or `node -e/--eval` payloads, prefer passing argv tokens (or use the `cmd`/`batch` positional token forms) so payloads are preserved precisely.
 - Shell mode: the specified shell parses the command string, enabling pipes, redirects, aliases, and shell builtins. The string reaches the shell exactly as given (runs of spaces and `\ ` escapes included). Quoting and escaping must follow the shell's rules.
 
 ## Examples
@@ -104,17 +104,17 @@ Root and plugin flags display effective defaults derived from the same resolved 
 Examples (concise excerpts):
 
 ```text
-# getdotenv -h
-  -S, --shell-off                     command execution shell OFF (default)
-  -P, --load-process-off              load variables to process.env OFF (default)
-  -L, --log-off                       console log loaded variables OFF (default)
+# getdotenv -h (on Linux; on Windows the default shell is powershell.exe)
+  -p, --load-process        load variables to process.env ON (default) (anywhere: --getdotenv-load-process)
+  -P, --load-process-off    load variables to process.env OFF (anywhere: --getdotenv-load-process-off)
+  -L, --log-off             console log loaded variables OFF (default) (anywhere: --getdotenv-log-off)
+  -s, --shell [string]      command execution shell, no argument for default OS shell or provide shell string (default /bin/bash) (anywhere: --getdotenv-shell)
 ```
 
 ```text
 # getdotenv batch -h
-  -r, --root-path <string>  path to batch root directory from current working directory (default: "./")
-  -g, --globs <string>      space-delimited globs from root path (default: "*")
-  -p, --pkg-cwd             use nearest package directory as current working directory (default)
+  -g, --globs <string>      space-delimited globs from root path (default: "*") (anywhere: --getdotenv-batch-globs)
+  -r, --root-path <string>  path to batch root directory from current working directory (default: "./") (anywhere: --getdotenv-batch-root-path)
 ```
 
 Notes:
