@@ -14,7 +14,6 @@ import {
   resolveCommand,
   resolveShell,
   runCommand,
-  stripOne,
 } from '@/src/cliHost';
 import { shouldCapture } from '@/src/cliHost/exec';
 import { traceChildEnv } from '@/src/diagnostics';
@@ -92,15 +91,10 @@ export async function runCmdWithContext(
     if (Array.isArray(command)) {
       commandArg = maybePreserveNodeEvalArgv(parts);
     } else {
+      // A string command becomes argv only when it is a Node eval.
       const toks = tokenize(inputStr, { preserveDoubledQuotes: true });
-      if (
-        toks.length >= 3 &&
-        (toks[0] ?? '').toLowerCase() === 'node' &&
-        (toks[1] === '-e' || toks[1] === '--eval')
-      ) {
-        toks[2] = stripOne(toks[2] ?? '');
-        commandArg = toks;
-      }
+      const evalArgv = maybePreserveNodeEvalArgv(toks);
+      if (evalArgv !== toks) commandArg = evalArgv;
     }
   }
 

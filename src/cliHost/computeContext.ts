@@ -2,6 +2,7 @@ import type { OptionValues } from '@commander-js/extra-typings';
 import path from 'path';
 
 import { resolveGetDotenvConfigSources } from '@/src/config';
+import { configLayers } from '@/src/config/layers';
 import type {
   GetDotenvDynamic,
   GetDotenvOptions,
@@ -99,18 +100,23 @@ export const computeContext = async <
   // Discover config sources.
   const sources = await resolveGetDotenvConfigSources(hostMetaUrl);
 
+  // The cascade's paths and file name tokens, for both reads below.
+  const cascade = {
+    paths: Array.isArray(validated.paths) ? validated.paths : [],
+    ...(typeof validated.dotenvToken === 'string'
+      ? { dotenvToken: validated.dotenvToken }
+      : {}),
+    ...(typeof validated.privateToken === 'string'
+      ? { privateToken: validated.privateToken }
+      : {}),
+  };
+
   // Pre-pass: read global-only files to resolve defaultEnvKey (skip when env is explicit).
   let fileDefaultEnv: string | undefined;
   if (!validated.env) {
     const defaultEnvKey = validated.defaultEnvKey ?? 'DEFAULT_ENV';
     const prePass = await readDotenvCascadeWithProvenance({
-      paths: Array.isArray(validated.paths) ? validated.paths : [],
-      ...(typeof validated.dotenvToken === 'string'
-        ? { dotenvToken: validated.dotenvToken }
-        : {}),
-      ...(typeof validated.privateToken === 'string'
-        ? { privateToken: validated.privateToken }
-        : {}),
+      ...cascade,
       excludeEnv: true,
     });
     fileDefaultEnv = prePass.dotenv[defaultEnvKey];
@@ -126,13 +132,7 @@ export const computeContext = async <
 
   // Base dotenv from files (with file provenance; no dynamics; no programmatic vars; no side effects).
   const fileRes = await readDotenvCascadeWithProvenance({
-    paths: Array.isArray(validated.paths) ? validated.paths : [],
-    ...(typeof validated.dotenvToken === 'string'
-      ? { dotenvToken: validated.dotenvToken }
-      : {}),
-    ...(typeof validated.privateToken === 'string'
-      ? { privateToken: validated.privateToken }
-      : {}),
+    ...cascade,
     ...(typeof envName === 'string' ? { env: envName } : {}),
     ...(validated.excludeEnv === true ? { excludeEnv: true } : {}),
     ...(validated.excludeGlobal === true ? { excludeGlobal: true } : {}),
@@ -171,16 +171,11 @@ export const computeContext = async <
   // Dynamic precedence (A2): config dynamic < programmatic dynamic < dynamicPath
   if (!validated.excludeDynamic) {
     // Config dynamics (JS/TS configs only), ordered by source precedence.
-    const packagedDyn = (sources.packaged?.dynamic ?? undefined) as
-      GetDotenvDynamic | undefined;
-    const publicDyn = (sources.project?.public?.dynamic ?? undefined) as
-      GetDotenvDynamic | undefined;
-    const localDyn = (sources.project?.local?.dynamic ?? undefined) as
-      GetDotenvDynamic | undefined;
-
-    applyDynamic(packagedDyn, { dynamicSource: 'config' });
-    applyDynamic(publicDyn, { dynamicSource: 'config' });
-    applyDynamic(localDyn, { dynamicSource: 'config' });
+    for (const layer of configLayers(sources))
+      applyDynamic(
+        (layer?.dynamic ?? undefined) as GetDotenvDynamic | undefined,
+        { dynamicSource: 'config' },
+      );
 
     // Programmatic dynamic (overrides config dynamic)
     applyDynamic(validated.dynamic, { dynamicSource: 'programmatic' });
@@ -208,30 +203,11 @@ export const computeContext = async <
   if (validated.loadProcess) loadProcessEnv(dotenv, deletedKeys);
 
   // Merge and validate per-plugin config keyed by realized path (ns chain).
-  const packagedPlugins =
-    (sources.packaged &&
-      (
-        sources.packaged as unknown as {
-          plugins?: Record<string, unknown>;
-        }
-      ).plugins) ??
-    {};
-  const publicPlugins =
-    (sources.project?.public &&
-      (
-        sources.project.public as unknown as {
-          plugins?: Record<string, unknown>;
-        }
-      ).plugins) ??
-    {};
-  const localPlugins =
-    (sources.project?.local &&
-      (
-        sources.project.local as unknown as {
-          plugins?: Record<string, unknown>;
-        }
-      ).plugins) ??
-    {};
+  const pluginLayers = configLayers(sources).map(
+    (layer) =>
+      (layer as { plugins?: Record<string, unknown> } | undefined)?.plugins ??
+      {},
+  );
 
   const entries: PluginFlattenedEntry<TOptions, TArgs, TOpts, TGlobal>[] =
     flattenPluginTreeByPath(plugins);
@@ -245,9 +221,10 @@ export const computeContext = async <
     const pathKey = e.path;
     const mergedRaw = defaultsDeep<Record<string, unknown>>(
       {},
-      (packagedPlugins[pathKey] as Record<string, unknown> | undefined) ?? {},
-      (publicPlugins[pathKey] as Record<string, unknown> | undefined) ?? {},
-      (localPlugins[pathKey] as Record<string, unknown> | undefined) ?? {},
+      ...pluginLayers.map(
+        (layer) =>
+          (layer[pathKey] as Record<string, unknown> | undefined) ?? {},
+      ),
     );
     const interpolated = interpolateDeep(mergedRaw, envRef);
 

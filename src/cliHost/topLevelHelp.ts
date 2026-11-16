@@ -13,6 +13,7 @@ import {
   type ResolvedConfigSources,
   resolveGetDotenvConfigSources,
 } from '@/src/config';
+import { configLayers } from '@/src/config/layers';
 import { getDotenvCliOptions2Options } from '@/src/core';
 
 import type { GetDotenvCli } from './GetDotenvCli';
@@ -68,9 +69,9 @@ export const applyHelpVisibility = (
     program,
     mergeRootVisibility(
       SETTINGS.get(program)?.visibility,
-      sources.packaged?.rootOptionVisibility ?? undefined,
-      sources.project?.public?.rootOptionVisibility ?? undefined,
-      sources.project?.local?.rootOptionVisibility ?? undefined,
+      ...configLayers(sources).map(
+        (layer) => layer?.rootOptionVisibility ?? undefined,
+      ),
     ),
   );
 };

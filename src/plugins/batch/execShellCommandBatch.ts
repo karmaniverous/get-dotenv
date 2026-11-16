@@ -8,6 +8,7 @@ import {
   runCommand,
   runCommandResult,
 } from '@/src/cliHost';
+import { shouldCapture } from '@/src/cliHost/exec';
 
 import type {
   BatchGlobPathsOptions,
@@ -62,6 +63,186 @@ interface ParallelResult {
   error?: unknown;
 }
 
+type BatchLogger = ExecShellCommandBatchOptions['logger'];
+
+/** What every directory run needs: the command, its shell and the child env. */
+interface DirectoryRun {
+  command: string | string[];
+  shell: ExecShellCommandBatchOptions['shell'];
+  env: ReturnType<typeof buildSpawnEnv>;
+  headerCommand: string;
+  ignoreErrors: boolean | undefined;
+  logger: BatchLogger;
+}
+
+/** Log the batch header: a rule as wide as its widest line, then the lines. */
+const logBatchHeader = (logger: BatchLogger, lines: string[]): void => {
+  const [title = '', ...rest] = lines;
+  logger.info('*'.repeat(Math.max(...lines.map((line) => line.length))));
+  logger.info(title);
+  logger.info('');
+  for (const line of rest) logger.info(line);
+};
+
+/** Log the header of one directory's run. */
+const logDirectoryHeader = (
+  logger: BatchLogger,
+  dirPath: string,
+  headerCommand: string,
+): void => {
+  const pathLabel = `CWD:   ${dirPath}`;
+  logger.info('');
+  logger.info('*'.repeat(pathLabel.length));
+  logger.info(pathLabel);
+  logger.info(headerCommand);
+};
+
+/** Write captured output, ending it with a newline. */
+const writeCaptured = (stream: NodeJS.WriteStream, text: string): void => {
+  if (text) stream.write(text + (text.endsWith('\n') ? '' : '\n'));
+};
+
+/**
+ * Run the command in every directory with at most `limit` at once, each
+ * result in its directory's slot (discovery order).
+ */
+const runPool = async (
+  run: DirectoryRun,
+  paths: string[],
+  limit: number,
+): Promise<ParallelResult[]> => {
+  const results: ParallelResult[] = [];
+
+  // Simple semaphore-based concurrency pool.
+  let active = 0;
+  let nextIdx = 0;
+  const total = paths.length;
+  results.length = total;
+
+  await new Promise<void>((resolveAll) => {
+    let settled = false;
+    let completedCount = 0;
+
+    const tryLaunch = () => {
+      while (active < limit && nextIdx < total) {
+        const idx = nextIdx++;
+        const dirPath = paths[idx] as string;
+        active++;
+
+        runCommandResult(run.command, run.shell, {
+          cwd: dirPath,
+          env: run.env,
+        })
+          .then((res) => {
+            results[idx] = {
+              dirPath,
+              exitCode: res.exitCode,
+              stdout: res.stdout,
+              stderr: res.stderr,
+            };
+          })
+          .catch((err: unknown) => {
+            results[idx] = {
+              dirPath,
+              exitCode: 1,
+              stdout: '',
+              stderr: String(err),
+              error: err,
+            };
+          })
+          .finally(() => {
+            active--;
+            completedCount++;
+            if (completedCount === total && !settled) {
+              settled = true;
+              resolveAll();
+            } else {
+              tryLaunch();
+            }
+          });
+      }
+    };
+
+    if (total === 0) {
+      resolveAll();
+    } else {
+      tryLaunch();
+    }
+  });
+  return results;
+};
+
+/**
+ * Parallel mode: run every directory, print the buffered output in
+ * discovery order, then report the failures.
+ *
+ * @returns The first failure's exit code, or `undefined` when none counts.
+ */
+const runParallel = async (
+  run: DirectoryRun,
+  paths: string[],
+  limit: number,
+): Promise<number | undefined> => {
+  const { logger } = run;
+  const results = await runPool(run, paths, limit);
+  const failures: ParallelResult[] = [];
+
+  for (const result of results) {
+    logDirectoryHeader(logger, result.dirPath, run.headerCommand);
+    writeCaptured(process.stdout, result.stdout);
+    writeCaptured(process.stderr, result.stderr);
+    if (result.exitCode !== 0) failures.push(result);
+  }
+
+  if (failures.length > 0 && !run.ignoreErrors) {
+    logger.error('');
+    logger.error(
+      `${String(failures.length)} of ${String(paths.length)} directories failed:`,
+    );
+    for (const f of failures) {
+      logger.error(`  ${f.dirPath} (exit code ${String(f.exitCode)})`);
+    }
+    logger.info('');
+    return failures[0]?.exitCode ?? 1;
+  }
+  return undefined;
+};
+
+/**
+ * Sequential mode: run each directory in turn and stop at the first failure.
+ *
+ * @returns The failure's exit code, or `undefined` when none counts.
+ */
+const runSequential = async (
+  run: DirectoryRun,
+  paths: string[],
+  capture: boolean,
+): Promise<number | undefined> => {
+  const { logger } = run;
+  for (const p of paths) {
+    logDirectoryHeader(logger, p, run.headerCommand);
+
+    let exitCode: number;
+    try {
+      exitCode = await runCommand(run.command, run.shell, {
+        cwd: p,
+        env: run.env,
+        stdio: capture ? 'pipe' : 'inherit',
+      });
+    } catch (error) {
+      if (!run.ignoreErrors) throw error;
+      exitCode = 1;
+    }
+    if (exitCode !== 0 && !run.ignoreErrors) {
+      logger.error('');
+      logger.error(`${p} failed (exit code ${String(exitCode)}); stopping.`);
+      logger.info('');
+      return exitCode;
+    }
+  }
+  return undefined;
+};
+
 /**
  * Execute a batch of commands across multiple directories.
  * Discovers targets via globs/rootPath and runs the command in each.
@@ -88,11 +269,9 @@ export const execShellCommandBatch = async ({
   rootPath,
   shell,
 }: ExecShellCommandBatchOptions): Promise<number> => {
-  const capture =
-    process.env.GETDOTENV_STDIO === 'pipe' ||
-    Boolean(
-      (getDotenvCliOptions as { capture?: boolean } | undefined)?.capture,
-    );
+  const capture = shouldCapture(
+    (getDotenvCliOptions as { capture?: boolean } | undefined)?.capture,
+  );
 
   // Require a command only when not listing. In list mode, a command is optional.
   if (!command && !list) {
@@ -113,8 +292,6 @@ export const execShellCommandBatch = async ({
       ? 'Executing command batch (parallel)...'
       : 'Executing command batch...';
   logger.info('');
-  const headerRootPath = `ROOT:  ${absRootPath}`;
-  const headerGlobs = `GLOBS: ${globs}`;
   // Prepare a safe label for the header (avoid undefined in template)
   const commandLabel = Array.isArray(command)
     ? command.join(' ')
@@ -122,22 +299,12 @@ export const execShellCommandBatch = async ({
       ? command
       : '';
   const headerCommand = list ? `CMD:   (list only)` : `CMD:   ${commandLabel}`;
-
-  logger.info(
-    '*'.repeat(
-      Math.max(
-        headerTitle.length,
-        headerRootPath.length,
-        headerGlobs.length,
-        headerCommand.length,
-      ),
-    ),
-  );
-  logger.info(headerTitle);
-  logger.info('');
-  logger.info(headerRootPath);
-  logger.info(headerGlobs);
-  logger.info(headerCommand);
+  logBatchHeader(logger, [
+    headerTitle,
+    `ROOT:  ${absRootPath}`,
+    `GLOBS: ${globs}`,
+    headerCommand,
+  ]);
 
   // List mode: no parallelism needed.
   if (list) {
@@ -162,136 +329,21 @@ export const execShellCommandBatch = async ({
   }
 
   // Compose child env overlay once (shared across all paths).
-  const overlay = composeNestedEnv(getDotenvCliOptions ?? {}, dotenvEnv ?? {});
-  const spawnEnv = buildSpawnEnv(process.env, overlay);
-
-  if (parallel) {
-    // Parallel execution with concurrency-limited pool.
-    const limit = concurrency ?? defaultConcurrency;
-    const results: ParallelResult[] = [];
-
-    // Simple semaphore-based concurrency pool.
-    let active = 0;
-    let nextIdx = 0;
-    const total = paths.length;
-    results.length = total;
-
-    await new Promise<void>((resolveAll) => {
-      let settled = false;
-      let completedCount = 0;
-
-      const tryLaunch = () => {
-        while (active < limit && nextIdx < total) {
-          const idx = nextIdx++;
-          const dirPath = paths[idx] as string;
-          active++;
-
-          runCommandResult(validCommand, shell, {
-            cwd: dirPath,
-            env: spawnEnv,
-          })
-            .then((res) => {
-              results[idx] = {
-                dirPath,
-                exitCode: res.exitCode,
-                stdout: res.stdout,
-                stderr: res.stderr,
-              };
-            })
-            .catch((err: unknown) => {
-              results[idx] = {
-                dirPath,
-                exitCode: 1,
-                stdout: '',
-                stderr: String(err),
-                error: err,
-              };
-            })
-            .finally(() => {
-              active--;
-              completedCount++;
-              if (completedCount === total && !settled) {
-                settled = true;
-                resolveAll();
-              } else {
-                tryLaunch();
-              }
-            });
-        }
-      };
-
-      if (total === 0) {
-        resolveAll();
-      } else {
-        tryLaunch();
-      }
-    });
-
-    // Print results in discovery order.
-    const failures: ParallelResult[] = [];
-
-    for (const result of results) {
-      const pathLabel = `CWD:   ${result.dirPath}`;
-      logger.info('');
-      logger.info('*'.repeat(pathLabel.length));
-      logger.info(pathLabel);
-      logger.info(headerCommand);
-
-      if (result.stdout) {
-        process.stdout.write(
-          result.stdout + (result.stdout.endsWith('\n') ? '' : '\n'),
-        );
-      }
-      if (result.stderr) {
-        process.stderr.write(
-          result.stderr + (result.stderr.endsWith('\n') ? '' : '\n'),
-        );
-      }
-
-      if (result.exitCode !== 0) {
-        failures.push(result);
-      }
-    }
-
-    if (failures.length > 0 && !ignoreErrors) {
-      logger.error('');
-      logger.error(
-        `${String(failures.length)} of ${String(total)} directories failed:`,
-      );
-      for (const f of failures) {
-        logger.error(`  ${f.dirPath} (exit code ${String(f.exitCode)})`);
-      }
-      logger.info('');
-      return failures[0]?.exitCode ?? 1;
-    }
-  } else {
-    // Sequential execution (original behavior).
-    for (const p of paths) {
-      const pathLabel = `CWD:   ${p}`;
-      logger.info('');
-      logger.info('*'.repeat(pathLabel.length));
-      logger.info(pathLabel);
-      logger.info(headerCommand);
-
-      let exitCode: number;
-      try {
-        exitCode = await runCommand(validCommand, shell, {
-          cwd: p,
-          env: spawnEnv,
-          stdio: capture ? 'pipe' : 'inherit',
-        });
-      } catch (error) {
-        if (!ignoreErrors) throw error;
-        exitCode = 1;
-      }
-      if (exitCode !== 0 && !ignoreErrors) {
-        logger.error('');
-        logger.error(`${p} failed (exit code ${String(exitCode)}); stopping.`);
-        logger.info('');
-        return exitCode;
-      }
-    }
-  }
+  const run: DirectoryRun = {
+    command: validCommand,
+    shell,
+    env: buildSpawnEnv(
+      process.env,
+      composeNestedEnv(getDotenvCliOptions ?? {}, dotenvEnv ?? {}),
+    ),
+    headerCommand,
+    ignoreErrors,
+    logger,
+  };
+  const failure = parallel
+    ? await runParallel(run, paths, concurrency ?? defaultConcurrency)
+    : await runSequential(run, paths, capture);
+  if (failure !== undefined) return failure;
 
   logger.info('');
   return 0;

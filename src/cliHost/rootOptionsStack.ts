@@ -8,6 +8,7 @@
  * flags), so both see the same defaults.
  */
 import type { ResolvedConfigSources } from '@/src/config';
+import { configLayers } from '@/src/config/layers';
 import { baseRootOptionDefaults } from '@/src/defaults';
 import { defaultsDeep } from '@/src/util';
 
@@ -35,9 +36,8 @@ export function computeRootDefaults(
 ): Partial<RootOptionsShape> {
   const cfgDefaults = defaultsDeep<Partial<RootOptionsShape>>(
     {},
-    sources.packaged?.rootOptionDefaults ?? {},
-    sources.project?.public?.rootOptionDefaults ?? {},
-    sources.project?.local?.rootOptionDefaults ?? {},
+    // defaultsDeep skips a missing layer.
+    ...configLayers(sources).map((layer) => layer?.rootOptionDefaults),
   );
   return defaultsDeep<Partial<RootOptionsShape>>(
     baseRootOptionDefaults as Partial<RootOptionsShape>,
@@ -69,10 +69,10 @@ export function resolveRootOptionsBag(
   );
   (merged as unknown as Record<string, unknown>).scripts = defaultsDeep(
     {},
-    merged.scripts ?? {},
-    (sources.packaged?.scripts as ScriptsTable | undefined) ?? {},
-    (sources.project?.public?.scripts as ScriptsTable | undefined) ?? {},
-    (sources.project?.local?.scripts as ScriptsTable | undefined) ?? {},
+    merged.scripts,
+    ...configLayers(sources).map(
+      (layer) => layer?.scripts as ScriptsTable | undefined,
+    ),
   );
   return merged;
 }

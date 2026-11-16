@@ -2,6 +2,7 @@ import { execa } from 'execa';
 
 import { tokenize } from '@/src/util';
 
+import { stripOne } from './invoke';
 import { joinForShell, osDefaultShell } from './shell';
 
 const dbg = (...args: unknown[]) => {
@@ -106,15 +107,8 @@ interface ExecNormalizedOptions
 
 const stripOuterQuotes = (s: string): string => {
   let out = s;
-  // Repeatedly trim only when the entire string is wrapped in matching quotes.
   // Stop as soon as the ends are asymmetric or no quotes remain.
-  while (out.length >= 2) {
-    const a = out.charAt(0);
-    const b = out.charAt(out.length - 1);
-    const symmetric = (a === '"' && b === '"') || (a === "'" && b === "'");
-    if (!symmetric) break;
-    out = out.slice(1, -1);
-  }
+  for (let next = stripOne(out); next !== out; next = stripOne(out)) out = next;
   return out;
 };
 

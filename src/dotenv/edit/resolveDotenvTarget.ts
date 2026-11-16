@@ -15,22 +15,14 @@
 
 import path from 'node:path';
 
+import { resolveEnvName } from '@/src/env/resolveEnvName';
+
 import type {
   DotenvFs,
   DotenvPathSearchOrder,
   DotenvTargetPrivacy,
   DotenvTargetScope,
 } from './types';
-
-const resolveEnvName = (
-  env?: string,
-  defaultEnv?: string,
-): string | undefined =>
-  typeof env === 'string' && env.length > 0
-    ? env
-    : typeof defaultEnv === 'string' && defaultEnv.length > 0
-      ? defaultEnv
-      : undefined;
 
 /**
  * Options for {@link buildDotenvTargetFilename}.
