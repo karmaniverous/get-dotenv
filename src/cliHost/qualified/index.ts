@@ -3,9 +3,10 @@
  *
  * Public: {@link terminatorName} (re-exported from `cliHost`). The rest is
  * internal to the host: the table built in `GetDotenvCli.parseAsync`, its
- * accessor, and the help filter for terminators.
+ * accessor, and the naming helpers host help labels its sections with.
  */
 export { NormalizeArgvError } from './errors';
+export { commandLabel, commandPathOf } from './names';
 export {
   type Normalization,
   normalizeArgv,

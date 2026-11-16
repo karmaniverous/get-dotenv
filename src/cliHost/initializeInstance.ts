@@ -3,11 +3,8 @@
  * header injection, and a lazy preSubcommand context resolver.
  * Also installs tests-only exitOverride to suppress process.exit on help/version.
  */
-import type { Command, Option } from '@commander-js/extra-typings';
-
 import type { GetDotenvCli } from './GetDotenvCli';
-import { GROUP_TAG } from './groups';
-import { isTerminatorOption } from './qualified';
+import { configureHostHelp } from './hostHelp';
 import { hasRootHooks } from './rootHooksState';
 
 /**
@@ -24,33 +21,10 @@ export function initializeInstance(
   cli: GetDotenvCli,
   headerGetter: () => string | undefined,
 ): void {
-  // Configure grouped help: show only base options in default "Options";
-  // subcommands show all of their own options.
-  cli.configureHelp({
-    visibleOptions: (cmd: Command): Option[] => {
-      const all = cmd.options;
-      const isRoot = cmd.parent === null;
-      const list = isRoot
-        ? all.filter((opt) => {
-            const group = GROUP_TAG.get(opt);
-            return group === 'base';
-          })
-        : // Terminators never appear in help (Decision 28).
-          all.filter((opt) => !isTerminatorOption(opt));
-      // Sort: short-aliased options first, then long-only; stable by flags.
-      const hasShort = (opt: Option) => {
-        const flags = opt.flags;
-        return /(^|\s|,)-[A-Za-z]/.test(flags);
-      };
-      const byFlags = (opt: Option) => opt.flags;
-      list.sort((a, b) => {
-        const aS = hasShort(a) ? 1 : 0;
-        const bS = hasShort(b) ? 1 : 0;
-        return bS - aS || byFlags(a).localeCompare(byFlags(b));
-      });
-      return list;
-    },
-  });
+  // Host help (spec 4.6): grouped sections, qualified names, inherited
+  // sections, hidden options skipped. parseAsync gives every command in the
+  // tree the same settings, plain new Command() mounts included.
+  configureHostHelp(cli);
 
   // Optional branded header before help text (kept minimal and deterministic).
   cli.addHelpText('beforeAll', () => {

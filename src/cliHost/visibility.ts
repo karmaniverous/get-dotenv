@@ -18,7 +18,10 @@
  * Notes
  * - Families (e.g., shell, log, loadProcess, debug, exclude*, warnEntropy, redact) hide or show both ON/OFF flags together.
  * - Singles (e.g., --capture, --trace, --env) are hidden or shown individually.
- * - Whether help rendering honours the hidden state is the help layer's concern.
+ * - Host help (`hostHelp.ts`) skips hidden options in every section: root
+ *   help, subcommand help and the inherited `<alias> options (anywhere)`
+ *   sections. `applyHelpVisibility` (`topLevelHelp.ts`) applies the merged
+ *   map before top-level help and in the root's `preSubcommand` hook.
  */
 import type { GetDotenvCli } from './GetDotenvCli';
 import type { RootOptionsShape } from './types';
@@ -101,7 +104,7 @@ const ROOT_OPTION_FLAGS: Partial<
  * Keys the map leaves unset keep their current state.
  *
  * Help-time only:
- * - This affects rendering of top-level help; it does not alter parsing or runtime semantics.
+ * - This affects every help rendering (root and subcommand); it does not alter parsing or runtime semantics.
  *
  * Families vs singles:
  * - Families (e.g., "shell") show or hide both ON and OFF flags.

@@ -1,0 +1,140 @@
+vc v<VERSION>
+
+
+Usage: vc [options] [command]
+
+Process dotenv files in an arbitrary location & optionally populate environment
+variables.
+
+Options:
+  -a, --exclude-all                   exclude all dotenv variables from loading
+                                      ON (anywhere: --vc-exclude-all)
+  -A, --exclude-all-off               exclude all dotenv variables from loading
+                                      OFF (default) (anywhere:
+                                      --vc-exclude-all-off)
+  -e, --env <string>                  target environment (dotenv-expanded)
+                                      (anywhere: --vc-env)
+  -g, --exclude-global                exclude global dotenv variables from
+                                      loading ON (anywhere: --vc-exclude-global)
+  -G, --exclude-global-off            exclude global dotenv variables from
+                                      loading OFF (default) (anywhere:
+                                      --vc-exclude-global-off)
+  -h, --help                          display help for command
+  -l, --log                           console log loaded variables ON (anywhere:
+                                      --vc-log)
+  -L, --log-off                       console log loaded variables OFF (default)
+                                      (anywhere: --vc-log-off)
+  -n, --exclude-env                   exclude environment-specific dotenv
+                                      variables from loading ON (anywhere:
+                                      --vc-exclude-env)
+  -N, --exclude-env-off               exclude environment-specific dotenv
+                                      variables from loading OFF (default)
+                                      (anywhere: --vc-exclude-env-off)
+  -o, --output-path <string>          consolidated output file
+                                      (dotenv-expanded) (anywhere:
+                                      --vc-output-path)
+  -p, --load-process                  load variables to process.env ON (default)
+                                      (anywhere: --vc-load-process)
+  -P, --load-process-off              load variables to process.env OFF
+                                      (anywhere: --vc-load-process-off)
+  -r, --exclude-private               exclude private dotenv variables from
+                                      loading ON (anywhere:
+                                      --vc-exclude-private)
+  -R, --exclude-private-off           exclude private dotenv variables from
+                                      loading OFF (default) (anywhere:
+                                      --vc-exclude-private-off)
+  -s, --shell [string]                command execution shell, no argument for
+                                      default OS shell or provide shell string
+                                      (default /bin/sh) (anywhere: --vc-shell)
+  -S, --shell-off                     command execution shell OFF (anywhere:
+                                      --vc-shell-off)
+  -u, --exclude-public                exclude public dotenv variables from
+                                      loading ON (anywhere: --vc-exclude-public)
+  -U, --exclude-public-off            exclude public dotenv variables from
+                                      loading OFF (default) (anywhere:
+                                      --vc-exclude-public-off)
+  -v, --vars <string>                 extra variables expressed as delimited
+                                      key-value pairs (dotenv-expanded):
+                                      KEY1=VAL1 KEY2=VAL2 (anywhere: --vc-vars)
+  -V, --version                       output the version number (anywhere:
+                                      --vc-version)
+  -z, --exclude-dynamic               exclude dynamic dotenv variables from
+                                      loading ON (anywhere:
+                                      --vc-exclude-dynamic)
+  -Z, --exclude-dynamic-off           exclude dynamic dotenv variables from
+                                      loading OFF (default) (anywhere:
+                                      --vc-exclude-dynamic-off)
+  --capture                           capture child process stdio for commands
+                                      (tests/CI) (anywhere: --vc-capture)
+  --debug                             enable debug logging to stderr ON
+                                      (anywhere: --vc-debug)
+  --debug-off                         enable debug logging to stderr OFF
+                                      (default) (anywhere: --vc-debug-off)
+  --default-env <string>              default target environment (anywhere:
+                                      --vc-default-env)
+  --default-env-key <string>          env var name in global dotenv files that
+                                      specifies the default environment
+                                      (dotenv-expanded) (anywhere:
+                                      --vc-default-env-key)
+  --dotenv-token <string>             dotenv-expanded token indicating a dotenv
+                                      file (anywhere: --vc-dotenv-token)
+  --dynamic-path <string>             dynamic variables path (.js or .ts; .ts is
+                                      auto-compiled when esbuild is available,
+                                      otherwise precompile) (anywhere:
+                                      --vc-dynamic-path)
+  --entropy-min-length <number>       min length to examine for entropy (default
+                                      16) (anywhere: --vc-entropy-min-length)
+  --entropy-threshold <number>        entropy bits/char threshold (default 3.8)
+                                      (anywhere: --vc-entropy-threshold)
+  --entropy-warn                      enable entropy warnings (default on)
+                                      (anywhere: --vc-entropy-warn)
+  --entropy-warn-off                  disable entropy warnings (anywhere:
+                                      --vc-entropy-warn-off)
+  --entropy-whitelist <pattern...>    suppress entropy warnings when key matches
+                                      any regex pattern (anywhere:
+                                      --vc-entropy-whitelist)
+  --paths <string>                    dotenv-expanded delimited list of paths to
+                                      dotenv directory (anywhere: --vc-paths)
+  --paths-delimiter <string>          paths delimiter string (anywhere:
+                                      --vc-paths-delimiter)
+  --paths-delimiter-pattern <string>  paths delimiter regex pattern (anywhere:
+                                      --vc-paths-delimiter-pattern)
+  --private-token <string>            dotenv-expanded token indicating private
+                                      variables (anywhere: --vc-private-token)
+  --redact                            presentation-time redaction for
+                                      secret-like keys ON (anywhere:
+                                      --vc-redact)
+  --redact-off                        presentation-time redaction for
+                                      secret-like keys OFF (anywhere:
+                                      --vc-redact-off)
+  --redact-pattern <pattern...>       additional key-match regex patterns to
+                                      trigger redaction (anywhere:
+                                      --vc-redact-pattern)
+  --strict                            fail on env validation errors
+                                      (schema/requiredKeys) (anywhere:
+                                      --vc-strict)
+  --trace [keys...]                   emit diagnostics for child env composition
+                                      (optional keys) (anywhere: --vc-trace)
+  --vars-assignor <string>            vars assignment operator string (anywhere:
+                                      --vc-vars-assignor)
+  --vars-assignor-pattern <string>    vars assignment operator regex pattern
+                                      (anywhere: --vc-vars-assignor-pattern)
+  --vars-delimiter <string>           vars delimiter string (anywhere:
+                                      --vc-vars-delimiter)
+  --vars-delimiter-pattern <string>   vars delimiter regex pattern (anywhere:
+                                      --vc-vars-delimiter-pattern)
+
+Plugin options — cmd:
+  -c, --cmd <command...>              alias of cmd subcommand; provide command
+                                      tokens (variadic) (anywhere: --vc-cmd)
+
+Commands:
+  cmd [command...]                    Execute command according to the --shell
+                                      option, conflicts with --command option
+                                      (default subcommand)
+  batch [options] [command...]        Batch command execution across multiple
+                                      working directories.
+  aws [options] [args...]             Establish an AWS session and optionally
+                                      forward to the AWS CLI
+  smoz [options]                      Fixture: smoz-like commands
+

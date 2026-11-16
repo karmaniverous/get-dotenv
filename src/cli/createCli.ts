@@ -121,10 +121,11 @@ export type CreateCliOptions = {
    */
   rootOptionDefaults?: Partial<RootOptionsShape>;
   /**
-   * Visibility map to hide families/singles from root help. When a key is false,
-   * the corresponding option(s) are hidden (via hideHelp) after flags are declared.
-   * Config `rootOptionVisibility` ranks above it, so a config `true` shows a
-   * flag this map hides.
+   * Visibility map to hide families/singles from help. When a key is false,
+   * the corresponding option(s) are hidden (via hideHelp) after flags are
+   * declared: they leave root help and every subcommand's inherited
+   * `<alias> options (anywhere)` section. Config `rootOptionVisibility` ranks
+   * above it, so a config `true` shows a flag this map hides.
    */
   rootOptionVisibility?: Partial<Record<keyof RootOptionsShape, boolean>>;
 };

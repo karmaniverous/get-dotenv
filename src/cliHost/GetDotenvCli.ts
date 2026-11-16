@@ -22,7 +22,6 @@ import { baseRootOptionDefaults } from '@/src/defaults';
 import { readHostPackage } from '@/src/util/packageRoot';
 
 import { attachRootOptions as attachRootOptionsBuilder } from './attachRootOptions';
-import { buildHelpInformation } from './buildHelpInformation';
 import type {
   GetDotenvCliPlugin,
   GetDotenvCliPublic,
@@ -335,14 +334,6 @@ export class GetDotenvCli<
       this[HELP_HEADER_SYMBOL] = header;
     }
     return this;
-  }
-
-  /**
-   * Insert grouped plugin/app options between "Options" and "Commands" for
-   * hybrid ordering. Applies to root and any parent command.
-   */
-  override helpInformation(): string {
-    return buildHelpInformation(super.helpInformation(), this);
   }
 
   /**

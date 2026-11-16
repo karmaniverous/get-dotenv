@@ -2,13 +2,15 @@
  * `GetDotenvCli.parseAsync` (spec 4.4): install, table, normalization, the
  * top-level help check, then Commander's parse of the normalized argv.
  *
- * Every step runs inside the caller's error boundary (#62). A normalization
+ * Every command in the installed tree gets the host's help settings (spec
+ * 4.6). Every step runs inside the caller's error boundary (#62). A normalization
  * error is reported through Commander's `error()`: exit code 1, honouring
  * `exitOverride()`. Under `--debug` (the root's, plain or qualified) or
  * `GETDOTENV_DEBUG`, one `[getdotenv:argv]` line on stderr shows the typed
  * and the normalized argv.
  */
 import type { GetDotenvCli } from './GetDotenvCli';
+import { configureHostHelpTree } from './hostHelp';
 import {
   ensureQualifiedNameTable,
   type Normalization,
@@ -91,6 +93,8 @@ export const parseHost = async (
   recordRunArgv(program, typed, false);
   await program.install();
   ensureQualifiedNameTable(program);
+  // Every command renders host help, plain new Command() mounts included.
+  configureHostHelpTree(program);
   let n: Normalization;
   try {
     n = normalizeQualified(program, typed);

@@ -10,7 +10,6 @@
  */
 import type { CommandUnknownOpts, Option } from '@commander-js/extra-typings';
 
-import { hideTerminatorsInSubcommandTerms } from './help';
 import {
   commandLabel,
   commandPathOf,
@@ -113,10 +112,7 @@ export const buildQualifiedNameTable = (
       });
     }
   }
-  for (const [command, option] of pending) {
-    registerTerminator(command, option);
-    hideTerminatorsInSubcommandTerms(command);
-  }
+  for (const [command, option] of pending) registerTerminator(command, option);
   return { alias, entries, terminators };
 };
 

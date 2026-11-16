@@ -15,6 +15,7 @@ import {
   markRootHooks,
 } from './rootHooksState';
 import { resolveRootOptionsBag, type RootOptionsBag } from './rootOptionsStack';
+import { applyHelpVisibility } from './topLevelHelp';
 import type { RootOptionsShape } from './types';
 
 const dbg = (...args: unknown[]) => {
@@ -95,6 +96,8 @@ export function installRootHooks<TOptions extends GetDotenvOptions>(
   // Hook: preSubcommand â€” always runs for subcommand flows.
   program.hook('preSubcommand', async (thisCommand, _actionCommand) => {
     const sources = await resolveGetDotenvConfigSources(hostMetaUrlOf(program));
+    // Subcommand help (rendered after this hook) honours config visibility.
+    applyHelpVisibility(program as unknown as GetDotenvCli, sources);
     const rawArgs =
       (thisCommand as unknown as { rawArgs?: string[] }).rawArgs ?? [];
     dbg('preSubcommand:rawArgs', rawArgs);

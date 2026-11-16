@@ -9,7 +9,10 @@
  * visibility merges the host's with the config's. Output is suppressed under
  * a test runner unless `GETDOTENV_STDIO`/`GETDOTENV_STDOUT` is `pipe`.
  */
-import { resolveGetDotenvConfigSources } from '@/src/config';
+import {
+  type ResolvedConfigSources,
+  resolveGetDotenvConfigSources,
+} from '@/src/config';
 import { getDotenvCliOptions2Options } from '@/src/core';
 
 import type { GetDotenvCli } from './GetDotenvCli';
@@ -57,6 +60,31 @@ export const underTestRunner = (): boolean =>
   typeof process.env.VITEST_WORKER_ID === 'string';
 
 /**
+ * Apply the effective root option visibility for help: the host's
+ * (`createCli`) \< packaged \< project/public \< project/local (spec 3.3.4,
+ * 4.6). Every key a layer sets decides its flags, so a higher `true` shows
+ * what a lower `false` hid (#60). Runs before every help rendering: top-level
+ * help, and the root's `preSubcommand` hook ahead of subcommand help.
+ *
+ * @param program - The host root.
+ * @param sources - The host's resolved config sources.
+ */
+export const applyHelpVisibility = (
+  program: GetDotenvCli,
+  sources: ResolvedConfigSources,
+): void => {
+  applyRootVisibility(
+    program,
+    mergeRootVisibility(
+      SETTINGS.get(program)?.visibility,
+      sources.packaged?.rootOptionVisibility ?? undefined,
+      sources.project?.public?.rootOptionVisibility ?? undefined,
+      sources.project?.local?.rootOptionVisibility ?? undefined,
+    ),
+  );
+};
+
+/**
  * Render top-level help.
  *
  * @param program - The host root.
@@ -64,10 +92,7 @@ export const underTestRunner = (): boolean =>
 export const renderTopLevelHelp = async (
   program: GetDotenvCli,
 ): Promise<void> => {
-  const { rootDefaults, visibility } = SETTINGS.get(program) ?? {
-    rootDefaults: {},
-    visibility: {},
-  };
+  const rootDefaults = SETTINGS.get(program)?.rootDefaults ?? {};
   const sources = await resolveGetDotenvConfigSources(hostMetaUrlOf(program));
   const helpMerged = resolveRootOptionsBag({}, rootDefaults, sources);
   const { outputPath: _outputPath, ...helpOptions } =
@@ -82,12 +107,6 @@ export const renderTopLevelHelp = async (
     process.env.GETDOTENV_STDIO === 'pipe' ||
     process.env.GETDOTENV_STDOUT === 'pipe';
   if (underTestRunner() && !piping) return;
-  const merged = mergeRootVisibility(
-    visibility,
-    sources.packaged?.rootOptionVisibility ?? undefined,
-    sources.project?.public?.rootOptionVisibility ?? undefined,
-    sources.project?.local?.rootOptionVisibility ?? undefined,
-  );
-  if (Object.keys(merged).length > 0) applyRootVisibility(program, merged);
+  applyHelpVisibility(program, sources);
   program.outputHelp();
 };
