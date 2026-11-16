@@ -108,6 +108,15 @@ describe('#87 brand() registers -V, --version once', () => {
     expect(cli.options.some((o) => o.long === '--version')).toBe(false);
   });
 
+  it('an empty version is given, not omitted: the package version is not read', async () => {
+    // importMetaUrl's package (get-dotenv's own) has a version, but the
+    // package supplies it only when `version` is omitted.
+    const cli = new GetDotenvCli('empty');
+    await cli.brand({ importMetaUrl: import.meta.url, version: '' });
+    expect(cli.options.some((o) => o.long === '--version')).toBe(false);
+    expect(cli.version()).toBeUndefined();
+  });
+
   it('a runner second run keeps one --version option', async () => {
     let program: GetDotenvCli | undefined;
     const run = createCli({

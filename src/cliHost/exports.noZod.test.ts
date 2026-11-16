@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
+import type { GetDotenvCliHostOptions } from './index';
 import * as cliHost from './index';
 
 describe('cliHost public surface', () => {
@@ -13,5 +14,13 @@ describe('cliHost public surface', () => {
   it('still exports its plugin-author API', () => {
     expect(cliHost).toHaveProperty('GetDotenvCli');
     expect(cliHost).toHaveProperty('definePlugin');
+  });
+
+  it('exports the host constructor options type (a direct host sets its root with it)', () => {
+    // Type-level: removing the export fails `tsc`.
+    const options: GetDotenvCliHostOptions = {
+      importMetaUrl: import.meta.url,
+    };
+    expect(new cliHost.GetDotenvCli('direct', options).name()).toBe('direct');
   });
 });

@@ -110,6 +110,8 @@ describe('normalizeArgv: 4.4 examples (vc)', () => {
     const vc = await vcProgram();
     const err = errorOf(vc, words(typed));
     expect(err).toBeInstanceOf(NormalizeArgvError);
+    // A host that can't use instanceof (another bundle) tells it by name.
+    expect(err.name).toBe('NormalizeArgvError');
     expect(err.message).toBe(message);
   });
 });

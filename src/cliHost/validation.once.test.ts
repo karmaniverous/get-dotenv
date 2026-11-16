@@ -2,7 +2,7 @@
  * Regression tests for #61: env validation (`requiredKeys`/`schema`) runs
  * once per invocation, so each issue is reported once.
  */
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { cmdPlugin } from '@/src/plugins/cmd';
 import { type FixtureRun, runFixtureCli } from '@/test/support/fixtureCli';
@@ -50,5 +50,38 @@ describe('#61 env validation runs once', () => {
       files,
     );
     expect(reports(run)).toBe(0);
+  });
+});
+
+describe('--strict exits 1 on env validation issues only', () => {
+  /** Run with `process.exit` recorded (not taken); return its codes. */
+  const exitCodesOf = async (args: string[]) => {
+    const exit = vi
+      .spyOn(process, 'exit')
+      .mockImplementation((() => undefined) as never);
+    try {
+      const run = await runFixtureCli(args, files);
+      return { run, codes: exit.mock.calls.map(([c]) => c) };
+    } finally {
+      exit.mockRestore();
+    }
+  };
+
+  it('a missing key exits 1 after reporting it', async () => {
+    const { run, codes } = await exitCodesOf(['-P', '--strict', 'probe']);
+    expect(reports(run)).toBe(1);
+    expect(codes).toEqual([1]);
+  });
+
+  it('a valid env does not exit', async () => {
+    const { run, codes } = await exitCodesOf([
+      '-P',
+      '--strict',
+      '-v',
+      'MISSING_KEY=1',
+      'probe',
+    ]);
+    expect(reports(run)).toBe(0);
+    expect(codes).toEqual([]);
   });
 });
