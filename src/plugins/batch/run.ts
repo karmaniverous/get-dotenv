@@ -1,6 +1,7 @@
 import type { CommandUnknownOpts } from '@commander-js/extra-typings';
 
 import {
+  type GetDotenvCliOptions,
   type GetDotenvCliPublic,
   maybePreserveNodeEvalArgv,
   readMergedOptions,
@@ -59,21 +60,7 @@ export const runBatch = async (
   const cfg = plugin.readConfig<BatchPluginConfig>(cli);
   const scripts = pluginOpts.scripts ?? cfg.scripts ?? merged.scripts;
   const shell = pluginOpts.shell ?? cfg.shell ?? merged.shell ?? false;
-  const concurrency =
-    typeof flags.concurrency === 'number' ? flags.concurrency : cfg.concurrency;
-  const pkgCwd = flags.pkgCwd ?? Boolean(cfg.pkgCwd);
-  const base = {
-    ...(concurrency !== undefined ? { concurrency } : {}),
-    getDotenvCliOptions: merged,
-    ignoreErrors: Boolean(flags.ignoreErrors),
-    logger,
-    parallel: flags.parallel ?? Boolean(cfg.parallel),
-    ...(pkgCwd ? { pkgCwd } : {}),
-    rootPath:
-      typeof flags.rootPath === 'string'
-        ? flags.rootPath
-        : (cfg.rootPath ?? './'),
-  };
+  const base = batchSettings(merged, cfg, flags);
   const globs =
     typeof flags.globs === 'string' ? flags.globs : (cfg.globs ?? '*');
 
@@ -113,6 +100,32 @@ export const runBatch = async (
       list: false,
     }),
   );
+};
+
+/**
+ * The batch settings every form shares: `batch`'s flags over the plugin
+ * config, with the merged options bag and its logger.
+ */
+const batchSettings = (
+  merged: GetDotenvCliOptions,
+  cfg: BatchPluginConfig,
+  flags: BatchParentInvokerFlags,
+) => {
+  const concurrency =
+    typeof flags.concurrency === 'number' ? flags.concurrency : cfg.concurrency;
+  const pkgCwd = flags.pkgCwd ?? Boolean(cfg.pkgCwd);
+  return {
+    ...(concurrency !== undefined ? { concurrency } : {}),
+    getDotenvCliOptions: merged,
+    ignoreErrors: Boolean(flags.ignoreErrors),
+    logger: merged.logger,
+    parallel: flags.parallel ?? Boolean(cfg.parallel),
+    ...(pkgCwd ? { pkgCwd } : {}),
+    rootPath:
+      typeof flags.rootPath === 'string'
+        ? flags.rootPath
+        : (cfg.rootPath ?? './'),
+  };
 };
 
 /**

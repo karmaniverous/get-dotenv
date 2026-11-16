@@ -9,6 +9,8 @@
  * `GETDOTENV_DEBUG`, one `[getdotenv:argv]` line on stderr shows the typed
  * and the normalized argv.
  */
+import type { Option } from '@commander-js/extra-typings';
+
 import type { GetDotenvCli } from './GetDotenvCli';
 import { configureHostHelpTree } from './hostHelp';
 import {
@@ -61,19 +63,20 @@ export const runArgvRequestsDebug = (program: GetDotenvCli): boolean => {
 };
 
 /** Whether the walk gave the root a `--debug` (plain or qualified). */
-const rootDebug = (program: GetDotenvCli, n: Normalization): boolean =>
-  n.walk.assigned.some(
-    (a) =>
-      a.command === program &&
-      !a.option.negate &&
-      a.option.attributeName() === 'debug',
-  ) ||
-  n.claims.some(
-    (c) =>
-      c.entry.command === program &&
-      !c.entry.option.negate &&
-      c.entry.option.attributeName() === 'debug',
+const rootDebug = (program: GetDotenvCli, n: Normalization): boolean => {
+  const isRootDebug = ({
+    command,
+    option,
+  }: {
+    command: unknown;
+    option: Option;
+  }): boolean =>
+    command === program && !option.negate && option.attributeName() === 'debug';
+  return (
+    n.walk.assigned.some(isRootDebug) ||
+    n.claims.some((c) => isRootDebug(c.entry))
   );
+};
 
 /**
  * Parse a host's argv.

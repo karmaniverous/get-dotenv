@@ -243,6 +243,80 @@ export type InferGetDotenvVarsFromConfig<T> =
       ? V
       : never
     : never;
+/** CLI values arrive as strings: keep finite numbers, drop anything else. */
+const toFiniteNumber = (value: unknown): number | undefined => {
+  const n =
+    typeof value === 'string' && value.trim() !== '' ? Number(value) : value;
+  return typeof n === 'number' && Number.isFinite(n) ? n : undefined;
+};
+
+/** Split a delimited string by a regex pattern, a delimiter or a space. */
+const splitBy = (
+  value?: string,
+  delim?: string,
+  pattern?: string,
+): string[] => {
+  if (!value) return [];
+  if (pattern) return value.split(RegExp(pattern));
+  if (typeof delim === 'string') return value.split(delim);
+  return value.split(' ');
+};
+
+/** How a `--vars` string is split into pairs and each pair into a key and value. */
+interface VarsSyntax {
+  varsAssignor?: string | undefined;
+  varsAssignorPattern?: string | undefined;
+  varsDelimiter?: string | undefined;
+  varsDelimiterPattern?: string | undefined;
+}
+
+/**
+ * Split one pair at its first assignor only, so the value may contain it.
+ * A pair without an assignor yields no value (and is dropped later).
+ */
+const splitPair = (
+  pair: string,
+  { varsAssignor, varsAssignorPattern }: VarsSyntax,
+): [string, string | undefined] => {
+  let found: [number, number] | undefined;
+  if (varsAssignorPattern) {
+    const m = RegExp(varsAssignorPattern).exec(pair);
+    found = m ? [m.index, m[0].length] : undefined;
+  } else {
+    const assignor = varsAssignor ?? '=';
+    const at = pair.indexOf(assignor);
+    found = at === -1 ? undefined : [at, assignor.length];
+  }
+  if (!found) return [pair, undefined];
+  const [at, length] = found;
+  return [pair.slice(0, at), pair.slice(at + length)];
+};
+
+/**
+ * Vars as either a CLI string (`A=1 B=2`) or an object map, with
+ * undefined-valued entries dropped.
+ */
+const parseVars = (
+  vars: unknown,
+  syntax: VarsSyntax,
+): ProcessEnv | undefined => {
+  let parsed: ProcessEnv | undefined;
+  if (typeof vars === 'string') {
+    const kvPairs = splitBy(
+      vars,
+      syntax.varsDelimiter,
+      syntax.varsDelimiterPattern,
+    )
+      .map((pair) => splitPair(pair, syntax))
+      .filter(([k]) => k.length > 0);
+    parsed = Object.fromEntries(kvPairs);
+  } else if (vars && typeof vars === 'object' && !Array.isArray(vars)) {
+    parsed = Object.fromEntries(Object.entries(vars));
+  }
+  // Drop undefined-valued entries to match ProcessEnv expectations.
+  return parsed ? shake(parsed, (v) => v === undefined) : undefined;
+};
+
 /**
  * Converts programmatic CLI options to `getDotenv` options.
  *
@@ -266,63 +340,14 @@ export const getDotenvCliOptions2Options = ({
   scripts: _scripts,
   ...rest
 }: RootOptionsShapeCompat): GetDotenvOptions => {
-  // CLI values arrive as strings: keep finite numbers, drop anything else.
-  const toNumber = (value: unknown): number | undefined => {
-    const n =
-      typeof value === 'string' && value.trim() !== '' ? Number(value) : value;
-    return typeof n === 'number' && Number.isFinite(n) ? n : undefined;
-  };
-  const threshold = toNumber(entropyThreshold);
-  const minLength = toNumber(entropyMinLength);
-
-  // Split helper for delimited strings or regex patterns
-  const splitBy = (
-    value?: string,
-    delim?: string,
-    pattern?: string,
-  ): string[] => {
-    if (!value) return [];
-    if (pattern) return value.split(RegExp(pattern));
-    if (typeof delim === 'string') return value.split(delim);
-    return value.split(' ');
-  };
-
-  // Split one pair at its first assignor only, so the value may contain it.
-  // A pair without an assignor yields no value (and is dropped below).
-  const findAssignor = (pair: string): [number, number] | undefined => {
-    if (varsAssignorPattern) {
-      const m = RegExp(varsAssignorPattern).exec(pair);
-      return m ? [m.index, m[0].length] : undefined;
-    }
-    const assignor = varsAssignor ?? '=';
-    const at = pair.indexOf(assignor);
-    return at === -1 ? undefined : [at, assignor.length];
-  };
-  const splitPair = (pair: string): [string, string | undefined] => {
-    const found = findAssignor(pair);
-    if (!found) return [pair, undefined];
-    const [at, length] = found;
-    return [pair.slice(0, at), pair.slice(at + length)];
-  };
-
-  // Tolerate vars as either a CLI string ("A=1 B=2") or an object map.
-  let parsedVars: ProcessEnv | undefined;
-  if (typeof vars === 'string') {
-    const kvPairs = splitBy(vars, varsDelimiter, varsDelimiterPattern)
-      .map(splitPair)
-      .filter(([k]) => k.length > 0);
-    parsedVars = Object.fromEntries(kvPairs);
-  } else if (vars && typeof vars === 'object' && !Array.isArray(vars)) {
-    // Accept provided object map of string | undefined; drop undefined values
-    // in the normalization step below to produce a ProcessEnv-compatible bag.
-    parsedVars = Object.fromEntries(Object.entries(vars));
-  }
-
-  // Drop undefined-valued entries at the converter stage to match ProcessEnv
-  // expectations and the compat test assertions.
-  if (parsedVars) {
-    parsedVars = shake(parsedVars, (v) => v === undefined);
-  }
+  const threshold = toFiniteNumber(entropyThreshold);
+  const minLength = toFiniteNumber(entropyMinLength);
+  const parsedVars = parseVars(vars, {
+    varsAssignor,
+    varsAssignorPattern,
+    varsDelimiter,
+    varsDelimiterPattern,
+  });
 
   // Tolerate paths as either a delimited string or string[]
   const pathsOut = Array.isArray(paths)
