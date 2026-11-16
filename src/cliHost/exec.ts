@@ -164,6 +164,44 @@ const sanitizeEnv = (
   return entries.length > 0 ? Object.fromEntries(entries) : undefined;
 };
 
+/** The outcome of a command with nothing to run. */
+const NOTHING_RUN: ExecOutcome = { exitCode: 0, stdout: '', stderr: '' };
+
+/**
+ * Run one execa call and map its result, or its error, to an outcome.
+ *
+ * @param mode - `plain` or `shell`, for the debug line.
+ * @param invoke - The execa call.
+ */
+const runExeca = async (
+  mode: 'plain' | 'shell',
+  invoke: () => Promise<unknown>,
+): Promise<ExecOutcome> => {
+  try {
+    const ok = pickResult(await invoke());
+    dbg(`exit (${mode})`, { exitCode: ok.exitCode });
+    return ok;
+  } catch (e: unknown) {
+    const out = pickResult(e);
+    dbg(`exit:error (${mode})`, { exitCode: out.exitCode });
+    return out;
+  }
+};
+
+/**
+ * A shell-off command as a file and its arguments: a string is tokenized, an
+ * argv array keeps its tokens (outer quotes stripped from the arguments).
+ */
+const plainArgv = (
+  command: string | readonly string[],
+): { file: string | undefined; args: string[] } => {
+  if (typeof command === 'string') {
+    const tokens = tokenize(command);
+    return { file: tokens[0], args: tokens.slice(1) };
+  }
+  return { file: command[0], args: command.slice(1).map(stripOuterQuotes) };
+};
+
 /**
  * Core executor that normalizes shell/plain forms and capture/inherit modes.
  * Returns captured buffers; callers may stream stdout when desired.
@@ -174,47 +212,24 @@ async function _execNormalized(
   opts: ExecNormalizedOptions = {},
 ): Promise<ExecOutcome> {
   const envSan = sanitizeEnv(opts.env);
-  // The supplied env is the child's complete env (#88): execa must not merge
-  // process.env back in, or an ambient key that differs only in case wins
-  // on Windows and a key removed from the env comes back.
-  const envBits =
-    envSan !== undefined ? { env: envSan, extendEnv: false as const } : {};
-  const timeoutBits =
-    typeof opts.timeoutMs === 'number'
-      ? { timeout: opts.timeoutMs, killSignal: 'SIGKILL' as const }
-      : {};
   const stdio = opts.stdio ?? 'pipe';
+  const execaOptions = {
+    ...(opts.cwd !== undefined ? { cwd: opts.cwd } : {}),
+    // The supplied env is the child's complete env (#88): execa must not
+    // merge process.env back in, or an ambient key that differs only in case
+    // wins on Windows and a key removed from the env comes back.
+    ...(envSan !== undefined ? { env: envSan, extendEnv: false as const } : {}),
+    stdio,
+    ...(typeof opts.timeoutMs === 'number'
+      ? { timeout: opts.timeoutMs, killSignal: 'SIGKILL' as const }
+      : {}),
+  };
 
   if (shell === false) {
-    let file: string | undefined;
-    let args: string[];
-    if (typeof command === 'string') {
-      const tokens = tokenize(command);
-      file = tokens[0];
-      args = tokens.slice(1);
-    } else {
-      file = command[0];
-      args = command.slice(1).map(stripOuterQuotes);
-    }
-    if (!file) return { exitCode: 0, stdout: '', stderr: '' };
-
+    const { file, args } = plainArgv(command);
+    if (!file) return { ...NOTHING_RUN };
     dbg('exec (plain)', { file, args, stdio });
-    try {
-      const ok = pickResult(
-        await execa(file, args, {
-          ...(opts.cwd !== undefined ? { cwd: opts.cwd } : {}),
-          ...envBits,
-          stdio,
-          ...timeoutBits,
-        }),
-      );
-      dbg('exit (plain)', { exitCode: ok.exitCode });
-      return ok;
-    } catch (e: unknown) {
-      const out = pickResult(e);
-      dbg('exit:error (plain)', { exitCode: out.exitCode });
-      return out;
-    }
+    return runExeca('plain', () => execa(file, args, execaOptions));
   }
 
   // Shell path: `true` is the OS default shell (#51). An argv array is
@@ -232,24 +247,10 @@ async function _execNormalized(
   });
   // The shell gets the command string as is (#79): no re-splitting, so runs
   // of spaces and backslash escapes reach it unchanged.
-  if (commandStr.trim() === '') return { exitCode: 0, stdout: '', stderr: '' };
-  try {
-    const ok = pickResult(
-      await execa(commandStr, {
-        shell: shellResolved,
-        ...(opts.cwd !== undefined ? { cwd: opts.cwd } : {}),
-        ...envBits,
-        stdio,
-        ...timeoutBits,
-      }),
-    );
-    dbg('exit (shell)', { exitCode: ok.exitCode });
-    return ok;
-  } catch (e: unknown) {
-    const out = pickResult(e);
-    dbg('exit:error (shell)', { exitCode: out.exitCode });
-    return out;
-  }
+  if (commandStr.trim() === '') return { ...NOTHING_RUN };
+  return runExeca('shell', () =>
+    execa(commandStr, { shell: shellResolved, ...execaOptions }),
+  );
 }
 
 /**
