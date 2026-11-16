@@ -20,6 +20,7 @@ import { toHelpConfig } from './helpConfig';
 import { hostMetaUrlOf } from './hostRoot';
 import { resolveRootOptionsBag } from './rootOptionsStack';
 import type { RootOptionsShape } from './types';
+import { underTestRunner } from './underTestRunner';
 import {
   applyRootVisibility,
   mergeRootVisibility,
@@ -48,16 +49,6 @@ export const configureTopLevelHelp = (
 ): void => {
   SETTINGS.set(program, settings);
 };
-
-/**
- * Whether the process runs under a test runner (Vitest, or
- * `GETDOTENV_TEST=1`).
- *
- * @returns Whether it does.
- */
-export const underTestRunner = (): boolean =>
-  process.env.GETDOTENV_TEST === '1' ||
-  typeof process.env.VITEST_WORKER_ID === 'string';
 
 /**
  * Apply the effective root option visibility for help: the host's

@@ -2,10 +2,8 @@ import { GetDotenvCli, type RootOptionsShape } from '@/src/cliHost';
 import { attachRootOptions as attachRootOptionsBuilder } from '@/src/cliHost/attachRootOptions';
 import { recordRunArgv, runArgvRequestsDebug } from '@/src/cliHost/parseHost';
 import { installRootHooks } from '@/src/cliHost/rootHooks';
-import {
-  configureTopLevelHelp,
-  underTestRunner,
-} from '@/src/cliHost/topLevelHelp';
+import { configureTopLevelHelp } from '@/src/cliHost/topLevelHelp';
+import { underTestRunner } from '@/src/cliHost/underTestRunner';
 import { userArgsOf } from '@/src/cliHost/userArgs';
 import { applyRootVisibility } from '@/src/cliHost/visibility';
 import {

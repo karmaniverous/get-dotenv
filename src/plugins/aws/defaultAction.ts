@@ -8,6 +8,7 @@ import {
 } from '@/src/cliHost';
 import { shouldCapture } from '@/src/cliHost/exec';
 import { propagateExitCode } from '@/src/cliHost/exitCode';
+import { underTestRunner } from '@/src/cliHost/underTestRunner';
 
 import type { AwsPlugin } from '.';
 import { awsSessionEnv } from './common';
@@ -36,9 +37,7 @@ export function attachAwsDefaultAction(
     // Access merged root CLI options (installed by root hooks).
     const bag = readMergedOptions(thisCommand);
     const capture = shouldCapture(bag.capture);
-    const underTests =
-      process.env.GETDOTENV_TEST === '1' ||
-      typeof process.env.VITEST_WORKER_ID === 'string';
+    const underTests = underTestRunner();
 
     // The invocation's session (established once, with the aws flags; #56).
     const ctx = cli.getCtx();

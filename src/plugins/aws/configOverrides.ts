@@ -28,10 +28,8 @@ export function awsConfigWithFlags(
   };
 }
 
-/** @internal */
-const isRecord = (v: unknown): v is Record<string, unknown> => {
-  return isObject(v) && !Array.isArray(v);
-};
+/** @internal A plain object (radash `isObject` is false for arrays). */
+const isRecord = (v: unknown): v is Record<string, unknown> => isObject(v);
 
 /**
  * Create an AWS plugin config overlay from Commander-parsed option values.

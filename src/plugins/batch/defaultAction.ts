@@ -17,15 +17,14 @@ export const attachBatchDefaultAction = (
   parent: CommandUnknownOpts,
 ) => {
   parent.action(async (...args: unknown[]) => {
-    // Commander passes: [positionals, options, thisCommand]
-    const thisCommand = args[args.length - 1] as CommandUnknownOpts;
-    const flags =
-      args.length >= 2
-        ? (args[args.length - 2] as BatchParentInvokerFlags)
-        : {};
-    const positionals = (
-      Array.isArray(args[0]) ? (args[0] as unknown[]) : []
-    ).map(String);
+    // The mount declares one argument, `[command...]` (attachBatchOptions),
+    // so Commander passes [positionals, options, thisCommand]; an absent
+    // variadic argument is [].
+    const [positionals, flags, thisCommand] = args as [
+      string[],
+      BatchParentInvokerFlags,
+      CommandUnknownOpts,
+    ];
     await runBatch(plugin, cli, pluginOpts, thisCommand, {
       positionals,
       flags,

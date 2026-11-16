@@ -22,6 +22,7 @@ import { baseRootOptionDefaults } from '@/src/defaults';
 import { readHostPackage } from '@/src/util/packageRoot';
 
 import { attachRootOptions as attachRootOptionsBuilder } from './attachRootOptions';
+import { computeContext } from './computeContext';
 import type {
   GetDotenvCliPlugin,
   GetDotenvCliPublic,
@@ -43,7 +44,6 @@ import { initializeInstance } from './initializeInstance';
 import { parseHost } from './parseHost';
 import { flattenPluginTreeByPath, joinRealizedPath } from './paths';
 import { setupPluginTree } from './registerPlugin';
-import { resolveAndComputeContext } from './resolveAndComputeContext';
 import { runAfterResolveTree } from './runAfterResolve';
 import { tagAppOptionsAround } from './tagAppOptionsHelper';
 import type {
@@ -149,7 +149,8 @@ export class GetDotenvCli<
     customOptions: Partial<TOptions> = {},
     opts?: ResolveAndLoadOptions,
   ): Promise<GetDotenvCliCtx<TOptions>> {
-    const ctx = await resolveAndComputeContext<TOptions, TArgs, TOpts, TGlobal>(
+    // computeContext resolves the options and validates them strictly.
+    const ctx = await computeContext<TOptions, TArgs, TOpts, TGlobal>(
       customOptions,
       // Entries carry namespace overrides, which key config by realized path.
       this._plugins,

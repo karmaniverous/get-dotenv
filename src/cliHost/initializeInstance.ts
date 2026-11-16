@@ -6,6 +6,7 @@
 import type { GetDotenvCli } from './GetDotenvCli';
 import { configureHostHelp } from './hostHelp';
 import { hasRootHooks } from './rootHooksState';
+import { underTestRunner } from './underTestRunner';
 
 /**
  * Initialize a {@link GetDotenvCli} instance with help configuration and safe defaults.
@@ -35,10 +36,7 @@ export function initializeInstance(
   // Tests-only: suppress process.exit during help/version flows under Vitest.
   // Unit tests often construct GetDotenvCli directly (bypassing createCli),
   // so install a local exitOverride when a test environment is detected.
-  const underTests =
-    process.env.GETDOTENV_TEST === '1' ||
-    typeof process.env.VITEST_WORKER_ID === 'string';
-  if (underTests) {
+  if (underTestRunner()) {
     cli.exitOverride((err: unknown) => {
       const code = (err as { code?: string } | undefined)?.code;
       if (

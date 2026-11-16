@@ -52,7 +52,7 @@ function reportEnvIssues<TOptions extends GetDotenvOptions>(
 ): void {
   try {
     const issues = validateEnvAgainstSources(program.getCtx().dotenv, sources);
-    if (Array.isArray(issues) && issues.length > 0) {
+    if (issues.length > 0) {
       issues.forEach((m) => {
         bag.logger.error(m);
       });
