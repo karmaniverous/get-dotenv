@@ -38,14 +38,18 @@ const shellKind = (shell: string | URL): ShellKind => {
  *   text without escaping embedded double quotes, so for `powershell.exe` the
  *   argument text is escaped for the command's own argv parser.
  *
- * An argument with nothing the shell would read is returned as is.
+ * An argument with nothing the shell would read is returned as is. An empty
+ * argument is kept: `''` (POSIX, `pwsh`), `""` (`cmd.exe`), or `'""'` for
+ * `powershell.exe`, which drops an empty native argument.
  *
  * @param arg - One argument.
  * @param shell - The shell (a path or name, or a file URL).
  * @returns The argument, quoted when needed.
  */
 export const quoteForShell = (arg: string, shell: string | URL): string => {
-  switch (shellKind(shell)) {
+  const kind = shellKind(shell);
+  if (arg === '') return EMPTY_ARGUMENT[kind];
+  switch (kind) {
     case 'cmd':
       return /[\s"'&|<>^()!%+,;=]/.test(arg)
         ? `"${arg.replace(/"/g, '\\"')}"`
@@ -59,6 +63,14 @@ export const quoteForShell = (arg: string, shell: string | URL): string => {
         ? `'${arg.replace(/'/g, "'\\''")}'`
         : arg;
   }
+};
+
+// An empty argument per shell kind (review 5916926264 #3).
+const EMPTY_ARGUMENT: Record<ShellKind, string> = {
+  posix: "''",
+  cmd: '""',
+  pwsh: "''",
+  powershell: `'""'`,
 };
 
 // PowerShell single quotes, applied when the argument holds anything but word

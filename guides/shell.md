@@ -66,7 +66,7 @@ TypeScript note: When you author scripts in code, a helper `defineScripts<TShell
 
 - POSIX shells: prefer single quotes when possible; escape `$` for literal dollar signs.
 - PowerShell: double-quotes perform interpolation; single quotes are literal.
-- Argv forms (batch positionals, the aws forward) are joined into one string for the shell with each token quoted by that shell's own rules: single quotes for POSIX shells and PowerShell, double quotes for `cmd.exe`. A PowerShell command name that needs quotes runs through the call operator (`& '...'`).
+- Argv forms (batch positionals, the aws forward) are joined into one string for the shell with each token quoted by that shell's own rules: single quotes for POSIX shells and PowerShell, double quotes for `cmd.exe`. A PowerShell command name that needs quotes runs through the call operator (`& '...'`). An empty argument is kept (`''`, or `""` for `cmd.exe`).
 
 ## Exit codes
 

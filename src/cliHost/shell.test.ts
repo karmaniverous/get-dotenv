@@ -44,6 +44,15 @@ describe('quoteForShell / joinForShell (#51)', () => {
     expect(joinForShell([], 'pwsh')).toBe('');
   });
 
+  it('an empty argument is quoted for every shell (review 5916926264 #3)', () => {
+    expect(quoteForShell('', '/bin/sh')).toBe("''");
+    expect(quoteForShell('', 'cmd.exe')).toBe('""');
+    expect(quoteForShell('', 'pwsh')).toBe("''");
+    // Windows PowerShell 5.1 drops an empty native argument: pass `""`.
+    expect(quoteForShell('', 'powershell.exe')).toBe(`'""'`);
+    expect(joinForShell(['node', '', 'x'], '/bin/bash')).toBe("node '' x");
+  });
+
   it('POSIX quoting for other shells, including file URLs', () => {
     expect(quoteForShell("it's", '/bin/zsh')).toBe("'it'\\''s'");
     expect(quoteForShell('x$y', new URL('file:///bin/bash'))).toBe("'x$y'");

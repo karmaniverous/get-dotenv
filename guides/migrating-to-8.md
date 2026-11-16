@@ -362,6 +362,7 @@ Under the default Windows shell, `powershell.exe -Command` reports any failure a
 
 - `shell: true` in a script or plugin config means the OS default shell: `/bin/bash` on POSIX, `powershell.exe` on Windows. In 7.x it passed `true` to execa, which used `/bin/sh` or `cmd.exe`.
 - Argument tokens (batch positionals, the aws forward) are quoted for the resolved shell. On Windows they were quoted with `cmd.exe` rules even under PowerShell, so `"a b"` and `x$y` broke.
+- An empty argument token is kept, under every shell (`''`, or `""` for `cmd.exe`). In 7.x it vanished from the joined command (independent review of #93, finding 3).
 - The built-in `git-status` script is `git status -s -u -b` ([#51] follow-up). The 7.x `git branch --show-current && git status -s -u` fails under PowerShell 5.1, which has no `&&`.
 
 **Who is affected:** scripts with `shell: true` that use `cmd.exe` syntax on Windows, or `sh`-only syntax that bash treats differently.

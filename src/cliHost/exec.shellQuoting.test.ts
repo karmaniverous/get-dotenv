@@ -53,6 +53,24 @@ describe('argv quoting follows the target shell (#51)', () => {
   });
 });
 
+// Every shell on each CI leg, cmd.exe included.
+const everyShell =
+  process.platform === 'win32'
+    ? ['powershell.exe', 'cmd.exe']
+    : ['/bin/bash', '/bin/sh'];
+
+describe('an empty argument survives every shell (review 5916926264 #3)', () => {
+  it.each(everyShell)('%s passes an empty argument', async (shell) => {
+    const args = ['a', '', 'b', ''];
+    const { stdout, exitCode } = await runCommandResult(
+      [...printArgv, ...args],
+      shell,
+    );
+    expect(exitCode).toBe(0);
+    expect(JSON.parse(stdout)).toEqual(args);
+  });
+});
+
 describe('shell: true is the OS default shell (#51)', () => {
   // A command whose output tells PowerShell from cmd.exe, and bash from sh.
   const probe =
