@@ -37,7 +37,8 @@ export const awsPlugin = () => {
 
   plugin.afterResolve = attachAwsAfterResolveHook(
     plugin,
-    () => awsCmd?.opts() ?? {},
+    // Undefined before setup mounts aws: no flags (the overrides read {}).
+    () => awsCmd?.opts(),
   );
   return plugin;
 };
