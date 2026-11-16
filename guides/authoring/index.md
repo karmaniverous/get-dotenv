@@ -6,6 +6,7 @@ children:
   - ./diagnostics.md
   - ./exec.md
   - ./subcommands.md
+  - ./qualified-names.md
 ---
 
 ## Authoring Plugins
@@ -17,3 +18,4 @@ This section introduces the plugin‑first host and groups plugin documentation 
 - [Diagnostics & Errors](./diagnostics.md) - Covers error handling, capture, and optional trace/redaction.
 - [Executing Shell Commands](./exec.md) - A focused deep dive for subprocesses across plugins.
 - [Subcommands & Resolvers](./subcommands.md) - Patterns for complex plugins with per-command options.
+- [Qualified Names](./qualified-names.md) - How every long option gets a qualified name, the reserved `<alias>-` prefix, collisions and terminators.

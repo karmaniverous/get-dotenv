@@ -9,6 +9,7 @@ title: 'Authoring Hosts & Plugins'
 - Host resolves dotenv context once per invocation: `await program.resolveAndLoad(...)`.
 - Resolved context is available via `cli.getCtx()` inside any plugin mount/action.
 - Root hooks persist a merged “root options bag”: `readMergedOptions(thisCommand)`.
+- The first `parseAsync()` installs the plugins and builds the qualified-name table (call `brand()` first on a direct host). It throws on a qualified-name collision or a plain long option that starts with `<alias>-`, and registers each command's hidden terminator (`terminatorName(alias, path)`). See the Qualified Names authoring guide.
 
 ## Minimal plugin pattern
 
