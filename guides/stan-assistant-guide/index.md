@@ -522,7 +522,7 @@ This keeps behavior independent of `loadProcess`.
 From the root export:
 
 - `traceChildEnv({ parentEnv, dotenv, keys?, redact?, redactPatterns?, warnEntropy?, ... })` prints origin/value diagnostics for child env composition.
-- `redactDisplay(key, value, { redact?, redactPatterns? })` and `redactObject(record, opts)` mask values for logs/traces (presentation-only); `redactPatterns` add to the built-in patterns.
+- `redactDisplay(key, value, { redact?, redactPatterns? })` and `redactObject(record, opts)` mask values for logs/traces (presentation-only); `redactPatterns` add to the built-in patterns (a RegExp is used without its `g` and `y` flags, so it matches every key).
 - `maybeWarnEntropy(key, value, origin, opts, write)` warns about likely secrets by entropy (presentation-only); it uses exactly the `entropyWhitelist` it is given, so pass the merged bag's (built-in plus user patterns).
 
 ## Shipped plugins: what to know as a plugin author

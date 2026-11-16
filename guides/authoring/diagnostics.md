@@ -44,8 +44,8 @@ Note: with `stdio: 'pipe'`, `runCommand()` re-emits the child's buffered stdout 
 When your plugin launches a subprocess, you can emit a short diagnostic prelude similar to the cmd plugin’s `--trace`:
 
 - For each key in `{ ...process.env, ...ctx.dotenv }` (or a selected subset), print the origin (dotenv | parent | unset).
-- Apply presentation‑time redaction for secret‑like keys (user‑enabled): `redactDisplay`/`redactObject`/`redactTriple` with the merged `redact` and `redactPatterns` (custom patterns add to the built-in ones).
-- Optionally warn once per key about high‑entropy values (presentation‑only): `maybeWarnEntropy` with the merged `warnEntropy`, `entropyThreshold`, `entropyMinLength` and `entropyWhitelist`. Pass the merged bag's whitelist, which already holds the built-in patterns plus the user's; `maybeWarnEntropy` itself uses exactly the whitelist it is given.
+- Apply presentation‑time redaction for secret‑like keys (user‑enabled): `redactDisplay`/`redactObject`/`redactTriple` with the merged `redact` and `redactPatterns` (custom patterns add to the built-in ones; a RegExp is used without its `g` and `y` flags, so it matches every key).
+- Optionally warn once per key about high‑entropy values (presentation‑only): `maybeWarnEntropy` with the merged `warnEntropy`, `entropyThreshold`, `entropyMinLength` and `entropyWhitelist`. Pass the merged bag's whitelist, which already holds the built-in patterns plus the user's; `maybeWarnEntropy` itself uses exactly the whitelist it is given (a RegExp without its `g` and `y` flags).
 
 This format is a best practice, not a requirement. Reuse when parity with the cmd plugin is desirable.
 

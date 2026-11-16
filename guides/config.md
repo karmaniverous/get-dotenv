@@ -221,7 +221,7 @@ const out = overlayEnv({
 
 Presentation‑only diagnostics help audit values without altering runtime behavior:
 
-- Redaction (--redact): masks secret‑like keys in -l/--log and --trace outputs. The built-in patterns match `secret`, `token`, `pass`/`password`, `api_key`/`api-key`/`apikey` and `key`, case-insensitively, as a whole word or as an underscore- or dash-delimited segment of the key: `API_SECRET`, `DB_PASSWORD` and `GITHUB_TOKEN` are masked; `SECRETARY` and `MONKEY` are not. Custom patterns (`--redact-pattern <pattern...>`, `rootOptionDefaults.redactPatterns`, or `redactPatterns` in `getDotenv` options) add to the built-in patterns.
+- Redaction (--redact): masks secret‑like keys in -l/--log and --trace outputs. The built-in patterns match `secret`, `token`, `pass`/`password`, `api_key`/`api-key`/`apikey` and `key`, case-insensitively, as a whole word or as an underscore- or dash-delimited segment of the key: `API_SECRET`, `DB_PASSWORD` and `GITHUB_TOKEN` are masked; `SECRETARY` and `MONKEY` are not. Custom patterns (`--redact-pattern <pattern...>`, `rootOptionDefaults.redactPatterns`, or `redactPatterns` in `getDotenv` options) add to the built-in patterns. A RegExp pattern is used without its `g` and `y` flags, so it matches every key.
 - Entropy warnings (on by default):
   - Once‑per‑key messages when printable strings of at least `--entropy-min-length` characters (default 16) exceed `--entropy-threshold` bits/char (default 3.8). Both flags take numbers (a non-number is a usage error), and their help labels show the effective defaults.
   - Surfaces: --trace and -l/--log, on the CLI and in `getDotenv({ log: true })`.

@@ -4,6 +4,8 @@
  * - Warn once per key per run when bits/char \>= threshold.
  * - Supports whitelist patterns to suppress known-noise keys.
  */
+import { compileKeyPatterns } from './keyPatterns';
+
 const warned = new Set<string>();
 
 /**
@@ -20,8 +22,9 @@ export interface EntropyOptions {
   entropyMinLength?: number | undefined;
   /**
    * Key patterns (strings match case-insensitively, or RegExps) whose
-   * values are never checked. Used as given here; the CLI host and
-   * `getDotenv` pass the built-in whitelist plus the user's patterns.
+   * values are never checked. A RegExp is used without its `g` and `y`
+   * flags. Used as given here; the CLI host and `getDotenv` pass the
+   * built-in whitelist plus the user's patterns.
    */
   entropyWhitelist?: Array<string | RegExp> | undefined;
 }
@@ -29,7 +32,7 @@ export interface EntropyOptions {
 const isPrintableAscii = (s: string) => /^[\x20-\x7E]+$/.test(s);
 
 const compile = (patterns?: Array<string | RegExp>) =>
-  (patterns ?? []).map((p) => (typeof p === 'string' ? new RegExp(p, 'i') : p));
+  compileKeyPatterns(patterns ?? []);
 
 const whitelisted = (key: string, regs: RegExp[]) =>
   regs.some((re) => re.test(key));

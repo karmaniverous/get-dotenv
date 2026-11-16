@@ -4,10 +4,13 @@
  *   api_key/api-key/apikey and key, each as a whole word or as an
  *   underscore- or dash-delimited segment of the key (`API_SECRET`,
  *   `DB_PASSWORD`, `GITHUB_TOKEN`), case-insensitive.
- * - Custom patterns (regex strings or RegExps) add to the built-in list.
+ * - Custom patterns (regex strings or RegExps) add to the built-in list. A
+ *   RegExp's `g` and `y` flags are ignored, so every key is tested afresh.
  * - Never alters runtime env; only affects displayed values.
  */
 import type { ProcessEnv } from '@/src/core';
+
+import { compileKeyPatterns } from './keyPatterns';
 
 /**
  * Configuration options for secret redaction.
@@ -19,7 +22,8 @@ export interface RedactOptions {
   redact?: boolean | undefined;
   /**
    * Additional key patterns to redact: they add to the built-in patterns.
-   * String patterns match case-insensitively.
+   * String patterns match case-insensitively. A RegExp is used without its
+   * `g` and `y` flags, so it matches every key, not every other one.
    */
   redactPatterns?: Array<string | RegExp> | undefined;
 }
@@ -40,9 +44,7 @@ const DEFAULT_PATTERNS = [
 ].map(segment);
 
 const compile = (patterns?: Array<string | RegExp>) =>
-  [...DEFAULT_PATTERNS, ...(patterns ?? [])].map((p) =>
-    typeof p === 'string' ? new RegExp(p, 'i') : p,
-  );
+  compileKeyPatterns([...DEFAULT_PATTERNS, ...(patterns ?? [])]);
 
 const shouldRedactKey = (key: string, regs: RegExp[]) =>
   regs.some((re) => re.test(key));
