@@ -73,7 +73,7 @@ TypeScript note: When you author scripts in code, a helper `defineScripts<TShell
 
 ## Exit codes
 
-get-dotenv exits with the child's exit code on every execution path (`cmd`, the default command, the `-c` alias, the aws forward, batch) and exits non-zero on usage errors. A child that can't be started (e.g. ENOENT with the shell off) prints `Error: <message>` and exits 127 (ENOENT) or 1. Under the default Windows shell, `powershell.exe -Command` reports any failure as 1, so the original code is lost there.
+get-dotenv exits with the child's exit code on every execution path (`cmd`, the default command, the `-c` alias, the aws forward, batch) and exits non-zero on usage errors. A child that can't be started (e.g. ENOENT with the shell off) prints `Error: <message>` and exits 127 (ENOENT) or 1. On Windows, execa runs a command name it can't resolve through `cmd.exe` (cross-spawn), which prints its own "is not recognized" message and exits 1. Under the default Windows shell, `powershell.exe -Command` reports any failure as 1, so the original code is lost there.
 
 ## Nested CLI behavior
 

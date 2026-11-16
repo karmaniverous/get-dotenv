@@ -63,7 +63,7 @@ Key behaviors:
 - Unknown/unparsed lines are preserved verbatim.
 - Ordering is preserved; new keys are appended at the end, in update-map order (both modes).
 - A new key must be one dotenv reads: letters, digits, `_`, `.` and `-` (`[\w.-]+`). Any other key (a space, `=`, a line break, an empty key) throws `can't add dotenv key "..."` instead of writing a line dotenv would never read back as that key.
-- A new key always starts on its own line: when the file's last line has no final newline, the editor ends that line first (in the file's EOL style) and the file still ends without a final newline.
+- A new key always starts on its own line: when the file's last line has no final newline, `editDotenvFile` ends that line first (in the file's EOL style) and the file still ends without a final newline.
 - Inline comment spacing is preserved when updating existing assignment lines.
 
 ## Update map semantics (DotenvUpdateMap)
@@ -103,7 +103,7 @@ When the same key appears multiple times, you can choose how to update/delete oc
 
 ## Quoting, multiline, and comment safety
 
-Every value is written so that get-dotenv reads it back exactly: dotenv's `parse`, then get-dotenv's expander. A value is literal, so a `$` the expander would act on (one that starts a reference such as `$HOME` or `${A:-x}`, or one after a `\`) is written `\$`: `pa$$word` becomes `pa$\$word`. A `$` that starts no reference (`cost $`) is left alone. To write a reference that get-dotenv expands, write that line yourself. The editor and the `outputPath` (`-o`) writer share one formatter, which tries these forms of the escaped value in order and writes the first that dotenv reads back unchanged (and that the editor reads as the same single value the next time it edits the file):
+Every value is written so that get-dotenv reads it back exactly: dotenv's `parse`, then get-dotenv's expander. A value is literal, so a `$` the expander would act on (one that starts a reference such as `$HOME` or `${A:-x}`, or one after a `\`) is written `\$`: `pa$$word` becomes `pa$\$word`. A `$` that starts no reference (`cost $`) is left alone. To write a reference that get-dotenv expands, write that line yourself. The dotenv file-editing API (`editDotenvFile`) and the `outputPath` (`-o`) writer share one formatter, which tries these forms of the escaped value in order and writes the first that dotenv reads back unchanged (and that `editDotenvFile` reads as the same single value the next time it edits the file):
 
 - An existing line: its current quote style, then double quotes, single quotes, backticks, then bare.
 - A new key, or an unquoted line: bare, then double quotes, single quotes, backticks.

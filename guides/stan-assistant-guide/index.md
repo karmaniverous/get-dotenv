@@ -223,7 +223,7 @@ All options are optional; important ones:
   - `vars?: ProcessEnv` (explicit vars merged into the composed map)
   - `loadProcess?: boolean` (default false for programmatic use; when true merges into `process.env`)
 - Dynamic variables:
-  - `dynamic?: Record<string, string | ((vars, env) => string | undefined)>` (programmatic map; takes precedence over `dynamicPath`)
+  - `dynamic?: Record<string, string | ((vars, env) => string | undefined)>` (programmatic map; `dynamicPath` is applied after it and wins on a shared key)
   - `dynamicPath?: string` (path to JS/TS module default-exporting the same dynamic map)
   - `excludeDynamic?: boolean` (skip dynamic evaluation)
 - Exclusions:

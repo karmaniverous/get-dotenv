@@ -15,7 +15,8 @@
  * then runs on to a later line. Rather than re-implement those rules, each
  * candidate form is checked with dotenv's own `parse` (the parser get-dotenv
  * reads dotenv files with), and the first one that reads back unchanged, and
- * that the editor's parser reads as the same single value, is written.
+ * that the parser of `editDotenvFile` reads as the same single value, is
+ * written.
  */
 
 import { parse } from 'dotenv';
@@ -70,10 +71,10 @@ const readsBack = (token: string, value: string): boolean => {
 };
 
 /**
- * Whether the editor's own parser reads `token` as one value in quote style
- * `quote`, closed at the token's end. Without this, a form dotenv happens to
+ * Whether the parser of `editDotenvFile` reads `token` as one value in quote
+ * style `quote`, closed at the token's end. Without this, a form dotenv happens to
  * accept (`"a"b"`, read by dotenv as a bare value with its outer quotes
- * stripped) would be mis-split the next time the editor edits the file.
+ * stripped) would be mis-split the next time `editDotenvFile` edits the file.
  */
 const editorReadsBack = (token: string, quote: DotenvQuote | null): boolean => {
   const { segments } = parseDotenvDocument(`K=${token}`);

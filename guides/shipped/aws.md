@@ -34,7 +34,7 @@ The following resolution logic runs once per invocation, only when the invoked c
 - Credentials resolve (strategy: `cli-export` default):
   - If a profile is selected (from flags/config/dotenv), it wins over ambient env credentials: the plugin resolves credentials for that profile via the AWS CLI (`aws configure export-credentials`, with optional SSO login-on-demand) and then applies them to `process.env`.
   - If no profile is selected, the plugin falls back to ambient credentials from `process.env` (`AWS_ACCESS_KEY_ID` + `AWS_SECRET_ACCESS_KEY` + optional `AWS_SESSION_TOKEN`) when present.
-  - Export-credentials formats: the plugin prefers `aws configure export-credentials --format process` first, then tries platform-appropriate env-like formats (PowerShell / windows-cmd / env / env-no-export), then falls back to the AWS CLI default output when needed.
+  - Export-credentials formats: the plugin tries `aws configure export-credentials --format process` first, then one platform format (`--format powershell` on Windows, `--format env` elsewhere), then the AWS CLI default output. The parser reads JSON and POSIX, PowerShell, windows-cmd and env-no-export lines.
   - If export fails and the profile looks like SSO and `loginOnDemand` is true, the plugin runs `aws sso login --profile <profile>` once and retries export.
   - As a last resort, it falls back to `aws configure get aws_access_key_id`, `aws_secret_access_key`, and optional `aws_session_token`.
   - The AWS CLI probes share a 9-second budget (each call at most 3 seconds), so a slow or blocked profile cannot stall the command. The interactive `aws sso login` is not counted: after it, the export retry, the static fallback and the region lookup get a fresh budget.

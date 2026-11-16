@@ -146,7 +146,7 @@ export async function getDotenv(
     { progressive: true },
   );
 
-  // Process dynamic variables. Programmatic option takes precedence over path.
+  // Process dynamic variables: programmatic `dynamic`, then `dynamicPath` (which wins).
   const deletedKeys = new Set<string>();
   if (!excludeDynamic) {
     // A2 precedence: programmatic dynamic < dynamicPath (dynamicPath wins when present)

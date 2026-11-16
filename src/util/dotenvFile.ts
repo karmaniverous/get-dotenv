@@ -6,7 +6,8 @@ import { formatDotenvValue } from '@/src/dotenv/formatDotenvValue';
 /**
  * Serialize a dotenv record to text: one `KEY=value` line per key, in
  * insertion order, with `undefined` written as an empty value. Each value is
- * quoted and escaped as needed (the editor's rules, {@link formatDotenvValue})
+ * quoted and escaped as needed (the rules of the dotenv file-editing API,
+ * `editDotenvFile`: {@link formatDotenvValue})
  * so that get-dotenv (dotenv's `parse`, then its expander) reads the text
  * back to the same record: a `$` the expander would act on is written `\$`.
  *

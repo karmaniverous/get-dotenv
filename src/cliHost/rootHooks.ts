@@ -78,7 +78,7 @@ export function installRootHooks<TOptions extends GetDotenvOptions>(
   markRootHooks(program);
 
   // Propagate resolved env into the options bag so plugins always see
-  // the effective environment as bag.env â€” no defaulting logic needed downstream.
+  // the effective environment as bag.env — no defaulting logic needed downstream.
   const propagateResolvedEnv = (merged: RootOptionsBag) => {
     if (program.hasCtx()) {
       const resolvedCtx = program.getCtx();
@@ -93,7 +93,7 @@ export function installRootHooks<TOptions extends GetDotenvOptions>(
     }
   };
 
-  // Hook: preSubcommand â€” always runs for subcommand flows.
+  // Hook: preSubcommand — always runs for subcommand flows.
   program.hook('preSubcommand', async (thisCommand, _actionCommand) => {
     const sources = await resolveGetDotenvConfigSources(hostMetaUrlOf(program));
     // Subcommand help (rendered after this hook) honours config visibility.
@@ -154,7 +154,7 @@ export function installRootHooks<TOptions extends GetDotenvOptions>(
     );
   });
 
-  // Hook: preAction â€” root-only and parent-alias flows + scoped afterResolve.
+  // Hook: preAction — root-only and parent-alias flows + scoped afterResolve.
   program.hook('preAction', async (thisCommand, actionCommand) => {
     const sources = await resolveGetDotenvConfigSources(hostMetaUrlOf(program));
     const rawArgs =
@@ -189,7 +189,7 @@ export function installRootHooks<TOptions extends GetDotenvOptions>(
       markComposed(program);
     }
 
-    // Always propagate resolved env into the merged bag â€” even when
+    // Always propagate resolved env into the merged bag — even when
     // preSubcommand already set the context.  preAction unconditionally
     // builds a fresh `merged` and overwrites the options bag, so the env
     // propagated by preSubcommand is lost without this call.
