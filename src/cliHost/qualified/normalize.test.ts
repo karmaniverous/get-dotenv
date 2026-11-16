@@ -114,6 +114,17 @@ describe('normalizeArgv: 4.4 examples (vc)', () => {
   });
 });
 
+describe('normalization errors name options, never values', () => {
+  it('a gap message names the qualified option without its =value (review 5916926264 #10)', async () => {
+    const vc = await vcProgram();
+    const err = errorOf(vc, words('-e --vc-aws-profile=s3cr3t aws'));
+    expect(err.message).toBe(
+      "missing value for -e (the next token, '--vc-aws-profile', is a qualified option)",
+    );
+    expect(err.message).not.toContain('s3cr3t');
+  });
+});
+
 describe('normalizeArgv: 4.4 examples (shipped getdotenv)', () => {
   it('getdotenv init x --cli-name --getdotenv-debug y fails across the gap', async () => {
     const g = await getdotenvProgram();

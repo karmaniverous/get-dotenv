@@ -119,7 +119,7 @@ Under `--debug` (or `--vc-debug`, or `GETDOTENV_DEBUG`), the CLI prints the type
 
 ## Errors
 
-Each is a usage error: one line on stderr, exit code 1.
+Each is a usage error: one line on stderr, exit code 1. A message names options, never their values: `vc -e --vc-aws-profile=prod aws` reports `'--vc-aws-profile'`, without `=prod`.
 
 | Typed                                                  | Error                                                                                    |
 | ------------------------------------------------------ | ---------------------------------------------------------------------------------------- |

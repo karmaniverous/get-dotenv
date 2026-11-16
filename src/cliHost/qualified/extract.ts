@@ -75,7 +75,8 @@ export const extractQualified = (
       value = next;
       i++;
     }
-    items.push({ kind: 'gap', text: token });
+    // The gap carries the name only: messages never echo a value.
+    items.push({ kind: 'gap', text: name });
     claims.push({
       entry,
       name,

@@ -48,7 +48,8 @@ export interface WalkToken {
 export interface WalkGap {
   /** Always `gap`. */
   kind: 'gap';
-  /** The claimed token as typed, for messages. */
+  /** The claimed qualified name as typed, without any `=value`, for
+   *  messages (a value never appears in an error). */
   text: string;
 }
 
