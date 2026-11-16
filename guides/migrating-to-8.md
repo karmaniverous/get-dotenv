@@ -30,6 +30,14 @@ Most users need only the first four items:
 
 **What to do:** upgrade Node. CI matrices that test Node 20 need to drop it.
 
+### Commander is pinned to 15.1.0
+
+**What changed:** `commander` and `@commander-js/extra-typings` are exact dependencies, `15.1.0` (independent review of #93, finding 8). The argv walk behind qualified options replays Commander's own option parsing, and parts of get-dotenv read Commander's private fields; both were checked against 15.1.0 only. A guard test fails if the pin or the installed version moves. 7.x used a caret range.
+
+**Who is affected:** projects that install another Commander version next to get-dotenv. Your own `commander` dependency still resolves on its own; get-dotenv's copy is 15.1.0.
+
+**What to do:** nothing, unless you dedupe Commander yourself: keep get-dotenv's copy at 15.1.0.
+
 ### The `z` re-export is gone
 
 **What changed:** `@karmaniverous/get-dotenv/cliHost` no longer exports `z` (D19). It was deprecated in 7.x.

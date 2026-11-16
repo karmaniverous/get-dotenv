@@ -114,6 +114,10 @@ Terminators are registered on every command, including plain `new Command()` mou
 - have no qualified name, and are the only plain options allowed to start with `<alias>-`;
 - never appear in a command's `opts()` or in the merged options bag.
 
+## Why Commander is pinned
+
+Normalization walks the argv the way Commander will parse it: the walk replays Commander 15.1.0's `parseOptions` loop and dispatch, and a few helpers read Commander's private fields. Both were checked against 15.1.0 only, so get-dotenv depends on `commander` and `@commander-js/extra-typings` at exactly `15.1.0`. A guard test (`commanderPin.test.ts`) fails if the pin or the installed version moves, next to the private-field guards and the parity fixture that compares the walk with Commander's real parse. Bumping Commander means re-checking the walk against the new parse, then moving the pin and the guard together.
+
 ## Known limitation: a parent that parses options after its subcommand
 
 Commander lets a command that has neither `enablePositionalOptions()` nor `passThroughOptions()` keep parsing its own options after its subcommand's name. Normalization writes a child's qualified option in plain form right after the child's name, so if such a parent declares the same plain flag as its child, the parent takes it:
