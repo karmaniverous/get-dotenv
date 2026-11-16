@@ -111,6 +111,24 @@ export interface Walk {
   incomplete: boolean;
 }
 
+/**
+ * The command whose help Commander renders for a plain (already normalized)
+ * argv, if the argv asks for help.
+ *
+ * @param root - The host root.
+ * @param argv - The user arguments, e.g. the root's `rawArgs` during a
+ *   parse.
+ * @returns The command, or `undefined`.
+ */
+export const helpTargetOf = (
+  root: CommandUnknownOpts,
+  argv: readonly string[],
+): CommandUnknownOpts | undefined =>
+  walkArgv(
+    root,
+    argv.map((text): WalkItem => ({ kind: 'token', text })),
+  ).help;
+
 /** Options for {@link walkArgv}. */
 export interface WalkOptions {
   /** Options a command is given before its own tokens (the claimed

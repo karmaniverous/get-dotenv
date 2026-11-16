@@ -1,10 +1,26 @@
 import type { CommandUnknownOpts } from '@commander-js/extra-typings';
 
 import type { GetDotenvCliPublic } from '@/src/cliHost';
+import { helpTargetOf } from '@/src/cliHost/qualified/walk';
 
 import type { AwsPlugin } from '.';
 import { awsConfigWithFlags } from './configOverrides';
 import { establishAwsSession } from './session';
+
+/**
+ * Whether the parse in progress renders help for `command` or a descendant.
+ *
+ * @param command - The command whose hook runs.
+ * @returns Whether it does.
+ */
+const helpTargetIsWithin = (command: CommandUnknownOpts): boolean => {
+  let root = command;
+  while (root.parent) root = root.parent;
+  const rawArgs = (root as unknown as { rawArgs?: string[] }).rawArgs ?? [];
+  let c: CommandUnknownOpts | null | undefined = helpTargetOf(root, rawArgs);
+  for (; c; c = c.parent) if (c === command) return true;
+  return false;
+};
 
 /**
  * Attach the AWS plugin `preSubcommand` hook.
@@ -23,8 +39,10 @@ export function attachAwsPreSubcommandHook(
   plugin: AwsPlugin,
 ): void {
   cli.hook('preSubcommand', async (thisCommand: CommandUnknownOpts) => {
-    // Avoid side effects for help rendering.
-    if (process.argv.includes('-h') || process.argv.includes('--help')) return;
+    // No session for a help request on aws or an aws child (#84): read the
+    // argv being parsed (the root's normalized rawArgs), not process.argv,
+    // so a -h that belongs to a forwarded command or follows -- is not one.
+    if (helpTargetIsWithin(thisCommand)) return;
 
     await establishAwsSession(
       cli.getCtx(),
