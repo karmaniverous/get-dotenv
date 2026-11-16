@@ -220,11 +220,11 @@ const out = overlayEnv({
 
 Presentation‑only diagnostics help audit values without altering runtime behavior:
 
-- Redaction (--redact): masks secret‑like keys (default patterns include SECRET, TOKEN, PASSWORD, API_KEY, KEY) in -l/--log and --trace outputs; allow custom patterns via --redact-pattern.
+- Redaction (--redact): masks secret‑like keys in -l/--log and --trace outputs. The built-in patterns match `secret`, `token`, `pass`/`password`, `api_key`/`api-key`/`apikey` and `key`, case-insensitively, as a whole word or as an underscore- or dash-delimited segment of the key: `API_SECRET`, `DB_PASSWORD` and `GITHUB_TOKEN` are masked; `SECRETARY` and `MONKEY` are not. Custom patterns (`--redact-pattern <pattern...>`, `rootOptionDefaults.redactPatterns`, or `redactPatterns` in `getDotenv` options) add to the built-in patterns.
 - Entropy warnings (on by default):
-  - Once‑per‑key messages when printable strings of length ≥ 16 exceed bits/char threshold (default 3.8).
-  - Surfaces: --trace and -l/--log.
-  - Whitelist patterns supported.
+  - Once‑per‑key messages when printable strings of at least `--entropy-min-length` characters (default 16) exceed `--entropy-threshold` bits/char (default 3.8). Both flags take numbers (a non-number is a usage error), and their help labels show the effective defaults.
+  - Surfaces: --trace and -l/--log, on the CLI and in `getDotenv({ log: true })`.
+  - Whitelisted keys are never checked. The built-in whitelist (`^GIT_`, `^npm_`, `^CI$`, `SHLVL`) always applies: patterns from `--entropy-whitelist`, `rootOptionDefaults.entropyWhitelist` or `entropyWhitelist` in `getDotenv` options add to it.
 
 ## Scripts table (optional)
 

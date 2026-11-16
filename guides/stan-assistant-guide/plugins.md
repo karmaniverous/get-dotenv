@@ -6,7 +6,7 @@ title: 'Shipped Plugins'
 
 - `cmd`: executes a command under ctx; provides parent alias `-c, --cmd <command...>`, which runs the cmd action itself (same bag, scripts, afterResolve scoping and exit codes); the alias plus positional `cmd` arguments is a usage error (exit 1).
 - `batch`: discovers directories by globs and runs a command sequentially (stopping at the first failure, whose exit code it exits with) or in parallel; honors `--list` and `--ignore-errors`.
-- `aws`: establishes a session when an `aws` command (or child) is invoked, writes AWS env vars to `process.env`; publishes minimal metadata under `ctx.plugins.aws`; supports `strategy: none`. Does not fire on sibling commands.
+- `aws`: establishes a session when an `aws` command (or child) is invoked (once per invocation, with the `aws` flags applied; aws child commands keep it), writes AWS env vars to `process.env`; publishes minimal metadata under `ctx.plugins.aws`; supports `strategy: none`. Does not fire on sibling commands. A forward (`aws -- <args>`) passes the dotenv values and `getDotenvCliOptions`, with the session's `AWS_*` entries over them.
 - `init`: scaffolds config files and a CLI skeleton; collision handling supports overwrite/example/skip plus CI heuristics.
 
 ## Plugin Configuration Keys

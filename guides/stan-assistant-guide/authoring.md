@@ -197,7 +197,7 @@ const logger = assertLogger(maybeLogger);
 ## Diagnostics helpers
 
 - `traceChildEnv({ parentEnv, dotenv, keys?, redact?, ... })`
-- `redactDisplay(value, ...)`
+- `redactDisplay(key, value, ...)`
 - `maybeWarnEntropy(key, value, origin, opts, write)`
 
 These are presentation-only helpers to mirror the shipped CLI behavior.

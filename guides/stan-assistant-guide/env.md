@@ -93,8 +93,8 @@ When using the shipped CLI host (or embedding it via `createCli`/`GetDotenvCli`)
   - `outputPath`
   - `vars`, `varsAssignor`, `varsAssignorPattern`, `varsDelimiter`, `varsDelimiterPattern`
   - `pathsDelimiter`, `pathsDelimiterPattern`
-  - `redact`, `redactPatterns`
-  - `warnEntropy`, `entropyThreshold`, `entropyMinLength`, `entropyWhitelist`
+  - `redact`, `redactPatterns` (added to the built-in patterns)
+  - `warnEntropy`, `entropyThreshold`, `entropyMinLength`, `entropyWhitelist` (added to the built-in whitelist)
   - Rejected in every format: `dynamic` (use the top-level JS/TS `dynamic`) and `logger`.
 - `rootOptionVisibility?: { [rootKey]: boolean }`
 - `scripts?: Record<string, string | { cmd: string; shell?: string | boolean }>`

@@ -57,9 +57,16 @@ export interface RootOptionsShape {
   entropyThreshold?: number;
   /** Minimum string length to check for entropy (default 16). */
   entropyMinLength?: number;
-  /** Regex patterns for keys to exclude from entropy checks. */
+  /**
+   * Regex patterns for keys to exclude from entropy checks. They extend the
+   * built-in whitelist: the resolved bag holds the built-in patterns plus
+   * these.
+   */
   entropyWhitelist?: ReadonlyArray<string>;
-  /** Additional regex patterns for keys to redact. */
+  /**
+   * Additional regex patterns for keys to redact (`--redact-pattern`):
+   * they add to the built-in patterns.
+   */
   redactPatterns?: string[];
 
   /** Default target environment when not specified. */

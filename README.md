@@ -120,8 +120,9 @@ The shipped CLI is plugin‑first:
 
 - `--trace [keys...]` prints per‑key origin (dotenv | parent | unset) before spawning.
 - Deterministic output for CI: set `GETDOTENV_STDIO=pipe` or pass `--capture`.
-- Presentation‑time redaction for secret‑like keys: `--redact` / `--redact-off` (+ `--redact-pattern` for additional key matches).
-- Optional entropy warnings (length/printable/threshold gated) for likely secrets in logs/trace.
+- Presentation‑time redaction for secret‑like keys (`API_SECRET`, `DB_PASSWORD`, `GITHUB_TOKEN`, ...): `--redact` / `--redact-off` (+ `--redact-pattern` for additional key matches, added to the built-in ones).
+- Entropy warnings (on by default; length/printable/threshold gated, with a built-in whitelist that yours extends) for likely secrets in `-l` and `--trace` output.
+- See [Diagnostics (redaction and entropy)](./guides/config.md#diagnostics-redaction-and-entropy).
 
 Learn more:
 

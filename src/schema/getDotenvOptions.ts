@@ -72,7 +72,10 @@ export const getDotenvOptionsSchemaRaw = z.object({
   vars: processEnvSchema.optional(),
   /** Mask secret-like values in `log` output. */
   redact: z.boolean().optional(),
-  /** Additional key-match patterns for redaction (strings or RegExps). */
+  /**
+   * Additional key-match patterns for redaction (strings or RegExps); they
+   * add to the built-in patterns.
+   */
   redactPatterns: z
     .array(z.union([z.string(), z.instanceof(RegExp)]))
     .optional(),
@@ -82,7 +85,10 @@ export const getDotenvOptionsSchemaRaw = z.object({
   entropyThreshold: z.number().optional(),
   /** Minimum value length to consider for entropy warnings. */
   entropyMinLength: z.number().optional(),
-  /** Key patterns (strings or RegExps) that suppress entropy warnings. */
+  /**
+   * Key patterns (strings or RegExps) that suppress entropy warnings; they
+   * extend the built-in whitelist.
+   */
   entropyWhitelist: z
     .array(z.union([z.string(), z.instanceof(RegExp)]))
     .optional(),

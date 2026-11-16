@@ -20,8 +20,8 @@ Key root flags:
 - `-s, --shell [string]` (default OS shell), `-S, --shell-off`
 - `--capture` or `GETDOTENV_STDIO=pipe` for deterministic CI output
 - `--trace [keys...]` print diagnostics
-- `--redact` / `--redact-off` + `--redact-pattern`
-- `--entropy-warn` / `--entropy-warn-off`
+- `--redact` / `--redact-off` + `--redact-pattern` (adds to the built-in patterns)
+- `--entropy-warn` / `--entropy-warn-off`, `--entropy-threshold <number>`, `--entropy-min-length <number>`, `--entropy-whitelist` (adds to the built-in whitelist)
 
 ## Embedding the shipped CLI: `createCli()`
 

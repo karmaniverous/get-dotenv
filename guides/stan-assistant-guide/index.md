@@ -228,8 +228,8 @@ All options are optional; important ones:
   - `outputPath?: string` (writes a consolidated dotenv file; multiline values are quoted)
   - `log?: boolean` and `logger?: console-like` (logs final map; can be combined with redaction/entropy options)
 - Diagnostics for log output (presentation-only):
-  - `redact?: boolean`, `redactPatterns?: Array<string | RegExp>`
-  - `warnEntropy?: boolean`, `entropyThreshold?: number`, `entropyMinLength?: number`, `entropyWhitelist?: Array<string | RegExp>`
+  - `redact?: boolean`, `redactPatterns?: Array<string | RegExp>` (custom patterns add to the built-in ones, which match `secret`, `token`, `pass`/`password`, `api_key` and `key` as a whole word or an `_`/`-` segment: `API_SECRET`, `DB_PASSWORD`, `GITHUB_TOKEN`)
+  - `warnEntropy?: boolean`, `entropyThreshold?: number`, `entropyMinLength?: number`, `entropyWhitelist?: Array<string | RegExp>` (your whitelist adds to the built-in `^GIT_`, `^npm_`, `^CI$`, `SHLVL`)
 
 ### Dynamic variables (programmatic) without casts
 
@@ -336,8 +336,8 @@ Key root flags (behavioral intent):
 - `-s, --shell [string]` (default OS shell when enabled), `-S, --shell-off`
 - `--capture` or `GETDOTENV_STDIO=pipe` for deterministic CI output
 - `--trace [keys...]` print child env diagnostics to stderr before spawning
-- `--redact` / `--redact-off`, plus `--redact-pattern <pattern...>`
-- `--entropy-warn` / `--entropy-warn-off` + threshold/min-length/whitelist
+- `--redact` / `--redact-off`, plus `--redact-pattern <pattern...>` (adds to the built-in patterns)
+- `--entropy-warn` / `--entropy-warn-off` + `--entropy-threshold <number>`, `--entropy-min-length <number>` and `--entropy-whitelist <pattern...>` (adds to the built-in whitelist)
 
 Important: the root “-c” behavior is owned by the `cmd` plugin (parent alias), not a root “--command” flag.
 
@@ -509,14 +509,14 @@ This keeps behavior independent of `loadProcess`.
 From the root export:
 
 - `traceChildEnv({ parentEnv, dotenv, keys?, redact?, redactPatterns?, warnEntropy?, ... })` prints origin/value diagnostics for child env composition.
-- `redactDisplay(value, { redact?, redactPatterns? })` and `redactObject(record, opts)` mask values for logs/traces (presentation-only).
-- `maybeWarnEntropy(key, value, origin, opts, write)` warns about likely secrets by entropy (presentation-only).
+- `redactDisplay(key, value, { redact?, redactPatterns? })` and `redactObject(record, opts)` mask values for logs/traces (presentation-only); `redactPatterns` add to the built-in patterns.
+- `maybeWarnEntropy(key, value, origin, opts, write)` warns about likely secrets by entropy (presentation-only); it uses exactly the `entropyWhitelist` it is given, so pass the merged bag's (built-in plus user patterns).
 
 ## Shipped plugins: what to know as a plugin author
 
 - `cmd`: executes a command under ctx; provides parent alias `-c, --cmd <command...>`, which runs the cmd action itself (same bag, scripts, afterResolve scoping and exit codes); the alias plus positional `cmd` arguments is a usage error (exit 1).
 - `batch`: discovers directories by globs and runs a command sequentially (stopping at the first failure, whose exit code it exits with) or in parallel; honors `--list` and `--ignore-errors`.
-- `aws`: establishes a session when an `aws` command (or child) is invoked, writes AWS env vars to `process.env`; publishes minimal metadata under `ctx.plugins.aws`; supports `strategy: none` to disable credential export. Does not fire on sibling commands.
+- `aws`: establishes a session when an `aws` command (or child) is invoked (once per invocation, with the `aws` flags applied; aws child commands keep it), writes AWS env vars to `process.env`; publishes minimal metadata under `ctx.plugins.aws`; supports `strategy: none` to disable credential export. Does not fire on sibling commands. A forward (`aws -- <args>`) passes the dotenv values and `getDotenvCliOptions`, with the session's `AWS_*` entries over them.
 - `init`: scaffolds config files and a CLI skeleton under `src/cli/<name>/...`; collision handling supports overwrite/example/skip plus CI heuristics.
 
 ## Shipped plugin interop contracts (composition + runtime state)
