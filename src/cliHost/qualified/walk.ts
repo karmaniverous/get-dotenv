@@ -30,7 +30,9 @@ import {
   isHelpFlag,
   maybeOption,
   negativeNumberArg,
+  type ParseFlags,
   parseFlagsOf,
+  takesValue,
 } from './commander';
 import { NormalizeArgvError } from './errors';
 
@@ -145,6 +147,351 @@ interface Slot {
   parsed: boolean;
 }
 
+/** The first token a command did not take as an option. */
+interface FirstOperand {
+  item: number;
+  /** Whether an optional or variadic value was still open before it. */
+  open: boolean;
+}
+
+/** One command's `parseOptions` loop: its cursor and what it collected. */
+interface LevelParse {
+  cmd: CommandUnknownOpts;
+  /** The command's parse flags. */
+  flags: ParseFlags;
+  list: readonly number[];
+  /** The next index into `list`. */
+  k: number;
+  /** The default subcommand, as switched by the options taken so far. */
+  defaultName: string | undefined;
+  operands: Slot[];
+  unknown: Slot[];
+  /** Where an operand goes: `operands` until the first unknown option. */
+  dest: Slot[];
+  /** A variadic run is open. */
+  variadic: boolean;
+  /** An optional option was taken bare: its value is still open. */
+  bare: boolean;
+  first: FirstOperand | undefined;
+  /** The rest of a combined short-flag group, still to parse. */
+  group: { arg: string; item: number } | undefined;
+}
+
+/** The walk over one argv: Commander's parse, replayed command by command. */
+class Walker {
+  private readonly terminators = new Map<number, CommandUnknownOpts>();
+
+  readonly walk: Walk = {
+    path: [],
+    terminators: this.terminators,
+    assigned: [],
+    help: undefined,
+    args: [],
+    incomplete: false,
+  };
+
+  constructor(
+    private readonly items: readonly WalkItem[],
+    private readonly options: WalkOptions,
+  ) {}
+
+  private isGap(item: number): boolean {
+    return this.items[item]?.kind === 'gap';
+  }
+
+  private textAt(item: number): string {
+    return (this.items[item] as WalkItem).text;
+  }
+
+  private textOf(slot: Slot | undefined): string | undefined {
+    return slot === undefined ? undefined : this.items[slot.item]?.text;
+  }
+
+  /** Enter a command: run its parse loop, then Commander's dispatch. */
+  level(
+    cmd: CommandUnknownOpts,
+    list: readonly number[],
+    pre: readonly Slot[],
+    entry: WalkEntry,
+  ): void {
+    this.walk.path.push(entry);
+    const flags = parseFlagsOf(cmd);
+    let defaultName = flags.defaultName;
+    for (const option of this.options.preset?.(cmd) ?? [])
+      defaultName = defaultSwitchOf(option) ?? defaultName;
+    const p: LevelParse = {
+      cmd,
+      flags,
+      list,
+      k: 0,
+      defaultName,
+      operands: [],
+      unknown: [],
+      dest: [],
+      variadic: false,
+      bare: false,
+      first: undefined,
+      group: undefined,
+    };
+    p.dest = p.operands;
+    if (this.parseOptions(p)) this.dispatch(p, pre);
+  }
+
+  /** The tokens from the cursor on, as slots; the loop ends after them. */
+  private rest(p: LevelParse, parsed: boolean): Slot[] {
+    const slots = p.list.slice(p.k).map((item) => ({ item, parsed }));
+    p.k = p.list.length;
+    return slots;
+  }
+
+  /** Record a plain option taken by the command being parsed. */
+  private assign(p: LevelParse, option: Option, flag: string, item: number) {
+    this.walk.assigned.push({ command: p.cmd, option, flag, item });
+    p.defaultName = defaultSwitchOf(option) ?? p.defaultName;
+  }
+
+  /**
+   * Commander's `parseOptions` loop for one command.
+   *
+   * @returns `false` when a required value is missing at the end of the
+   *   argv (Commander stops before dispatch).
+   */
+  private parseOptions(p: LevelParse): boolean {
+    while (p.k < p.list.length || p.group) {
+      let arg: string;
+      let item: number;
+      if (p.group) {
+        ({ arg, item } = p.group);
+        p.group = undefined;
+      } else {
+        item = p.list[p.k++] as number;
+        if (this.isGap(item)) {
+          if (p.variadic || p.bare) this.terminators.set(item, p.cmd);
+          p.variadic = false;
+          p.bare = false;
+          continue;
+        }
+        arg = this.textAt(item);
+      }
+      const open = p.variadic || p.bare;
+      p.bare = false;
+
+      if (arg === '--') {
+        p.first ??= { item, open };
+        if (p.dest === p.unknown) p.dest.push({ item, parsed: true });
+        p.dest.push(...this.rest(p, false));
+        break;
+      }
+      if (p.variadic && canBeValue(p.cmd, arg)) continue;
+      p.variadic = false;
+
+      const taken = this.takeOption(p, arg, item);
+      if (taken === 'incomplete') return false;
+      if (taken) continue;
+      if (this.takeOperand(p, arg, item, open)) break;
+    }
+    return true;
+  }
+
+  /**
+   * An option token: a known long or short flag (with its value), a
+   * combined short-flag group, or `--flag=value`.
+   *
+   * @returns Whether the token was taken as an option, or `incomplete`.
+   */
+  private takeOption(
+    p: LevelParse,
+    arg: string,
+    item: number,
+  ): boolean | 'incomplete' {
+    const { cmd } = p;
+    if (maybeOption(arg)) {
+      const option = findOption(cmd, arg);
+      if (option) {
+        if (option.required) {
+          const value = p.list[p.k++];
+          if (value === undefined) {
+            this.walk.incomplete = true;
+            return 'incomplete';
+          }
+          if (this.isGap(value))
+            throw new NormalizeArgvError(
+              `missing value for ${arg} (the next token, '${this.textAt(value)}', is a qualified option)`,
+            );
+        } else if (option.optional) {
+          const value = p.list[p.k];
+          if (
+            value !== undefined &&
+            !this.isGap(value) &&
+            canBeValue(cmd, this.textAt(value))
+          )
+            p.k++;
+          else p.bare = true;
+        }
+        this.assign(p, option, arg, item);
+        p.variadic = option.variadic;
+        return true;
+      }
+    }
+
+    if (arg.length > 2 && arg.startsWith('-') && arg[1] !== '-') {
+      const flag = `-${arg[1] as string}`;
+      const option = findOption(cmd, flag);
+      if (option) {
+        this.assign(p, option, flag, item);
+        if (!(option.required || (option.optional && p.flags.combine)))
+          p.group = { arg: `-${arg.slice(2)}`, item };
+        return true;
+      }
+    }
+
+    if (/^--[^=]+=/.test(arg)) {
+      const flag = arg.slice(0, arg.indexOf('='));
+      const option = findOption(cmd, flag);
+      if (option && takesValue(option)) {
+        this.assign(p, option, flag, item);
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * A token that is not an option of the command: an unknown option or an
+   * operand, possibly the subcommand, help command or default-subcommand
+   * entry that ends the command's own parse.
+   *
+   * @returns Whether the command's parse loop ends here.
+   */
+  private takeOperand(
+    p: LevelParse,
+    arg: string,
+    item: number,
+    open: boolean,
+  ): boolean {
+    const { cmd, flags } = p;
+    if (
+      p.dest === p.operands &&
+      maybeOption(arg) &&
+      !(cmd.commands.length === 0 && negativeNumberArg(cmd, arg))
+    )
+      p.dest = p.unknown;
+
+    if (flags.positional && p.operands.length === 0 && p.unknown.length === 0) {
+      if (findCommand(cmd, arg)) {
+        p.first ??= { item, open };
+        p.operands.push({ item, parsed: true });
+        p.unknown.push(...this.rest(p, true));
+        return true;
+      }
+      if (arg === helpCommandOf(cmd)?.name()) {
+        p.first ??= { item, open };
+        p.operands.push({ item, parsed: true }, ...this.rest(p, false));
+        return true;
+      }
+      if (p.defaultName !== undefined) {
+        p.first ??= { item, open };
+        p.unknown.push({ item, parsed: true }, ...this.rest(p, true));
+        return true;
+      }
+    }
+
+    p.first ??= { item, open };
+    if (flags.passThrough) {
+      p.dest.push({ item, parsed: true }, ...this.rest(p, false));
+      return true;
+    }
+    p.dest.push({ item, parsed: true });
+    return false;
+  }
+
+  /** Commander's `_parseCommand`: pick the next command, or stop here. */
+  private dispatch(p: LevelParse, pre: readonly Slot[]): void {
+    const { cmd, operands, unknown, defaultName } = p;
+    const ops = [...pre, ...operands].filter((s) => !this.isGap(s.item));
+    const head = ops[0];
+    const sub = findCommand(cmd, this.textOf(head));
+    if (sub && head) {
+      this.level(
+        sub,
+        unknown.map((s) => s.item),
+        ops.slice(1),
+        {
+          command: sub,
+          kind: 'name',
+          at: head.item,
+          takesOptions: head.parsed,
+          terminatorBefore: false,
+        },
+      );
+      return;
+    }
+    const helpCommand = helpCommandOf(cmd);
+    if (helpCommand && this.textOf(head) === helpCommand.name()) {
+      this.walk.help = findCommand(cmd, this.textOf(ops[1])) ?? cmd;
+      return;
+    }
+    if (defaultName !== undefined) {
+      this.enterDefault(p, ops, pre, defaultName);
+      return;
+    }
+    if (
+      unknown.some(
+        (s) => !this.isGap(s.item) && isHelpFlag(cmd, this.textOf(s) ?? ''),
+      )
+    )
+      this.walk.help = cmd;
+    this.walk.args = [...ops, ...unknown]
+      .map((s) => s.item)
+      .filter((i) => !this.isGap(i));
+  }
+
+  /**
+   * Enter the default subcommand: written in before the first token the
+   * command did not take (Decision 30), or implicitly.
+   */
+  private enterDefault(
+    p: LevelParse,
+    ops: readonly Slot[],
+    pre: readonly Slot[],
+    defaultName: string,
+  ): void {
+    const { cmd, operands, unknown, first } = p;
+    const target = findCommand(cmd, defaultName);
+    if (!target) return; // Commander reports the unknown default itself.
+    if (first && pre.length === 0) {
+      if (isHelpFlag(cmd, this.textAt(first.item))) {
+        this.walk.help = cmd;
+        return;
+      }
+      const from = first.item;
+      const all = [...operands, ...unknown]
+        .map((s) => s.item)
+        .filter((item) => item > from);
+      this.level(target, [from, ...all.sort((a, b) => a - b)], [], {
+        command: target,
+        kind: 'written',
+        at: from,
+        takesOptions: true,
+        terminatorBefore: first.open,
+      });
+      return;
+    }
+    this.level(
+      target,
+      unknown.map((s) => s.item),
+      ops,
+      {
+        command: target,
+        kind: 'implicit',
+        at: undefined,
+        takesOptions: false,
+        terminatorBefore: false,
+      },
+    );
+  }
+}
+
 /**
  * Walk the items as Commander would parse them.
  *
@@ -160,228 +507,8 @@ export const walkArgv = (
   items: readonly WalkItem[],
   options: WalkOptions = {},
 ): Walk => {
-  const walk: Walk = {
-    path: [],
-    terminators: new Map(),
-    assigned: [],
-    help: undefined,
-    args: [],
-    incomplete: false,
-  };
-  const terminators = walk.terminators as Map<number, CommandUnknownOpts>;
-  const isGap = (item: number) => items[item]?.kind === 'gap';
-  const textOf = (slot: Slot | undefined) =>
-    slot === undefined ? undefined : items[slot.item]?.text;
-
-  const level = (
-    cmd: CommandUnknownOpts,
-    list: readonly number[],
-    pre: readonly Slot[],
-    entry: WalkEntry,
-  ): void => {
-    walk.path.push(entry);
-    const flags = parseFlagsOf(cmd);
-    let defaultName = flags.defaultName;
-    const assign = (option: Option, flag: string, item: number) => {
-      walk.assigned.push({ command: cmd, option, flag, item });
-      defaultName = defaultSwitchOf(option) ?? defaultName;
-    };
-    for (const option of options.preset?.(cmd) ?? [])
-      defaultName = defaultSwitchOf(option) ?? defaultName;
-
-    const operands: Slot[] = [];
-    const unknown: Slot[] = [];
-    let dest = operands;
-    let variadic = false;
-    let bare = false;
-    let first: { item: number; open: boolean } | undefined;
-    let group: { arg: string; item: number } | undefined;
-    let k = 0;
-    const rest = (parsed: boolean): Slot[] =>
-      list.slice(k).map((item) => ({ item, parsed }));
-
-    while (k < list.length || group) {
-      let arg: string;
-      let item: number;
-      if (group) {
-        ({ arg, item } = group);
-        group = undefined;
-      } else {
-        item = list[k++] as number;
-        if (isGap(item)) {
-          if (variadic || bare) terminators.set(item, cmd);
-          variadic = false;
-          bare = false;
-          continue;
-        }
-        arg = (items[item] as WalkItem).text;
-      }
-      const open = variadic || bare;
-      bare = false;
-
-      if (arg === '--') {
-        first ??= { item, open };
-        if (dest === unknown) dest.push({ item, parsed: true });
-        dest.push(...rest(false));
-        k = list.length;
-        break;
-      }
-      if (variadic && canBeValue(cmd, arg)) continue;
-      variadic = false;
-
-      if (maybeOption(arg)) {
-        const option = findOption(cmd, arg);
-        if (option) {
-          if (option.required) {
-            const value = list[k++];
-            if (value === undefined) {
-              walk.incomplete = true;
-              return;
-            }
-            if (isGap(value))
-              throw new NormalizeArgvError(
-                `missing value for ${arg} (the next token, '${(items[value] as WalkItem).text}', is a qualified option)`,
-              );
-          } else if (option.optional) {
-            const value = list[k];
-            if (
-              value !== undefined &&
-              !isGap(value) &&
-              canBeValue(cmd, (items[value] as WalkItem).text)
-            )
-              k++;
-            else bare = true;
-          }
-          assign(option, arg, item);
-          variadic = option.variadic;
-          continue;
-        }
-      }
-
-      if (arg.length > 2 && arg.startsWith('-') && arg[1] !== '-') {
-        const flag = `-${arg[1] as string}`;
-        const option = findOption(cmd, flag);
-        if (option) {
-          assign(option, flag, item);
-          if (!(option.required || (option.optional && flags.combine)))
-            group = { arg: `-${arg.slice(2)}`, item };
-          continue;
-        }
-      }
-
-      if (/^--[^=]+=/.test(arg)) {
-        const flag = arg.slice(0, arg.indexOf('='));
-        const option = findOption(cmd, flag);
-        if (option && (option.required || option.optional)) {
-          assign(option, flag, item);
-          continue;
-        }
-      }
-
-      if (
-        dest === operands &&
-        maybeOption(arg) &&
-        !(cmd.commands.length === 0 && negativeNumberArg(cmd, arg))
-      )
-        dest = unknown;
-
-      if (flags.positional && operands.length === 0 && unknown.length === 0) {
-        if (findCommand(cmd, arg)) {
-          first ??= { item, open };
-          operands.push({ item, parsed: true });
-          unknown.push(...rest(true));
-          k = list.length;
-          break;
-        }
-        if (arg === helpCommandOf(cmd)?.name()) {
-          first ??= { item, open };
-          operands.push({ item, parsed: true }, ...rest(false));
-          k = list.length;
-          break;
-        }
-        if (defaultName !== undefined) {
-          first ??= { item, open };
-          unknown.push({ item, parsed: true }, ...rest(true));
-          k = list.length;
-          break;
-        }
-      }
-
-      first ??= { item, open };
-      if (flags.passThrough) {
-        dest.push({ item, parsed: true }, ...rest(false));
-        k = list.length;
-        break;
-      }
-      dest.push({ item, parsed: true });
-    }
-
-    // Commander's _parseCommand.
-    const ops = [...pre, ...operands].filter((s) => !isGap(s.item));
-    const unk = unknown;
-    const head = ops[0];
-    const sub = findCommand(cmd, textOf(head));
-    if (sub && head) {
-      level(
-        sub,
-        unk.map((s) => s.item),
-        ops.slice(1),
-        {
-          command: sub,
-          kind: 'name',
-          at: head.item,
-          takesOptions: head.parsed,
-          terminatorBefore: false,
-        },
-      );
-      return;
-    }
-    const helpCommand = helpCommandOf(cmd);
-    if (helpCommand && textOf(head) === helpCommand.name()) {
-      walk.help = findCommand(cmd, textOf(ops[1])) ?? cmd;
-      return;
-    }
-    if (defaultName !== undefined) {
-      const target = findCommand(cmd, defaultName);
-      if (!target) return; // Commander reports the unknown default itself.
-      if (first && pre.length === 0) {
-        if (isHelpFlag(cmd, (items[first.item] as WalkItem).text)) {
-          walk.help = cmd;
-          return;
-        }
-        const from = first.item;
-        const all = [...operands, ...unknown]
-          .map((s) => s.item)
-          .filter((item) => item > from);
-        level(target, [from, ...all.sort((a, b) => a - b)], [], {
-          command: target,
-          kind: 'written',
-          at: from,
-          takesOptions: true,
-          terminatorBefore: first.open,
-        });
-        return;
-      }
-      level(
-        target,
-        unk.map((s) => s.item),
-        ops,
-        {
-          command: target,
-          kind: 'implicit',
-          at: undefined,
-          takesOptions: false,
-          terminatorBefore: false,
-        },
-      );
-      return;
-    }
-    if (unk.some((s) => !isGap(s.item) && isHelpFlag(cmd, textOf(s) ?? '')))
-      walk.help = cmd;
-    walk.args = [...ops, ...unk].map((s) => s.item).filter((i) => !isGap(i));
-  };
-
-  level(
+  const walker = new Walker(items, options);
+  walker.level(
     root,
     items.map((_, i) => i),
     [],
@@ -393,5 +520,5 @@ export const walkArgv = (
       terminatorBefore: false,
     },
   );
-  return walk;
+  return walker.walk;
 };

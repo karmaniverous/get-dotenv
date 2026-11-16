@@ -61,6 +61,15 @@ export const canBeValue = (cmd: CommandUnknownOpts, arg: string): boolean =>
   !maybeOption(arg) || negativeNumberArg(cmd, arg);
 
 /**
+ * Whether an option takes a value (required or optional).
+ *
+ * @param option - The option.
+ * @returns Whether it is declared with `<value>` or `[value]`.
+ */
+export const takesValue = (option: Option): boolean =>
+  option.required || option.optional;
+
+/**
  * Commander's `Option.is`: the option's short or long flag.
  *
  * @param option - The option.

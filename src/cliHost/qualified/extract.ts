@@ -7,8 +7,7 @@
  * its position (Decision 34). A dropped terminator leaves nothing (Decision
  * 31).
  */
-import type { Option } from '@commander-js/extra-typings';
-
+import { takesValue } from './commander';
 import { NormalizeArgvError } from './errors';
 import type { QualifiedNameEntry, QualifiedNameTable } from './table';
 import type { WalkItem } from './walk';
@@ -32,10 +31,6 @@ export interface Extraction {
   /** The claims, in argv order. */
   claims: Claim[];
 }
-
-/** Whether an option takes a value (required or optional). */
-const takesValue = (option: Option): boolean =>
-  option.required || option.optional;
 
 /**
  * Claim the qualified tokens and drop the terminators.
