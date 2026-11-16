@@ -8,6 +8,7 @@
 import { type CommandUnknownOpts, Option } from '@commander-js/extra-typings';
 
 import type { GetDotenvCliPublic } from '@/src/cliHost';
+import { registerDefaultSwitch } from '@/src/cliHost/qualified/commander';
 
 import type { CmdOptionAlias, CmdPluginOptions } from './types';
 
@@ -81,6 +82,8 @@ export const attachCmdAlias = (
   );
   parent.addOption(option);
   parent.setOptionGroup(option, 'plugin:cmd');
+  // Argv normalization (spec 4.4) replays this switch in its walk.
+  registerDefaultSwitch(option, cmdMount.name());
 
   const slot = parent as unknown as DefaultCommandSlot;
   let saved: { name: string | null } | undefined;

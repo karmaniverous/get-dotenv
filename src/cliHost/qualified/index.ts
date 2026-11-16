@@ -5,6 +5,8 @@
  * internal to the host: the table built in `GetDotenvCli.parseAsync`, its
  * accessor, and the help filter for terminators.
  */
+export { NormalizeArgvError } from './errors';
+export { normalizeArgv, normalizeQualified } from './normalize';
 export { isTerminatorOption } from './register';
 export {
   ensureQualifiedNameTable,
