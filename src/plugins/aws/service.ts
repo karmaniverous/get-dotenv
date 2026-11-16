@@ -185,7 +185,7 @@ export const resolveAwsContext = async ({
   const profileFallbackKey = cfg.profileFallbackKey ?? 'AWS_PROFILE';
   const regionKey = cfg.regionKey ?? 'AWS_REGION';
 
-  const deadlineMs =
+  let deadlineMs =
     cfg.strategy !== 'none' ? Date.now() + AWS_CLI_BUDGET_MS : undefined;
 
   const profile =
@@ -250,6 +250,9 @@ export const resolveAwsContext = async ({
             `aws sso login failed for profile '${profile}' (exit ${String(exit)})`,
           );
         }
+        // The interactive login is outside the budget: the retry, the
+        // static fallback and the region lookup get a fresh one (#80).
+        deadlineMs = Date.now() + AWS_CLI_BUDGET_MS;
         credentials = await exportCredentials(profile, deadlineMs);
       }
     }
