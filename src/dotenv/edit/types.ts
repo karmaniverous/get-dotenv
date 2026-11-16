@@ -28,7 +28,9 @@ export type DotenvEolMode = 'preserve' | 'lf' | 'crlf';
  * Editing mode for dotenv updates.
  *
  * - `merge` (default): update/add only the provided keys; do not delete unrelated keys.
- * - `sync`: delete assignment/bare-key lines for keys not present in the update map.
+ * - `sync`: make the file hold exactly the provided keys: update existing keys in place,
+ *   append missing keys (as `merge` does), and delete assignment/bare-key lines for keys
+ *   not present in the update map. Comments, blank lines and unrecognised lines are kept.
  *
  * @public
  */

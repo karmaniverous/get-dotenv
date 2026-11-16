@@ -433,4 +433,9 @@ export const departures: Departure[] = [
     issueOrDecision: '#66',
     note: "A key appended to a file with no final newline goes on its own line: 'A=1' + B gives 'A=1\\nB=2' (still no final newline), not 'A=1B=2'.",
   },
+  {
+    case: '#67 sync adds nothing',
+    issueOrDecision: '#67',
+    note: "sync upserts (Decision 22): 'A=1\\nC=3\\n' with { A: '9', B: '2' } gives 'A=9\\nB=2\\n' (A updated, C removed, B appended), not 'A=9\\n'.",
+  },
 ];

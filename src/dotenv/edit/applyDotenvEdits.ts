@@ -290,12 +290,10 @@ export function applyDotenvEdits(
     else if (original) out.push(original);
   }
 
-  // Merge mode: append missing keys (only when provided with a concrete value).
+  // Both modes append missing keys: sync upserts, so the file ends up with
+  // exactly the given keys (#67, Decision 22).
   return {
     ...doc,
-    segments:
-      mode === 'merge'
-        ? appendMissingKeys(out, updates, doc.fileEol, defaultSeparator)
-        : out,
+    segments: appendMissingKeys(out, updates, doc.fileEol, defaultSeparator),
   };
 }
