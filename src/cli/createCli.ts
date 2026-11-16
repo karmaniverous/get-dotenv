@@ -1,20 +1,19 @@
 import {
   GetDotenvCli,
-  resolveCliOptions,
   type RootOptionsShape,
-  type ScriptsTable,
   toHelpConfig,
 } from '@/src/cliHost';
 import { attachRootOptions as attachRootOptionsBuilder } from '@/src/cliHost/attachRootOptions';
 import { hostMetaUrlOf } from '@/src/cliHost/hostRoot';
 import { installRootHooks } from '@/src/cliHost/rootHooks';
+import { resolveRootOptionsBag } from '@/src/cliHost/rootOptionsStack';
 import { userArgsOf } from '@/src/cliHost/userArgs';
 import {
   applyRootVisibility,
   mergeRootVisibility,
 } from '@/src/cliHost/visibility';
 import { resolveGetDotenvConfigSources } from '@/src/config';
-import { baseRootOptionDefaults } from '@/src/defaults';
+import { getDotenvCliOptions2Options } from '@/src/core';
 import {
   awsPlugin,
   awsWhoamiPlugin,
@@ -22,7 +21,6 @@ import {
   cmdPlugin,
   initPlugin,
 } from '@/src/plugins';
-import { defaultsDeep } from '@/src/util';
 import { readHostPackage } from '@/src/util/packageRoot';
 
 /**
@@ -298,40 +296,25 @@ export function createCli(
       if (!hasSubBeforeHelp) {
         await brandHost();
         dbg('top-level -h, render root help');
-        // Resolve context once without side effects for help rendering.
+        // The help context and the labels come from one defaults stack
+        // (createCli < config rootOptionDefaults < parent bag, no CLI
+        // flags), resolved without side effects: no dynamic, no process
+        // env, no logging, no output file (#81).
+        const sources = await resolveGetDotenvConfigSources(
+          hostMetaUrlOf(program),
+        );
+        const helpMerged = resolveRootOptionsBag({}, rootDefaults, sources);
+        const { outputPath: _outputPath, ...helpOptions } =
+          getDotenvCliOptions2Options(helpMerged);
         const ctx = await program.resolveAndLoad(
           {
+            ...helpOptions,
+            excludeDynamic: true,
             loadProcess: false,
             log: false,
           },
           { runAfterResolve: false },
         );
-        // Build a help-time defaults bag using the unified stack:
-        // baseRootOptionDefaults < createCli rootOptionDefaults < config.rootOptionDefaults
-        let cfgDefaults: Partial<RootOptionsShape> = {};
-        try {
-          const sources = await resolveGetDotenvConfigSources(
-            hostMetaUrlOf(program),
-          );
-          cfgDefaults = defaultsDeep<Partial<RootOptionsShape>>(
-            {},
-            sources.packaged?.rootOptionDefaults ?? {},
-            sources.project?.public?.rootOptionDefaults ?? {},
-            sources.project?.local?.rootOptionDefaults ?? {},
-          );
-        } catch {
-          /* tolerate missing config */
-        }
-        const mergedDefaultsForHelp = defaultsDeep<Partial<RootOptionsShape>>(
-          baseRootOptionDefaults as Partial<RootOptionsShape>,
-          rootDefaults,
-          cfgDefaults,
-        );
-        const { merged: defaultsMerged } = resolveCliOptions<
-          RootOptionsShape & { scripts?: ScriptsTable }
-        >({}, mergedDefaultsForHelp, undefined);
-        // Use unified defaults directly for help labels (no ctx overlays).
-        const helpMerged: Partial<RootOptionsShape> = { ...defaultsMerged };
         const helpCfg = toHelpConfig(helpMerged, ctx.pluginConfigs);
         // Evaluate dynamic labels
         program.evaluateDynamicOptions(helpCfg);
