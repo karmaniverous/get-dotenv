@@ -12,7 +12,7 @@ Behavior: In the shipped CLI (plugin-first host) and the generator path, the loa
 
 When enabled, the loader discovers up to three configs in the following order:
 
-1. Packaged root (the library’s own package root, “public” only)
+1. Packaged root: the host CLI's package root, “public” only. That is the nearest `package.json` above the `importMetaUrl` the host passes to `createCli` (for the shipped `getdotenv` CLI, get-dotenv's own package). Skipped when it is the project root.
    - getdotenv.config.json
    - getdotenv.config.yaml / .yml
    - getdotenv.config.js / .mjs / .cjs
@@ -32,6 +32,7 @@ When enabled, the loader discovers up to three configs in the following order:
 Notes:
 
 - Packaged .local is not expected by policy and is ignored.
+- A host's packaged config replaces get-dotenv's own; there is never a third layer. A host whose package is also the project (a CLI that lives in the repo it runs in) gets no packaged layer, so its config applies once, as project config. See [Host identity](./authoring/lifecycle.md#host-identity-and-branding).
 - The first matching “public” file per scope is used; the same for “local”.
 
 ## Formats

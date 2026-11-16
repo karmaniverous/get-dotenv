@@ -73,8 +73,10 @@ Embed a CLI quickly (shipped plugins wired for you):
 #!/usr/bin/env node
 import { createCli } from '@karmaniverous/get-dotenv/cli';
 
-await createCli({ alias: 'toolbox' })();
+await createCli({ alias: 'toolbox', importMetaUrl: import.meta.url })();
 ```
+
+`importMetaUrl` is required. Its package (the nearest `package.json` above it) is your CLI's host package: it supplies the packaged config layer (`getdotenv.config.*` next to that `package.json`), the `--version` and the help description. `version` and `description` options override the last two.
 
 More first steps and tips at [Getting Started](./guides/getting-started.md)
 

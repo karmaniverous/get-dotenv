@@ -44,7 +44,7 @@ The comparer (`test/baseline/fieldDepartures.ts`) looks for `bagPath` in every o
 
 Two hosts (`test/baseline/hosts.ts`):
 
-- **`getdotenv`**: the shipped CLI, `createCli({ alias: 'getdotenv' })`, exactly as `src/cli/getdotenv/index.ts` builds it.
+- **`getdotenv`**: the shipped CLI, `createCli({ alias: 'getdotenv', importMetaUrl: import.meta.url })`, exactly as `src/cli/getdotenv/index.ts` builds it.
 - **`vc`**: a fixture modelled on smoz-user's `cli/vc.ts`, with only get-dotenv's own plugins and local fixture plugins: the root with its `-c/--cmd` alias; `cmd` at the root and under `aws`; `batch`/`batch cmd`; `aws` with a fixture `secrets pull` (`-s/--secret-name`, `-e/--exclude <keys...>`), a `cli.ns()` leaf; a fixture `smoz` plugin with a `--x`/`--no-x` pair, an `--opt [value]` option, an `openapi` leaf and a plain `new Command()` mount (`legacy run`).
 
 The corpus (`test/baseline/cases/`):

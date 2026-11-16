@@ -154,6 +154,7 @@ import { batchPlugin, cmdPlugin } from '@karmaniverous/get-dotenv/plugins';
 
 const run = createCli({
   alias: 'toolbox',
+  importMetaUrl: import.meta.url,
   compose: (p) =>
     p
       .use(cmdPlugin({ asDefault: true, optionAlias: '-c, --cmd <command...>' }))

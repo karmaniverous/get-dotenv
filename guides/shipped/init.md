@@ -78,6 +78,7 @@ import { awsPlugin } from '@karmaniverous/get-dotenv/plugins/aws';
 
 const run = createCli({
   alias: 'acme',
+  importMetaUrl: import.meta.url,
   compose: (p) =>
     p
       .use(batchPlugin())

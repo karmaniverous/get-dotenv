@@ -31,7 +31,7 @@ Use `createCli` to embed a ready-to-run CLI host.
 #!/usr/bin/env node
 import { createCli } from '@karmaniverous/get-dotenv/cli';
 
-await createCli({ alias: 'toolbox' })();
+await createCli({ alias: 'toolbox', importMetaUrl: import.meta.url })();
 ```
 
 Customize plugins:
@@ -42,7 +42,16 @@ import { cmdPlugin, batchPlugin } from '@karmaniverous/get-dotenv/plugins';
 
 const run = createCli({
   alias: 'toolbox',
+  importMetaUrl: import.meta.url,
   compose: (p) => p.use(cmdPlugin({ asDefault: true })).use(batchPlugin()),
 });
 await run();
 ```
+
+Host identity (`importMetaUrl` is required; `createCli()` without it throws):
+
+- The host root is the nearest `package.json` above `importMetaUrl`. It supplies the packaged config layer (`<hostRoot>/getdotenv.config.*`, replacing get-dotenv's own), the `--version` (`package.json` `version`, or the `version` option) and the root description (`package.json` `description`, or the `description` option).
+- When the host root is the project root (a CLI that lives in the repo it runs in), the packaged layer is skipped, so the config applies once.
+- A direct host sets its root with `new GetDotenvCli(alias, { importMetaUrl })` or `brand({ importMetaUrl })` (last one wins); with neither it keeps get-dotenv's root.
+- `init` always copies templates from get-dotenv's own package.
+- A runner may be called more than once; `-V, --version` is registered once.

@@ -38,6 +38,7 @@ import { helloPlugin } from './plugins/hello';
 
 const run = createCli({
   alias: 'toolbox',
+  importMetaUrl: import.meta.url,
   branding: 'Toolbox CLI',
   compose: (p) =>
     p
@@ -71,6 +72,7 @@ import { smozInitPlugin } from './plugins/init';
 
 const run = createCli({
   alias: 'smoz',
+  importMetaUrl: import.meta.url,
   compose: (p) =>
     p.use(smozInitPlugin()).use(
       groupPlugins({
@@ -98,6 +100,7 @@ Notes:
 ```ts
 const run = createCli({
   alias: 'toolbox',
+  importMetaUrl: import.meta.url,
   compose: (p) =>
     p
       .use(deployPlugin(), { ns: 'deploy-api' })
@@ -161,19 +164,48 @@ Notes:
 - The `compose` hook runs before parsing and is the recommended way to assemble your CLI surface. The factory installs root options and hooks so shipped plugins can read the merged options bag with `readMergedOptions()`.
 - If you construct a host directly, mirror the shipped wiring (root options + root hooks) before attaching shipped plugins. For most use cases, `createCli` is simpler and safer.
 
-## Branding the host
+## Host identity and branding
 
-When using the factory, prefer the `branding` option:
+Every host belongs to a package: its **host root**, the nearest `package.json` above the host module's `import.meta.url`. `createCli` requires that URL:
 
 ```ts
 await createCli({
   alias: 'toolbox',
+  importMetaUrl: import.meta.url, // required
+  version: '1.0.0', // optional; default: host package.json version
+  description: 'Toolbox CLI.', // optional; default: host package.json description
   branding: 'toolbox v1.0.0', // optional help header
   compose: (p) => p /* ...wire plugins... */,
 })();
 ```
 
-If you construct a host directly, call `program.brand({ importMetaUrl, description })` before parsing.
+The host root supplies:
+
+- the **packaged config layer**: `<hostRoot>/getdotenv.config.*`. It replaces get-dotenv's own packaged layer (there is no third layer), so a downstream CLI can ship config with its package.
+- the **version** printed by `-V, --version` and shown in the default help header (`<alias> v<version>`), from `package.json` `version` unless `version` is given;
+- the **description** shown in root help, from `package.json` `description` unless `description` is given.
+
+Rules:
+
+- `createCli()` without `importMetaUrl` throws.
+- When the host root is the project root (the nearest `package.json` above the working directory), the packaged layer is skipped. A CLI that lives in the repo it runs in (for example a `cli/vc.ts` run with `tsx`) would otherwise apply its `getdotenv.config.*` twice, once as packaged and once as project config, and run its `dynamic` twice.
+- The shipped `getdotenv` CLI passes its own `import.meta.url`, so its packaged layer is get-dotenv's own.
+- `init` always copies its templates from get-dotenv's package, whatever the host root.
+- `branding` replaces only the help header text, never the version.
+- A runner may be called more than once. `-V, --version` is registered the first time a version is known; later runs only update it.
+
+If you construct a host directly, set the host root with the constructor or with `brand()`; the last one given wins. A direct host that gives neither keeps get-dotenv's own package root.
+
+```ts
+const program = new GetDotenvCli('toolbox', { importMetaUrl: import.meta.url });
+// or, before parsing:
+await program.brand({
+  importMetaUrl: import.meta.url,
+  description: 'Toolbox CLI.',
+});
+```
+
+`brand()` reads the version from the host package when `version` is omitted. Calling it again updates the version without registering `--version` twice.
 
 ## Accessing context and options
 

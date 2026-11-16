@@ -156,6 +156,7 @@ import { whoamiPlugin } from './plugins/aws-whoami';
 
 const run = createCli({
   alias: 'mycli',
+  importMetaUrl: import.meta.url,
   compose: (p) => p.use(awsPlugin().use(whoamiPlugin())),
 });
 

@@ -77,7 +77,7 @@ When using the shipped CLI host (or embedding it via `createCli`/`GetDotenvCli`)
 
 ### Files discovered (order)
 
-- Packaged (library) root: first matching public config:
+- Packaged root (the host package: nearest package.json above the host importMetaUrl; skipped when it is the project root): first matching public config:
   - `getdotenv.config.json|yaml|yml|js|mjs|cjs|ts|mts|cts`
 - Project root (your repo):
   - Public: first matching `getdotenv.config.*`

@@ -2,7 +2,7 @@
  * The two hosts of the 7.0.11 behaviour baseline.
  *
  * - `getdotenv`: the shipped CLI, built exactly as `src/cli/getdotenv/index.ts`
- *   builds it (`createCli({ importMetaUrl: import.meta.url,  alias: 'getdotenv' })`).
+ *   builds it (`createCli({ importMetaUrl: import.meta.url, alias: 'getdotenv' })`).
  * - `vc`: a fixture modelled on smoz-user's `cli/vc.ts` (origin/dev). It uses
  *   only get-dotenv's own plugins plus the local fixture plugins below, so no
  *   external package is needed. Tree:
