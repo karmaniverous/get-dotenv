@@ -31,6 +31,7 @@ import {
   inFixture,
   probePlugin,
   runFixtureCli,
+  withEnv,
 } from '@/test/support/fixtureCli';
 
 vi.mock('@/src/config/loader', async (importOriginal) => {
@@ -176,6 +177,28 @@ describe('#52 createCli host identity', () => {
       .mock.calls.map(([u]) => u);
     expect(urls.length).toBeGreaterThan(0);
     expect(new Set(urls)).toEqual(new Set([hostUrl]));
+  });
+
+  it('top-level -h reads config from the host root and shows its description', async () => {
+    vi.mocked(resolveGetDotenvConfigSources).mockClear();
+    const out = await inFixture({}, () =>
+      withEnv({ GETDOTENV_STDOUT: 'pipe' }, () =>
+        withStdout(() =>
+          createCli({ importMetaUrl: hostUrl, alias: 'host' })([
+            'node',
+            'host',
+            '-h',
+          ]),
+        ),
+      ),
+    );
+    expect(out).toMatch(/^host v9\.9\.9\n/);
+    expect(out).toContain('\n\nFixture host CLI.\n');
+    // Context, help-time defaults and help-time visibility: three discoveries.
+    const urls = vi
+      .mocked(resolveGetDotenvConfigSources)
+      .mock.calls.map(([u]) => u);
+    expect(urls).toEqual([hostUrl, hostUrl, hostUrl]);
   });
 });
 
