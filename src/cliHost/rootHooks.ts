@@ -4,20 +4,18 @@ import {
   validateEnvAgainstSources,
 } from '@/src/config';
 import { getDotenvCliOptions2Options, type GetDotenvOptions } from '@/src/core';
-import { baseRootOptionDefaults } from '@/src/defaults';
-import { defaultsDeep } from '@/src/util';
 
 import type { GetDotenvCli } from './GetDotenvCli';
 import type { GetDotenvCliOptions } from './GetDotenvCliOptions';
 import { toHelpConfig } from './helpConfig';
 import { hostMetaUrlOf } from './hostRoot';
-import { resolveCliOptions } from './resolveCliOptions';
 import {
   composedThisParse,
   markComposed,
   markRootHooks,
 } from './rootHooksState';
-import type { RootOptionsShape, ScriptsTable } from './types';
+import { resolveRootOptionsBag, type RootOptionsBag } from './rootOptionsStack';
+import type { RootOptionsShape } from './types';
 
 const dbg = (...args: unknown[]) => {
   if (process.env.GETDOTENV_DEBUG) {
@@ -40,23 +38,6 @@ const debugView = (o: Partial<RootOptionsShape>) => ({
   capture: o.capture,
   strict: o.strict,
 });
-
-function computeRootDefaults(
-  defaults: Partial<RootOptionsShape> | undefined,
-  sources: ResolvedConfigSources,
-): Partial<RootOptionsShape> {
-  const cfgDefaults = defaultsDeep<Partial<RootOptionsShape>>(
-    {},
-    sources.packaged?.rootOptionDefaults ?? {},
-    sources.project?.public?.rootOptionDefaults ?? {},
-    sources.project?.local?.rootOptionDefaults ?? {},
-  );
-  return defaultsDeep<Partial<RootOptionsShape>>(
-    baseRootOptionDefaults as Partial<RootOptionsShape>,
-    defaults ?? {},
-    cfgDefaults,
-  );
-}
 
 /**
  * Validate the composed env against the config sources (`schema` or
@@ -97,9 +78,7 @@ export function installRootHooks<TOptions extends GetDotenvOptions>(
 
   // Propagate resolved env into the options bag so plugins always see
   // the effective environment as bag.env â€” no defaulting logic needed downstream.
-  const propagateResolvedEnv = (
-    merged: RootOptionsShape & { scripts?: ScriptsTable },
-  ) => {
+  const propagateResolvedEnv = (merged: RootOptionsBag) => {
     if (program.hasCtx()) {
       const resolvedCtx = program.getCtx();
       if (resolvedCtx.env) {
@@ -123,23 +102,8 @@ export function installRootHooks<TOptions extends GetDotenvOptions>(
     const raw =
       (thisCommand as { opts?: () => Record<string, unknown> }).opts?.() ?? {};
 
-    // Build unified defaults stack for this run:
-    // baseRootOptionDefaults < createCli root defaults (argument) < config.rootOptionDefaults
-    const d = computeRootDefaults(defaults ?? {}, sources);
-
-    const { merged } = resolveCliOptions<
-      RootOptionsShape & { scripts?: ScriptsTable }
-    >(raw, d, process.env.getDotenvCliOptions);
+    const merged = resolveRootOptionsBag(raw, defaults, sources);
     dbg('preSubcommand:merged', debugView(merged));
-
-    // Inject merged scripts from config sources (packaged < project/public < project/local).
-    (merged as unknown as Record<string, unknown>).scripts = defaultsDeep(
-      {},
-      (merged as unknown as { scripts?: ScriptsTable }).scripts ?? {},
-      (sources.packaged?.scripts as ScriptsTable | undefined) ?? {},
-      (sources.project?.public?.scripts as ScriptsTable | undefined) ?? {},
-      (sources.project?.local?.scripts as ScriptsTable | undefined) ?? {},
-    );
 
     // Persist merged bag for nested flows and ergonomic access.
     (
@@ -196,23 +160,8 @@ export function installRootHooks<TOptions extends GetDotenvOptions>(
     const raw =
       (thisCommand as { opts?: () => Record<string, unknown> }).opts?.() ?? {};
 
-    // Build unified defaults stack for this run:
-    // baseRootOptionDefaults < createCli root defaults (argument) < config.rootOptionDefaults
-    const d = computeRootDefaults(defaults ?? {}, sources);
-
-    const { merged } = resolveCliOptions<
-      RootOptionsShape & { scripts?: ScriptsTable }
-    >(raw, d, process.env.getDotenvCliOptions);
+    const merged = resolveRootOptionsBag(raw, defaults, sources);
     dbg('preAction:merged', debugView(merged));
-
-    // Inject merged scripts from config sources (packaged < project/public < project/local).
-    (merged as unknown as Record<string, unknown>).scripts = defaultsDeep(
-      {},
-      (merged as unknown as { scripts?: ScriptsTable }).scripts ?? {},
-      (sources.packaged?.scripts as ScriptsTable | undefined) ?? {},
-      (sources.project?.public?.scripts as ScriptsTable | undefined) ?? {},
-      (sources.project?.local?.scripts as ScriptsTable | undefined) ?? {},
-    );
 
     (
       thisCommand as unknown as {
