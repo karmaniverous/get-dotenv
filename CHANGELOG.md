@@ -2,6 +2,8 @@
 
 All notable changes to this project will be documented in this file.
 
+## [8.0.0](https://github.com/karmaniverous/get-dotenv/compare/v8.0.0-0...v8.0.0) - 2026-11-17
+
 ## [8.0.0-0](https://github.com/karmaniverous/get-dotenv/compare/v7.0.11...v8.0.0-0) - 2026-11-16
 
 ### Features
