@@ -1,10 +1,8 @@
+import { withBuiltInEntropyWhitelist } from '@/src/defaults';
 import { defaultsDeep } from '@/src/util';
 
-import {
-  resolveExclusion,
-  resolveExclusionAll,
-  setOptionalFlag,
-} from './flagUtils';
+import { resolveExclusion, resolveToggle, setOptionalFlag } from './flagUtils';
+import { osDefaultShell } from './shell';
 import type { RootOptionsShape, ScriptsTable } from './types';
 
 /**
@@ -41,9 +39,54 @@ export interface ResolveCliOptionsResult<T> {
 }
 
 /**
+ * ON/OFF families other than the exclusions: the bag key, then the raw
+ * Commander keys of its ON and OFF flags.
+ */
+const TOGGLE_FAMILIES = [
+  ['debug', 'debug', 'debugOff'],
+  ['loadProcess', 'loadProcess', 'loadProcessOff'],
+  ['log', 'log', 'logOff'],
+  ['redact', 'redact', 'redactOff'],
+  ['warnEntropy', 'entropyWarn', 'entropyWarnOff'],
+] as const satisfies ReadonlyArray<
+  readonly [keyof RootOptionsShape, string, string]
+>;
+
+/** Exclusion families: the bag key, then the raw key of its OFF flag. */
+const EXCLUSION_FAMILIES = [
+  ['excludeDynamic', 'excludeDynamicOff'],
+  ['excludeEnv', 'excludeEnvOff'],
+  ['excludeGlobal', 'excludeGlobalOff'],
+  ['excludePrivate', 'excludePrivateOff'],
+  ['excludePublic', 'excludePublicOff'],
+] as const satisfies ReadonlyArray<readonly [keyof RootOptionsShape, string]>;
+
+/** Raw Commander keys that select a value and never enter the bag. */
+const RAW_ONLY_KEYS = [
+  ...TOGGLE_FAMILIES.map(([, , off]) => off),
+  ...EXCLUSION_FAMILIES.map(([, off]) => off),
+  'entropyWarn',
+  'excludeAll',
+  'excludeAllOff',
+  'shellOff',
+  'command',
+  'scripts',
+  // `--redact-pattern` (Commander key `redactPattern`) sets `redactPatterns`.
+  'redactPattern',
+];
+
+const asBoolean = (v: unknown): boolean | undefined =>
+  typeof v === 'boolean' ? v : undefined;
+
+/**
  * Merge and normalize raw Commander options (current + parent + defaults)
  * into a GetDotenvCliOptions-like object. Types are intentionally wide to
  * avoid cross-layer coupling; callers may cast as needed.
+ *
+ * ON/OFF families resolve from the raw flags of this invocation: an explicit
+ * ON flag gives `true`, an explicit OFF flag gives `false`, and otherwise the
+ * value comes from the stack (defaults \< parent bag). For the exclusions,
+ * an individual flag beats `-a`/`-A`, which beat the stack.
  */
 export const resolveCliOptions = <T extends ResolveCliOptionsShape>(
   rawCliOptions: unknown,
@@ -55,143 +98,67 @@ export const resolveCliOptions = <T extends ResolveCliOptionsShape>(
       ? (JSON.parse(parentJson) as Partial<T>)
       : undefined;
 
-  const {
-    command,
-    debugOff,
-    excludeAll,
-    excludeAllOff,
-    excludeDynamicOff,
-    excludeEnvOff,
-    excludeGlobalOff,
-    excludePrivateOff,
-    excludePublicOff,
-    loadProcessOff,
-    logOff,
-    entropyWarn,
-    entropyWarnOff,
-    scripts,
-    shellOff,
-    ...rest
-  } = rawCliOptions as Partial<T> & Record<string, unknown>;
+  const raw = rawCliOptions as Record<string, unknown>;
+  const { command, scripts, shellOff } = raw;
 
-  const current: Partial<T> = { ...(rest as Partial<T>) };
-  if (typeof (scripts as unknown) === 'string') {
+  const current: Partial<T> = Object.fromEntries(
+    Object.entries(raw).filter(([k]) => !RAW_ONLY_KEYS.includes(k)),
+  ) as Partial<T>;
+  if (Array.isArray(raw.redactPattern))
+    (current as Record<string, unknown>).redactPatterns = raw.redactPattern;
+  if (typeof scripts === 'string') {
     try {
       (current as Record<string, unknown>).scripts = JSON.parse(
-        scripts as unknown as string,
+        scripts,
       ) as ScriptsTable;
     } catch {
       // ignore parse errors; leave scripts undefined
     }
   }
 
-  const merged = defaultsDeep<Required<T>>(
-    {},
-    defaults,
-    parent ?? {},
-    current,
-  ) as T;
+  // The stack below this invocation's flags: defaults < parent bag.
+  const stack = defaultsDeep<Partial<T>>({}, defaults, parent ?? {});
+  const merged = defaultsDeep<Required<T>>({}, stack, current) as T;
 
-  const d = defaults;
-  setOptionalFlag(
-    merged,
-    'debug',
-    resolveExclusion(merged.debug, debugOff as true | undefined, d.debug),
-  );
-  setOptionalFlag(
-    merged,
-    'excludeDynamic',
-    resolveExclusionAll(
-      merged.excludeDynamic,
-      excludeDynamicOff as true | undefined,
-      d.excludeDynamic,
-      excludeAll as true | undefined,
-      excludeAllOff as true | undefined,
-    ),
-  );
-  setOptionalFlag(
-    merged,
-    'excludeEnv',
-    resolveExclusionAll(
-      merged.excludeEnv,
-      excludeEnvOff as true | undefined,
-      d.excludeEnv,
-      excludeAll as true | undefined,
-      excludeAllOff as true | undefined,
-    ),
-  );
-  setOptionalFlag(
-    merged,
-    'excludeGlobal',
-    resolveExclusionAll(
-      merged.excludeGlobal,
-      excludeGlobalOff as true | undefined,
-      d.excludeGlobal,
-      excludeAll as true | undefined,
-      excludeAllOff as true | undefined,
-    ),
-  );
-  setOptionalFlag(
-    merged,
-    'excludePrivate',
-    resolveExclusionAll(
-      merged.excludePrivate,
-      excludePrivateOff as true | undefined,
-      d.excludePrivate,
-      excludeAll as true | undefined,
-      excludeAllOff as true | undefined,
-    ),
-  );
-  setOptionalFlag(
-    merged,
-    'excludePublic',
-    resolveExclusionAll(
-      merged.excludePublic,
-      excludePublicOff as true | undefined,
-      d.excludePublic,
-      excludeAll as true | undefined,
-      excludeAllOff as true | undefined,
-    ),
-  );
-  setOptionalFlag(
-    merged,
-    'log',
-    resolveExclusion(merged.log, logOff as true | undefined, d.log),
-  );
-  setOptionalFlag(
-    merged,
-    'loadProcess',
-    resolveExclusion(
-      merged.loadProcess,
-      loadProcessOff as true | undefined,
-      d.loadProcess,
-    ),
-  );
-  // warnEntropy (tri-state)
-  setOptionalFlag(
-    merged,
-    'warnEntropy',
-    resolveExclusion(
-      merged.warnEntropy,
-      entropyWarnOff as true | undefined,
-      d.warnEntropy,
-    ),
-  );
-
-  // Normalize shell for predictability: explicit default shell per OS.
-  const defaultShell =
-    process.platform === 'win32' ? 'powershell.exe' : '/bin/bash';
-  let resolvedShell = merged.shell;
-  if (shellOff) resolvedShell = false;
-  else if (resolvedShell === true || resolvedShell === undefined) {
-    resolvedShell = defaultShell;
-  } else if (
-    typeof resolvedShell !== 'string' &&
-    typeof defaults.shell === 'string'
-  ) {
-    resolvedShell = defaults.shell;
+  for (const [key, on, off] of TOGGLE_FAMILIES) {
+    setOptionalFlag(
+      merged,
+      key,
+      resolveToggle(raw[on], raw[off], asBoolean(stack[key])),
+    );
   }
-  merged.shell = resolvedShell;
+  for (const [key, off] of EXCLUSION_FAMILIES) {
+    setOptionalFlag(
+      merged,
+      key,
+      resolveExclusion(
+        raw[key],
+        raw[off],
+        raw.excludeAll,
+        raw.excludeAllOff,
+        // A stacked individual default beats a stacked `excludeAll`.
+        asBoolean(stack[key]) ?? (stack.excludeAll === true || undefined),
+      ),
+    );
+  }
+  // `excludeAll` only selects the five exclusions; it never enters the bag.
+  setOptionalFlag(merged, 'excludeAll', undefined);
+
+  // A user entropy whitelist extends the built-in one (#46).
+  merged.entropyWhitelist = withBuiltInEntropyWhitelist(
+    merged.entropyWhitelist,
+  );
+
+  // Normalize shell for predictability: -S (or a `false` from any layer,
+  // such as a parent's -S) gives no shell; a string is kept; `true` or
+  // unset gives the OS default shell.
+  const shell = merged.shell;
+  merged.shell =
+    shellOff === true || shell === false
+      ? false
+      : typeof shell === 'string'
+        ? shell
+        : osDefaultShell();
 
   const cmd = typeof command === 'string' ? command : undefined;
   return cmd !== undefined ? { merged, command: cmd } : { merged };

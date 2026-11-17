@@ -4,7 +4,7 @@
  * - instance-bound readConfig and createPluginDynamicOption
  * - sibling namespace uniqueness guard at composition time
  */
-import type { Command, OptionValues } from '@commander-js/extra-typings';
+import type { OptionValues } from '@commander-js/extra-typings';
 import { z, type ZodObject } from 'zod';
 
 import type { GetDotenvOptions } from '@/src/core';
@@ -18,6 +18,8 @@ import type {
 } from './contracts';
 import type { PluginNamespaceOverride } from './contracts';
 import type { ResolvedHelpConfig } from './helpConfig';
+import { commandPathOf } from './qualified/names';
+import { assertUniqueNamespaces } from './registerPlugin';
 
 /**
  * Define a GetDotenv CLI plugin with compositional helpers.
@@ -55,29 +57,9 @@ export function definePlugin<TOptions extends GetDotenvOptions>(
     children: [],
     use(child, override?: PluginNamespaceOverride) {
       // Enforce sibling uniqueness at composition time.
-      const desired = (
-        override && typeof override.ns === 'string' && override.ns.length > 0
-          ? override.ns
-          : child.ns
-      ).trim();
-      const collision = this.children.some((c) => {
-        const ns = (
-          c.override &&
-          typeof c.override.ns === 'string' &&
-          c.override.ns.length > 0
-            ? c.override.ns
-            : c.plugin.ns
-        ).trim();
-        return ns === desired;
-      });
-      if (collision) {
-        const under = this.ns && this.ns.length > 0 ? this.ns : 'root';
-        throw new Error(
-          `Duplicate namespace '${desired}' under '${under}'. ` +
-            `Override via .use(plugin, { ns: '...' }).`,
-        );
-      }
-      this.children.push({ plugin: child, override });
+      const entry = { plugin: child, override };
+      assertUniqueNamespaces([...this.children, entry], this.ns);
+      this.children.push(entry);
       return this;
     },
   };
@@ -119,16 +101,8 @@ export function definePlugin<TOptions extends GetDotenvOptions>(
     parser?: (value: string, previous?: unknown) => unknown,
     defaultValue?: unknown,
   ) {
-    // Derive realized path strictly from the provided mount (leaf-up).
-    const realizedPath = (() => {
-      const parts: string[] = [];
-      let node = cli as unknown as Command;
-      while (node.parent) {
-        parts.push(node.name());
-        node = node.parent as Command;
-      }
-      return parts.reverse().join('/');
-    })();
+    // Derive the realized path strictly from the provided mount.
+    const realizedPath = commandPathOf(cli).join('/');
 
     return cli.createDynamicOption<Usage>(
       flags,

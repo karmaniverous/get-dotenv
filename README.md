@@ -13,17 +13,22 @@
 get‑dotenv helps you:
 
 - Load and merge env vars from a deterministic cascade (global/env × public/private) across multiple paths.
-- Expand values recursively with defaults.
+- Expand values with defaults; a referenced value is used as composed, never expanded twice.
 - Add dynamic variables (JS/TS) that compute from the composed env.
 - Run commands with normalized shell behavior and a consistent child environment.
 - Compose your own CLI from shipped plugins or your own.
+- Give any command's option anywhere on the command line with its qualified name (`--vc-env`, `--vc-aws-profile`), so you can add options to the end of an npm script.
+
+Upgrading from 7.x? See [Migrating to 8.0](./guides/migrating-to-8.md).
 
 See full guides:
 
 - [Getting started](./guides/getting-started.md)
+- [Migrating to 8.0](./guides/migrating-to-8.md) (every breaking and behaviour change from 7.x)
+- [Qualified options](./guides/qualified-options.md) (options anywhere on the command line)
 - [Config and overlays](./guides/config.md) (dynamic, validation, defaults):
 - [Dotenv editor (format-preserving)](./guides/dotenv-editor.md)
-- [Shell execution behavior, quoting, capture](./guides/shell.md)
+- [Shell execution behavior, quoting, capture, exit codes](./guides/shell.md)
 - [Shipped plugins](./guides/shipped/index.md)
 - [Authoring plugins](./guides/authoring/index.md) (host, lifecycle, exec, diagnostics)
 
@@ -42,7 +47,7 @@ See full guides:
 
 ## Requirements
 
-- Node.js ≥ 20 (this repository pins 22.19.0 for CI/reproducibility)
+- Node.js ≥ 22.12.0 (this repository pins 22.23.5 for CI/reproducibility)
 
 ## Installation
 
@@ -73,8 +78,12 @@ Embed a CLI quickly (shipped plugins wired for you):
 #!/usr/bin/env node
 import { createCli } from '@karmaniverous/get-dotenv/cli';
 
-await createCli({ alias: 'toolbox' })();
+await createCli({ alias: 'toolbox', importMetaUrl: import.meta.url })();
 ```
+
+`importMetaUrl` is required. Its package (the nearest `package.json` above it) is your CLI's host package: it supplies the packaged config layer (`getdotenv.config.*` next to that `package.json`), the `--version` and the help description. `version` and `description` options override the last two.
+
+Every long option also has a qualified form, `--<alias>-<command path>-<option>`, that works anywhere on the command line, so you can add options to the end of an npm script: with `"test": "toolbox cmd vitest run"`, `npm run test -- --toolbox-env dev` runs `toolbox --env=dev cmd vitest run`, and the forwarded command never sees the option. Every `--help` shows these names: each option line ends with `(anywhere: --toolbox-env)`, and a subcommand's help lists the options of the commands above it by qualified name. See [Qualified options](./guides/qualified-options.md).
 
 More first steps and tips at [Getting Started](./guides/getting-started.md)
 
@@ -114,14 +123,15 @@ The shipped CLI is plugin‑first:
   - Quoting, alias conflicts, expansion behavior. [More info...](./guides/shipped/cmd.md)
 - Normalize shell behavior across platforms; use `--shell` (default OS shell) or `--shell-off`, and enable capture for CI:
   - [Shell guide](./guides/shell.md)
-- Execute across multiple working directories with the [`batch` plugin][guides/shipped/batch.md](./guides/shipped/batch.md)
+- Execute across multiple working directories with the [`batch` plugin](./guides/shipped/batch.md)
 
 ## Diagnostics (trace, capture, redact, entropy)
 
 - `--trace [keys...]` prints per‑key origin (dotenv | parent | unset) before spawning.
 - Deterministic output for CI: set `GETDOTENV_STDIO=pipe` or pass `--capture`.
-- Presentation‑time redaction for secret‑like keys: `--redact` / `--redact-off` (+ `--redact-pattern` for additional key matches).
-- Optional entropy warnings (length/printable/threshold gated) for likely secrets in logs/trace.
+- Presentation‑time redaction for secret‑like keys (`API_SECRET`, `DB_PASSWORD`, `GITHUB_TOKEN`, ...): `--redact` / `--redact-off` (+ `--redact-pattern` for additional key matches, added to the built-in ones).
+- Entropy warnings (on by default; length/printable/threshold gated, with a built-in whitelist that yours extends) for likely secrets in `-l` and `--trace` output.
+- See [Diagnostics (redaction and entropy)](./guides/config.md#diagnostics-redaction-and-entropy).
 
 Learn more:
 
@@ -144,6 +154,8 @@ The host resolves dotenv context once per invocation, overlays config, validates
 - [Lifecycle & wiring](./guides/authoring/lifecycle.md)
 - [Executing shell commands](./guides/authoring/exec.md) from plugins
 - [Config & validation](./guides/authoring/config.md) for plugins
+- [Qualified names](./guides/authoring/qualified-names.md): naming, the reserved `<alias>-` prefix, terminators and nested CLI aliases
+- [Packaging](./guides/authoring/packaging.md): get-dotenv as an optional peer, the `./get-dotenv` subpath and a bin launcher
 
 ## API Reference
 

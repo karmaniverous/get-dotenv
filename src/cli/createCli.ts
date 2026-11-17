@@ -1,18 +1,11 @@
-import {
-  GetDotenvCli,
-  resolveCliOptions,
-  type RootOptionsShape,
-  type ScriptsTable,
-  toHelpConfig,
-} from '@/src/cliHost';
+import { GetDotenvCli, type RootOptionsShape } from '@/src/cliHost';
 import { attachRootOptions as attachRootOptionsBuilder } from '@/src/cliHost/attachRootOptions';
+import { recordRunArgv, runArgvRequestsDebug } from '@/src/cliHost/parseHost';
 import { installRootHooks } from '@/src/cliHost/rootHooks';
-import {
-  applyRootVisibility,
-  mergeRootVisibility,
-} from '@/src/cliHost/visibility';
-import { resolveGetDotenvConfigSources } from '@/src/config';
-import { baseRootOptionDefaults } from '@/src/defaults';
+import { configureTopLevelHelp } from '@/src/cliHost/topLevelHelp';
+import { underTestRunner } from '@/src/cliHost/underTestRunner';
+import { userArgsOf } from '@/src/cliHost/userArgs';
+import { applyRootVisibility } from '@/src/cliHost/visibility';
 import {
   awsPlugin,
   awsWhoamiPlugin,
@@ -20,7 +13,22 @@ import {
   cmdPlugin,
   initPlugin,
 } from '@/src/plugins';
-import { defaultsDeep } from '@/src/util';
+import { readHostPackage } from '@/src/util/packageRoot';
+
+/**
+ * Compose the shipped plugins (the `getdotenv` CLI's tree): `cmd` (the
+ * default subcommand, with its `-c, --cmd` alias on the root), `batch`,
+ * `aws` with its `whoami` child, and `init`.
+ *
+ * @param program - The host root.
+ * @returns The host.
+ */
+export const composeShippedPlugins = (program: GetDotenvCli): GetDotenvCli =>
+  program
+    .use(cmdPlugin({ asDefault: true, optionAlias: '-c, --cmd <command...>' }))
+    .use(batchPlugin())
+    .use(awsPlugin().use(awsWhoamiPlugin()))
+    .use(initPlugin());
 
 /**
  * Top-level error boundary for the CLI runner.
@@ -28,11 +36,11 @@ import { defaultsDeep } from '@/src/util';
  * Presents errors as clean one-line messages by default.
  * When GETDOTENV_DEBUG is set, prints the full stack trace.
  */
-function handleCliError(err: unknown, argv?: string[]): void {
+function handleCliError(err: unknown, debugArgv: boolean): void {
   const isDebug =
     process.env.GETDOTENV_DEBUG === '1' ||
     process.env.GETDOTENV_DEBUG === 'true' ||
-    (Array.isArray(argv) && argv.includes('--debug'));
+    debugArgv;
 
   const message = err instanceof Error ? err.message : String(err);
 
@@ -49,25 +57,48 @@ function handleCliError(err: unknown, argv?: string[]): void {
  * Create a get-dotenv CLI host with included plugins.
  *
  * Options:
+ * - importMetaUrl (required): the host module's `import.meta.url`; its package
+ *   root is the host root (packaged config, version, description)
  * - alias: command name used for help/argv scaffolding (default: "getdotenv")
  * - branding: optional help header; when omitted, brand() uses "<alias> v<version>"
  *
  * Usage:
  * ```ts
- * import { createCli } from '@karmaniverous/get-dotenv';
+ * import { createCli } from '@karmaniverous/get-dotenv/cli';
  *
  * await createCli({
- *    alias: 'getdotenv',
- *    branding: 'getdotenv vX.Y.Z'
+ *    alias: 'mycli',
+ *    importMetaUrl: import.meta.url,
  * })();
  * ```
  */
 export type CreateCliOptions = {
   /**
+   * The host module's `import.meta.url` (required). The host root is the
+   * nearest `package.json` directory above it. It supplies:
+   * - the packaged config layer, `<hostRoot>/getdotenv.config.*` (it replaces
+   *   get-dotenv's own; when the host root is the project root, the packaged
+   *   layer is skipped so the same file isn't applied twice);
+   * - the version (`package.json` `version`, unless `version` is given);
+   * - the description (`package.json` `description`, unless `description`
+   *   is given).
+   */
+  importMetaUrl: string;
+  /**
    * CLI command name used for help and argv scaffolding.
    * Defaults to `'getdotenv'` when omitted.
    */
   alias?: string;
+  /**
+   * Version printed by `-V, --version` and shown in the default help header.
+   * Overrides the host package's `package.json` `version`.
+   */
+  version?: string;
+  /**
+   * Root command description shown in help. Overrides the host package's
+   * `package.json` `description`.
+   */
+  description?: string;
   /**
    * Optional help header text. When omitted, brand() uses
    * `"<alias> v<resolved-version>"` if a version can be read.
@@ -80,14 +111,19 @@ export type CreateCliOptions = {
    */
   compose?: (program: GetDotenvCli) => GetDotenvCli;
   /**
-   * Root defaults applied once before composition. These are used by flag declaration
-   * and merge-time defaults (and top-level -h parity labels).
+   * Host root defaults. They rank above `baseRootOptionDefaults` and below
+   * config `rootOptionDefaults`, the parent options bag and CLI flags; they
+   * are merge-time defaults (and top-level -h labels), never Commander option
+   * defaults.
    * Note: shipped CLI does not force loadProcess OFF; base defaults apply unless set here.
    */
   rootOptionDefaults?: Partial<RootOptionsShape>;
   /**
-   * Visibility map to hide families/singles from root help. When a key is false,
-   * the corresponding option(s) are hidden (via hideHelp) after flags are declared.
+   * Visibility map to hide families/singles from help. When a key is false,
+   * the corresponding option(s) are hidden (via hideHelp) after flags are
+   * declared: they leave root help and every subcommand's inherited
+   * `<alias> options (anywhere)` section. Config `rootOptionVisibility` ranks
+   * above it, so a config `true` shows a flag this map hides.
    */
   rootOptionVisibility?: Partial<Record<keyof RootOptionsShape, boolean>>;
 };
@@ -96,17 +132,37 @@ export type CreateCliOptions = {
  * Create a configured get-dotenv CLI host.
  * Applies defaults, installs root hooks, and composes plugins.
  * Returns a runner function that accepts an argv array.
+ *
+ * The runner's argv is the user arguments only, as in
+ * `run(['-e', 'dev', 'cmd', 'npm', 'test'])`, unless its second parameter
+ * gives Commander's `from`: `run(process.argv, { from: 'node' })` drops the
+ * first two entries. Called without an argv it reads `process.argv` and
+ * detects the convention as Commander does (`node -e`/`-p`, Electron).
+ *
+ * @param opts - Host options; `importMetaUrl` is required.
+ * @returns The runner. It takes an optional argv and optional parse options
+ *   (`from`), and may be called more than once.
+ * @throws When `importMetaUrl` is missing or empty.
  */
 export function createCli(
-  opts: CreateCliOptions = {},
-): (argv?: string[]) => Promise<void> {
-  // Pre-compose aws parent/child to avoid nested call-site typing/lint issues
+  opts: CreateCliOptions,
+): (
+  argv?: string[],
+  options?: { from?: 'node' | 'electron' | 'user' },
+) => Promise<void> {
+  const importMetaUrl = (opts as Partial<CreateCliOptions> | undefined)
+    ?.importMetaUrl;
+  if (typeof importMetaUrl !== 'string' || importMetaUrl.length === 0) {
+    throw new Error(
+      'createCli requires importMetaUrl: pass createCli({ importMetaUrl: import.meta.url, ... }) so the host CLI reports its own package (packaged config, version, description).',
+    );
+  }
   const alias =
     typeof opts.alias === 'string' && opts.alias.length > 0
       ? opts.alias
       : 'getdotenv';
 
-  const program: GetDotenvCli = new GetDotenvCli(alias);
+  const program: GetDotenvCli = new GetDotenvCli(alias, { importMetaUrl });
   // Default output: normalize help prints so they always end with a blank line.
   // This keeps E2E assertions (CRLF and >=2 trailing newlines) portable across
   // runtimes and capture modes without altering Commander internals.
@@ -138,9 +194,7 @@ export function createCli(
   const visibility = opts.rootOptionVisibility ?? {};
 
   // Tests-only: avoid process.exit during help/version flows under Vitest.
-  const underTests =
-    process.env.GETDOTENV_TEST === '1' ||
-    typeof process.env.VITEST_WORKER_ID === 'string';
+  const underTests = underTestRunner();
   const dbg = (...args: unknown[]) => {
     if (process.env.GETDOTENV_DEBUG) {
       try {
@@ -184,147 +238,59 @@ export function createCli(
   attachRootOptionsBuilder(program, rootDefaults);
   // 2) Install resolution hooks (preSubcommand/preAction).
   installRootHooks(program, rootDefaults);
+  // Top-level help (rendered by parseAsync) uses the same defaults.
+  configureTopLevelHelp(program, { rootDefaults, visibility });
   // Apply visibility (hide selected options) after flags are declared.
   if (Object.keys(visibility).length > 0) {
     applyRootVisibility(program, visibility);
   }
 
   // Compose wiring: user-provided composer wins; otherwise apply shipped defaults.
-  if (typeof opts.compose === 'function') {
-    opts.compose(program);
-  } else {
-    program
-      .use(
-        cmdPlugin({ asDefault: true, optionAlias: '-c, --cmd <command...>' }),
-      )
-      .use(batchPlugin())
-      .use(awsPlugin().use(awsWhoamiPlugin()))
-      .use(initPlugin());
-  }
+  if (typeof opts.compose === 'function') opts.compose(program);
+  else composeShippedPlugins(program);
 
-  // Runner function: accepts full argv or args-only; defaults to process.argv.
-  return async function run(argvInput?: string[]) {
-    const argvAll = Array.isArray(argvInput) ? argvInput : process.argv;
-    // Derive args-only from a possible full process argv
-    const deriveArgsOnly = (v: string[]) => {
-      if (v.length >= 2) {
-        // Common Node/Electron convention: [node, script, ...args]
-        return v.slice(2);
-      }
-      return v.slice();
-    };
-    const argv = deriveArgsOnly(argvAll);
-    // Ensure plugin commands/options are installed before inspecting argv for
-    // help-time routing (subcommand vs root help).
-    dbg('argv', argv);
-    await program.install();
-    // Help handling:
-    // - Short-circuit ONLY for true top-level -h/--help (no subcommand before flag).
-    // - If a subcommand token appears before -h/--help, defer to Commander
-    //   to render that subcommand's help.
-    const helpIdx = argv.findIndex((a) => a === '-h' || a === '--help');
-    if (helpIdx >= 0) {
-      // Build a set of known subcommand names/aliases on the root.
-      const subs = new Set<string>();
-      for (const c of program.commands) {
-        subs.add(c.name());
-        for (const a of c.aliases()) subs.add(a);
-      }
-      dbg('helpIdx', helpIdx, 'knownSubs', Array.from(subs.values()));
-      const hasSubBeforeHelp = argv
-        .slice(0, helpIdx)
-        .some((tok) => subs.has(tok));
-
-      if (!hasSubBeforeHelp) {
-        await program.brand({
-          name: alias,
-          importMetaUrl: import.meta.url,
-          description: 'Base CLI.',
-          ...(typeof opts.branding === 'string' && opts.branding.length > 0
-            ? { helpHeader: opts.branding }
-            : {}),
-        });
-        dbg('top-level -h, render root help');
-        // Resolve context once without side effects for help rendering.
-        const ctx = await program.resolveAndLoad(
-          {
-            loadProcess: false,
-            log: false,
-          },
-          { runAfterResolve: false },
-        );
-        // Build a help-time defaults bag using the unified stack:
-        // baseRootOptionDefaults < createCli rootOptionDefaults < config.rootOptionDefaults
-        let cfgDefaults: Partial<RootOptionsShape> = {};
-        try {
-          const sources = await resolveGetDotenvConfigSources(import.meta.url);
-          cfgDefaults = defaultsDeep<Partial<RootOptionsShape>>(
-            {},
-            sources.packaged?.rootOptionDefaults ?? {},
-            sources.project?.public?.rootOptionDefaults ?? {},
-            sources.project?.local?.rootOptionDefaults ?? {},
-          );
-        } catch {
-          /* tolerate missing config */
-        }
-        const mergedDefaultsForHelp = defaultsDeep<Partial<RootOptionsShape>>(
-          baseRootOptionDefaults as Partial<RootOptionsShape>,
-          rootDefaults,
-          cfgDefaults,
-        );
-        const { merged: defaultsMerged } = resolveCliOptions<
-          RootOptionsShape & { scripts?: ScriptsTable }
-        >({}, mergedDefaultsForHelp, undefined);
-        // Use unified defaults directly for help labels (no ctx overlays).
-        const helpMerged: Partial<RootOptionsShape> = { ...defaultsMerged };
-        const helpCfg = toHelpConfig(helpMerged, ctx.pluginConfigs);
-        // Evaluate dynamic labels
-        program.evaluateDynamicOptions(helpCfg);
-        // Suppress output only during unit tests; allow E2E to capture.
-        const piping =
-          process.env.GETDOTENV_STDIO === 'pipe' ||
-          process.env.GETDOTENV_STDOUT === 'pipe';
-        if (!(underTests && !piping)) {
-          dbg('outputHelp()');
-          // Merge visibility for help-time using precedence:
-          // createCli(rootOptionVisibility) < packaged/public < project/public < project/local
-          try {
-            const sources = await resolveGetDotenvConfigSources(
-              import.meta.url,
-            );
-            const mergedVis = mergeRootVisibility(
-              visibility,
-              sources.packaged?.rootOptionVisibility ?? undefined,
-              sources.project?.public?.rootOptionVisibility ?? undefined,
-              sources.project?.local?.rootOptionVisibility ?? undefined,
-            );
-            if (Object.keys(mergedVis).length > 0) {
-              applyRootVisibility(program, mergedVis);
-            }
-          } catch {
-            // best-effort; do not block help
-          }
-          program.outputHelp();
-        }
-        return;
-      }
-      // Subcommand token exists before -h: fall through to normal parsing,
-      // letting Commander print that subcommand's help.
-    }
-    dbg('parseAsync start');
+  // Host identity (Decision 23): name, description and version from the
+  // host package unless overridden. The constructor set the host root, so
+  // brand() gets no URL (it would re-read the same package.json). Runs on
+  // every run, before parseAsync() and so before install(); brand()
+  // registers -V, --version only once (#87).
+  const brandHost = async () => {
+    const pkg = await readHostPackage(importMetaUrl);
+    const version = opts.version ?? pkg?.version;
+    const description = opts.description ?? pkg?.description;
     await program.brand({
       name: alias,
-      importMetaUrl: import.meta.url,
-      description: 'Base CLI.',
+      ...(version !== undefined ? { version } : {}),
+      ...(description !== undefined ? { description } : {}),
       ...(typeof opts.branding === 'string' && opts.branding.length > 0
         ? { helpHeader: opts.branding }
         : {}),
     });
+  };
 
+  // Brand, then parseAsync: install, table, normalization, top-level help
+  // and the parse (spec 4.4).
+  const runArgs = async (argv: string[]) => {
+    dbg('argv', argv);
+    recordRunArgv(program, argv, false);
+    await brandHost();
+    await program.parseAsync(argv, { from: 'user' });
+  };
+
+  // Runner: an explicit argv is user arguments only unless `from` says
+  // otherwise (#53); no argv reads process.argv as Commander does.
+  return async function run(
+    argvInput?: string[],
+    options?: { from?: 'node' | 'electron' | 'user' },
+  ) {
+    const argv = userArgsOf(argvInput, {
+      from: options?.from ?? (argvInput === undefined ? undefined : 'user'),
+    });
+    // The error boundary covers the whole run (#62).
     try {
-      await program.parseAsync(['node', alias, ...argv]);
+      await runArgs(argv);
     } catch (err: unknown) {
-      handleCliError(err, argv);
+      handleCliError(err, runArgvRequestsDebug(program));
     }
   };
 }

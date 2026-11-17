@@ -1,14 +1,11 @@
 import { nanoid } from 'nanoid';
 import path from 'path';
 
-import {
-  type EntropyOptions,
-  maybeWarnEntropy,
-  redactObject,
-  type RedactOptions,
-} from '@/src/diagnostics';
+import { logComposedEnv } from '@/src/diagnostics/log';
 import { dotenvExpandAll } from '@/src/dotenv';
 import { applyDynamicMap, loadAndApplyDynamic } from '@/src/env/dynamic';
+import { loadProcessEnv } from '@/src/env/loadProcessEnv';
+import { resolveEnvName } from '@/src/env/resolveEnvName';
 import { writeDotenvFile } from '@/src/util';
 
 import type { GetDotenvOptions, ProcessEnv } from './GetDotenvOptions';
@@ -43,13 +40,18 @@ import { readDotenv } from './readDotenv';
  * ```
  *
  * @remarks
- * - When {@link GetDotenvOptions | loadProcess} is true, the resulting variables are merged
- *   into `process.env` as a side effect.
+ * - When {@link GetDotenvOptions | loadProcess} is true, the resulting variables are copied
+ *   into `process.env` as a side effect (an `undefined` value, or a key a dynamic `null`
+ *   deleted, deletes the key). It defaults to false: `getDotenv()` does not touch
+ *   `process.env` unless asked to.
  * - When {@link GetDotenvOptions | outputPath} is provided, a consolidated dotenv file is written.
- *   The path is resolved after expansion, so it may reference previously loaded vars.
+ *   The path is resolved after expansion, so it may reference previously loaded vars. Each
+ *   value is quoted and escaped as needed so that dotenv reads the file back to the result.
  *
  * @throws Error when a dynamic module is present but cannot be imported.
  * @throws Error when an output path was requested but could not be resolved.
+ * @throws Error when an output value can't be written so that dotenv reads it back
+ *   unchanged (the message names the key).
  */
 export function getDotenv<Vars extends ProcessEnv = ProcessEnv>(
   options?: Partial<GetDotenvOptions>,
@@ -61,6 +63,7 @@ export async function getDotenv(
   options: Partial<GetDotenvOptions> = {},
 ): Promise<ProcessEnv> {
   // Apply defaults.
+  const resolved = await resolveGetDotenvOptions(options);
   const {
     defaultEnv,
     dotenvToken = '.env',
@@ -78,7 +81,10 @@ export async function getDotenv(
     paths = [],
     privateToken = 'local',
     vars = {},
-  } = await resolveGetDotenvOptions(options);
+  } = resolved;
+
+  // An empty env counts as unset (#82).
+  const envName = resolveEnvName(env, defaultEnv);
 
   // Read .env files.
   const loaded = paths.length
@@ -89,11 +95,9 @@ export async function getDotenv(
             : readDotenv(path.resolve(p, dotenvToken));
 
         const publicEnv =
-          excludePublic || excludeEnv || (!env && !defaultEnv)
+          excludePublic || excludeEnv || !envName
             ? Promise.resolve({})
-            : readDotenv(
-                path.resolve(p, `${dotenvToken}.${env ?? defaultEnv ?? ''}`),
-              );
+            : readDotenv(path.resolve(p, `${dotenvToken}.${envName}`));
 
         const privateGlobal =
           excludePrivate || excludeGlobal
@@ -101,13 +105,10 @@ export async function getDotenv(
             : readDotenv(path.resolve(p, `${dotenvToken}.${privateToken}`));
 
         const privateEnv =
-          excludePrivate || excludeEnv || (!env && !defaultEnv)
+          excludePrivate || excludeEnv || !envName
             ? Promise.resolve({})
             : readDotenv(
-                path.resolve(
-                  p,
-                  `${dotenvToken}.${env ?? defaultEnv ?? ''}.${privateToken}`,
-                ),
+                path.resolve(p, `${dotenvToken}.${envName}.${privateToken}`),
               );
 
         const [
@@ -145,17 +146,13 @@ export async function getDotenv(
     { progressive: true },
   );
 
-  // Process dynamic variables. Programmatic option takes precedence over path.
+  // Process dynamic variables: programmatic `dynamic`, then `dynamicPath` (which wins).
   const deletedKeys = new Set<string>();
   if (!excludeDynamic) {
     // A2 precedence: programmatic dynamic < dynamicPath (dynamicPath wins when present)
     if (options.dynamic && Object.keys(options.dynamic).length > 0) {
       try {
-        for (const k of applyDynamicMap(
-          dotenv,
-          options.dynamic,
-          env ?? defaultEnv,
-        ))
+        for (const k of applyDynamicMap(dotenv, options.dynamic, envName))
           deletedKeys.add(k);
       } catch {
         throw new Error(`Unable to evaluate dynamic variables.`);
@@ -167,7 +164,7 @@ export async function getDotenv(
       for (const k of await loadAndApplyDynamic(
         dotenv,
         absDynamicPath,
-        env ?? defaultEnv,
+        envName,
         'getdotenv-dynamic',
       ))
         deletedKeys.add(k);
@@ -185,67 +182,11 @@ export async function getDotenv(
     resultDotenv = dotenvForOutput;
   }
 
-  // Log result.
-  if (log) {
-    const redactFlag = (options as { redact?: boolean }).redact ?? false;
-    const redactPatterns =
-      (
-        options as {
-          redactPatterns?: Array<string | RegExp>;
-        }
-      ).redactPatterns ?? undefined;
-    const redOpts: RedactOptions = {};
-    if (redactFlag) redOpts.redact = true;
-    if (redactFlag && Array.isArray(redactPatterns))
-      redOpts.redactPatterns = redactPatterns;
-    const bag = redactFlag
-      ? redactObject(resultDotenv, redOpts)
-      : { ...resultDotenv };
-    logger.info(bag);
-    // Entropy warnings: once-per-key-per-run (presentation only)
-    const warnEntropyVal =
-      (options as { warnEntropy?: boolean }).warnEntropy ?? true;
-    const entropyThresholdVal = (options as { entropyThreshold?: number })
-      .entropyThreshold;
-    const entropyMinLengthVal = (options as { entropyMinLength?: number })
-      .entropyMinLength;
-    const entropyWhitelistVal = (
-      options as {
-        entropyWhitelist?: Array<string | RegExp>;
-      }
-    ).entropyWhitelist;
-    const entOpts: EntropyOptions = {};
-    if (typeof warnEntropyVal === 'boolean')
-      entOpts.warnEntropy = warnEntropyVal;
-    if (typeof entropyThresholdVal === 'number')
-      entOpts.entropyThreshold = entropyThresholdVal;
-    if (typeof entropyMinLengthVal === 'number')
-      entOpts.entropyMinLength = entropyMinLengthVal;
-    if (Array.isArray(entropyWhitelistVal))
-      entOpts.entropyWhitelist = entropyWhitelistVal;
-    for (const [k, v] of Object.entries(resultDotenv)) {
-      maybeWarnEntropy(
-        k,
-        v,
-        v !== undefined ? 'dotenv' : 'unset',
-        entOpts,
-        (line) => {
-          logger.info(line);
-        },
-      );
-    }
-  }
+  // Log result (redaction and entropy settings from the resolved options).
+  if (log) logComposedEnv(resultDotenv, resolved, logger);
 
   // Load process.env.
-  if (loadProcess) {
-    for (const key of deletedKeys) {
-      Reflect.deleteProperty(process.env, key);
-    }
-    for (const [key, value] of Object.entries(resultDotenv)) {
-      if (value === undefined) Reflect.deleteProperty(process.env, key);
-      else process.env[key] = value;
-    }
-  }
+  if (loadProcess) loadProcessEnv(resultDotenv, deletedKeys);
 
   return resultDotenv;
 }

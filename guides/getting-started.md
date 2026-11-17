@@ -4,11 +4,13 @@ title: Getting Started
 
 # Getting Started
 
-This page gives you four fast on‑ramps. Each section includes a minimal snippet and links to the right deep‑dive.
+This page gives you four fast on‑ramps. Each section includes a minimal snippet and links to the right deep‑dive. Requires Node.js 22.12 or later.
 
-## Deprecations
+Upgrading from 7.x? See [Migrating to 8.0](./migrating-to-8.md).
 
-- The package currently re-exports `z` as a convenience, but this is deprecated. Import `{ z }` from `zod` directly; the re-export will be removed in v7.
+## Importing `z`
+
+- `@karmaniverous/get-dotenv/cliHost` no longer re-exports `z` (removed in 8.0.0). Import `{ z }` from `zod` directly, and list `zod` in your own dependencies.
 
 ## 1) Run a one‑off command with your env
 
@@ -54,11 +56,16 @@ Prefer the named factory to get a small runner with the shipped plugins installe
 #!/usr/bin/env node
 import { createCli } from '@karmaniverous/get-dotenv/cli';
 
-await createCli({ alias: 'toolbox' })();
+await createCli({ alias: 'toolbox', importMetaUrl: import.meta.url })();
 ```
 
 Notes:
 
+- `importMetaUrl` is required (`createCli()` without it throws). The nearest `package.json` above it is your CLI's host package, which supplies:
+  - the packaged config layer: `getdotenv.config.*` beside that `package.json` (it replaces get-dotenv's own packaged layer; there is no third layer);
+  - the `-V/--version` output and the help header version (`package.json` `version`, unless you pass `version`);
+  - the root help description (`package.json` `description`, unless you pass `description`).
+- When the host package is also the project (a CLI that lives in the repo it runs in), the packaged layer is skipped, so its `getdotenv.config.*` applies once, as the project config.
 - `createCli` installs cmd, batch, aws, and init by default. `-h/--help` prints help and returns. See [Shell execution behavior](./shell.md) and [Shipped Plugins](./shipped/index.md).
 - If you need to customize which plugins are installed (omit or add your own), wire a [Custom host](./authoring/lifecycle.md) instead.
 
@@ -69,8 +76,13 @@ CommonJS usage (dynamic import):
   // The package is ESM-only; use dynamic import from CommonJS.
   const { createCli } = await import('@karmaniverous/get-dotenv/cli');
 
-  // Build and run your CLI with args
-  const run = createCli({ alias: 'toolbox' });
+  // Build and run your CLI with args. CommonJS has no import.meta.url, so
+  // pass this module's file URL.
+  const { pathToFileURL } = require('node:url');
+  const run = createCli({
+    alias: 'toolbox',
+    importMetaUrl: pathToFileURL(__filename).href,
+  });
   await run(['-h']);
 })();
 ```
@@ -110,6 +122,7 @@ import { helloPlugin } from './plugins/hello';
 
 const run = createCli({
   alias: '__CLI_NAME__',
+  importMetaUrl: import.meta.url,
   compose: (p) => p.use(helloPlugin()),
 });
 

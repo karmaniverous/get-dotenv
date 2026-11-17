@@ -28,7 +28,9 @@ export type DotenvEolMode = 'preserve' | 'lf' | 'crlf';
  * Editing mode for dotenv updates.
  *
  * - `merge` (default): update/add only the provided keys; do not delete unrelated keys.
- * - `sync`: delete assignment/bare-key lines for keys not present in the update map.
+ * - `sync`: make the file hold exactly the provided keys: update existing keys in place,
+ *   append missing keys (as `merge` does), and delete assignment/bare-key lines for keys
+ *   not present in the update map. Comments, blank lines and unrecognised lines are kept.
  *
  * @public
  */
@@ -176,9 +178,18 @@ export interface DotenvKeySegmentBase {
 }
 
 /**
+ * A quote style dotenv recognises around a value: double quotes, single quotes
+ * or backticks.
+ *
+ * @public
+ */
+export type DotenvQuote = '"' | "'" | '`';
+
+/**
  * A KEY=VALUE assignment segment.
  *
- * Supports single-line and multi-line quoted values (double/single quotes).
+ * Supports single-line and multi-line quoted values (double quotes, single
+ * quotes and backticks).
  *
  * @public
  */
@@ -198,7 +209,7 @@ export interface DotenvAssignmentSegment extends DotenvKeySegmentBase {
   /**
    * Quote style when the value was quoted in the source.
    */
-  quote: '"' | "'" | null;
+  quote: DotenvQuote | null;
   /**
    * Value content (without surrounding quotes).
    *
@@ -366,6 +377,20 @@ export interface EditDotenvFileOptions extends DotenvEditOptions {
    * @defaultValue `'template'`
    */
   templateExtension?: string;
+  /**
+   * Env name token substituted in place of the real env name when building the
+   * shared env template filename (`scope: 'env'` only). For example, with the
+   * default token `'env'`, the shared template for `.env.<env>.local` is
+   * `.env.env.local.template`, and for `.env.<env>` it is `.env.env.template`.
+   *
+   * The shared env template is the last tier: it is used only when neither the
+   * env-scoped target nor its env-specific template (`<target>.<templateExtension>`)
+   * exists in any path. An env-specific template in any path beats a shared
+   * template in any path. This option has no effect for `scope: 'global'`.
+   *
+   * @defaultValue `'env'`
+   */
+  sharedEnvTemplateToken?: string;
   /**
    * Optional filesystem port override (defaults to a Node FS adapter).
    */

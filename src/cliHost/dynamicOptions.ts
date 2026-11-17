@@ -3,6 +3,7 @@
  */
 import { type CommandUnknownOpts, Option } from '@commander-js/extra-typings';
 
+import { commandTree } from './commandTree';
 import type { ResolvedHelpConfig } from './helpConfig';
 
 /**
@@ -39,9 +40,8 @@ export function evaluateDynamicOptions(
   root: CommandUnknownOpts,
   resolved: ResolvedHelpConfig,
 ): void {
-  const visit = (cmd: CommandUnknownOpts) => {
-    const arr = cmd.options;
-    for (const o of arr) {
+  for (const cmd of commandTree(root))
+    for (const o of cmd.options) {
       const dyn = DYN_DESC.get(o);
       if (typeof dyn === 'function') {
         try {
@@ -53,7 +53,4 @@ export function evaluateDynamicOptions(
         }
       }
     }
-    for (const c of cmd.commands) visit(c);
-  };
-  visit(root);
 }

@@ -1,11 +1,35 @@
 import { isObject } from 'radash';
 
+import type { GetDotenvCliPublic } from '@/src/cliHost';
+
+import type { AwsPlugin } from '.';
 import type { AwsPluginConfig } from './types';
 
-/** @internal */
-const isRecord = (v: unknown): v is Record<string, unknown> => {
-  return isObject(v) && !Array.isArray(v);
-};
+/**
+ * The effective AWS plugin config for one invocation: the discovered
+ * `plugins.aws` config slice with the `aws` flags of this invocation over it
+ * (flags beat config).
+ *
+ * @param plugin - The AWS plugin instance (reads its config slice).
+ * @param cli - Any command of the host (the config is per plugin instance).
+ * @param opts - Commander option values of the `aws` mount.
+ * @returns The config to resolve the session with.
+ *
+ * @internal
+ */
+export function awsConfigWithFlags(
+  plugin: AwsPlugin,
+  cli: GetDotenvCliPublic,
+  opts: unknown,
+): AwsPluginConfig {
+  return {
+    ...plugin.readConfig(cli),
+    ...awsConfigOverridesFromCommandOpts(opts),
+  };
+}
+
+/** @internal A plain object (radash `isObject` is false for arrays). */
+const isRecord = (v: unknown): v is Record<string, unknown> => isObject(v);
 
 /**
  * Create an AWS plugin config overlay from Commander-parsed option values.

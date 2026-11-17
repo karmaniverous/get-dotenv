@@ -60,4 +60,36 @@ describe('cliHost/definePlugin helpers', () => {
       typeof sub?.helpInformation === 'function' ? sub.helpInformation() : '';
     expect(help).toMatch(/demo=injected/i);
   });
+
+  it('createPluginDynamicOption: a nested mount reads the slice at its realized path (parent/child)', async () => {
+    const child = (() => {
+      const p = definePlugin({
+        ns: 'dyn',
+        setup(cli) {
+          cli.addOption(
+            p.createPluginDynamicOption(
+              cli,
+              '--demo',
+              (_bag, cfg: Readonly<{ demo?: string }>) =>
+                `demo=${cfg.demo ?? 'none'}`,
+            ),
+          );
+          return undefined;
+        },
+      });
+      return p;
+    })();
+    const parent = definePlugin({ ns: 'outer', setup: () => undefined });
+    parent.use(child);
+
+    const cli = new GetDotenvCli('test').use(parent);
+    await cli.install();
+    cli.evaluateDynamicOptions({
+      plugins: { 'outer/dyn': { demo: 'nested' } },
+    });
+
+    const outer = cli.commands.find((c) => c.name() === 'outer');
+    const dyn = outer?.commands.find((c) => c.name() === 'dyn');
+    expect(dyn?.helpInformation()).toMatch(/demo=nested/);
+  });
 });

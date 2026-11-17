@@ -37,7 +37,7 @@ Notes:
 - `-g, --globs <string>` Space‑delimited globs under the root path (default: `"*"`).
 - `-c, --command <string>` Command to execute (string form; scripts-aware).
 - `-l, --list` List working directories without executing the command.
-- `-e, --ignore-errors` Continue processing remaining paths after a command error.
+- `-e, --ignore-errors` Continue processing remaining paths after a command error, and exit 0.
 
 ## Specifying what to run
 
@@ -63,7 +63,7 @@ getdotenv --shell-off batch -r ./services -g "web" cmd node -e "console.log(proc
 
 Notes:
 
-- `batch cmd …` is explicit and mirrors the built-in `cmd` subcommand naming; `batch …` is equivalent (cmd is the default subcommand).
+- `batch cmd [command...]` is explicit and mirrors the built-in `cmd` subcommand naming. It is not batch's default subcommand: `batch [command...]`, `batch -c` and `batch -l` run batch's own action. Every form takes the same path: the merged options bag reaches the children (so `--capture` applies), positionals beat `-c`, and `-l` runs nothing (with `batch -l`, positionals are extra globs: `batch -l pkgB` lists `pkgB` too).
 - When `--shell-off` is active and you run `node -e/--eval`, the host preserves the argv array to avoid lossy re-tokenization.
 
 ### 2) --command string (scripts-aware)
@@ -154,6 +154,7 @@ import { batchPlugin, cmdPlugin } from '@karmaniverous/get-dotenv/plugins';
 
 const run = createCli({
   alias: 'toolbox',
+  importMetaUrl: import.meta.url,
   compose: (p) =>
     p
       .use(cmdPlugin({ asDefault: true, optionAlias: '-c, --cmd <command...>' }))
@@ -168,4 +169,4 @@ await run();
 - Sequential execution reduces noise and preserves legibility. A future `--concurrency` option is planned (see roadmap).
 - Deterministic output for CI: set `GETDOTENV_STDIO=pipe` or pass `--capture` so each child process buffers output.
 - Use `--trace [keys...]` (and optionally `--redact`) to inspect child env composition before spawning, without altering runtime values.
-- On errors, the default behavior is to stop; use `--ignore-errors` to continue.
+- Exit codes: sequential mode stops at the first directory whose command fails and exits with that command's code; parallel mode runs every directory, lists the failures, and exits with the first failure's code (in discovery order). `--ignore-errors` keeps going in either mode and exits 0. Usage errors (no command and no `--list`, no matching directories, no package directory) exit 1.

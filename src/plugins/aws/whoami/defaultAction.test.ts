@@ -29,11 +29,12 @@ describe('plugins/aws/whoami defaultAction', () => {
     };
 
     const run = createCli({
+      importMetaUrl: import.meta.url,
       alias: 'test',
       compose: (program) => program.use(awsBucket()),
     });
 
-    await run(['node', 'test', 'aws', 'whoami']);
+    await run(['aws', 'whoami']);
 
     expect(errorSpy).toHaveBeenCalledWith(
       expect.stringContaining('@aws-sdk/client-sts'),

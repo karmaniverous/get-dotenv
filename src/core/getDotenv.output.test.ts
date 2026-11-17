@@ -42,4 +42,30 @@ describe('getDotenv output file', () => {
     // Cleanup
     await fs.remove(outPath);
   });
+
+  it('writes values that dotenv reads back exactly: #, edge whitespace, quotes, backslashes (#72)', async () => {
+    const outPath = path.posix.join('.tsbuild', 'getdotenv.output72.test.env');
+    await fs.ensureDir(path.dirname(outPath));
+    const vars = {
+      H: 'x #y',
+      W: ' lead',
+      M: 'line1\nline2 "q"',
+      B: 'C:\\new\\dir',
+      N: 'line\nC:\\new',
+      Q: `it's "x" #1`,
+      CR: 'a\rb',
+    };
+
+    const out = await getDotenv({
+      paths: [],
+      vars,
+      outputPath: outPath,
+      loadProcess: false,
+    });
+
+    expect(out).toEqual(vars);
+    const contents = await fs.readFile(outPath, 'utf-8');
+    expect(parseDotenv(contents)).toEqual(vars);
+    await fs.remove(outPath);
+  });
 });

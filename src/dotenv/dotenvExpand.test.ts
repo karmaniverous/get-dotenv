@@ -14,23 +14,27 @@ describe('dotenvExpand', function () {
       const result = dotenvExpand('kindly $FOO my bar');
       expect(result).toBe('kindly bar my bar');
     });
-    it('isolated double expansion', function () {
+    // #94: a process.env value is composed, so it is not expanded again.
+    it('isolated value is not expanded twice', function () {
       process.env.FOO = '$BAR';
       process.env.BAR = 'baz';
       const result = dotenvExpand('$FOO');
-      expect(result).toBe('baz');
+      expect(result).toBe('$BAR');
     });
-    it('embedded double expansion', function () {
+    it('embedded value is not expanded twice', function () {
       process.env.FOO = '$BAR';
       process.env.BAR = 'baz';
       const result = dotenvExpand('kindly $FOO my bar');
-      expect(result).toBe('kindly baz my bar');
+      expect(result).toBe('kindly $BAR my bar');
     });
     it('complex expansion', function () {
+      // #78: substituted values are not re-scanned with the text around
+      // them, so `$FOO$BAR` no longer composes a reference to `$FOOBAZ`.
       process.env.FOOBAZ = 'bar';
       process.env.BAR = 'BAZ';
+      delete process.env.FOO;
       const result = dotenvExpand('kindly $FOO$BAR my bar');
-      expect(result).toBe('kindly bar my bar');
+      expect(result).toBe('kindly BAZ my bar');
     });
     it('isolated unknown variable', function () {
       delete process.env.FOO;
@@ -67,17 +71,17 @@ describe('dotenvExpand', function () {
       const result = dotenvExpand('kindly ${FOO} my bar');
       expect(result).toBe('kindly bar my bar');
     });
-    it('isolated double expansion', function () {
-      process.env.FOO = '$BAR';
+    it('isolated value is not expanded twice', function () {
+      process.env.FOO = '${BAR}';
       process.env.BAR = 'baz';
       const result = dotenvExpand('${FOO}');
-      expect(result).toBe('baz');
+      expect(result).toBe('${BAR}');
     });
-    it('embedded double expansion', function () {
-      process.env.FOO = '$BAR';
+    it('embedded value is not expanded twice', function () {
+      process.env.FOO = '${BAR}';
       process.env.BAR = 'baz';
       const result = dotenvExpand('kindly ${FOO} my bar');
-      expect(result).toBe('kindly baz my bar');
+      expect(result).toBe('kindly ${BAR} my bar');
     });
     it('complex expansion', function () {
       process.env.FOOBAZ = 'bar';

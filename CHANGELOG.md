@@ -2,7 +2,112 @@
 
 All notable changes to this project will be documented in this file.
 
-## [Unreleased](https://github.com/karmaniverous/get-dotenv/compare/v7.0.6...HEAD)
+## [8.0.0-0](https://github.com/karmaniverous/get-dotenv/compare/v7.0.11...v8.0.0-0) - 2026-11-16
+
+### Features
+
+- Shared env template fallback for dotenv bootstrap ([a2e1fbd](https://github.com/karmaniverous/get-dotenv/commit/a2e1fbdecc9529234a1580d762aee9d8df343b10))
+
+### Bug Fixes
+
+- *(release)* Changelog preview and release notes cover the release ([c2a7ff1](https://github.com/karmaniverous/get-dotenv/commit/c2a7ff14652a2c010a3b3625e3a51e26259fa7d2))
+- *(tools)* Run npm through npm_execpath in verify-tarball ([802d2fc](https://github.com/karmaniverous/get-dotenv/commit/802d2fcf97d95e2a9ed7c35bb3442e107e0b6e54))
+- *(release)* GitHub release notes and changelog use the new version tag ([4dc26af](https://github.com/karmaniverous/get-dotenv/commit/4dc26aff8363d5d6cc20839ff3bd948c7bfa800a))
+
+### Refactor
+
+- Drop meaningless void operators and an unused parameter ([a3cd32d](https://github.com/karmaniverous/get-dotenv/commit/a3cd32dc0f7dabbc0a468c1eae5082338f1dc45b))
+
+### Documentation
+
+- Fix the commandPath TSDoc link that typedoc warned about ([0aef455](https://github.com/karmaniverous/get-dotenv/commit/0aef455f25e6321215c69dac3e5313d023e75c70))
+- Add AGENTS.md standing rules for the 8.0.0 dev plan ([00f1ed8](https://github.com/karmaniverous/get-dotenv/commit/00f1ed857acd758754801f3619d021961f0eed61))
+
+### Testing
+
+- *(baseline)* Add the linux 7.0.11 baseline ([c7be97d](https://github.com/karmaniverous/get-dotenv/commit/c7be97d01b230d8a46c50c1a7c5f1a57d5bfe74e))
+- *(baseline)* Normalize batch banner rules and the concurrency default ([40dd31a](https://github.com/karmaniverous/get-dotenv/commit/40dd31afe13efcf0e4cc888b720b3a631290ebdc))
+- Record the 7.0.11 behaviour baseline (S1) ([613b3cd](https://github.com/karmaniverous/get-dotenv/commit/613b3cd004eb2d78a8f755b0052effcecd4ab80f))
+- Resolve tsconfig paths natively in Vitest ([4f9dd1b](https://github.com/karmaniverous/get-dotenv/commit/4f9dd1b374a6d6bd1e123506624f6e1d679cdf99))
+- Hoist the esbuild mock in the dynamic fallback test ([ed540b2](https://github.com/karmaniverous/get-dotenv/commit/ed540b2e17454527e63f38bc770b794d43acda8a))
+
+### Miscellaneous Tasks
+
+- Add lint, typecheck, test, build, knip, docs and verify workflow ([adebc6b](https://github.com/karmaniverous/get-dotenv/commit/adebc6b1b18900641387e6d91415f1c12d4c8da7))
+- Clear knip findings on main ([982ca38](https://github.com/karmaniverous/get-dotenv/commit/982ca38bcfe2065642955fa9cdbf0f63c9180b98))
+
+### Build
+
+- Drop the deprecated tsconfig baseUrl ([ace3879](https://github.com/karmaniverous/get-dotenv/commit/ace387963d91d810241fc0b289fc2b910bdc4e59))
+- *(deps)* [**breaking**] Upgrade every dependency to latest; TypeScript stays on 6 ([4783476](https://github.com/karmaniverous/get-dotenv/commit/4783476b9ebe7fef0f21b062adf2297d2a26fe23))
+
+## [7.0.11](https://github.com/karmaniverous/get-dotenv/compare/v7.0.10...v7.0.11) - 2026-07-14
+
+### Miscellaneous Tasks
+
+- Release v7.0.11 ([a784d6d](https://github.com/karmaniverous/get-dotenv/commit/a784d6d7352b74e8a9ee736fca32b5a87a8d1467))
+- *(deps)* Update all dependencies ([0f6ba17](https://github.com/karmaniverous/get-dotenv/commit/0f6ba17815c902d6111c5465f8c180b3896ba9b5))
+
+## [7.0.10](https://github.com/karmaniverous/get-dotenv/compare/v7.0.9...v7.0.10) - 2026-06-12
+
+### Bug Fixes
+
+- *(cli)* Wire cmdPlugin asDefault through ns() options bag ([24931a7](https://github.com/karmaniverous/get-dotenv/commit/24931a71319f6f9809e9d673a11a409b289f1c41))
+
+### Testing
+
+- *(cmd)* Add regression tests for asDefault routing ([537b4f5](https://github.com/karmaniverous/get-dotenv/commit/537b4f5f5c7088816d67d6b1e4d75725a799867d))
+
+### Miscellaneous Tasks
+
+- Release v7.0.10 ([38f8a7f](https://github.com/karmaniverous/get-dotenv/commit/38f8a7f118cef77c62f91c90b94bd4dd3eecd3a0))
+
+## [7.0.9](https://github.com/karmaniverous/get-dotenv/compare/v7.0.8...v7.0.9) - 2026-06-10
+
+### Features
+
+- *(cli)* Add --debug / --debug-off CLI flags ([4e6bfe0](https://github.com/karmaniverous/get-dotenv/commit/4e6bfe0aa1a300590ad73e332439f810cc1001cb))
+
+### Bug Fixes
+
+- *(cli)* Address Copilot review — extract error helper, fix debug gate, add test ([04815ae](https://github.com/karmaniverous/get-dotenv/commit/04815ae2246ac0cbde09b880f92d7ca2457a65cc))
+- *(cli)* Add top-level error boundary with friendly error messages ([8d5ebc2](https://github.com/karmaniverous/get-dotenv/commit/8d5ebc26ef119e7b669cc5a3e1de756b4b6dd4cb))
+- *(aws)* Dynamic import of @aws-sdk/client-sts to prevent startup crash ([0547c24](https://github.com/karmaniverous/get-dotenv/commit/0547c243cedd47ff0668892466fff737f778a6a7))
+
+### Miscellaneous Tasks
+
+- Release v7.0.9 ([e4223f4](https://github.com/karmaniverous/get-dotenv/commit/e4223f44df4498ca049ac2959a1bc9c4c99212ff))
+- Fix lint, build warnings, and code quality issues ([5df9020](https://github.com/karmaniverous/get-dotenv/commit/5df9020cdfd4f4fad8b9b26a667cb552d35ae1f3))
+
+## [7.0.8](https://github.com/karmaniverous/get-dotenv/compare/v7.0.7...v7.0.8) - 2026-06-10
+
+### Features
+
+- Dynamic env var null/undefined semantics ([31a8ae8](https://github.com/karmaniverous/get-dotenv/commit/31a8ae8ea8d156493e8c81ce41d82bf18af3ea6c))
+- *(batch)* Add parallel execution option (#7) ([5cd526e](https://github.com/karmaniverous/get-dotenv/commit/5cd526e59f309b943cb9ce684b3b158a1b193a43))
+- Add JSON Schema for config files (#12) ([386163b](https://github.com/karmaniverous/get-dotenv/commit/386163bbe4f8859e609f1d43e614ba76dcf1a3d7))
+
+### Bug Fixes
+
+- *(batch)* Use manual shell quoting instead of execa shell+array ([106c3e3](https://github.com/karmaniverous/get-dotenv/commit/106c3e3ca1a2c09a8bdee3f5946b9f2b34a8b5e4))
+- *(batch)* Always pass argv array for non-script commands in both shell modes ([790c910](https://github.com/karmaniverous/get-dotenv/commit/790c91098cb68f77db2faf03d6147c4ada972092))
+- *(batch)* Preserve argv array in shell mode to prevent quoting loss ([7268381](https://github.com/karmaniverous/get-dotenv/commit/7268381ebf7c1433c9c4aa7f2151c62f8ba75c01))
+- Thread deleted keys through dynamic pipeline so loadProcess removes them from process.env ([c749b3d](https://github.com/karmaniverous/get-dotenv/commit/c749b3db3e5b79cef54470e8ca1a5e3da8f5593b))
+- *(core)* Scope afterResolve to invoked command branch within groups (#25) ([77c943c](https://github.com/karmaniverous/get-dotenv/commit/77c943c6a5789504188269fcdbabeb9e76edd5f5))
+- Widen paths type, externalize AWS SDK, add optional peer dep ([2e456bb](https://github.com/karmaniverous/get-dotenv/commit/2e456bbe3bb61b14dd16e420b5ecc96f135c5271))
+
+### Miscellaneous Tasks
+
+- Release v7.0.8 ([9e419eb](https://github.com/karmaniverous/get-dotenv/commit/9e419eb89009c81a1fc703c5c7b36281e13de731))
+- Resolve merge conflict with main (package-lock.json) ([23d7bd7](https://github.com/karmaniverous/get-dotenv/commit/23d7bd72d26de990360921a100895270a7759137))
+- Add copilot review instructions ([336d8db](https://github.com/karmaniverous/get-dotenv/commit/336d8db2f671269aa388b6b5d3c7265596eef86e))
+- Dev tooling modernization (git-cliff, TS 6, ESLint 10) (#18) ([d461fd8](https://github.com/karmaniverous/get-dotenv/commit/d461fd81cf50f4cd841cfcd53705f753e8efc47a))
+
+### Lint
+
+- Fix ([579dd70](https://github.com/karmaniverous/get-dotenv/commit/579dd709f3462d384a3a47f81a0bf16c35c86fbf))
+
+## [7.0.7](https://github.com/karmaniverous/get-dotenv/compare/v7.0.6...v7.0.7) - 2026-06-04
 
 ### Bug Fixes
 
@@ -26,6 +131,7 @@ All notable changes to this project will be documented in this file.
 
 ### Miscellaneous Tasks
 
+- Release v7.0.7 ([77cdd06](https://github.com/karmaniverous/get-dotenv/commit/77cdd06124861385534831d7344cd0d93a4ec41d))
 - Remove temp commit helper scripts ([092df6b](https://github.com/karmaniverous/get-dotenv/commit/092df6baad8774515fd163479daeba120c26a18e))
 
 ## [7.0.6](https://github.com/karmaniverous/get-dotenv/compare/v7.0.5...v7.0.6) - 2026-05-21
@@ -640,6 +746,8 @@ All notable changes to this project will be documented in this file.
 - Fix shipped plugins index typo and log in plan ([d79f435](https://github.com/karmaniverous/get-dotenv/commit/d79f435b30a0fb06472cf3a6f2fef4698c05e02f))
 - *(help)* Add dynamic help authoring and plugin config notes ([be9d305](https://github.com/karmaniverous/get-dotenv/commit/be9d30582888eedad53f13dfcb0489538c9cee18))
 - Persist follow-up build/docs/test tasks in TODO ([5b23216](https://github.com/karmaniverous/get-dotenv/commit/5b232165bfca3ca7fd97e31890f075247a08a405))
+- Fix Shell guide link in shipped/aws; finalize refactor ([cf3fa16](https://github.com/karmaniverous/get-dotenv/commit/cf3fa16b84062e473dced6dc2d817394b7b0d11f))
+- Refactor plugin docs; add exec guide; split authoring ([eee48d9](https://github.com/karmaniverous/get-dotenv/commit/eee48d97ec902c20be977e45e2ed7829d1524629))
 
 ### Testing
 
@@ -666,6 +774,7 @@ All notable changes to this project will be documented in this file.
 - Requirements to drop generator; host dynamic help hardening ([6bc9dac](https://github.com/karmaniverous/get-dotenv/commit/6bc9dac6e2554cb80b21ab68828e4339c266e874))
 - *(demo)* Silence afterResolve breadcrumb unless debugging ([68a98c8](https://github.com/karmaniverous/get-dotenv/commit/68a98c85b84fa59d4324e3497e0fdb07154469d7))
 - *(test)* Satisfy vitest config lint rules ([1fb8a3a](https://github.com/karmaniverous/get-dotenv/commit/1fb8a3a71f0c7dc054053099324a745adc47e0bd))
+- Release v5.2.6 ([c1ca443](https://github.com/karmaniverous/get-dotenv/commit/c1ca443c25107e50b2ae7d92812a520dd6cb8e89))
 
 ### Build
 
@@ -677,11 +786,6 @@ All notable changes to this project will be documented in this file.
 
 - Make root helpers real class methods; remove side-effect ([96e503a](https://github.com/karmaniverous/get-dotenv/commit/96e503a38e68e0ac62559ac8da2dd026a992ca09))
 
-### Documentation
-
-- Fix Shell guide link in shipped/aws; finalize refactor ([cf3fa16](https://github.com/karmaniverous/get-dotenv/commit/cf3fa16b84062e473dced6dc2d817394b7b0d11f))
-- Refactor plugin docs; add exec guide; split authoring ([eee48d9](https://github.com/karmaniverous/get-dotenv/commit/eee48d97ec902c20be977e45e2ed7829d1524629))
-
 ### Testing
 
 - Fix help.order.test after enhancer removal; satisfy lint ([de5f250](https://github.com/karmaniverous/get-dotenv/commit/de5f2507e69c43921aaa77a1de116579c1a2aec6))
@@ -689,7 +793,6 @@ All notable changes to this project will be documented in this file.
 ### Miscellaneous Tasks
 
 - Release v5.2.6 ([81a8287](https://github.com/karmaniverous/get-dotenv/commit/81a8287c8d41ad3938c09aff69eec8cf7b56510e))
-- Release v5.2.6 ([c1ca443](https://github.com/karmaniverous/get-dotenv/commit/c1ca443c25107e50b2ae7d92812a520dd6cb8e89))
 - Remove enhancer module and scrub obsolete imports ([d022068](https://github.com/karmaniverous/get-dotenv/commit/d02206854b70e4e13cf6b6bddb5f22764b029e7c))
 
 ## [5.2.5](https://github.com/karmaniverous/get-dotenv/compare/v5.2.4...v5.2.5) - 2025-10-22

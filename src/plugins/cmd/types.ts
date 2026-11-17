@@ -10,7 +10,10 @@ export interface CmdOptionAlias {
   flags: string;
   /** Option description. */
   description?: string;
-  /** Whether to expand the alias value before execution. */
+  /**
+   * Whether to dotenv-expand the alias value against process.env before
+   * execution. Default: true. Config `plugins.cmd.expand` beats it.
+   */
   expand?: boolean;
 }
 
@@ -26,7 +29,8 @@ export interface CmdPluginOptions {
   asDefault?: boolean;
   /**
    * Optional alias option attached to the parent command to invoke the cmd
-   * behavior without specifying the subcommand explicitly.
+   * behavior without specifying the subcommand explicitly. It runs the cmd
+   * action itself (the same code path as `cmd <command...>`).
    */
   optionAlias?: string | CmdOptionAlias;
 }

@@ -64,6 +64,10 @@ export interface EnsureLinesResult {
  * Ensure a set of lines exist (exact match) in a file. Creates the file
  * when missing. Returns whether it was created or changed.
  *
+ * An existing file is never rewritten: its content (blank lines, line
+ * endings) is kept and only the missing lines are appended, in the file's own
+ * line ending (CRLF when it has any, else LF).
+ *
  * @param filePath - Target file path to create/update.
  * @param lines - Lines which must be present (exact string match).
  * @returns A `Promise\<object\>` describing whether the file was created and/or changed.
@@ -72,27 +76,17 @@ export const ensureLines = async (
   filePath: string,
   lines: string[],
 ): Promise<EnsureLinesResult> => {
-  const exists = await fs.pathExists(filePath);
-  const current = exists ? await fs.readFile(filePath, 'utf-8') : '';
-  const curLines = current.split(/\r?\n/);
-  const have = new Set(curLines.filter((l) => l.length > 0));
-  let mutated = false;
-  for (const l of lines) {
-    if (!have.has(l)) {
-      curLines.push(l);
-      have.add(l);
-      mutated = true;
-    }
-  }
-  // Normalize to LF and ensure trailing newline
-  const next = curLines.filter((l) => l.length > 0).join('\n') + '\n';
-  if (!exists) {
-    await writeFile(filePath, next);
+  if (!(await fs.pathExists(filePath))) {
+    await writeFile(filePath, [...new Set(lines)].join('\n') + '\n');
     return { created: true, changed: true };
   }
-  if (mutated) {
-    await fs.writeFile(filePath, next, 'utf-8');
-    return { created: false, changed: true };
-  }
-  return { created: false, changed: false };
+  const current = await fs.readFile(filePath, 'utf-8');
+  const have = new Set(current.split(/\r?\n/));
+  const missing = [...new Set(lines)].filter((l) => !have.has(l));
+  if (missing.length === 0) return { created: false, changed: false };
+
+  const eol = current.includes('\r\n') ? '\r\n' : '\n';
+  const sep = current === '' || current.endsWith('\n') ? '' : eol;
+  await fs.appendFile(filePath, sep + missing.join(eol) + eol, 'utf-8');
+  return { created: false, changed: true };
 };

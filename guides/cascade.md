@@ -58,16 +58,20 @@ See the README “Dynamic Processing” section for details.
 
 ## Expansion and defaults
 
-After merging, values are expanded recursively using:- `$VAR[:default]` or `${VAR[:default]}`
+After merging, values are expanded once, using `$VAR[:default]` or `${VAR[:default]}`:
 
-- Unknown variables expand to an empty string unless a default is provided.
+- Unknown variables expand to an empty string unless a default is provided; a value that is empty after expansion is `undefined`.
+- `\$` is a literal `$`, and a `$` that starts no reference (`cost $`, `$!`) stays literal while the other references in the value still expand.
+- The unbraced default runs to the next whitespace, so `http://$HOST:8080` reads `8080` as `HOST`'s default: write `http://${HOST}:8080`. There is no `:-` form (`${A:-x}` has the default `-x`).
+- Each value is expanded once. A referenced value has already been composed, so it is substituted verbatim and never expanded again, whether it comes from a dotenv file, config `vars`/`envVars`, `-v` or `process.env`: with `P=\$5`, `Q=$P` and `R=${P}x` give `Q=$5` and `R=$5x`. A default is expanded by the same rules (`${A:${B}}`). Each substituted value is spliced in as-is: it is never re-scanned with the surrounding text, and `$&`/`$$` in it have no special meaning.
+- A value never sees itself. While a key is being expanded, a reference to it resolves to the value composed before it (`process.env` or an earlier layer); if there is none, it counts as unset and takes its default, else the empty string. So `P=${P:/usr/bin}:/x` appends to an ambient `P`, and gives `/usr/bin:/x` when nothing earlier sets `P`.
 
 See the API docs for `dotenvExpand` and `dotenvExpandAll` for precise behavior.
 
 ## Output file
 
-If `outputPath` is set, the fully expanded variables are written to a single dotenv file at the resolved path. Multiline values are quoted. The returned object from `getDotenv` matches the file contents.
+If `outputPath` is set, the fully expanded variables are written to a single dotenv file at the resolved path. Each value is quoted and escaped as needed (the dotenv editor's formatter; see [Quoting](./dotenv-editor.md#quoting-multiline-and-comment-safety)) so that dotenv reads the file back to exactly the returned object; a value no quote style can hold throws, naming the key.
 
 ## Logging and process.env
 
-If `log` is set, the resulting map is logged. If `loadProcess` is set, the map is merged into `process.env` (string values only).
+If `log` is set, the resulting map is logged. If `loadProcess` is set (it is off by default for `getDotenv()`, on by default for the CLI), the map is copied into `process.env`: a string sets the key, and an unset (`undefined`) value or a key deleted by a dynamic `null` deletes the key from `process.env`. The CLI host applies the same rule.

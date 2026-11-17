@@ -5,7 +5,9 @@ import type { ProcessEnv } from '@/src/core';
 /**
  * Build a sanitized environment object for spawning child processes.
  * Merges `base` and `overlay`, drops undefined values, and handles platform-specific
- * normalization (e.g. case-insensitivity on Windows).
+ * normalization (e.g. case-insensitivity on Windows). The result is meant to be
+ * the child's complete environment: the executors pass it without merging
+ * `process.env` back in, so an overlay key wins regardless of its casing.
  *
  * @param base - Base environment (usually `process.env`).
  * @param overlay - Environment variables to overlay.

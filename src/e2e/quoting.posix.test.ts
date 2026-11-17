@@ -1,4 +1,4 @@
-import { execaCommand } from 'execa';
+import { execa } from 'execa';
 import { describe, expect, it } from 'vitest';
 
 // Platform-guarded E2E test for POSIX shell quoting/interpolation.
@@ -14,21 +14,21 @@ describe('E2E quoting (POSIX)', () => {
       const env = { ...process.env, APP_SETTING: 'posix_value' };
 
       // Unquoted: $APP_SETTING is expanded by the shell.
-      const unquoted = await execaCommand('echo $APP_SETTING', {
+      const unquoted = await execa('echo $APP_SETTING', {
         shell,
         env,
       });
       expect(unquoted.stdout.trim()).toBe('posix_value');
 
       // Double-quoted: still expanded by the shell.
-      const doubleQuoted = await execaCommand('echo "$APP_SETTING"', {
+      const doubleQuoted = await execa('echo "$APP_SETTING"', {
         shell,
         env,
       });
       expect(doubleQuoted.stdout.trim()).toBe('posix_value');
 
       // Single-quoted: literal, no expansion.
-      const singleQuoted = await execaCommand("echo '$APP_SETTING'", {
+      const singleQuoted = await execa("echo '$APP_SETTING'", {
         shell,
         env,
       });

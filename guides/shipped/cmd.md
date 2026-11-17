@@ -53,7 +53,13 @@ Then:
 npm run print -- -e dev
 ```
 
-Conflict guard: Supplying both the alias and the `cmd` subcommand in the same invocation is disallowed and exits with a helpful message.
+The alias is the `cmd` subcommand by another name: it runs the cmd action's code path, with the same options bag (createCli `rootOptionDefaults`, config `scripts`), the same `afterResolve` scoping and the same exit codes. When no explicit subcommand is in subcommand position, a parse that gives the alias dispatches to `cmd` (even where `cmd` is not the default subcommand). The variadic alias takes every token up to the next option, so a subcommand name inside its value is just part of the command: `getdotenv -c echo init` runs `echo init`.
+
+Expansion: the alias value is joined with spaces and dotenv-expanded against `process.env` once the context is loaded, unless expansion is off. Config `plugins.cmd.expand` beats the factory's `optionAlias.expand`; both default to `true`.
+
+Conflict guard: Supplying both the alias and positional `cmd` arguments in the same invocation (e.g. `getdotenv -c echo -e dev cmd x`) is a usage error: it prints `--cmd option conflicts with cmd subcommand.` (named after the alias's option) and exits 1.
+
+Exit codes: `cmd`, the default command and the alias exit with the child's exit code. Under the default Windows shell, `powershell.exe -Command` reports any failure as 1, so the original code is lost there; run with `--shell-off` (or a POSIX shell) to keep it.
 
 ## Quoting and eval snippets
 
@@ -82,7 +88,7 @@ Use `--trace [keys...]` to print concise lines to stderr before spawning the chi
 
 ## Scripts table and shell overrides
 
-Commands may resolve via `scripts[name]`. When `scripts[name]` is the object form `{ cmd, shell }`, the effective shell is `scripts[name].shell` (and when omitted, the script currently runs with shell-off rather than inheriting the root shell):
+Commands may resolve via `scripts[name]`; only the table's own keys are script names, so `getdotenv toString` runs `toString` as typed. When `scripts[name]` is the object form `{ cmd, shell }`, the effective shell is `scripts[name].shell` (and when omitted, the script currently runs with shell-off rather than inheriting the root shell):
 
 ```json
 {

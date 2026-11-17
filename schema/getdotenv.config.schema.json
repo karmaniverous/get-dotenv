@@ -17,13 +17,6 @@
         "dynamicPath": {
           "type": "string"
         },
-        "dynamic": {
-          "type": "object",
-          "propertyNames": {
-            "type": "string"
-          },
-          "additionalProperties": {}
-        },
         "env": {
           "type": "string"
         },
@@ -60,7 +53,34 @@
         "vars": {
           "type": "string"
         },
+        "redact": {
+          "type": "boolean"
+        },
+        "redactPatterns": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "warnEntropy": {
+          "type": "boolean"
+        },
+        "entropyThreshold": {
+          "type": "number"
+        },
+        "entropyMinLength": {
+          "type": "number"
+        },
+        "entropyWhitelist": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
         "debug": {
+          "type": "boolean"
+        },
+        "excludeAll": {
           "type": "boolean"
         },
         "strict": {
@@ -82,30 +102,6 @@
             }
           ]
         },
-        "redact": {
-          "type": "boolean"
-        },
-        "warnEntropy": {
-          "type": "boolean"
-        },
-        "entropyThreshold": {
-          "type": "number"
-        },
-        "entropyMinLength": {
-          "type": "number"
-        },
-        "entropyWhitelist": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
-        "redactPatterns": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
         "pathsDelimiter": {
           "type": "string"
         },
@@ -120,14 +116,7 @@
           "additionalProperties": {}
         },
         "shell": {
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "type": "string"
-            }
-          ]
+          "type": ["boolean", "string"]
         },
         "varsAssignor": {
           "type": "string"
@@ -140,6 +129,12 @@
         },
         "varsDelimiterPattern": {
           "type": "string"
+        },
+        "dynamic": {
+          "not": {}
+        },
+        "logger": {
+          "not": {}
         }
       },
       "additionalProperties": false

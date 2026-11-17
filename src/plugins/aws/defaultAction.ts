@@ -1,18 +1,20 @@
 import {
   buildSpawnEnv,
+  composeNestedEnv,
   type GetDotenvCliPublic,
   readMergedOptions,
   resolveShell,
   runCommand,
 } from '@/src/cliHost';
 import { shouldCapture } from '@/src/cliHost/exec';
+import { propagateExitCode } from '@/src/cliHost/exitCode';
+import { underTestRunner } from '@/src/cliHost/underTestRunner';
 
 import type { AwsPlugin } from '.';
-import { applyAwsContext } from './common';
-import { awsConfigOverridesFromCommandOpts } from './configOverrides';
+import { awsSessionEnv } from './common';
+import { awsConfigWithFlags } from './configOverrides';
 import type { AwsCommand } from './options';
-import { resolveAwsContext } from './service';
-import type { AwsPluginConfig } from './types';
+import { establishAwsSession } from './session';
 
 /**
  * Attach the default action for the AWS plugin mount.
@@ -35,39 +37,35 @@ export function attachAwsDefaultAction(
     // Access merged root CLI options (installed by root hooks).
     const bag = readMergedOptions(thisCommand);
     const capture = shouldCapture(bag.capture);
-    const underTests =
-      process.env.GETDOTENV_TEST === '1' ||
-      typeof process.env.VITEST_WORKER_ID === 'string';
+    const underTests = underTestRunner();
 
-    // Build overlay cfg from subcommand flags layered over discovered config.
+    // The invocation's session (established once, with the aws flags; #56).
     const ctx = cli.getCtx();
-    const cfgBase = plugin.readConfig(cli);
-    const cfg: AwsPluginConfig = {
-      ...cfgBase,
-      ...awsConfigOverridesFromCommandOpts(opts),
-    };
-
-    // Resolve current context with overrides
-    const out = await resolveAwsContext({
-      dotenv: ctx.dotenv,
-      cfg,
-    });
-
-    // Publish env/context
-    applyAwsContext(out, ctx, true);
+    const out = await establishAwsSession(
+      ctx,
+      awsConfigWithFlags(plugin, cli, opts),
+    );
 
     // Forward when positional args are present; otherwise session-only.
     if (args.length > 0) {
       const argv = ['aws', ...args];
       const shellSetting = resolveShell(bag.scripts, 'aws', bag.shell);
       const exit = await runCommand(argv, shellSetting, {
-        env: buildSpawnEnv(process.env, ctx.dotenv),
+        // The session's AWS_* entries go over the dotenv overlay, so its
+        // region and credentials win and the two credential sources stay
+        // exclusive (#56).
+        // Like every spawn path, the child gets the dotenv values and
+        // getDotenvCliOptions (#69).
+        env: buildSpawnEnv(process.env, {
+          ...composeNestedEnv(bag, ctx.dotenv),
+          ...awsSessionEnv(out, process.env),
+        }),
         stdio: capture ? 'pipe' : 'inherit',
       });
-      // Deterministic termination (suppressed under tests)
-      if (!underTests) {
-        process.exit(typeof exit === 'number' ? exit : 0);
-      }
+      // Propagate the AWS CLI's exit code (a spawn failure is non-zero too,
+      // #75); terminate deterministically outside tests.
+      propagateExitCode(exit);
+      if (!underTests) process.exit(exit);
       return;
     }
 

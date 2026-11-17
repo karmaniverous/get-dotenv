@@ -1,8 +1,8 @@
-/* eslint-disable */
 import type { OptionValues } from '@commander-js/extra-typings';
 import path from 'path';
 
 import { resolveGetDotenvConfigSources } from '@/src/config';
+import { configLayers } from '@/src/config/layers';
 import type {
   GetDotenvDynamic,
   GetDotenvOptions,
@@ -10,18 +10,20 @@ import type {
   ProcessEnv,
 } from '@/src/core';
 import { resolveGetDotenvOptions } from '@/src/core';
+import { logComposedEnv } from '@/src/diagnostics/log';
 import {
   applyDynamicMapWithProvenance,
   loadDynamicModuleDefault,
   overlayEnvWithProvenance,
   readDotenvCascadeWithProvenance,
 } from '@/src/env';
+import { loadProcessEnv } from '@/src/env/loadProcessEnv';
 import { getDotenvOptionsSchemaResolved } from '@/src/schema';
 import { defaultsDeep, interpolateDeep, writeDotenvFile } from '@/src/util';
 
-import type { GetDotenvCliPlugin } from './contracts';
-import type { GetDotenvCliCtx } from './types';
+import type { GetDotenvCliPlugin, PluginChildEntry } from './contracts';
 import { flattenPluginTreeByPath, type PluginFlattenedEntry } from './paths';
+import type { GetDotenvCliCtx } from './types';
 
 /**
  * Instance-bound plugin config store.
@@ -30,10 +32,7 @@ import { flattenPluginTreeByPath, type PluginFlattenedEntry } from './paths';
  * provides a typed accessor that reads from this store for the calling
  * plugin instance.
  */
-const PLUGIN_CONFIG_STORE: WeakMap<
-  GetDotenvCliPlugin<any, unknown[], OptionValues, OptionValues>,
-  unknown
-> = new WeakMap();
+const PLUGIN_CONFIG_STORE = new WeakMap<object, unknown>();
 
 /**
  * Store a validated, interpolated config slice for a specific plugin instance.
@@ -50,15 +49,7 @@ export const setPluginConfig = <
   plugin: GetDotenvCliPlugin<TOptions, TArgs, TOpts, TGlobal>,
   cfg: Readonly<TCfg>,
 ): void => {
-  PLUGIN_CONFIG_STORE.set(
-    plugin as unknown as GetDotenvCliPlugin<
-      any,
-      unknown[],
-      OptionValues,
-      OptionValues
-    >,
-    cfg,
-  );
+  PLUGIN_CONFIG_STORE.set(plugin, cfg);
 };
 
 /**
@@ -73,14 +64,7 @@ export const getPluginConfig = <
 >(
   plugin: GetDotenvCliPlugin<TOptions, TArgs, TOpts, TGlobal>,
 ): Readonly<TCfg> | undefined => {
-  return PLUGIN_CONFIG_STORE.get(
-    plugin as unknown as GetDotenvCliPlugin<
-      any,
-      unknown[],
-      OptionValues,
-      OptionValues
-    >,
-  ) as Readonly<TCfg> | undefined;
+  return PLUGIN_CONFIG_STORE.get(plugin) as Readonly<TCfg> | undefined;
 };
 
 /**
@@ -88,10 +72,12 @@ export const getPluginConfig = <
  * - Resolves and validates options strictly (host-only).
  * - Applies file cascade, overlays, dynamics, and optional effects.
  * - Merges and validates per-plugin config slices (when provided), keyed by
- *   realized mount path (ns chain).
+ *   realized mount path (the chain of effective namespaces, override \>
+ *   default).
  *
  * @param customOptions - Partial options from the current invocation.
- * @param plugins - Installed plugins (for config validation).
+ * @param plugins - Registered plugin entries (plugin + namespace override),
+ *   for config keying and validation.
  * @param hostMetaUrl - import.meta.url of the host module (for packaged root discovery).
  */
 export const computeContext = async <
@@ -101,7 +87,7 @@ export const computeContext = async <
   TGlobal extends OptionValues = {},
 >(
   customOptions: Partial<TOptions>,
-  plugins: GetDotenvCliPlugin<TOptions, TArgs, TOpts, TGlobal>[],
+  plugins: ReadonlyArray<PluginChildEntry<TOptions, TArgs, TOpts, TGlobal>>,
   hostMetaUrl: string,
 ): Promise<GetDotenvCliCtx<TOptions>> => {
   const optionsResolved = await resolveGetDotenvOptions(customOptions);
@@ -114,33 +100,8 @@ export const computeContext = async <
   // Discover config sources.
   const sources = await resolveGetDotenvConfigSources(hostMetaUrl);
 
-  // Pre-pass: read global-only files to resolve defaultEnvKey (skip when env is explicit).
-  let fileDefaultEnv: string | undefined;
-  if (!validated.env) {
-    const defaultEnvKey = validated.defaultEnvKey ?? 'DEFAULT_ENV';
-    const prePass = await readDotenvCascadeWithProvenance({
-      paths: Array.isArray(validated.paths) ? validated.paths : [],
-      ...(typeof validated.dotenvToken === 'string'
-        ? { dotenvToken: validated.dotenvToken }
-        : {}),
-      ...(typeof validated.privateToken === 'string'
-        ? { privateToken: validated.privateToken }
-        : {}),
-      excludeEnv: true,
-    });
-    fileDefaultEnv = prePass.dotenv[defaultEnvKey];
-  }
-
-  // Resolution: env > fileDefaultEnv > defaultEnv
-  const envName =
-    validated.env
-    ?? (typeof fileDefaultEnv === 'string' && fileDefaultEnv.length > 0
-      ? fileDefaultEnv
-      : undefined)
-    ?? validated.defaultEnv;
-
-  // Base dotenv from files (with file provenance; no dynamics; no programmatic vars; no side effects).
-  const fileRes = await readDotenvCascadeWithProvenance({
+  // The cascade's paths and file name tokens, for both reads below.
+  const cascade = {
     paths: Array.isArray(validated.paths) ? validated.paths : [],
     ...(typeof validated.dotenvToken === 'string'
       ? { dotenvToken: validated.dotenvToken }
@@ -148,6 +109,30 @@ export const computeContext = async <
     ...(typeof validated.privateToken === 'string'
       ? { privateToken: validated.privateToken }
       : {}),
+  };
+
+  // Pre-pass: read global-only files to resolve defaultEnvKey (skip when env is explicit).
+  let fileDefaultEnv: string | undefined;
+  if (!validated.env) {
+    const defaultEnvKey = validated.defaultEnvKey ?? 'DEFAULT_ENV';
+    const prePass = await readDotenvCascadeWithProvenance({
+      ...cascade,
+      excludeEnv: true,
+    });
+    fileDefaultEnv = prePass.dotenv[defaultEnvKey];
+  }
+
+  // Resolution: env > fileDefaultEnv > defaultEnv
+  const envName =
+    validated.env ??
+    (typeof fileDefaultEnv === 'string' && fileDefaultEnv.length > 0
+      ? fileDefaultEnv
+      : undefined) ??
+    validated.defaultEnv;
+
+  // Base dotenv from files (with file provenance; no dynamics; no programmatic vars; no side effects).
+  const fileRes = await readDotenvCascadeWithProvenance({
+    ...cascade,
     ...(typeof envName === 'string' ? { env: envName } : {}),
     ...(validated.excludeEnv === true ? { excludeEnv: true } : {}),
     ...(validated.excludeGlobal === true ? { excludeGlobal: true } : {}),
@@ -167,49 +152,33 @@ export const computeContext = async <
   const dotenv: ProcessEnv = { ...overlaid.env };
   const dotenvProvenance = overlaid.provenance;
 
+  // Keys a dynamic null deleted (loadProcess deletes them from process.env).
+  const deletedKeys = new Set<string>();
+  const applyDynamic = (
+    map: GetDotenvDynamic | undefined,
+    meta: Parameters<typeof applyDynamicMapWithProvenance>[4],
+  ) => {
+    for (const key of applyDynamicMapWithProvenance(
+      dotenv,
+      map,
+      envName,
+      dotenvProvenance,
+      meta,
+    ))
+      deletedKeys.add(key);
+  };
+
   // Dynamic precedence (A2): config dynamic < programmatic dynamic < dynamicPath
   if (!validated.excludeDynamic) {
     // Config dynamics (JS/TS configs only), ordered by source precedence.
-    const packagedDyn = (sources.packaged?.dynamic ?? undefined) as
-      | GetDotenvDynamic
-      | undefined;
-    const publicDyn = (sources.project?.public?.dynamic ?? undefined) as
-      | GetDotenvDynamic
-      | undefined;
-    const localDyn = (sources.project?.local?.dynamic ?? undefined) as
-      | GetDotenvDynamic
-      | undefined;
-
-    applyDynamicMapWithProvenance(
-      dotenv,
-      packagedDyn,
-      envName,
-      dotenvProvenance,
-      {
-        dynamicSource: 'config',
-      },
-    );
-    applyDynamicMapWithProvenance(
-      dotenv,
-      publicDyn,
-      envName,
-      dotenvProvenance,
-      {
-        dynamicSource: 'config',
-      },
-    );
-    applyDynamicMapWithProvenance(dotenv, localDyn, envName, dotenvProvenance, {
-      dynamicSource: 'config',
-    });
+    for (const layer of configLayers(sources))
+      applyDynamic(
+        (layer?.dynamic ?? undefined) as GetDotenvDynamic | undefined,
+        { dynamicSource: 'config' },
+      );
 
     // Programmatic dynamic (overrides config dynamic)
-    applyDynamicMapWithProvenance(
-      dotenv,
-      validated.dynamic as GetDotenvDynamic | undefined,
-      envName,
-      dotenvProvenance,
-      { dynamicSource: 'programmatic' },
-    );
+    applyDynamic(validated.dynamic, { dynamicSource: 'programmatic' });
 
     // dynamicPath (highest dynamic tier; always evaluated when present)
     if (validated.dynamicPath) {
@@ -218,7 +187,7 @@ export const computeContext = async <
         absDynamicPath,
         'getdotenv-dynamic-host',
       );
-      applyDynamicMapWithProvenance(dotenv, dyn, envName, dotenvProvenance, {
+      applyDynamic(dyn, {
         dynamicSource: 'dynamicPath',
         dynamicPath: validated.dynamicPath,
       });
@@ -229,35 +198,16 @@ export const computeContext = async <
   if (validated.outputPath) {
     await writeDotenvFile(validated.outputPath, dotenv);
   }
-  const logger: Logger = (validated as GetDotenvOptions).logger!;
-  if (validated.log) logger.info(dotenv);
-  if (validated.loadProcess) Object.assign(process.env, dotenv);
+  const logger: Logger = validated.logger;
+  if (validated.log) logComposedEnv(dotenv, validated, logger);
+  if (validated.loadProcess) loadProcessEnv(dotenv, deletedKeys);
 
   // Merge and validate per-plugin config keyed by realized path (ns chain).
-  const packagedPlugins =
-    (sources.packaged &&
-      (
-        sources.packaged as unknown as {
-          plugins?: Record<string, unknown>;
-        }
-      ).plugins) ??
-    {};
-  const publicPlugins =
-    (sources.project?.public &&
-      (
-        sources.project.public as unknown as {
-          plugins?: Record<string, unknown>;
-        }
-      ).plugins) ??
-    {};
-  const localPlugins =
-    (sources.project?.local &&
-      (
-        sources.project.local as unknown as {
-          plugins?: Record<string, unknown>;
-        }
-      ).plugins) ??
-    {};
+  const pluginLayers = configLayers(sources).map(
+    (layer) =>
+      (layer as { plugins?: Record<string, unknown> } | undefined)?.plugins ??
+      {},
+  );
 
   const entries: PluginFlattenedEntry<TOptions, TArgs, TOpts, TGlobal>[] =
     flattenPluginTreeByPath(plugins);
@@ -271,14 +221,12 @@ export const computeContext = async <
     const pathKey = e.path;
     const mergedRaw = defaultsDeep<Record<string, unknown>>(
       {},
-      (packagedPlugins[pathKey] as Record<string, unknown> | undefined) ?? {},
-      (publicPlugins[pathKey] as Record<string, unknown> | undefined) ?? {},
-      (localPlugins[pathKey] as Record<string, unknown> | undefined) ?? {},
+      ...pluginLayers.map(
+        (layer) =>
+          (layer[pathKey] as Record<string, unknown> | undefined) ?? {},
+      ),
     );
-    const interpolated =
-      mergedRaw && typeof mergedRaw === 'object'
-        ? interpolateDeep(mergedRaw, envRef)
-        : ({} as Record<string, unknown>);
+    const interpolated = interpolateDeep(mergedRaw, envRef);
 
     const schema = e.plugin.configSchema;
     if (schema) {

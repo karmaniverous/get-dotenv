@@ -88,12 +88,13 @@ await withCleanEnv(async () => {
       async () => {
         const reproPlugin = makeAfterResolveReadConfigPlugin();
         const run = createCli({
+          importMetaUrl: import.meta.url,
           alias: 'gdrepro',
           compose: (program) => program.use(reproPlugin),
         });
 
-        // Full argv; createCli runner slices argv[2..]
-        await run(['node', 'gdrepro', 'repro']);
+        // User arguments only (the runner's default for an explicit argv)
+        await run(['repro']);
       },
     );
 
@@ -101,11 +102,12 @@ await withCleanEnv(async () => {
       'Case B: createCli(/cli) + awsPlugin from /plugins',
       async () => {
         const run = createCli({
+          importMetaUrl: import.meta.url,
           alias: 'gdrepro',
           compose: (program) => program.use(awsPlugin()),
         });
 
-        await run(['node', 'gdrepro', 'aws']);
+        await run(['aws']);
       },
     );
 

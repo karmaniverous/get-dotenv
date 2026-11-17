@@ -14,13 +14,15 @@ import {
   type InferCommandArguments,
   type Option,
   type OptionValues,
+  type ParseOptions,
 } from '@commander-js/extra-typings';
 
 import type { GetDotenvOptions } from '@/src/core';
 import { baseRootOptionDefaults } from '@/src/defaults';
+import { readHostPackage } from '@/src/util/packageRoot';
 
 import { attachRootOptions as attachRootOptionsBuilder } from './attachRootOptions';
-import { buildHelpInformation } from './buildHelpInformation';
+import { computeContext } from './computeContext';
 import type {
   GetDotenvCliPlugin,
   GetDotenvCliPublic,
@@ -34,17 +36,23 @@ import {
   makeDynamicOption,
 } from './dynamicOptions';
 import type { GetDotenvCliOptions } from './GetDotenvCliOptions';
+import { getRootCommand } from './getRootCommand';
 import { GROUP_TAG } from './groups';
 import type { ResolvedHelpConfig } from './helpConfig';
+import { hostMetaUrlOf, setHostMetaUrl } from './hostRoot';
 import { initializeInstance } from './initializeInstance';
-import { effectiveNs, setupPluginTree } from './registerPlugin';
-import { resolveAndComputeContext } from './resolveAndComputeContext';
+import { parseHost } from './parseHost';
+import { flattenPluginTreeByPath, joinRealizedPath } from './paths';
+import { setupPluginTree } from './registerPlugin';
 import { runAfterResolveTree } from './runAfterResolve';
 import { tagAppOptionsAround } from './tagAppOptionsHelper';
-import type { BrandOptions, GetDotenvCliCtx, RootOptionsShape } from './types';
-import { readPkgVersion } from './version';
-
-const HOST_META_URL = import.meta.url;
+import type {
+  BrandOptions,
+  GetDotenvCliCtx,
+  GetDotenvCliHostOptions,
+  RootOptionsShape,
+} from './types';
+import { setVersion } from './versionOption';
 
 const CTX_SYMBOL = Symbol('GetDotenvCli.ctx');
 const OPTS_SYMBOL = Symbol('GetDotenvCli.options');
@@ -91,8 +99,17 @@ export class GetDotenvCli<
     return new GetDotenvCli(name);
   }
 
-  constructor(alias = 'getdotenv') {
+  /**
+   * @param alias - The command name (default `getdotenv`).
+   * @param options - Host options. `importMetaUrl` (the host module's
+   *   `import.meta.url`) sets the host root, the package whose
+   *   `getdotenv.config.*` is the packaged config layer (Decision 23). Without
+   *   it (and without `brand({ importMetaUrl })`) the host root is
+   *   get-dotenv's own package root.
+   */
+  constructor(alias = 'getdotenv', options?: GetDotenvCliHostOptions) {
     super(alias);
+    if (options?.importMetaUrl) setHostMetaUrl(this, options.importMetaUrl);
     this.enablePositionalOptions();
     // Delegate the heavy setup to a helper to keep the constructor lean.
     initializeInstance(
@@ -104,6 +121,9 @@ export class GetDotenvCli<
   /**
    * Attach legacy/base root flags to this CLI instance.
    * Delegates to the pure builder in attachRootOptions.ts.
+   *
+   * The flags get no Commander defaults: `opts()` holds only values given on
+   * the command line. `defaults` only shapes the help text.
    */
   attachRootOptions(defaults?: Partial<RootOptionsShape>): this {
     const d = (defaults ?? baseRootOptionDefaults) as Partial<RootOptionsShape>;
@@ -121,18 +141,20 @@ export class GetDotenvCli<
    *     afterResolve hooks. Useful for top-level help rendering to avoid
    *     long-running side-effects while still evaluating dynamic help text.
    *   - `invokedSubcommand`: when provided, only the plugin subtree whose
-   *     namespace matches this name runs afterResolve hooks. When omitted,
-   *     all plugins run afterResolve (backward compatibility).
+   *     realized mount path is this name (its effective namespace: override
+   *     \> default) runs afterResolve hooks. When omitted, all plugins run
+   *     afterResolve (backward compatibility).
    */
   async resolveAndLoad(
     customOptions: Partial<TOptions> = {},
     opts?: ResolveAndLoadOptions,
   ): Promise<GetDotenvCliCtx<TOptions>> {
-    const ctx = await resolveAndComputeContext<TOptions, TArgs, TOpts, TGlobal>(
+    // computeContext resolves the options and validates them strictly.
+    const ctx = await computeContext<TOptions, TArgs, TOpts, TGlobal>(
       customOptions,
-      // Pass only plugin instances to the resolver (not entries with overrides)
-      this._plugins.map((e) => e.plugin),
-      HOST_META_URL,
+      // Entries carry namespace overrides, which key config by realized path.
+      this._plugins,
+      hostMetaUrlOf(this),
     );
 
     // Persist context on the instance for later access.
@@ -190,14 +212,7 @@ export class GetDotenvCli<
 
   /** Internal: climb to the true root (host) command. */
   private _root(): GetDotenvCli {
-    let node: CommandUnknownOpts | null = this.parent;
-
-    if (!node) return this as unknown as GetDotenvCli;
-
-    while (node.parent) {
-      node = node.parent;
-    }
-    return node as unknown as GetDotenvCli;
+    return getRootCommand(this) as unknown as GetDotenvCli;
   }
 
   /**
@@ -289,13 +304,21 @@ export class GetDotenvCli<
    * Branding helper: set CLI name/description/version and optional help header.
    * If version is omitted and importMetaUrl is provided, attempts to read the
    * nearest package.json version (best-effort; non-fatal on failure).
+   *
+   * `importMetaUrl` also sets the host root (the packaged config layer,
+   * Decision 23); the last of the constructor and `brand()` to give one wins.
+   *
+   * `-V, --version` is registered once, the first time a version is known. A
+   * later `brand()` only updates the version it prints, so calling `brand()`
+   * again (as every `createCli` run does) is safe (#87).
    */
   async brand(args: BrandOptions): Promise<this> {
     const { name, description, version, importMetaUrl, helpHeader } = args;
     if (typeof name === 'string' && name.length > 0) this.name(name);
     if (typeof description === 'string') this.description(description);
-    const v = version ?? (await readPkgVersion(importMetaUrl));
-    if (v) this.version(v);
+    if (importMetaUrl) setHostMetaUrl(this, importMetaUrl);
+    const v = version ?? (await readHostPackage(importMetaUrl))?.version;
+    if (v) setVersion(this, v);
     // Help header:
     // - If caller provides helpHeader, use it.
     // - Otherwise, when a version is known, default to "<name> v<version>".
@@ -309,14 +332,6 @@ export class GetDotenvCli<
   }
 
   /**
-   * Insert grouped plugin/app options between "Options" and "Commands" for
-   * hybrid ordering. Applies to root and any parent command.
-   */
-  override helpInformation(): string {
-    return buildHelpInformation(super.helpInformation(), this);
-  }
-
-  /**
    * Public: tag an Option with a display group for help (root/app/plugin:<id>).
    */
   setOptionGroup(opt: Option, group: string): void {
@@ -326,6 +341,12 @@ export class GetDotenvCli<
   /**
    * Register a plugin for installation (parent level).
    * Installation occurs on first resolveAndLoad() (or explicit install()).
+   *
+   * @param plugin - The plugin instance to mount at the root.
+   * @param override - Optional `\{ ns \}`: mount the plugin under this name
+   *   instead of its own `ns`. The name also keys its config slice and
+   *   scopes its afterResolve hook. Root-level names must be unique; a
+   *   collision throws the guided duplicate-namespace error at install.
    */
   use(
     plugin: GetDotenvCliPlugin<TOptions, TArgs, TOpts, TGlobal>,
@@ -346,19 +367,9 @@ export class GetDotenvCli<
       return;
     }
     this._installing = (async () => {
-      // Install parent → children with host-created mounts (async-aware).
-      for (const entry of this._plugins) {
-        const p = entry.plugin;
-        await setupPluginTree<TOptions>(
-          this,
-          p as unknown as GetDotenvCliPlugin<
-            TOptions,
-            unknown[],
-            OptionValues,
-            OptionValues
-          >,
-        );
-      }
+      // Install parent → children with host-created mounts at each entry's
+      // effective namespace (async-aware).
+      await setupPluginTree(this, this._plugins);
       this._installed = true;
     })();
     try {
@@ -369,13 +380,71 @@ export class GetDotenvCli<
   }
 
   /**
+   * Parse `argv`: install the plugin tree, build the qualified-name table,
+   * normalize the argv, render top-level help or hand the normalized argv to
+   * Commander (spec 4.4).
+   *
+   * - `argv` and `{ from }` work as in Commander (including `node -e`/`-p`
+   *   and Electron detection when both are omitted); only the user arguments
+   *   are normalized, and Commander parses them with `{ from: 'user' }`.
+   * - On the first call the host installs its plugins, then builds its
+   *   qualified-name table from the root's current name (so call `brand()`
+   *   first) and registers each command's hidden terminator. Building the
+   *   table throws on a qualified-name collision or a plain long option that
+   *   starts with `<alias>-`. Later calls reuse the table.
+   * - `normalizeArgv` moves every qualified option to its owner. A
+   *   normalization error is reported through `this.error()`: exit code 1,
+   *   or a thrown `CommanderError` under `exitOverride()`.
+   * - `-h` that the argv walk leaves with the root renders top-level help
+   *   (its context resolved without side effects) instead of a parse.
+   * - Under `--debug` (or `--<alias>-debug`) or `GETDOTENV_DEBUG`, one
+   *   `[getdotenv:argv] typed: [...] normalized: [...]` line goes to stderr.
+   *
+   * Commander sets `rawArgs` only on the command being parsed (this root),
+   * to the normalized user arguments; subcommands keep an empty `rawArgs`.
+   *
+   * @param argv - Arguments, as for Commander's `parseAsync`.
+   * @param parseOptions - Commander's parse options (`from`).
+   * @returns This command.
+   */
+  override async parseAsync(
+    argv?: readonly string[],
+    parseOptions?: ParseOptions,
+  ): Promise<this> {
+    await parseHost(
+      this as unknown as GetDotenvCli,
+      argv,
+      parseOptions,
+      (userArgs) => super.parseAsync(userArgs, { from: 'user' }),
+    );
+    return this;
+  }
+
+  /**
+   * Not supported: a get-dotenv host installs plugins and resolves its
+   * context asynchronously.
+   *
+   * @throws Always; call `parseAsync()` instead.
+   */
+  override parse(): this {
+    throw new Error(
+      'parse() is not supported on a get-dotenv host; use parseAsync().',
+    );
+  }
+
+  /**
    * Run afterResolve hooks for registered plugins (parent → children).
-   * When {@link commandPath} is provided, only the matching branch of the
+   * When `commandPath` is provided, only the matching branch of the
    * plugin tree runs; otherwise all plugins run (backward compatibility).
    *
-   * The path is walked segment-by-segment against the plugin tree.
-   * Intermediate matches run their own afterResolve hook.
-   * The deepest match runs afterResolve for itself and all its descendants.
+   * Each prefix of the command path is matched against the plugins'
+   * realized mount paths (effective namespaces, override \> default), the
+   * same paths that key config slices. Intermediate matches run their own
+   * afterResolve hook. The deepest match runs afterResolve for itself and
+   * all its descendants.
+   *
+   * @param ctx - The resolved host context passed to each hook.
+   * @param commandPath - Command names from the root to the invoked command.
    */
   async _runAfterResolve(
     ctx: GetDotenvCliCtx<TOptions>,
@@ -390,32 +459,27 @@ export class GetDotenvCli<
       return;
     }
 
-    // Walk the plugin tree along the command path, scoping to the invoked branch.
-    let entries: Array<PluginChildEntry<TOptions, TArgs, TOpts, TGlobal>> =
-      this._plugins;
-
-    for (let i = 0; i < commandPath.length; i++) {
-      const segment = commandPath[i] as string;
-      const entry = entries.find((e) => effectiveNs(e) === segment);
-      if (!entry) return;
-
-      const isLast = i === commandPath.length - 1;
-      const nextSegment = commandPath[i + 1];
-      const hasMatchingChild =
-        !isLast &&
-        entry.plugin.children.some((e) => effectiveNs(e) === nextSegment);
-
-      if (isLast || !hasMatchingChild) {
-        // Deepest match: run this plugin + all its descendants.
-        await runAfterResolveTree(this, [entry.plugin], ctx);
-        return;
-      }
-
-      // Intermediate match: run only this plugin's own afterResolve.
-      if (entry.plugin.afterResolve) {
-        await entry.plugin.afterResolve(this, ctx);
-      }
-      entries = entry.plugin.children;
+    // Match each command-path prefix against the realized mount paths.
+    const byPath = new Map(
+      flattenPluginTreeByPath(this._plugins).map((e) => [e.path, e.plugin]),
+    );
+    const chain: Array<GetDotenvCliPlugin<TOptions, TArgs, TOpts, TGlobal>> =
+      [];
+    let path = '';
+    for (const segment of commandPath) {
+      path = joinRealizedPath(path, segment);
+      const plugin = byPath.get(path);
+      if (!plugin) break;
+      chain.push(plugin);
     }
+    const deepest = chain.pop();
+    if (!deepest) return;
+
+    // Intermediate matches: run only their own afterResolve.
+    for (const plugin of chain) {
+      if (plugin.afterResolve) await plugin.afterResolve(this, ctx);
+    }
+    // Deepest match: run this plugin + all its descendants.
+    await runAfterResolveTree(this, [deepest], ctx);
   }
 }

@@ -4,14 +4,19 @@ import {
   validateEnvAgainstSources,
 } from '@/src/config';
 import { getDotenvCliOptions2Options, type GetDotenvOptions } from '@/src/core';
-import { baseRootOptionDefaults } from '@/src/defaults';
-import { defaultsDeep } from '@/src/util';
 
 import type { GetDotenvCli } from './GetDotenvCli';
 import type { GetDotenvCliOptions } from './GetDotenvCliOptions';
 import { toHelpConfig } from './helpConfig';
-import { resolveCliOptions } from './resolveCliOptions';
-import type { RootOptionsShape, ScriptsTable } from './types';
+import { hostMetaUrlOf } from './hostRoot';
+import {
+  composedThisParse,
+  markComposed,
+  markRootHooks,
+} from './rootHooksState';
+import { resolveRootOptionsBag, type RootOptionsBag } from './rootOptionsStack';
+import { applyHelpVisibility } from './topLevelHelp';
+import type { RootOptionsShape } from './types';
 
 const dbg = (...args: unknown[]) => {
   if (process.env.GETDOTENV_DEBUG) {
@@ -35,21 +40,27 @@ const debugView = (o: Partial<RootOptionsShape>) => ({
   strict: o.strict,
 });
 
-function computeRootDefaults(
-  defaults: Partial<RootOptionsShape> | undefined,
+/**
+ * Validate the composed env against the config sources (`schema` or
+ * `requiredKeys`) and log each issue at error level; with `--strict`, exit 1
+ * after logging them.
+ */
+function reportEnvIssues<TOptions extends GetDotenvOptions>(
+  program: GetDotenvCli<TOptions>,
   sources: ResolvedConfigSources,
-): Partial<RootOptionsShape> {
-  const cfgDefaults = defaultsDeep<Partial<RootOptionsShape>>(
-    {},
-    sources.packaged?.rootOptionDefaults ?? {},
-    sources.project?.public?.rootOptionDefaults ?? {},
-    sources.project?.local?.rootOptionDefaults ?? {},
-  );
-  return defaultsDeep<Partial<RootOptionsShape>>(
-    baseRootOptionDefaults as Partial<RootOptionsShape>,
-    defaults ?? {},
-    cfgDefaults,
-  );
+  bag: GetDotenvCliOptions,
+): void {
+  try {
+    const issues = validateEnvAgainstSources(program.getCtx().dotenv, sources);
+    if (issues.length > 0) {
+      issues.forEach((m) => {
+        bag.logger.error(m);
+      });
+      if (bag.strict) process.exit(1);
+    }
+  } catch {
+    /* tolerate non-strict flows */
+  }
 }
 
 /**
@@ -63,11 +74,12 @@ export function installRootHooks<TOptions extends GetDotenvOptions>(
   program: GetDotenvCli<TOptions>,
   defaults?: Partial<RootOptionsShape>,
 ): GetDotenvCli<TOptions> {
+  // The root hooks own this program's composition; the lazy resolver stands down.
+  markRootHooks(program);
+
   // Propagate resolved env into the options bag so plugins always see
   // the effective environment as bag.env — no defaulting logic needed downstream.
-  const propagateResolvedEnv = (
-    merged: RootOptionsShape & { scripts?: ScriptsTable },
-  ) => {
+  const propagateResolvedEnv = (merged: RootOptionsBag) => {
     if (program.hasCtx()) {
       const resolvedCtx = program.getCtx();
       if (resolvedCtx.env) {
@@ -83,7 +95,9 @@ export function installRootHooks<TOptions extends GetDotenvOptions>(
 
   // Hook: preSubcommand — always runs for subcommand flows.
   program.hook('preSubcommand', async (thisCommand, _actionCommand) => {
-    const sources = await resolveGetDotenvConfigSources(import.meta.url);
+    const sources = await resolveGetDotenvConfigSources(hostMetaUrlOf(program));
+    // Subcommand help (rendered after this hook) honours config visibility.
+    applyHelpVisibility(program as unknown as GetDotenvCli, sources);
     const rawArgs =
       (thisCommand as unknown as { rawArgs?: string[] }).rawArgs ?? [];
     dbg('preSubcommand:rawArgs', rawArgs);
@@ -91,23 +105,8 @@ export function installRootHooks<TOptions extends GetDotenvOptions>(
     const raw =
       (thisCommand as { opts?: () => Record<string, unknown> }).opts?.() ?? {};
 
-    // Build unified defaults stack for this run:
-    // baseRootOptionDefaults < createCli root defaults (argument) < config.rootOptionDefaults
-    const d = computeRootDefaults(defaults ?? {}, sources);
-
-    const { merged } = resolveCliOptions<
-      RootOptionsShape & { scripts?: ScriptsTable }
-    >(raw, d, process.env.getDotenvCliOptions);
+    const merged = resolveRootOptionsBag(raw, defaults, sources);
     dbg('preSubcommand:merged', debugView(merged));
-
-    // Inject merged scripts from config sources (packaged < project/public < project/local).
-    (merged as unknown as Record<string, unknown>).scripts = defaultsDeep(
-      {},
-      (merged as unknown as { scripts?: ScriptsTable }).scripts ?? {},
-      (sources.packaged?.scripts as ScriptsTable | undefined) ?? {},
-      (sources.project?.public?.scripts as ScriptsTable | undefined) ?? {},
-      (sources.project?.local?.scripts as ScriptsTable | undefined) ?? {},
-    );
 
     // Persist merged bag for nested flows and ergonomic access.
     (
@@ -129,6 +128,7 @@ export function installRootHooks<TOptions extends GetDotenvOptions>(
     await program.resolveAndLoad(serviceOptions, {
       runAfterResolve: false,
     });
+    markComposed(program);
 
     propagateResolvedEnv(merged);
 
@@ -147,49 +147,24 @@ export function installRootHooks<TOptions extends GetDotenvOptions>(
     }
 
     // Global validation (once after overlays). Honor --strict.
-    try {
-      const ctx = program.getCtx();
-      const dotenv = ctx.dotenv;
-      const sources2 = await resolveGetDotenvConfigSources(import.meta.url);
-      const issues = validateEnvAgainstSources(dotenv, sources2);
-      if (Array.isArray(issues) && issues.length > 0) {
-        const logger = (merged as unknown as GetDotenvCliOptions).logger;
-        issues.forEach((m) => {
-          logger.error(m);
-        });
-        if ((merged as unknown as GetDotenvCliOptions).strict) process.exit(1);
-      }
-    } catch {
-      /* tolerate non-strict flows */
-    }
+    reportEnvIssues(
+      program,
+      await resolveGetDotenvConfigSources(hostMetaUrlOf(program)),
+      merged as unknown as GetDotenvCliOptions,
+    );
   });
 
   // Hook: preAction — root-only and parent-alias flows + scoped afterResolve.
   program.hook('preAction', async (thisCommand, actionCommand) => {
-    const sources = await resolveGetDotenvConfigSources(import.meta.url);
+    const sources = await resolveGetDotenvConfigSources(hostMetaUrlOf(program));
     const rawArgs =
       (thisCommand as unknown as { rawArgs?: string[] }).rawArgs ?? [];
     dbg('preAction:rawArgs', rawArgs);
     const raw =
       (thisCommand as { opts?: () => Record<string, unknown> }).opts?.() ?? {};
 
-    // Build unified defaults stack for this run:
-    // baseRootOptionDefaults < createCli root defaults (argument) < config.rootOptionDefaults
-    const d = computeRootDefaults(defaults ?? {}, sources);
-
-    const { merged } = resolveCliOptions<
-      RootOptionsShape & { scripts?: ScriptsTable }
-    >(raw, d, process.env.getDotenvCliOptions);
+    const merged = resolveRootOptionsBag(raw, defaults, sources);
     dbg('preAction:merged', debugView(merged));
-
-    // Inject merged scripts from config sources (packaged < project/public < project/local).
-    (merged as unknown as Record<string, unknown>).scripts = defaultsDeep(
-      {},
-      (merged as unknown as { scripts?: ScriptsTable }).scripts ?? {},
-      (sources.packaged?.scripts as ScriptsTable | undefined) ?? {},
-      (sources.project?.public?.scripts as ScriptsTable | undefined) ?? {},
-      (sources.project?.local?.scripts as ScriptsTable | undefined) ?? {},
-    );
 
     (
       thisCommand as unknown as {
@@ -202,11 +177,16 @@ export function installRootHooks<TOptions extends GetDotenvOptions>(
       }
     )._setOptionsBag(merged as unknown as GetDotenvCliOptions);
 
-    if (!program.hasCtx()) {
+    // One composition per run: preSubcommand composed already in subcommand
+    // flows; a root-only action composes here (a context left from an
+    // earlier parse doesn't count).
+    const composesHere = !composedThisParse(program);
+    if (composesHere) {
       const serviceOptions = getDotenvCliOptions2Options(
         merged,
       ) as unknown as Partial<TOptions>;
       await program.resolveAndLoad(serviceOptions, { runAfterResolve: false });
+      markComposed(program);
     }
 
     // Always propagate resolved env into the merged bag — even when
@@ -227,19 +207,13 @@ export function installRootHooks<TOptions extends GetDotenvOptions>(
     } catch {
       /* tolerate */
     }
-    try {
-      const ctx = program.getCtx();
-      const issues = validateEnvAgainstSources(ctx.dotenv, sources);
-      if (Array.isArray(issues) && issues.length > 0) {
-        const logger = (merged as unknown as GetDotenvCliOptions).logger;
-        issues.forEach((m) => {
-          logger.error(m);
-        });
-        if ((merged as unknown as GetDotenvCliOptions).strict) process.exit(1);
-      }
-    } catch {
-      /* tolerate non-strict flows */
-    }
+    // Validate once per run, in the hook that composed (#61).
+    if (composesHere)
+      reportEnvIssues(
+        program,
+        sources,
+        merged as unknown as GetDotenvCliOptions,
+      );
 
     // Run afterResolve scoped to the invoked command branch.
     // Walk actionCommand.parent chain to build the full plugin path.

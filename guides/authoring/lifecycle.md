@@ -38,6 +38,7 @@ import { helloPlugin } from './plugins/hello';
 
 const run = createCli({
   alias: 'toolbox',
+  importMetaUrl: import.meta.url,
   branding: 'Toolbox CLI',
   compose: (p) =>
     p
@@ -52,6 +53,10 @@ const run = createCli({
 
 await run(); // or await run(process.argv.slice(2));
 ```
+
+The runner takes user arguments only (`run(['-e', 'dev', 'cmd', 'npm', 'test'])`). Pass a full process argv with Commander's `from`: `run(process.argv, { from: 'node' })`. Called without arguments it reads `process.argv` and detects `node -e`/`-p` and Electron as Commander does.
+
+A host built directly from `GetDotenvCli` parses with `await program.parseAsync(argv, { from })`, which installs plugins, normalizes [qualified options](../qualified-options.md) and renders top-level help. Sync `program.parse()` throws: `parse() is not supported on a get-dotenv host; use parseAsync().` During a parse, Commander sets `rawArgs` only on the root, to the normalized user arguments (no leading `node`/script entries); subcommands keep `[]`.
 
 ### Grouping plugins under a namespace (groupPlugins)
 
@@ -71,6 +76,7 @@ import { smozInitPlugin } from './plugins/init';
 
 const run = createCli({
   alias: 'smoz',
+  importMetaUrl: import.meta.url,
   compose: (p) =>
     p.use(smozInitPlugin()).use(
       groupPlugins({
@@ -90,6 +96,34 @@ Notes:
 - Root flags (like `-e`, `--paths`, `--shell-off`, `--capture`) are global and are typically specified before the subcommand token (e.g., `smoz -e dev getdotenv init ...`).
 - Plugin config keys follow the realized mount path, so mounting under `getdotenv` changes keys (for example `plugins['getdotenv/init']` rather than `plugins['init']`).
 - If you mount `cmdPlugin({ optionAlias: ... })` under the group, the parent alias is attached to the group command (so `smoz getdotenv -c 'echo OK'` works, but `smoz -c 'echo OK'` does not).
+
+### Mounting a plugin under another name (`.use(plugin, { ns })`)
+
+`cli.use(plugin, { ns })` and `parent.use(child, { ns })` mount a plugin under a name of your choice instead of its declared `ns`. The override is the plugin's **effective namespace**: the host creates the mount there, and the plugin's realized mount path (the chain of effective namespaces from the root, e.g. `ops/who2`) keys its config slice and scopes its `afterResolve` hook. This lets you mount two instances of one plugin side by side, each with its own config:
+
+```ts
+const run = createCli({
+  alias: 'toolbox',
+  importMetaUrl: import.meta.url,
+  compose: (p) =>
+    p
+      .use(deployPlugin(), { ns: 'deploy-api' })
+      .use(deployPlugin(), { ns: 'deploy-web' }),
+});
+```
+
+```json
+{
+  "plugins": {
+    "deploy-api": { "target": "api" },
+    "deploy-web": { "target": "web" }
+  }
+}
+```
+
+`toolbox deploy-api ...` runs the first instance with `plugins['deploy-api']` and only its `afterResolve`. Renaming a mount intentionally changes its config key.
+
+Sibling namespaces must be unique at every level, the root included. A collision throws `Duplicate namespace '<ns>' under '<parent>'. Override via .use(plugin, { ns: '...' }).`, where `<parent>` is the parent's realized path (`root` at the top level). Children of a plugin are checked as soon as the second one is added with `.use()`; root-level plugins are checked at install. Mounting one plugin _instance_ twice gives both mounts one shared config slot, so call the plugin factory once per mount.
 
 ### Access the true root command (typed helper)
 
@@ -134,19 +168,48 @@ Notes:
 - The `compose` hook runs before parsing and is the recommended way to assemble your CLI surface. The factory installs root options and hooks so shipped plugins can read the merged options bag with `readMergedOptions()`.
 - If you construct a host directly, mirror the shipped wiring (root options + root hooks) before attaching shipped plugins. For most use cases, `createCli` is simpler and safer.
 
-## Branding the host
+## Host identity and branding
 
-When using the factory, prefer the `branding` option:
+Every host belongs to a package: its **host root**, the nearest `package.json` above the host module's `import.meta.url`. `createCli` requires that URL:
 
 ```ts
 await createCli({
   alias: 'toolbox',
+  importMetaUrl: import.meta.url, // required
+  version: '1.0.0', // optional; default: host package.json version
+  description: 'Toolbox CLI.', // optional; default: host package.json description
   branding: 'toolbox v1.0.0', // optional help header
   compose: (p) => p /* ...wire plugins... */,
 })();
 ```
 
-If you construct a host directly, call `program.brand({ importMetaUrl, description })` before parsing.
+The host root supplies:
+
+- the **packaged config layer**: `<hostRoot>/getdotenv.config.*`. It replaces get-dotenv's own packaged layer (there is no third layer), so a downstream CLI can ship config with its package.
+- the **version** printed by `-V, --version` and shown in the default help header (`<alias> v<version>`), from `package.json` `version` unless `version` is given;
+- the **description** shown in root help, from `package.json` `description` unless `description` is given.
+
+Rules:
+
+- `createCli()` without `importMetaUrl` throws.
+- When the host root is the project root (the nearest `package.json` above the working directory), the packaged layer is skipped. A CLI that lives in the repo it runs in (for example a `cli/vc.ts` run with `tsx`) would otherwise apply its `getdotenv.config.*` twice, once as packaged and once as project config, and run its `dynamic` twice.
+- The shipped `getdotenv` CLI passes its own `import.meta.url`, so its packaged layer is get-dotenv's own.
+- `init` always copies its templates from get-dotenv's package, whatever the host root.
+- `branding` replaces only the help header text, never the version.
+- A runner may be called more than once. `-V, --version` is registered the first time a version is known; later runs only update it.
+
+If you construct a host directly, set the host root with the constructor or with `brand()`; the last one given wins. A direct host that gives neither keeps get-dotenv's own package root.
+
+```ts
+const program = new GetDotenvCli('toolbox', { importMetaUrl: import.meta.url });
+// or, before parsing:
+await program.brand({
+  importMetaUrl: import.meta.url,
+  description: 'Toolbox CLI.',
+});
+```
+
+`brand()` reads the version from the host package when `version` is omitted. Calling it again updates the version without registering `--version` twice.
 
 ## Accessing context and options
 
@@ -178,7 +241,7 @@ Key points:
 
 - createPluginDynamicOption(cli, flags, (cfg, pluginCfg) => string, parser?, defaultValue?) attaches to the current plugin, injecting that plugin’s validated config slice (pluginCfg).
 - The callback receives a read‑only resolved help config (top‑level flags) and the instance‑bound plugin config slice. Avoid by‑id lookups (e.g., cfg.plugins.<id>); rely on pluginCfg instead.
-- Top‑level “-h/--help” computes a read‑only config and evaluates dynamic text; “help <cmd>” refreshes dynamic text after preSubcommand resolution.
+- Top‑level “-h/--help” computes a read‑only config and evaluates dynamic text; “help <cmd>” refreshes dynamic text after preSubcommand resolution. Both apply the merged `rootOptionVisibility` (createCli \< packaged \< project/public \< project/local) before rendering, and the host appends each option's qualified name at render time, so a dynamic description keeps its `(anywhere: --<name>)`.
 
 Example (plugin flag with ON/OFF default label using instance‑bound config):
 
@@ -264,8 +327,12 @@ Update (DX: no undefined):
 
 ## afterResolve hook contract
 
-afterResolve hooks run once per invocation after the host resolves dotenv context. When the shipped root hooks are used, afterResolve is **scoped to the invoked command path**: only plugins whose namespace matches the invoked subcommand (and their children) run afterResolve. Sibling and cousin plugins do not fire.
+afterResolve hooks run once per invocation after the host resolves dotenv context. When the shipped root hooks are used, afterResolve is **scoped to the invoked command path**: only plugins whose realized mount path matches the invoked subcommand path (and their children) run afterResolve. The match uses each plugin's effective namespace, so a plugin mounted with `.use(plugin, { ns })` is matched by its override. Sibling and cousin plugins do not fire.
 
 This means a plugin's afterResolve should only set up state relevant to its own command subtree. It should not assume it runs on every invocation. The shipped aws plugin, for example, only resolves AWS credentials and writes to process.env when an aws or aws/* command is invoked.
 
 Custom hosts that call resolveAndLoad() without an invokedSubcommand filter get the legacy behavior where all plugins run afterResolve.
+
+## One composition per invocation
+
+With the shipped root hooks (every `createCli` host), each invocation composes its dotenv context once, so config `dynamic` functions run once (and not at all under `-z`). The cmd plugin's parent alias (`-c`) runs against that same context. A bare `GetDotenvCli` host without the root hooks still gets a lazy context before its subcommands run (`loadProcess` off, no afterResolve).

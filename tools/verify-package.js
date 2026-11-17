@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import fs from 'fs-extra';
+import { pathToFileURL } from 'node:url';
 import { distCore, templateCore } from './_expected.js';
 
 const errors = [];
@@ -45,6 +46,28 @@ const main = async () => {
       assert(
         await fs.pathExists(`dist/${rel}`),
         `dist/${rel} not found (build before verify or check rollup config)`,
+      );
+    }
+
+    // #55: the dotenv editor's target-selection helpers are public.
+    const indexPath = 'dist/index.mjs';
+    if (await fs.pathExists(indexPath)) {
+      const index = await import(pathToFileURL(indexPath).href);
+      for (const name of ['buildDotenvTargetFilename', 'resolveDotenvTarget']) {
+        assert(
+          typeof index[name] === 'function',
+          `${indexPath}: must export "${name}"`,
+        );
+      }
+    }
+
+    // Removed exports stay removed (Decision 19 / 4.1 item 3: no `z` from cliHost).
+    const cliHostPath = 'dist/cliHost.mjs';
+    if (await fs.pathExists(cliHostPath)) {
+      const cliHost = await import(pathToFileURL(cliHostPath).href);
+      assert(
+        !('z' in cliHost),
+        `${cliHostPath}: must not export "z" (import { z } from 'zod' instead)`,
       );
     }
   }

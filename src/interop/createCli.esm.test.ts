@@ -7,7 +7,8 @@ describe('interop/createCli (ESM dynamic)', () => {
 
     // Dynamic import ensures we exercise ESM resolution in test runtime.
     const mod = (await import('../index')) as unknown as {
-      createCli?: (opts?: {
+      createCli?: (opts: {
+        importMetaUrl: string;
         alias?: string;
         branding?: string;
       }) => (argv?: string[]) => Promise<void>;
@@ -17,6 +18,7 @@ describe('interop/createCli (ESM dynamic)', () => {
     // Construct a CLI and run with "-h" to ensure parse completes.
     // Use a short alias to minimize output width; branding is optional.
     const run = mod.createCli?.({
+      importMetaUrl: import.meta.url,
       alias: 'getdotenv',
       branding: 'getdotenv (test)',
     });

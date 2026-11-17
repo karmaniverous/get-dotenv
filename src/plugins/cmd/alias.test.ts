@@ -1,11 +1,13 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-// Mock execa to capture invocations without spawning a shell.
-const execMock =
-  vi.fn<(command: string, opts: Record<string, unknown>) => Promise<void>>();
+// Mock execa to capture invocations without spawning a shell. The shell
+// path calls execa(command, opts) with the command string as is.
+const execMock = vi.fn<
+  (command: string, opts: Record<string, unknown>) => Promise<unknown>
+>(() => Promise.resolve({ exitCode: 0, stdout: '', stderr: '' }));
 vi.mock('execa', () => ({
-  execaCommand: (cmd: string, opts: Record<string, unknown>) =>
-    execMock(cmd, opts),
+  execa: (command: string, opts: Record<string, unknown>) =>
+    execMock(command, opts),
 }));
 
 import { createCli } from '@/src/cli';
@@ -19,13 +21,14 @@ describe('plugins/cmd default subcommand (asDefault)', () => {
 
   it('routes positional args to cmd when asDefault is true', async () => {
     const run = createCli({
+      importMetaUrl: import.meta.url,
       alias: 'test',
       compose: (p) =>
         p.use(
           cmdPlugin({ asDefault: true, optionAlias: '--cmd <command...>' }),
         ),
     });
-    await run(['node', 'test', 'echo', 'hello']);
+    await run(['echo', 'hello']);
 
     expect(execMock).toHaveBeenCalledTimes(1);
     const [command] = execMock.mock.calls[0] as [
@@ -37,6 +40,7 @@ describe('plugins/cmd default subcommand (asDefault)', () => {
 
   it('does not route positional args when asDefault is false', async () => {
     const run = createCli({
+      importMetaUrl: import.meta.url,
       alias: 'test',
       compose: (p) =>
         p.use(
@@ -46,7 +50,7 @@ describe('plugins/cmd default subcommand (asDefault)', () => {
 
     // Without asDefault, positional args hit the root no-op action;
     // the cmd subcommand never fires.
-    await run(['node', 'test', 'echo', 'hello']);
+    await run(['echo', 'hello']);
     expect(execMock).not.toHaveBeenCalled();
   });
 });
@@ -59,13 +63,14 @@ describe('plugins/cmd option alias', () => {
 
   it('executes alias when provided on parent (variadic join)', async () => {
     const run = createCli({
+      importMetaUrl: import.meta.url,
       alias: 'test',
       compose: (p) =>
         p.use(
           cmdPlugin({ asDefault: true, optionAlias: '--cmd <command...>' }),
         ),
     });
-    await run(['node', 'test', '--cmd', 'echo', 'OK']);
+    await run(['--cmd', 'echo', 'OK']);
 
     expect(execMock).toHaveBeenCalledTimes(1);
     const [command, opts] = execMock.mock.calls[0] as [
@@ -79,13 +84,14 @@ describe('plugins/cmd option alias', () => {
   it('expands alias value with dotenv expansion by default', async () => {
     process.env.FOO = 'BAR';
     const run = createCli({
+      importMetaUrl: import.meta.url,
       alias: 'test',
       compose: (p) =>
         p.use(
           cmdPlugin({ asDefault: true, optionAlias: '--cmd <command...>' }),
         ),
     });
-    await run(['node', 'test', '--cmd', 'echo', '$FOO']);
+    await run(['--cmd', 'echo', '$FOO']);
 
     expect(execMock).toHaveBeenCalledTimes(1);
     const [command] = execMock.mock.calls[0] as [
@@ -103,6 +109,7 @@ describe('plugins/cmd option alias', () => {
     // correctly-resolved context from root hooks with incomplete defaults,
     // losing env-specific variables.
     const run = createCli({
+      importMetaUrl: import.meta.url,
       alias: 'test',
       rootOptionDefaults: {
         paths: './test/full',
@@ -116,7 +123,7 @@ describe('plugins/cmd option alias', () => {
         ),
     });
 
-    await run(['node', 'test', '-c', 'echo', 'OK']);
+    await run(['-c', 'echo', 'OK']);
 
     expect(execMock).toHaveBeenCalledTimes(1);
     const [, opts] = execMock.mock.calls[0] as [
@@ -133,11 +140,10 @@ describe('plugins/cmd option alias', () => {
   });
 
   it('conflicts when alias and cmd subcommand are both provided', async () => {
-    // Spy process.exit (defaultCmdAction exits on conflict); do not terminate tests.
-    const exitSpy = vi.spyOn(process, 'exit').mockImplementation((() => {
-      // no-op under tests
-    }) as unknown as never);
+    // The conflict is a usage error (#50): exit code 1, nothing runs.
+    const savedExitCode = process.exitCode;
     const run = createCli({
+      importMetaUrl: import.meta.url,
       alias: 'test',
       compose: (p) =>
         p.use(
@@ -145,19 +151,10 @@ describe('plugins/cmd option alias', () => {
         ),
     });
 
-    await run([
-      'node',
-      'test',
-      '--cmd',
-      'echo',
-      'OK',
-      '--',
-      'cmd',
-      'echo',
-      'X',
-    ]);
+    await run(['--cmd', 'echo', 'OK', '--', 'cmd', 'echo', 'X']);
 
-    expect(exitSpy).toHaveBeenCalled();
-    exitSpy.mockRestore();
+    const exitCode = process.exitCode;
+    process.exitCode = savedExitCode;
+    expect(exitCode).toBe(1);
   });
 });

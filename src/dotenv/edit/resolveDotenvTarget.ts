@@ -3,35 +3,26 @@
  * Deterministic dotenv target selection across a multi-path cascade.
  *
  * This module extracts the “which file should we edit?” logic from the FS-level editor
- * so plugins/tools can reuse the same selection semantics as {@link editDotenvFile}.
+ * so plugins/tools can reuse the same selection semantics as `editDotenvFile`.
  *
  * Notes:
  * - Selection is based on `paths` only (directories), consistent with get-dotenv overlay precedence.
  * - Default search order is reverse (last path wins).
- * - Template discovery is supported via `<target>.<templateExtension>` and returns the template path
- *   when the concrete target is missing.
+ * - Candidates are searched in tiers: an existing target in any path, then the env-specific
+ *   template (`<target>.<templateExtension>`), then (env scope only) the shared env template.
+ *   Each tier searches every path, in search order, before the next tier starts.
  */
 
 import path from 'node:path';
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import type { editDotenvFile } from './editDotenvFile';
+import { resolveEnvName } from '@/src/env/resolveEnvName';
+
 import type {
   DotenvFs,
   DotenvPathSearchOrder,
   DotenvTargetPrivacy,
   DotenvTargetScope,
 } from './types';
-
-const resolveEnvName = (
-  env?: string,
-  defaultEnv?: string,
-): string | undefined =>
-  typeof env === 'string' && env.length > 0
-    ? env
-    : typeof defaultEnv === 'string' && defaultEnv.length > 0
-      ? defaultEnv
-      : undefined;
 
 /**
  * Options for {@link buildDotenvTargetFilename}.
@@ -123,16 +114,75 @@ export interface ResolveDotenvTargetOptions extends BuildDotenvTargetFilenameOpt
   searchOrder?: DotenvPathSearchOrder;
   /** Template extension used for bootstrap discovery. Defaults to `'template'`. */
   templateExtension?: string;
+  /**
+   * Env name token substituted in place of the real env name when building the
+   * shared env template filename (`scope: 'env'` only). For example, with the
+   * default token `'env'`, the shared template for `.env.<env>.local` is
+   * `.env.env.local.template`, and for `.env.<env>` it is `.env.env.template`.
+   *
+   * The shared env template is the last tier: it is used only when neither the
+   * env-scoped target nor its env-specific template (`<target>.<templateExtension>`)
+   * exists in any path. An env-specific template in any path beats a shared
+   * template in any path. This option has no effect for `scope: 'global'`.
+   *
+   * @defaultValue `'env'`
+   */
+  sharedEnvTemplateToken?: string;
 }
+
+/** One tier of {@link resolveDotenvTarget} candidates: a filename searched in every path. */
+interface CandidateTier {
+  /** Filename searched for in each path. */
+  name: string;
+  /** Whether a match is a template to copy to the target, rather than the target itself. */
+  template: boolean;
+}
+
+/**
+ * The candidate tiers, highest precedence first: the target, its env-specific template, and
+ * (env scope only) the shared env template. A tier whose filename repeats an earlier one is dropped.
+ */
+const candidateTiers = (
+  opts: ResolveDotenvTargetOptions,
+  filename: string,
+): CandidateTier[] => {
+  const templateExtension = opts.templateExtension ?? 'template';
+  const tiers: CandidateTier[] = [
+    { name: filename, template: false },
+    { name: `${filename}.${templateExtension}`, template: true },
+  ];
+  if (opts.scope === 'env') {
+    // Built like the env target, with the token in place of the env name.
+    const shared = `${buildDotenvTargetFilename({
+      ...(typeof opts.dotenvToken === 'string'
+        ? { dotenvToken: opts.dotenvToken }
+        : {}),
+      ...(typeof opts.privateToken === 'string'
+        ? { privateToken: opts.privateToken }
+        : {}),
+      scope: 'env',
+      privacy: opts.privacy,
+      env: opts.sharedEnvTemplateToken ?? 'env',
+    })}.${templateExtension}`;
+    if (!tiers.some((t) => t.name === shared))
+      tiers.push({ name: shared, template: true });
+  }
+  return tiers;
+};
 
 /**
  * Resolve a deterministic dotenv target across `paths` based on scope/privacy selectors.
  *
- * Selection rules:
- * - Iterates `paths` in the requested search order.
- * - Returns the first existing target file.
- * - Otherwise, returns the first sibling template file (`<target>.<templateExtension>`) when present.
- * - Throws when neither a target nor a template exists anywhere under `paths`.
+ * Selection rules, in tiers (each tier searches every path, in search order, before the next):
+ * 1. an existing target file (`<target>`);
+ * 2. the env-specific template (`<target>.<templateExtension>`);
+ * 3. `scope: 'env'` only: the shared env template, named like the target with
+ *    `sharedEnvTemplateToken` in place of the env name (`.env.env.local.template`).
+ *
+ * So an existing target in any path beats a template in any path, and an env-specific
+ * template in any path beats the shared one. For a template match, `targetPath` is the
+ * target filename in the template's directory. Throws, listing every candidate checked,
+ * when nothing matches.
  *
  * @param opts - Resolver options (paths + selector + fs port).
  * @returns The resolved target path and optional template path.
@@ -143,24 +193,22 @@ export async function resolveDotenvTarget(
   opts: ResolveDotenvTargetOptions,
 ): Promise<ResolveDotenvTargetResult> {
   const filename = buildDotenvTargetFilename(opts);
-  const templateExtension = opts.templateExtension ?? 'template';
-  const searchOrder = opts.searchOrder ?? 'reverse';
+  const pathsOrdered = orderedPaths(opts.paths, opts.searchOrder ?? 'reverse');
 
-  const pathsOrdered = orderedPaths(opts.paths, searchOrder);
-
-  for (const dir of pathsOrdered) {
-    const targetPath = path.resolve(dir, filename);
-    if (await opts.fs.pathExists(targetPath)) {
-      return { targetPath, filename };
-    }
-
-    const templatePath = `${targetPath}.${templateExtension}`;
-    if (await opts.fs.pathExists(templatePath)) {
-      return { targetPath, templatePath, filename };
+  const candidates: string[] = [];
+  for (const tier of candidateTiers(opts, filename)) {
+    for (const dir of pathsOrdered) {
+      const candidate = path.resolve(dir, tier.name);
+      candidates.push(candidate);
+      if (!(await opts.fs.pathExists(candidate))) continue;
+      const targetPath = path.resolve(dir, filename);
+      return tier.template
+        ? { targetPath, templatePath: candidate, filename }
+        : { targetPath, filename };
     }
   }
 
   throw new Error(
-    `Unable to locate dotenv target "${filename}" under provided paths, and no template was found.`,
+    `Unable to locate dotenv target "${filename}" under provided paths, and no template was found. Checked: ${candidates.join(', ')}`,
   );
 }

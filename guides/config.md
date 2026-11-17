@@ -12,7 +12,7 @@ Behavior: In the shipped CLI (plugin-first host) and the generator path, the loa
 
 When enabled, the loader discovers up to three configs in the following order:
 
-1. Packaged root (the library’s own package root, “public” only)
+1. Packaged root: the host CLI's package root, “public” only. That is the nearest `package.json` above the `importMetaUrl` the host passes to `createCli` (for the shipped `getdotenv` CLI, get-dotenv's own package). Skipped when it is the project root.
    - getdotenv.config.json
    - getdotenv.config.yaml / .yml
    - getdotenv.config.js / .mjs / .cjs
@@ -32,6 +32,7 @@ When enabled, the loader discovers up to three configs in the following order:
 Notes:
 
 - Packaged .local is not expected by policy and is ignored.
+- A host's packaged config replaces get-dotenv's own; there is never a third layer. A host whose package is also the project (a CLI that lives in the repo it runs in) gets no packaged layer, so its config applies once, as project config. See [Host identity](./authoring/lifecycle.md#host-identity-and-branding).
 - The first matching “public” file per scope is used; the same for “local”.
 
 ## Formats
@@ -41,14 +42,15 @@ JSON/YAML (data only, always-on; no-op when no files are present):
 - Allowed keys:
   - rootOptionDefaults?: Partial<RootOptionsShape> — collapsed, CLI‑like flags and strings. Supported keys:
     - Targeting: `env`, `defaultEnv`, `defaultEnvKey`, `paths`, `pathsDelimiter`, `pathsDelimiterPattern`, `dotenvToken`, `privateToken`.
-    - Output/Vars: `vars`, `varsAssignor`, `varsAssignorPattern`, `varsDelimiter`, `varsDelimiterPattern`, `outputPath`.
+    - Output/Vars: `vars`, `varsAssignor`, `varsAssignorPattern`, `varsDelimiter`, `varsDelimiterPattern`, `outputPath`. A `vars` string is split into pairs at the delimiter and each pair at its first assignor, so `A=1 B=x=y` sets `B` to `x=y`.
     - Loading: `loadProcess`, `dynamicPath`.
     - Exclusions: `excludeAll`, `excludeDynamic`, `excludeEnv`, `excludeGlobal`, `excludePrivate`, `excludePublic`.
     - Execution: `shell`, `capture`.
     - Diagnostics: `log`, `debug`, `trace`, `strict`.
     - Redaction: `redact`, `redactPatterns`.
     - Entropy: `warnEntropy`, `entropyThreshold`, `entropyMinLength`, `entropyWhitelist`.
-  - rootOptionVisibility?: Partial<Record<keyof RootOptionsShape, boolean>> — help‑time visibility (false hides a flag).
+    - Rejected in every format (the config is invalid): `dynamic` (use the top-level `dynamic` of a JS/TS config) and `logger`.
+  - rootOptionVisibility?: Partial<Record<keyof RootOptionsShape, boolean>> — help‑time visibility (false hides a flag; true shows it again, undoing a lower layer’s false).
   - scripts?: Record<string, string | { cmd: string; shell?: string | boolean }>
   - vars?: Record<string, string> (global, public)
   - envVars?: Record<string, Record<string, string>> (per‑env, public)
@@ -69,9 +71,23 @@ TS support:
 
 ### Top‑level restrictions (clean contract; JSON/YAML)
 
-- Operational root flags must live under rootOptionDefaults. Do not place root toggles (e.g., env, shell, loadProcess, log, exclude\*, trace, strict, redact family, entropy family, splitters) at the top level in JSON/YAML. Put them under rootOptionDefaults to control both help‑time labels and runtime defaults.
+- Operational root flags must live under rootOptionDefaults. Do not place root toggles (e.g., env, shell, loadProcess, log, exclude\*, trace, strict, redact family, entropy family, splitters) at the top level in JSON/YAML. Put them under rootOptionDefaults to control both help‑time labels and runtime defaults. In a TS config, the `defineGetDotenvConfig()` type has exactly the loader's keys, so a top-level root option is a type error.
 - scripts belongs at the top level only. Do not nest scripts inside rootOptionDefaults.
 - dynamic and schema are JS/TS‑only. JSON/YAML loader rejects them.
+
+### Root defaults precedence
+
+Root options resolve from one stack, higher wins: CLI flags, then the parent options bag (`process.env.getDotenvCliOptions`, in a nested run), then config `rootOptionDefaults` (project local, project public, packaged), then `createCli({ rootOptionDefaults })`, then the built-in defaults. `createCli` defaults are not Commander option defaults, so config and the parent bag override them.
+
+### ON/OFF flags
+
+Each ON/OFF family (`-p`/`-P` `loadProcess`, `-l`/`-L` `log`, `--debug`/`--debug-off`, `--redact`/`--redact-off`, `--entropy-warn`/`--entropy-warn-off` `warnEntropy`, and the five exclusions `-z`/`-Z`, `-n`/`-N`, `-g`/`-G`, `-r`/`-R`, `-u`/`-U`) resolves the same way:
+
+- an explicit ON flag turns it on;
+- an explicit OFF flag turns it off, even when `rootOptionDefaults` (or a built-in default, such as `loadProcess: true` and `warnEntropy: true`) turns it on;
+- with neither flag, the value comes from the defaults.
+
+For the exclusions, an individual flag (`-r`, `-R`, …) beats `-a/--exclude-all` and `-A/--exclude-all-off`, which beat the defaults. In the defaults, `rootOptionDefaults.excludeAll: true` (in config or `createCli`) turns on all five exclusions, and an individual default such as `excludePrivate: false` beats it.
 
 ## Privacy
 
@@ -92,8 +108,8 @@ The overlay flow:
 
 1. Base: resolve file cascade using getDotenv (exclude dynamic; ignore programmatic vars).
 2. Overlay config sources in order: packaged (public only) → project public → project local.
-3. Apply dynamic in order: programmatic dynamic (if provided) → config dynamic from JS/TS (packaged → project public → project local) → file dynamicPath (lowest dynamic tier).
-4. Optional effects: outputPath (write consolidated dotenv; quote multiline), log (print final map), loadProcess (merge into process.env).
+3. Apply dynamic in order, a later map winning on a shared key: config dynamic from JS/TS (packaged → project public → project local) → programmatic dynamic (if provided) → file dynamicPath (highest dynamic tier).
+4. Optional effects: outputPath (write consolidated dotenv; values quoted so dotenv reads them back exactly), log (print final map), loadProcess (copy into process.env: a string sets the key; an unset value, or a key deleted by a dynamic `null`, deletes it).
 
 ## Environment resolution order
 
@@ -111,8 +127,8 @@ By the time plugins run, `bag.env` is always the fully resolved environment — 
 
 There are three distinct expansion stages:
 
-- Root option parse-time expansion (CLI only): selected root option values (for example `--env`, `--vars`, `--output-path`, `--dotenv-token`, `--private-token`, `--dynamic-path`, `--paths`) are dotenv-expanded once against `process.env` via an option parser; they do not see `{ ...ctx.dotenv }`.
-- Dotenv/config composition expansion (host): dotenv values from files and config overlays are expanded progressively during composition; later keys can reference earlier ones.
+- Root option parse-time expansion (CLI only): selected root option values (for example `--env`, `--output-path`, `--dotenv-token`, `--private-token`, `--dynamic-path`, `--paths`) are dotenv-expanded once against `process.env` via an option parser; they do not see `{ ...ctx.dotenv }`. `--vars` is not one of them: its values are expanded once, in the vars layer, so `-v 'P=\$5'` sets `P` to `$5`.
+- Dotenv/config composition expansion (host): dotenv values from files, config `vars`/`envVars` and explicit vars (`--vars`, programmatic `vars`) are expanded progressively during composition, each against `process.env` overlaid with the values composed so far (composed values win); later keys can reference earlier ones. A referenced value is substituted verbatim, as composed, and never expanded again: with `.env` `P=\$5`, config `vars: { Q: '$P' }` gives `Q=$5`. While a key is being expanded, a reference to it sees the value composed before it, else counts as unset.
 - Per-plugin interpolation: before validation and `afterResolve`, the host deep-interpolates each plugin’s config slice (string leaves only) once against `{ ...ctx.dotenv, ...process.env }` (process.env wins).
 
 Notes:
@@ -129,7 +145,7 @@ You can validate the final composed environment via config:
 Behavior:
 
 - Validation runs once against the composed env (host/generator paths), after overlays and dynamic variables are applied.
-- By default, issues are printed as warnings. Set --strict (or strict: true in options) to fail with a non‑zero exit when issues are detected.
+- By default, issues are logged at error level and the run continues. Set --strict (or strict: true in options) to fail with a non‑zero exit when issues are detected.
 
 Examples:
 
@@ -153,7 +169,7 @@ export default {
 
 ## Plugin config
 
-Plugin configuration is discovered under `plugins.<mount-path>` in the same packaged/project public/local files. The host merges slices by precedence (packaged → project/public → project/local) and deep‑interpolates string leaves once against `{ ...ctx.dotenv, ...process.env }` (process.env wins for plugin slices). Plugins read their own validated slice via the instance‑bound helper `plugin.readConfig(cli)`.
+Plugin configuration is discovered under `plugins.<mount-path>` in the same packaged/project public/local files. The mount path is the chain of effective namespaces from the root (a `.use(plugin, { ns })` override replaces the plugin's own `ns`), e.g. `aws/whoami` or `deploy-api`. The host merges slices by precedence (packaged → project/public → project/local) and deep‑interpolates string leaves once against `{ ...ctx.dotenv, ...process.env }` (process.env wins for plugin slices). Plugins read their own validated slice via the instance‑bound helper `plugin.readConfig(cli)`.
 
 Location and shape:
 
@@ -205,15 +221,15 @@ const out = overlayEnv({
 
 Presentation‑only diagnostics help audit values without altering runtime behavior:
 
-- Redaction (--redact): masks secret‑like keys (default patterns include SECRET, TOKEN, PASSWORD, API_KEY, KEY) in -l/--log and --trace outputs; allow custom patterns via --redact-pattern.
+- Redaction (--redact): masks secret‑like keys in -l/--log and --trace outputs. The built-in patterns match `secret`, `token`, `pass`/`password`, `api_key`/`api-key`/`apikey` and `key`, case-insensitively, as a whole word or as an underscore- or dash-delimited segment of the key: `API_SECRET`, `DB_PASSWORD` and `GITHUB_TOKEN` are masked; `SECRETARY` and `MONKEY` are not. Custom patterns (`--redact-pattern <pattern...>`, `rootOptionDefaults.redactPatterns`, or `redactPatterns` in `getDotenv` options) add to the built-in patterns. A RegExp pattern is used without its `g` and `y` flags, so it matches every key.
 - Entropy warnings (on by default):
-  - Once‑per‑key messages when printable strings of length ≥ 16 exceed bits/char threshold (default 3.8).
-  - Surfaces: --trace and -l/--log.
-  - Whitelist patterns supported.
+  - Once‑per‑key messages when printable strings of at least `--entropy-min-length` characters (default 16) exceed `--entropy-threshold` bits/char (default 3.8). Both flags take numbers (a non-number is a usage error), and their help labels show the effective defaults.
+  - Surfaces: --trace and -l/--log, on the CLI and in `getDotenv({ log: true })`.
+  - Whitelisted keys are never checked. The built-in whitelist (`^GIT_`, `^npm_`, `^CI$`, `SHLVL`) always applies: patterns from `--entropy-whitelist`, `rootOptionDefaults.entropyWhitelist` or `entropyWhitelist` in `getDotenv` options add to it.
 
 ## Scripts table (optional)
 
-You can define a scripts table in config. Script strings are resolved by the `cmd` and `batch` commands. If you want a named script to inherit the root shell behavior, use the string form; the object form `{ cmd, shell }` uses `shell` as the effective shell for that entry (and when omitted, the script currently runs with shell-off rather than inheriting the root shell):
+You can define a scripts table in config. Script strings are resolved by the `cmd` and `batch` commands. Only the table's own keys are script names: a command named after an inherited object property (`toString`, `constructor`) runs as typed. If you want a named script to inherit the root shell behavior, use the string form; the object form `{ cmd, shell }` uses `shell` as the effective shell for that entry (and when omitted, the script currently runs with shell-off rather than inheriting the root shell):
 
 ```json
 {
@@ -231,4 +247,6 @@ getdotenv cmd bash-only
 getdotenv cmd plain
 ```
 
-For help‑time visibility of root flags (e.g., hiding `--capture` or an entire family like `--shell`/`--shell-off`), set `rootOptionVisibility` in JSON/YAML/JS/TS config. Precedence matches root defaults: createCli < packaged/public < project/public < project/local.
+One script is built in: `git-status` runs `git status -s -u -b` (the `## <branch>` line, then short status with untracked files) with `shell: true`, the OS default shell (PowerShell on Windows, `/bin/bash` elsewhere). Its command uses no shell operators, so it works under PowerShell 5.1, which has no `&&`. When you write a script for that default shell on Windows, do the same. Config scripts are merged with it.
+
+For help‑time visibility of root flags (e.g., hiding `--capture` or an entire family like `--shell`/`--shell-off`), set `rootOptionVisibility` in JSON/YAML/JS/TS config. Precedence matches root defaults: createCli < packaged/public < project/public < project/local; a higher layer’s true shows a flag a lower layer hid. Every root flag has a key, including env, outputPath, defaultEnvKey, debug and excludeAll. The merged visibility applies to every help rendering: a hidden flag leaves root help and the inherited `<alias> options (anywhere)` section of every subcommand's help, qualified name included (see [Qualified options](./qualified-options.md#help-output)).

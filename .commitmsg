@@ -1,6 +1,0 @@
-chore: fix lint, build warnings, and code quality issues
-
-- Fix prettier formatting in attachRootOptions and defaultAction
-- Fix @typescript-eslint/consistent-type-imports in dynamic import
-- Fix Rollup build type mismatch warning for AWS SDK dynamic import
-- Remove .commitmsg from tracked files

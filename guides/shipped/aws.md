@@ -25,18 +25,19 @@ At a glance:
 
 ## How it works (high level)
 
-The following resolution logic runs in the aws plugin's `afterResolve` hook, which only fires when the invoked command is within the `aws` subtree (see scoping note above).
+The following resolution logic runs once per invocation, only when the invoked command is within the `aws` subtree (see scoping note above), always with the `aws` flags applied (flags beat config): for `aws <flags> <child>` the `aws` command's `preSubcommand` hook establishes the session before the child runs, and the later `afterResolve` hook and the child keep it; otherwise the `afterResolve` hook establishes it and the `aws` action reuses it. So `mycli aws --profile dev whoami` runs `whoami` with the `dev` session, never a second one re-resolved from config or dotenv.
 
 - Profile resolve:
-  - From config (`plugins.aws.profile`) → dotenv (`AWS_LOCAL_PROFILE`) → dotenv fallback (`AWS_PROFILE`) → undefined.
+  - From the `--profile` flag → config (`plugins.aws.profile`) → dotenv (`AWS_LOCAL_PROFILE`) → dotenv fallback (`AWS_PROFILE`) → undefined.
 - Region resolve:
-  - From config (`plugins.aws.region`) → dotenv (`AWS_REGION`) → `aws configure get region --profile <profile>` (best‑effort) → `plugins.aws.defaultRegion`.
+  - From the `--region` flag → config (`plugins.aws.region`) → dotenv (`AWS_REGION`) → `aws configure get region --profile <profile>` (best‑effort) → `plugins.aws.defaultRegion`.
 - Credentials resolve (strategy: `cli-export` default):
   - If a profile is selected (from flags/config/dotenv), it wins over ambient env credentials: the plugin resolves credentials for that profile via the AWS CLI (`aws configure export-credentials`, with optional SSO login-on-demand) and then applies them to `process.env`.
   - If no profile is selected, the plugin falls back to ambient credentials from `process.env` (`AWS_ACCESS_KEY_ID` + `AWS_SECRET_ACCESS_KEY` + optional `AWS_SESSION_TOKEN`) when present.
-  - Export-credentials formats: the plugin prefers `aws configure export-credentials --format process` first, then tries platform-appropriate env-like formats (PowerShell / windows-cmd / env / env-no-export), then falls back to the AWS CLI default output when needed.
+  - Export-credentials formats: the plugin tries `aws configure export-credentials --format process` first, then one platform format (`--format powershell` on Windows, `--format env` elsewhere), then the AWS CLI default output. The parser reads JSON and POSIX, PowerShell, windows-cmd and env-no-export lines.
   - If export fails and the profile looks like SSO and `loginOnDemand` is true, the plugin runs `aws sso login --profile <profile>` once and retries export.
   - As a last resort, it falls back to `aws configure get aws_access_key_id`, `aws_secret_access_key`, and optional `aws_session_token`.
+  - The AWS CLI probes share a 9-second budget (each call at most 3 seconds), so a slow or blocked profile cannot stall the command. The interactive `aws sso login` is not counted: after it, the export retry, the static fallback and the region lookup get a fresh budget.
 - Effects:
   - Writes `AWS_REGION` and (when unset) `AWS_DEFAULT_REGION` into `process.env`.
   - Ensures mutually exclusive AWS credential sources in `process.env`:
@@ -72,7 +73,7 @@ Subcommand flags (map directly to config for effective defaults):
 - `--profile-fallback-key <string>` — override fallback key (`AWS_PROFILE` by default)
 - `--region-key <string>` — override config key name for region (`AWS_REGION` by default)
 
-Note on capture: The shipped host treats `--capture` (or `GETDOTENV_STDIO=pipe`) as a global behavior. The aws subcommand honors it when forwarding to the AWS CLI and in child processes; when piped, the current executor re-emits buffered stdout (stderr is not re-emitted by default).
+Note on capture: The shipped host treats `--capture` (or `GETDOTENV_STDIO=pipe`) as a global behavior. The aws subcommand honors it when forwarding to the AWS CLI and in child processes; when piped, the executor re-emits the buffered stdout to stdout and stderr to stderr after the child exits.
 
 ## Config examples
 
@@ -155,6 +156,7 @@ import { whoamiPlugin } from './plugins/aws-whoami';
 
 const run = createCli({
   alias: 'mycli',
+  importMetaUrl: import.meta.url,
   compose: (p) => p.use(awsPlugin().use(whoamiPlugin())),
 });
 
@@ -192,7 +194,7 @@ Writes region and credentials to `process.env`, mirrors `{ profile, region }` to
 mycli aws -- sts get-caller-identity
 ```
 
-Tokens after `--` are forwarded to `aws …`. The subprocess runs with an environment composed from `{ ...process.env, ...ctx.dotenv }` and honors capture (`--capture` or `GETDOTENV_STDIO=pipe`).
+Tokens after `--` are forwarded to `aws …`. The subprocess runs with `process.env`, then the dotenv values and `getDotenvCliOptions` (the merged options bag, as for every spawn path), then the session's `AWS_*` entries on top: the session's region and credentials win over dotenv `AWS_*` keys, and a dotenv `AWS_PROFILE` or static key the session cleared does not come back. It honors capture (`--capture` or `GETDOTENV_STDIO=pipe`).
 
 ## Security & behavior notes
 

@@ -28,6 +28,8 @@ Lower-level building blocks (when you need more control):
 - `parseDotenvDocument(text)` → `DotenvDocument`
 - `applyDotenvEdits(doc, updates, opts?)` → `DotenvDocument`
 - `renderDotenvDocument(doc, eolMode?)` → string
+- `buildDotenvTargetFilename(opts)` → the target filename for a scope/privacy selector
+- `resolveDotenvTarget(opts)` → `{ targetPath, templatePath?, filename }` (the target selection `editDotenvFile` uses; see [Resolution order](#resolution-order))
 
 Types of interest:
 
@@ -59,7 +61,9 @@ console.log(after);
 Key behaviors:
 
 - Unknown/unparsed lines are preserved verbatim.
-- Ordering is preserved; new keys (merge mode) are appended at the end.
+- Ordering is preserved; new keys are appended at the end, in update-map order (both modes).
+- A new key must be one dotenv reads: letters, digits, `_`, `.` and `-` (`[\w.-]+`). Any other key (a space, `=`, a line break, an empty key) throws `can't add dotenv key "..."` instead of writing a line dotenv would never read back as that key.
+- A new key always starts on its own line: when the file's last line has no final newline, `editDotenvFile` ends that line first (in the file's EOL style) and the file still ends without a final newline.
 - Inline comment spacing is preserved when updating existing assignment lines.
 
 ## Update map semantics (DotenvUpdateMap)
@@ -75,14 +79,19 @@ Supported value types:
 
 Important nuance (sync mode):
 
-- In `mode: 'sync'`, keys that are not present in the update map are deleted, but a key that is present with `undefined` counts as “present” and is not deleted (while also not being updated).
+- In `mode: 'sync'`, keys that are not present in the update map are deleted, but a key that is present with `undefined` counts as “present”: it is not deleted if it is in the file, not updated, and not added if it is missing.
 
 ## Modes and duplicates
 
 ### Mode: merge vs sync
 
 - `mode: 'merge'` (default): update existing keys and append missing keys; do not delete unrelated keys.
-- `mode: 'sync'`: delete assignment/bare-key lines for keys not present in the update map, while preserving comments/unknown lines.
+- `mode: 'sync'`: make the file hold exactly the given keys (an upsert). Existing keys are updated in place, missing keys are appended as `merge` appends them, and assignment/bare-key lines for keys not in the update map are deleted. Comments, blank lines and unknown lines are kept.
+
+```ts
+editDotenvText('A=1\nC=3\n', { A: '9', B: '2' }, { mode: 'sync' });
+// 'A=9\nB=2\n'
+```
 
 ### Duplicate keys
 
@@ -94,13 +103,28 @@ When the same key appears multiple times, you can choose how to update/delete oc
 
 ## Quoting, multiline, and comment safety
 
-The editor prefers correctness over minimal diff, but it preserves quote style where it is safe to do so.
+Every value is written so that get-dotenv reads it back exactly: dotenv's `parse`, then get-dotenv's expander. A value is literal, so a `$` the expander would act on (one that starts a reference such as `$HOME` or `${A:-x}`, or one after a `\`) is written `\$`: `pa$$word` becomes `pa$\$word`. A `$` that starts no reference (`cost $`) is left alone. To write a reference that get-dotenv expands, write that line yourself. The dotenv file-editing API (`editDotenvFile`) and the `outputPath` (`-o`) writer share one formatter, which tries these forms of the escaped value in order and writes the first that dotenv reads back unchanged (and that `editDotenvFile` reads as the same single value the next time it edits the file):
 
-Rules of thumb:
+- An existing line: its current quote style, then double quotes, single quotes, backticks, then bare.
+- A new key, or an unquoted line: bare, then double quotes, single quotes, backticks.
 
-- Multiline values are always written using double quotes for correctness.
-- Leading/trailing whitespace forces quoting (to avoid silent trimming by dotenv parsers).
-- If a line has an inline comment suffix and the new value contains `#`, the value is quoted to avoid comment truncation.
+What that means in practice (dotenv 18):
+
+| Value                                                   | Written as                                       | Why                                                                                                 |
+| ------------------------------------------------------- | ------------------------------------------------ | --------------------------------------------------------------------------------------------------- |
+| `plain`, `C:\new\dir`                                   | bare                                             | nothing needs quoting; a bare value is never unescaped                                              |
+| contains `#` (`x #y`)                                   | `"x #y"`                                         | a bare value ends at the first `#`                                                                  |
+| leading/trailing whitespace (` lead`)                   | `" lead"`                                        | a bare value is trimmed                                                                             |
+| line breaks                                             | `"a↵b"` (literal line breaks, in the file's EOL) |                                                                                                     |
+| needs quotes and contains `"` (`say "hi" #1`)           | `'say "hi" #1'`                                  | double quotes can't hold a `"` (an existing double-quoted line moves to single quotes the same way) |
+| needs quotes and contains `\n` or `\r` text (` C:\new`) | `' C:\new'`                                      | inside double quotes dotenv expands `\n` and `\r`                                                   |
+| contains both `"` and `'` and needs quotes              | backticks                                        |                                                                                                     |
+| carriage return                                         | `"a\rb"`                                         | only double quotes can express one                                                                  |
+
+Inside double quotes dotenv expands `\n` and `\r` and unescapes nothing else, so the formatter never escapes `\\` or `\"`. A value that no form can hold (for example one that needs quotes and contains all three quote characters, or a carriage return together with `"`) throws `Unable to write dotenv key "<KEY>": ...`; the message names the key, never the value.
+
+The parser recognises double quotes, single quotes and backticks, single-line or multiline.
+
 - Bare-key placeholders like `FOO` or `BAR  # comment` are converted into assignments when updated (default separator `=`), preserving the inline comment.
 
 ## EOL policy (LF vs CRLF)
@@ -143,11 +167,52 @@ By default, selection uses reverse path order (highest precedence wins), matchin
 
 ### Template bootstrap
 
-If the target file does not exist anywhere under `paths`, but a template exists at `<target>.<templateExtension>`, it will be copied to `<target>` before editing.
+If the target file does not exist in any path, but a template exists at `<target>.<templateExtension>`, it is copied to `<target>` (in the template's directory) before editing.
 
 - `templateExtension: 'template'` by default, producing patterns like `.env.local.template`.
 
-If neither the target nor the template exists under any provided path, `editDotenvFile` throws.
+### Shared env template (`scope: 'env'` only)
+
+Env-scoped templates are usually identical across environments (`dev`, `stg`, `prod`, ...), which means keeping separate `.env.<env>.local.template` files per environment just invites drift. When an env-scoped target is missing _and_ it has no env-specific template, `resolveDotenvTarget` falls back to a **shared env template** before throwing.
+
+The shared template filename is built the same way as the env target, but with a fixed token in place of the actual env name. That token is configurable via `sharedEnvTemplateToken` (default `'env'`), and it respects `dotenvToken`, `privateToken`, and `templateExtension`:
+
+- `.env.<env>.local` → shared template `.env.env.local.template`
+- `.env.<env>` → shared template `.env.env.template`
+
+### Resolution order
+
+`resolveDotenvTarget` (and so `editDotenvFile`) searches in tiers. Each tier checks every path, in `searchOrder`, before the next tier starts, so an existing target in any path beats a template in any path, and an env-specific template in any path beats a shared one:
+
+| Tier | Candidate (example: `scope: 'env'`, `privacy: 'private'`, `env: 'dev'`)  | Used when                                          | Result                                               |
+| ---- | ------------------------------------------------------------------------ | -------------------------------------------------- | ---------------------------------------------------- |
+| 1    | the target, `.env.dev.local`                                             | it exists in any path                              | edit it in place                                     |
+| 2    | the env-specific template, `.env.dev.local.template`                     | no target in any path                              | copy it to `.env.dev.local` beside it, then edit     |
+| 3    | the shared env template, `.env.env.local.template` (`scope: 'env'` only) | no target and no env-specific template in any path | copy it to `.env.dev.local` beside it, then edit     |
+| —    | nothing                                                                  | none of the above in any path                      | throw, listing every candidate checked, tier by tier |
+
+For example, with `paths: ['./a', './b']` (reverse order searches `./b` first), `./a/.env.dev.local` beats `./b/.env.dev.local.template`, and `./a/.env.dev.local.template` beats `./b/.env.env.local.template`. Global scope has tiers 1 and 2 only.
+
+Notes:
+
+- This fallback only applies to `scope: 'env'`. Global-scoped targets (`.env`, `.env.local`) never use it — `.env.local.template` remains the template for `.env.local` only.
+- When a shared template is selected, `resolveDotenvTarget` returns the env target path (in the directory where the shared template was found) as `targetPath`, and the shared template path as `templatePath`. `editDotenvFile` bootstraps from it exactly like any other template, reporting `createdFromTemplate: true`.
+
+```ts
+import { editDotenvFile } from '@karmaniverous/get-dotenv';
+
+// With `.env.env.local.template` committed at the repo root, this works for
+// every env without a per-env template file.
+await editDotenvFile(
+  { API_URL: 'https://example.com' },
+  {
+    paths: ['./'],
+    scope: 'env',
+    privacy: 'private',
+    env: 'dev',
+  },
+);
+```
 
 ### Example: create `.env.local` from template and set keys
 

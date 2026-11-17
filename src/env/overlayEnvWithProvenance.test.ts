@@ -29,6 +29,18 @@ describe('env/overlayEnvWithProvenance', () => {
     expect(last?.kind).toBe('vars');
   });
 
+  it('a programmatic var given as undefined unsets the key, with vars/unset provenance', () => {
+    const out = overlayEnvWithProvenance({
+      base: { A: 'a0', B: 'b0' },
+      env: 'dev',
+      configs: {},
+      programmaticVars: { A: undefined, B: 'b1' },
+    });
+    expect(out.env.A).toBeUndefined();
+    expect(out.env.B).toBe('b1');
+    expect(out.provenance.A?.at(-1)).toEqual({ kind: 'vars', op: 'unset' });
+  });
+
   it('records unset when an overlay yields undefined', () => {
     const out = overlayEnvWithProvenance({
       base: { A: 'a0' },

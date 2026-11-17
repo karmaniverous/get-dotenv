@@ -39,7 +39,7 @@ export const batchPlugin = (opts: BatchPluginOptions = {}) => {
       );
       attachBatchOptions(plugin, batchCmd);
 
-      // Default subcommand `cmd` (mounted as batch default subcommand)
+      // The `cmd` subcommand (not the default: batch has its own action)
       attachBatchCmdSubcommand(plugin, cli, batchCmd, opts);
 
       // Default action for the batch command mount (parent flags and positional form)

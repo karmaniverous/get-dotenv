@@ -4,13 +4,11 @@
  * alias to execute a command within the resolved dotenv context.
  */
 
-import { camel } from 'radash';
-
 import { definePlugin } from '@/src/cliHost';
 
+import { attachCmdAlias, resolveAliasSpec } from './alias';
 import { attachCmdDefaultAction } from './defaultAction';
 import { attachCmdOptions } from './options';
-import { attachCmdParentInvoker } from './parentInvoker';
 import { cmdPluginConfigSchema, type CmdPluginOptions } from './types';
 export type { RunCmdWithContextOptions } from './types';
 
@@ -26,16 +24,7 @@ export const cmdPlugin = (options: CmdPluginOptions = {}) => {
     ...(options.asDefault ? { nsOptions: { isDefault: true } } : {}),
     configSchema: cmdPluginConfigSchema,
     setup(cli) {
-      const aliasSpec =
-        typeof options.optionAlias === 'string'
-          ? { flags: options.optionAlias, description: undefined, expand: true }
-          : options.optionAlias;
-      const deriveKey = (flags: string) => {
-        const long =
-          flags.split(/[ ,|]+/).find((f) => f.startsWith('--')) ?? '--cmd';
-        return camel(long.replace(/^--/, ''));
-      };
-      const aliasKey = aliasSpec ? deriveKey(aliasSpec.flags) : undefined;
+      const aliasSpec = resolveAliasSpec(options.optionAlias);
 
       // Mount is the command ('cmd'); attach default action.
       cli.description(
@@ -44,12 +33,9 @@ export const cmdPlugin = (options: CmdPluginOptions = {}) => {
       // Options/arguments (positional payload, argv routing) are attached separately.
       attachCmdOptions(cli);
 
-      attachCmdDefaultAction(cli, cli, aliasKey);
-
-      // Parent-attached option alias (optional, unified naming).
-      if (aliasSpec !== undefined) {
-        attachCmdParentInvoker(cli, options, plugin);
-      }
+      // The parent alias (optional) runs through the cmd action below.
+      const alias = aliasSpec ? attachCmdAlias(cli, aliasSpec) : undefined;
+      attachCmdDefaultAction(cli, plugin, alias);
       return undefined;
     },
   });

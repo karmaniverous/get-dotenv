@@ -10,7 +10,7 @@ This page documents the root shell behavior controlled by the host’s global `-
 
 ## Resolution rules
 
-- `--shell` (or `shell: true`): use a normalized default shell
+- `--shell` (or `shell: true`): use a normalized default shell. `shell: true` means this shell wherever it is set: the root, a script entry, plugin config, or a direct `runCommand(..., true)`.
   - POSIX: `/bin/bash`
   - Windows: `powershell.exe`
 - `--shell <string>`: use the provided shell (e.g., `/bin/zsh`)
@@ -19,8 +19,8 @@ This page documents the root shell behavior controlled by the host’s global `-
 
 ## Plain vs shell mode
 
-- Plain (no shell): safer for simple commands; pipes, redirects, and globbing are not available unless the command itself implements them. When `get-dotenv` is given a *string* command in shell-off mode, it tokenizes it using a minimal tokenizer; for complex quoting or `node -e/--eval` payloads, prefer passing argv tokens (or use the `cmd`/`batch` positional token forms) so payloads are preserved precisely.
-- Shell mode: the specified shell parses the command string, enabling pipes, redirects, aliases, and shell builtins. Quoting and escaping must follow the shell’s rules.
+- Plain (no shell): safer for simple commands; pipes, redirects, and globbing are not available unless the command itself implements them. When `get-dotenv` is given a _string_ command in shell-off mode, it tokenizes it using a minimal tokenizer; for complex quoting or `node -e/--eval` payloads, prefer passing argv tokens (or use the `cmd`/`batch` positional token forms) so payloads are preserved precisely.
+- Shell mode: the specified shell parses the command string, enabling pipes, redirects, aliases, and shell builtins. The string reaches the shell exactly as given (runs of spaces and `\ ` escapes included). Quoting and escaping must follow the shell's rules.
 
 ## Examples
 
@@ -66,10 +66,18 @@ TypeScript note: When you author scripts in code, a helper `defineScripts<TShell
 
 - POSIX shells: prefer single quotes when possible; escape `$` for literal dollar signs.
 - PowerShell: double-quotes perform interpolation; single quotes are literal.
+- Argv forms (batch positionals, the aws forward) are joined into one string for the shell with each token quoted by that shell's own rules: single quotes for POSIX shells and PowerShell, caret-escaped double quotes for `cmd.exe`. A PowerShell command name that needs quotes runs through the call operator (`& '...'`). An empty argument is kept (`''`, or `""` for `cmd.exe`).
+- PowerShell argv tokens (`powershell.exe`, and `pwsh` 7.3 or later with its default `$PSNativeCommandArgumentPassing`): every token is single-quoted, so PowerShell reads nothing in it. Each character PowerShell treats as a single quote (`'` and the curly quotes U+2018 to U+201B) is doubled. A token that is exactly `--%` is passed as `@('--%')`, because PowerShell takes any argument whose value is `--%`, quoted or not, as its stop-parsing marker. Under `pwsh`'s default `Windows` mode, arguments to `cmd.exe` and batch files use PowerShell's legacy passing, which these rules don't cover.
+- Shell off, the same argv array can reach the child differently. Each argument (not the command name) loses matching outer quotes, repeatedly (`'"quoted words"'` and `"""code"""` both arrive as the bare text), because no shell is there to remove the quotes a user typed (spec section 4: shell off strips symmetric outer quotes from argv arrays; 7.x did the same). With a shell, each token is quoted as given, so the quotes reach the child: `['node', 'x.js', '"a b"']` passes `"a b"` with a shell and `a b` without one.
+- `cmd.exe` argv tokens: each token is first escaped for the program's argv parser (the MSVCRT / `CommandLineToArgvW` rules: wrapped in `"`, an embedded `"` as `\"`, backslashes doubled before a `"` and at the end), then every `cmd.exe` metacharacter, quotes included, gets a `^`, as cross-spawn does (after [qntm.org/cmd](https://qntm.org/cmd)). `%VAR%` and `!VAR!` arrive literally. `cmd.exe` can't stop a `%name:old=new%` or `%name:~n,m%` edit, or carry a line break, so a token list that would need either throws an error naming the problem (never the token): run it with `shell: false` or another shell. A command name with spaces goes in plain quotes; one holding `"` or `%` throws. Not covered: a variable whose name contains `^`, `!VAR!` when delayed expansion is turned on in the registry (it is off by default), and a batch file (`npm.cmd` and the like), which parses its arguments a second time.
+
+## Exit codes
+
+get-dotenv exits with the child's exit code on every execution path (`cmd`, the default command, the `-c` alias, the aws forward, batch) and exits non-zero on usage errors. A child that can't be started (e.g. ENOENT with the shell off) prints `Error: <message>` and exits 127 (ENOENT) or 1. On Windows, execa runs a command name it can't resolve through `cmd.exe` (cross-spawn), which prints its own "is not recognized" message and exits 1. Under the default Windows shell, `powershell.exe -Command` reports any failure as 1, so the original code is lost there.
 
 ## Nested CLI behavior
 
-Nested `getdotenv` invocations inherit parent CLI options and the loaded dotenv context via `process.env.getDotenvCliOptions` (JSON). The shell resolution and scripts table continue to apply within nested commands using the same rules.
+Nested `getdotenv` invocations inherit parent CLI options and the loaded dotenv context via `process.env.getDotenvCliOptions` (JSON). The shell resolution and scripts table continue to apply within nested commands using the same rules. The parent's options rank above the child's own defaults and config, so a parent run with `--shell-off` (`shell: false`) runs the child without a shell too, even when the child's own default shell is a string; the child's own `--shell` still wins.
 
 ## Environment normalization
 
@@ -86,7 +94,7 @@ By default, child process output is streamed live (`stdio: 'inherit'`). For dete
 - Flag: `--capture`
 - Env: `GETDOTENV_STDIO=pipe`
 
-When capture is enabled, commands run with `stdio: 'pipe'` and the host re‑emits buffered stdout after the child completes. Note: the current `runCommand()` helper re‑emits stdout only; stderr is captured for programmatic callers via `runCommandResult()`, but it is not re‑emitted by default. Live streaming remains available by omitting the flag/env (the default).
+When capture is enabled, commands run with `stdio: 'pipe'` and the host re-emits the child's buffered stdout to stdout and its stderr to stderr after the child completes. Live streaming remains available by omitting the flag/env (the default).
 
 ## Dynamic help defaults
 
@@ -94,21 +102,22 @@ Root and plugin flags display effective defaults derived from the same resolved 
 
 - Top‑level `-h/--help` computes a read‑only resolved config and evaluates dynamic descriptions (no logging; no `process.env` mutation).
 - Subcommand help is rendered with `getdotenv <cmd> -h` / `--help`. Only top-level `-h/--help` is guaranteed to run with side effects suppressed.
+- Every help shows each option's qualified name (`(anywhere: --getdotenv-env)`), and a subcommand's help lists the options of the commands above it by qualified name. See [Qualified options](./qualified-options.md#help-output).
 
 Examples (concise excerpts):
 
 ```text
-# getdotenv -h
-  -S, --shell-off                     command execution shell OFF (default)
-  -P, --load-process-off              load variables to process.env OFF (default)
-  -L, --log-off                       console log loaded variables OFF (default)
+# getdotenv -h (on Linux; on Windows the default shell is powershell.exe)
+  -p, --load-process        load variables to process.env ON (default) (anywhere: --getdotenv-load-process)
+  -P, --load-process-off    load variables to process.env OFF (anywhere: --getdotenv-load-process-off)
+  -L, --log-off             console log loaded variables OFF (default) (anywhere: --getdotenv-log-off)
+  -s, --shell [string]      command execution shell, no argument for default OS shell or provide shell string (default /bin/bash) (anywhere: --getdotenv-shell)
 ```
 
 ```text
 # getdotenv batch -h
-  -r, --root-path <string>  path to batch root directory from current working directory (default: "./")
-  -g, --globs <string>      space-delimited globs from root path (default: "*")
-  -p, --pkg-cwd             use nearest package directory as current working directory (default)
+  -g, --globs <string>      space-delimited globs from root path (default: "*") (anywhere: --getdotenv-batch-globs)
+  -r, --root-path <string>  path to batch root directory from current working directory (default: "./") (anywhere: --getdotenv-batch-root-path)
 ```
 
 Notes:

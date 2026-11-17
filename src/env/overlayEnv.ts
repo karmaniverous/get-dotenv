@@ -1,6 +1,7 @@
 import type { ProcessEnv } from '@/src/core';
-import { dotenvExpandAll } from '@/src/dotenv';
 import type { GetDotenvConfigResolved } from '@/src/schema';
+
+import { expandLayer } from './expandLayer';
 
 /**
  * Configuration sources for environment overlay.
@@ -20,15 +21,6 @@ export type OverlayConfigSources = {
   };
 };
 
-const applyKv = (
-  current: ProcessEnv,
-  kv: Record<string, string> | undefined,
-): ProcessEnv => {
-  if (!kv || Object.keys(kv).length === 0) return current;
-  const expanded = dotenvExpandAll(kv, { ref: current, progressive: true });
-  return { ...current, ...expanded };
-};
-
 const applyConfigSlice = (
   current: ProcessEnv,
   cfg: GetDotenvConfigResolved | undefined,
@@ -36,9 +28,9 @@ const applyConfigSlice = (
 ): ProcessEnv => {
   if (!cfg) return current;
   // kind axis: global then env (env overrides global)
-  const afterGlobal = applyKv(current, cfg.vars);
+  const afterGlobal = expandLayer(current, cfg.vars).env;
   const envKv = env && cfg.envVars ? cfg.envVars[env] : undefined;
-  return applyKv(afterGlobal, envKv);
+  return expandLayer(afterGlobal, envKv).env;
 };
 
 /**
@@ -82,7 +74,8 @@ export interface OverlayEnvOptionsWithProgrammatic<
  * - source: project \> packaged \> base
  *
  * Programmatic explicit vars (if provided) override all config slices.
- * Progressive expansion is applied within each slice.
+ * Progressive expansion is applied within each slice, against `process.env`
+ * overlaid with the values composed so far (composed values win).
  */
 export function overlayEnv<B extends ProcessEnv | Readonly<ProcessEnv>>(args: {
   base: B;
@@ -125,7 +118,7 @@ export function overlayEnv(
         ([_k, v]) => typeof v === 'string',
       ) as Array<[string, string]>,
     );
-    current = applyKv(current, toApply);
+    current = expandLayer(current, toApply).env;
   }
 
   return current;

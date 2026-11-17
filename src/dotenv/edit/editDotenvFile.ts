@@ -4,7 +4,9 @@
  * Requirements addressed:
  * - Deterministic target selection across getdotenv `paths` only.
  * - Scope axis (global|env) × privacy axis (public|private).
- * - Template bootstrap: copy `<target>.<templateExtension>` to `<target>` when needed.
+ * - Template bootstrap: when no target exists in any path, copy the env-specific template
+ *   (`<target>.<templateExtension>`), else (env scope) the shared env template, to `<target>`
+ *   beside it (see {@link resolveDotenvTarget} for the full order).
  * - Edit in place while preserving formatting via the pure text editor.
  *
  * @packageDocumentation
@@ -30,6 +32,10 @@ const defaultFs: DotenvFs = {
 
 /**
  * Edit a dotenv file selected by scope/privacy across a list of search paths.
+ *
+ * Selection: an existing target in any path, then the env-specific template, then
+ * (env scope) the shared env template ({@link resolveDotenvTarget}); a template is copied
+ * to the target beside it before editing.
  *
  * @param updates - Update map of keys to values.
  * @param options - Target selection options + edit options.
@@ -62,6 +68,9 @@ export async function editDotenvFile(
     privacy: options.privacy,
     templateExtension,
     searchOrder,
+    ...(typeof options.sharedEnvTemplateToken === 'string'
+      ? { sharedEnvTemplateToken: options.sharedEnvTemplateToken }
+      : {}),
   });
 
   let createdFromTemplate = false;

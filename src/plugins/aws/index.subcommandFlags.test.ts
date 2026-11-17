@@ -40,13 +40,12 @@ describe('plugins/aws subcommand flags', () => {
     const logSpy = vi.spyOn(console, 'log').mockImplementation(() => undefined);
 
     const run = createCli({
+      importMetaUrl: import.meta.url,
       alias: 'test',
       compose: (program) => program.use(awsPlugin().use(awsWhoamiPlugin())),
     });
 
     await run([
-      'node',
-      'test',
       'aws',
       '--profile',
       'JGS-SSO',

@@ -11,13 +11,14 @@
 import { shake } from 'radash';
 import type { z } from 'zod';
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import type { baseGetDotenvCliOptions } from '@/src/cliHost';
 import type {
   RootOptionsShape,
   ScriptsTable as Scripts,
 } from '@/src/cliHost/types';
-import { baseRootOptionDefaults } from '@/src/defaults';
+import {
+  baseRootOptionDefaults,
+  withBuiltInEntropyWhitelist,
+} from '@/src/defaults';
 import type { getDotenvOptionsSchemaResolved } from '@/src/schema';
 import { defaultsDeep } from '@/src/util';
 
@@ -44,7 +45,9 @@ export type RootOptionsShapeCompat = Omit<
 > & {
   /**
    * Extra variables as either a space‑delimited string of assignments
-   * (e.g., `"FOO=1 BAR=2"`) or an object map of `string | undefined` values.
+   * (e.g., `"FOO=1 BAR=2"`; each pair is split at its first assignor, so
+   * `"A=b=c"` sets `A` to `b=c`) or an object map of `string | undefined`
+   * values.
    */
   vars?: string | ProcessEnv;
   /**
@@ -162,7 +165,10 @@ export function defineDynamic(d: unknown): unknown {
 /**
  * Typed config shape and builder for authoring JS/TS getdotenv config files.
  *
- * Compile-time only; the runtime loader remains schema-driven.
+ * Compile-time only; the runtime loader remains schema-driven. The keys are
+ * exactly the loader's (see `getDotenvConfigSchemaRaw`): root operational
+ * options such as `paths`, `shell` or `log` belong under
+ * `rootOptionDefaults`.
  */
 export interface GetDotenvConfig<
   Vars extends ProcessEnv,
@@ -172,18 +178,8 @@ export interface GetDotenvConfig<
    * Operational root defaults applied by the host (collapsed families; stringly form).
    */
   rootOptionDefaults?: Partial<RootOptionsShape>;
-  /** Token indicating a dotenv file. */
-  dotenvToken?: string;
-  /** Token indicating private variables. */
-  privateToken?: string;
-  /** Paths to search for dotenv files. */
-  paths?: string | string[];
-  /** Whether to load variables into `process.env`. */
-  loadProcess?: boolean;
-  /** Whether to log loaded variables. */
-  log?: boolean;
-  /** Shell execution strategy. */
-  shell?: string | boolean;
+  /** Help-time visibility for root flags (`false` hides). */
+  rootOptionVisibility?: Partial<Record<keyof RootOptionsShape, boolean>>;
   /** Scripts table. */
   scripts?: Scripts;
   /** Keys required to be present in the final environment. */
@@ -247,6 +243,80 @@ export type InferGetDotenvVarsFromConfig<T> =
       ? V
       : never
     : never;
+/** CLI values arrive as strings: keep finite numbers, drop anything else. */
+const toFiniteNumber = (value: unknown): number | undefined => {
+  const n =
+    typeof value === 'string' && value.trim() !== '' ? Number(value) : value;
+  return typeof n === 'number' && Number.isFinite(n) ? n : undefined;
+};
+
+/** Split a delimited string by a regex pattern, a delimiter or a space. */
+const splitBy = (
+  value?: string,
+  delim?: string,
+  pattern?: string,
+): string[] => {
+  if (!value) return [];
+  if (pattern) return value.split(RegExp(pattern));
+  if (typeof delim === 'string') return value.split(delim);
+  return value.split(' ');
+};
+
+/** How a `--vars` string is split into pairs and each pair into a key and value. */
+interface VarsSyntax {
+  varsAssignor?: string | undefined;
+  varsAssignorPattern?: string | undefined;
+  varsDelimiter?: string | undefined;
+  varsDelimiterPattern?: string | undefined;
+}
+
+/**
+ * Split one pair at its first assignor only, so the value may contain it.
+ * A pair without an assignor yields no value (and is dropped later).
+ */
+const splitPair = (
+  pair: string,
+  { varsAssignor, varsAssignorPattern }: VarsSyntax,
+): [string, string | undefined] => {
+  let found: [number, number] | undefined;
+  if (varsAssignorPattern) {
+    const m = RegExp(varsAssignorPattern).exec(pair);
+    found = m ? [m.index, m[0].length] : undefined;
+  } else {
+    const assignor = varsAssignor ?? '=';
+    const at = pair.indexOf(assignor);
+    found = at === -1 ? undefined : [at, assignor.length];
+  }
+  if (!found) return [pair, undefined];
+  const [at, length] = found;
+  return [pair.slice(0, at), pair.slice(at + length)];
+};
+
+/**
+ * Vars as either a CLI string (`A=1 B=2`) or an object map, with
+ * undefined-valued entries dropped.
+ */
+const parseVars = (
+  vars: unknown,
+  syntax: VarsSyntax,
+): ProcessEnv | undefined => {
+  let parsed: ProcessEnv | undefined;
+  if (typeof vars === 'string') {
+    const kvPairs = splitBy(
+      vars,
+      syntax.varsDelimiter,
+      syntax.varsDelimiterPattern,
+    )
+      .map((pair) => splitPair(pair, syntax))
+      .filter(([k]) => k.length > 0);
+    parsed = Object.fromEntries(kvPairs);
+  } else if (vars && typeof vars === 'object' && !Array.isArray(vars)) {
+    parsed = Object.fromEntries(Object.entries(vars));
+  }
+  // Drop undefined-valued entries to match ProcessEnv expectations.
+  return parsed ? shake(parsed, (v) => v === undefined) : undefined;
+};
+
 /**
  * Converts programmatic CLI options to `getDotenv` options.
  *
@@ -263,49 +333,21 @@ export const getDotenvCliOptions2Options = ({
   varsAssignorPattern,
   varsDelimiter,
   varsDelimiterPattern,
+  entropyThreshold,
+  entropyMinLength,
   // drop CLI-only keys from the pass-through bag
   debug: _debug,
   scripts: _scripts,
   ...rest
 }: RootOptionsShapeCompat): GetDotenvOptions => {
-  // Split helper for delimited strings or regex patterns
-  const splitBy = (
-    value?: string,
-    delim?: string,
-    pattern?: string,
-  ): string[] => {
-    if (!value) return [];
-    if (pattern) return value.split(RegExp(pattern));
-    if (typeof delim === 'string') return value.split(delim);
-    return value.split(' ');
-  };
-
-  // Tolerate vars as either a CLI string ("A=1 B=2") or an object map.
-  let parsedVars: ProcessEnv | undefined;
-  if (typeof vars === 'string') {
-    const kvPairs = splitBy(vars, varsDelimiter, varsDelimiterPattern)
-      .map((v) =>
-        v.split(
-          varsAssignorPattern
-            ? RegExp(varsAssignorPattern)
-            : (varsAssignor ?? '='),
-        ),
-      )
-      .filter(([k]) => typeof k === 'string' && k.length > 0) as Array<
-      [string, string]
-    >;
-    parsedVars = Object.fromEntries(kvPairs);
-  } else if (vars && typeof vars === 'object' && !Array.isArray(vars)) {
-    // Accept provided object map of string | undefined; drop undefined values
-    // in the normalization step below to produce a ProcessEnv-compatible bag.
-    parsedVars = Object.fromEntries(Object.entries(vars));
-  }
-
-  // Drop undefined-valued entries at the converter stage to match ProcessEnv
-  // expectations and the compat test assertions.
-  if (parsedVars) {
-    parsedVars = shake(parsedVars, (v) => v === undefined);
-  }
+  const threshold = toFiniteNumber(entropyThreshold);
+  const minLength = toFiniteNumber(entropyMinLength);
+  const parsedVars = parseVars(vars, {
+    varsAssignor,
+    varsAssignorPattern,
+    varsDelimiter,
+    varsDelimiterPattern,
+  });
 
   // Tolerate paths as either a delimited string or string[]
   const pathsOut = Array.isArray(paths)
@@ -320,6 +362,8 @@ export const getDotenvCliOptions2Options = ({
     ...(rest as Partial<GetDotenvOptions>),
     ...(pathsOut.length > 0 ? { paths: pathsOut } : {}),
     ...(parsedVars !== undefined ? { vars: parsedVars } : {}),
+    ...(threshold !== undefined ? { entropyThreshold: threshold } : {}),
+    ...(minLength !== undefined ? { entropyMinLength: minLength } : {}),
   };
 };
 
@@ -327,7 +371,7 @@ export const getDotenvCliOptions2Options = ({
  * Resolve {@link GetDotenvOptions} by layering defaults in ascending precedence:
  *
  * 1. Base defaults derived from the CLI generator defaults
- *    ({@link baseGetDotenvCliOptions}).
+ *    (`baseGetDotenvCliOptions`).
  * 2. Local project overrides from a `getdotenv.config.json` in the nearest
  *    package root (if present).
  * 3. The provided customOptions.
@@ -340,7 +384,10 @@ export const resolveGetDotenvOptions = (
   // Programmatic callers use neutral defaults only. Do not read local packaged
   // getdotenv.config.json here; the host path applies packaged/project configs
   // via the dedicated loader/overlay pipeline.
-  const mergedDefaults = baseRootOptionDefaults as Partial<RootOptionsShape>;
+  // `loadProcess` defaults on for the CLI only (#48): the host passes its
+  // resolved value explicitly, and library callers opt in.
+  const { loadProcess: _cliOnly, ...mergedDefaults } =
+    baseRootOptionDefaults as Partial<RootOptionsShape>;
 
   const defaultsFromCli = getDotenvCliOptions2Options(mergedDefaults);
 
@@ -352,6 +399,8 @@ export const resolveGetDotenvOptions = (
 
   return Promise.resolve({
     ...result,
+    // A caller's entropy whitelist extends the built-in one (#46).
+    entropyWhitelist: withBuiltInEntropyWhitelist(result.entropyWhitelist),
     logger: validatedLogger,
     vars: shake(result.vars ?? {}, (v) => v === undefined) as ProcessEnv,
   });

@@ -1,4 +1,4 @@
-import { execaCommand } from 'execa';
+import { execa } from 'execa';
 import { describe, expect, it } from 'vitest';
 
 // Platform-guarded E2E test for PowerShell quoting/interpolation.
@@ -14,14 +14,14 @@ describe('E2E quoting (PowerShell)', () => {
       const env = { ...process.env, APP_SETTING: 'ps_value' };
 
       // Double-quoted: interpolated by PowerShell.
-      const interpolated = await execaCommand(
-        'Write-Output "$env:APP_SETTING"',
-        { shell, env },
-      );
+      const interpolated = await execa('Write-Output "$env:APP_SETTING"', {
+        shell,
+        env,
+      });
       expect(interpolated.stdout.trim()).toBe('ps_value');
 
       // Single-quoted: literal.
-      const literal = await execaCommand("Write-Output '$env:APP_SETTING'", {
+      const literal = await execa("Write-Output '$env:APP_SETTING'", {
         shell,
         env,
       });

@@ -10,7 +10,6 @@
   ],
   "project": ["src/**/*.ts", "build/**/*.ts"],
   "ignore": ["**/*.infer.ts"],
-  "ignoreBinaries": ["Write-Output"],
-  "ignoreDependencies": ["esbuild"],
+  "ignoreBinaries": ["pwsh"],
   "rules": { "exports": "off", "types": "off", "duplicates": "off" }
 }

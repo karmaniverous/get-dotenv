@@ -66,6 +66,7 @@ describe('loginOnDemand scoping (CLI integration)', () => {
 
   it('non-aws command: afterResolve does not fire for aws plugin', async () => {
     const run = createCli({
+      importMetaUrl: import.meta.url,
       alias: 'test',
       compose: (program) =>
         program.use(awsPlugin()).use(
@@ -76,7 +77,7 @@ describe('loginOnDemand scoping (CLI integration)', () => {
         ),
     });
 
-    await run(['node', 'test', 'cmd', 'echo', 'hello']);
+    await run(['cmd', 'echo', 'hello']);
 
     // afterResolve is scoped: aws plugin should NOT be called for non-aws commands.
     expect(resolveAwsContextMock).not.toHaveBeenCalled();
@@ -84,18 +85,12 @@ describe('loginOnDemand scoping (CLI integration)', () => {
 
   it('aws command: afterResolve fires with full config including loginOnDemand', async () => {
     const run = createCli({
+      importMetaUrl: import.meta.url,
       alias: 'test',
       compose: (program) => program.use(awsPlugin()),
     });
 
-    await run([
-      'node',
-      'test',
-      'aws',
-      '--login-on-demand',
-      '--region',
-      'us-east-1',
-    ]);
+    await run(['aws', '--login-on-demand', '--region', 'us-east-1']);
 
     // resolveAwsContext should be called, and at least one call should have loginOnDemand: true
     expect(resolveAwsContextMock).toHaveBeenCalled();
@@ -109,19 +104,12 @@ describe('loginOnDemand scoping (CLI integration)', () => {
     const logSpy = vi.spyOn(console, 'log').mockImplementation(() => undefined);
 
     const run = createCli({
+      importMetaUrl: import.meta.url,
       alias: 'test',
       compose: (program) => program.use(awsPlugin().use(awsWhoamiPlugin())),
     });
 
-    await run([
-      'node',
-      'test',
-      'aws',
-      '--login-on-demand',
-      '--region',
-      'us-east-1',
-      'whoami',
-    ]);
+    await run(['aws', '--login-on-demand', '--region', 'us-east-1', 'whoami']);
 
     expect(resolveAwsContextMock).toHaveBeenCalled();
     const lodValues = resolveAwsContextMock.mock.calls.map(

@@ -25,7 +25,8 @@ describe('getDotenv', function () {
         DYNAMIC_APP_SETTING_2: 'abcroot_app_setting123',
       });
 
-      expect(process.env.APP_SETTING).toBeDefined();
+      // #48: the library does not load process.env by default.
+      expect(process.env.APP_SETTING).toBeUndefined();
     });
     it('dynamic', async function () {
       const output = await getDotenv({
@@ -44,7 +45,8 @@ describe('getDotenv', function () {
           'root_app_setting | root_app_setting | root_app_setting | root_app_setting',
         DYNAMIC_SETTING: 'root_app_setting | root_app_setting',
       });
-      expect(process.env.APP_SETTING).toBeDefined();
+      // #48: the library does not load process.env by default.
+      expect(process.env.APP_SETTING).toBeUndefined();
     });
 
     it('exclude private', async function () {
@@ -60,7 +62,8 @@ describe('getDotenv', function () {
         DYNAMIC_APP_SETTING_1: 'root_app_setting',
         DYNAMIC_APP_SETTING_2: 'abcroot_app_setting123',
       });
-      expect(process.env.APP_SETTING).toBeDefined();
+      // #48: the library does not load process.env by default.
+      expect(process.env.APP_SETTING).toBeUndefined();
     });
 
     it('exclude public & private', async function () {
@@ -126,8 +129,9 @@ describe('getDotenv', function () {
         APP_SECRET: 'deep_app_secret',
       });
 
-      expect(process.env.APP_SETTING).toBeDefined();
-      expect(process.env.APP_SECRET).toBeDefined();
+      // #48: the library does not load process.env by default.
+      expect(process.env.APP_SETTING).toBeUndefined();
+      expect(process.env.APP_SECRET).toBeUndefined();
     });
 
     it('dynamic', async function () {
@@ -147,7 +151,8 @@ describe('getDotenv', function () {
         DYNAMIC_SETTING: 'deep_app_setting | deep_app_setting',
       });
 
-      expect(process.env.APP_SETTING).toBeDefined();
+      // #48: the library does not load process.env by default.
+      expect(process.env.APP_SETTING).toBeUndefined();
     });
 
     it('exclude private', async function () {
@@ -163,7 +168,8 @@ describe('getDotenv', function () {
         APP_SETTING: 'deep_app_setting',
       });
 
-      expect(process.env.APP_SETTING).toBeDefined();
+      // #48: the library does not load process.env by default.
+      expect(process.env.APP_SETTING).toBeUndefined();
       expect(process.env.APP_SECRET).toBeUndefined();
     });
 
@@ -180,8 +186,39 @@ describe('getDotenv', function () {
         APP_SECRET: 'deep_app_secret',
       });
 
+      // #48: the library does not load process.env by default.
       expect(process.env.APP_SETTING).toBeUndefined();
-      expect(process.env.APP_SECRET).toBeDefined();
+      expect(process.env.APP_SECRET).toBeUndefined();
+    });
+
+    it('exclude public drops the public env file too', async function () {
+      const output = await getDotenv({
+        dotenvToken: '.testenv',
+        env: 'test',
+        excludePublic: true,
+        paths: ['./test/full'],
+        privateToken: 'secret',
+      });
+
+      expect(output).toEqual({
+        APP_SECRET: 'deep_app_secret',
+        ENV_SECRET: 'deep_test_secret',
+      });
+    });
+
+    it('exclude env drops the public and private env files', async function () {
+      const output = await getDotenv({
+        dotenvToken: '.testenv',
+        env: 'test',
+        excludeEnv: true,
+        paths: ['./test/full'],
+        privateToken: 'secret',
+      });
+
+      expect(output).toEqual({
+        APP_SETTING: 'deep_app_setting',
+        APP_SECRET: 'deep_app_secret',
+      });
     });
 
     it('exclude public & private', async function () {

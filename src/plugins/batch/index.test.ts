@@ -19,20 +19,12 @@ describe('plugins/batch', () => {
 
   it('invokes list mode with globs and root path', async () => {
     const run = createCli({
+      importMetaUrl: import.meta.url,
       alias: 'test',
       compose: (p) => p.use(batchPlugin()),
     });
 
-    await run([
-      'node',
-      'test',
-      'batch',
-      '--list',
-      '--globs',
-      'a b',
-      '--root-path',
-      './',
-    ]);
+    await run(['batch', '--list', '--globs', 'a b', '--root-path', './']);
 
     expect(execMock).toHaveBeenCalledTimes(1);
     // Safe after call-count assertion
@@ -46,6 +38,7 @@ describe('plugins/batch', () => {
 
   it('resolves shell from script override', async () => {
     const run = createCli({
+      importMetaUrl: import.meta.url,
       alias: 'test',
       compose: (p) =>
         p.use(
@@ -57,8 +50,6 @@ describe('plugins/batch', () => {
     });
 
     await run([
-      'node',
-      'test',
       'batch',
       '--command',
       'build',
@@ -78,11 +69,12 @@ describe('plugins/batch', () => {
 
   it('propagates pkg-cwd flag', async () => {
     const run = createCli({
+      importMetaUrl: import.meta.url,
       alias: 'test',
       compose: (p) => p.use(batchPlugin()),
     });
 
-    await run(['node', 'test', 'batch', '--command', 'echo ok', '--pkg-cwd']);
+    await run(['batch', '--command', 'echo ok', '--pkg-cwd']);
 
     expect(execMock).toHaveBeenCalledTimes(1);
     const firstCall = execMock.mock.calls[0] as
@@ -93,18 +85,12 @@ describe('plugins/batch', () => {
 
   it('propagates ignore-errors', async () => {
     const run = createCli({
+      importMetaUrl: import.meta.url,
       alias: 'test',
       compose: (p) => p.use(batchPlugin()),
     });
 
-    await run([
-      'node',
-      'test',
-      'batch',
-      '--command',
-      'echo ok',
-      '--ignore-errors',
-    ]);
+    await run(['batch', '--command', 'echo ok', '--ignore-errors']);
 
     expect(execMock).toHaveBeenCalledTimes(1);
     const firstCall = execMock.mock.calls[0] as
@@ -115,11 +101,12 @@ describe('plugins/batch', () => {
 
   it('executes positional command without explicit subcommand', async () => {
     const run = createCli({
+      importMetaUrl: import.meta.url,
       alias: 'test',
       compose: (p) => p.use(batchPlugin()),
     });
 
-    await run(['node', 'test', 'batch', 'echo', 'OK']);
+    await run(['batch', 'echo', 'OK']);
 
     expect(execMock).toHaveBeenCalledTimes(1);
     const firstCall = execMock.mock.calls[0] as
@@ -131,11 +118,12 @@ describe('plugins/batch', () => {
 
   it('propagates parallel flag', async () => {
     const run = createCli({
+      importMetaUrl: import.meta.url,
       alias: 'test',
       compose: (p) => p.use(batchPlugin()),
     });
 
-    await run(['node', 'test', 'batch', '--command', 'echo ok', '--parallel']);
+    await run(['batch', '--command', 'echo ok', '--parallel']);
 
     expect(execMock).toHaveBeenCalledTimes(1);
     const firstCall = execMock.mock.calls[0] as
@@ -146,13 +134,12 @@ describe('plugins/batch', () => {
 
   it('propagates concurrency flag', async () => {
     const run = createCli({
+      importMetaUrl: import.meta.url,
       alias: 'test',
       compose: (p) => p.use(batchPlugin()),
     });
 
     await run([
-      'node',
-      'test',
       'batch',
       '--command',
       'echo ok',
@@ -171,11 +158,12 @@ describe('plugins/batch', () => {
 
   it('defaults parallel to false when not specified', async () => {
     const run = createCli({
+      importMetaUrl: import.meta.url,
       alias: 'test',
       compose: (p) => p.use(batchPlugin()),
     });
 
-    await run(['node', 'test', 'batch', '--command', 'echo ok']);
+    await run(['batch', '--command', 'echo ok']);
 
     expect(execMock).toHaveBeenCalledTimes(1);
     const firstCall = execMock.mock.calls[0] as

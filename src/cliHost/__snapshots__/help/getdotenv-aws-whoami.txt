@@ -1,0 +1,72 @@
+getdotenv v<VERSION>
+
+
+Usage: getdotenv aws whoami [options]
+
+Print AWS caller identity (uses parent aws session)
+
+Options:
+  -h, --help                                     display help for command
+
+getdotenv options (anywhere):
+  --getdotenv-capture                            capture child process stdio for commands (tests/CI)
+  --getdotenv-cmd <command...>                   alias of cmd subcommand; provide command tokens (variadic)
+  --getdotenv-debug                              enable debug logging to stderr ON
+  --getdotenv-debug-off                          enable debug logging to stderr OFF (default)
+  --getdotenv-default-env <string>               default target environment
+  --getdotenv-default-env-key <string>           env var name in global dotenv files that specifies the default environment (dotenv-expanded)
+  --getdotenv-dotenv-token <string>              dotenv-expanded token indicating a dotenv file
+  --getdotenv-dynamic-path <string>              dynamic variables path (.js or .ts; .ts is auto-compiled when esbuild is available, otherwise precompile)
+  --getdotenv-entropy-min-length <number>        min length to examine for entropy (default 16)
+  --getdotenv-entropy-threshold <number>         entropy bits/char threshold (default 3.8)
+  --getdotenv-entropy-warn                       enable entropy warnings (default on)
+  --getdotenv-entropy-warn-off                   disable entropy warnings
+  --getdotenv-entropy-whitelist <pattern...>     suppress entropy warnings when key matches any regex pattern
+  --getdotenv-env <string>                       target environment (dotenv-expanded)
+  --getdotenv-exclude-all                        exclude all dotenv variables from loading ON
+  --getdotenv-exclude-all-off                    exclude all dotenv variables from loading OFF (default)
+  --getdotenv-exclude-dynamic                    exclude dynamic dotenv variables from loading ON
+  --getdotenv-exclude-dynamic-off                exclude dynamic dotenv variables from loading OFF (default)
+  --getdotenv-exclude-env                        exclude environment-specific dotenv variables from loading ON
+  --getdotenv-exclude-env-off                    exclude environment-specific dotenv variables from loading OFF (default)
+  --getdotenv-exclude-global                     exclude global dotenv variables from loading ON
+  --getdotenv-exclude-global-off                 exclude global dotenv variables from loading OFF (default)
+  --getdotenv-exclude-private                    exclude private dotenv variables from loading ON
+  --getdotenv-exclude-private-off                exclude private dotenv variables from loading OFF (default)
+  --getdotenv-exclude-public                     exclude public dotenv variables from loading ON
+  --getdotenv-exclude-public-off                 exclude public dotenv variables from loading OFF (default)
+  --getdotenv-load-process                       load variables to process.env ON (default)
+  --getdotenv-load-process-off                   load variables to process.env OFF
+  --getdotenv-log                                console log loaded variables ON
+  --getdotenv-log-off                            console log loaded variables OFF (default)
+  --getdotenv-output-path <string>               consolidated output file  (dotenv-expanded)
+  --getdotenv-paths <string>                     dotenv-expanded delimited list of paths to dotenv directory
+  --getdotenv-paths-delimiter <string>           paths delimiter string
+  --getdotenv-paths-delimiter-pattern <string>   paths delimiter regex pattern
+  --getdotenv-private-token <string>             dotenv-expanded token indicating private variables
+  --getdotenv-redact                             presentation-time redaction for secret-like keys ON
+  --getdotenv-redact-off                         presentation-time redaction for secret-like keys OFF
+  --getdotenv-redact-pattern <pattern...>        additional key-match regex patterns to trigger redaction
+  --getdotenv-shell [string]                     command execution shell, no argument for default OS shell or provide shell string (default /bin/sh)
+  --getdotenv-shell-off                          command execution shell OFF
+  --getdotenv-strict                             fail on env validation errors (schema/requiredKeys)
+  --getdotenv-trace [keys...]                    emit diagnostics for child env composition (optional keys)
+  --getdotenv-vars <string>                      extra variables expressed as delimited key-value pairs (dotenv-expanded): KEY1=VAL1 KEY2=VAL2
+  --getdotenv-vars-assignor <string>             vars assignment operator string
+  --getdotenv-vars-assignor-pattern <string>     vars assignment operator regex pattern
+  --getdotenv-vars-delimiter <string>            vars delimiter string
+  --getdotenv-vars-delimiter-pattern <string>    vars delimiter regex pattern
+  --getdotenv-version                            output the version number
+
+getdotenv aws options (anywhere):
+  --getdotenv-aws-default-region <string>        fallback region
+  --getdotenv-aws-login-on-demand                attempt aws sso login on-demand
+  --getdotenv-aws-no-login-on-demand             disable sso login on-demand (default)
+  --getdotenv-aws-profile <string>               AWS profile name
+  --getdotenv-aws-profile-fallback-key <string>  fallback dotenv/config key for profile (default: "AWS_PROFILE")
+  --getdotenv-aws-profile-key <string>           dotenv/config key for local profile (default: "AWS_LOCAL_PROFILE")
+  --getdotenv-aws-region <string>                AWS region
+  --getdotenv-aws-region-key <string>            dotenv/config key for region (default: "AWS_REGION")
+  --getdotenv-aws-strategy <string>              credential acquisition strategy: cli-export|none (default: "cli-export")
+
+

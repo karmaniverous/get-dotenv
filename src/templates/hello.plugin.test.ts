@@ -41,10 +41,11 @@ describe('templates/cli/plugins/hello', () => {
     try {
       await withCwd(dir, async () => {
         const run = createCli({
+          importMetaUrl: import.meta.url,
           alias: 'test',
           compose: (p) => p.use(helloPlugin()),
         });
-        await run(['node', 'test', '--exclude-all', 'hello']);
+        await run(['--exclude-all', 'hello']);
       });
 
       expect(logSpy).toHaveBeenCalledTimes(1);
@@ -65,10 +66,11 @@ describe('templates/cli/plugins/hello', () => {
     try {
       await withCwd(dir, async () => {
         const run = createCli({
+          importMetaUrl: import.meta.url,
           alias: 'test',
           compose: (p) => p.use(helloPlugin()),
         });
-        await run(['node', 'test', '--exclude-all', 'hello', '-L']);
+        await run(['--exclude-all', 'hello', '-L']);
       });
 
       expect(logSpy).toHaveBeenCalledTimes(1);
@@ -90,10 +92,11 @@ describe('templates/cli/plugins/hello', () => {
     try {
       await withCwd(dir, async () => {
         const run = createCli({
+          importMetaUrl: import.meta.url,
           alias: 'test',
           compose: (p) => p.use(helloPlugin()),
         });
-        await run(['node', 'test', '--exclude-all', 'hello', '-l']);
+        await run(['--exclude-all', 'hello', '-l']);
       });
 
       expect(logSpy).toHaveBeenCalledTimes(1);
@@ -114,12 +117,11 @@ describe('templates/cli/plugins/hello', () => {
     try {
       await withCwd(dir, async () => {
         const run = createCli({
+          importMetaUrl: import.meta.url,
           alias: 'test',
           compose: (p) => p.use(helloPlugin()),
         });
         await run([
-          'node',
-          'test',
           '--exclude-all',
           '-v',
           'SECRET_IDENTITY=Batman',

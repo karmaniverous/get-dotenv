@@ -1,8 +1,7 @@
-import tsconfigPaths from 'vite-tsconfig-paths';
 import { configDefaults, defineConfig } from 'vitest/config';
 
 export default defineConfig({
-  plugins: [tsconfigPaths()],
+  resolve: { tsconfigPaths: true },
   test: {
     onConsoleLog(_log, _type) {
       // Show console output only for failing tests; suppress otherwise.

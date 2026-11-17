@@ -21,10 +21,6 @@ export interface InitCommandOptionValues extends OptionValues {
    */
   withLocal?: boolean;
   /**
-   * Reserved for future template variants; currently accepted for UX compatibility.
-   */
-  dynamic?: boolean;
-  /**
    * CLI name used for the generated skeleton (and token substitution).
    */
   cliName?: string;
@@ -67,7 +63,6 @@ export function attachInitOptions(cli: GetDotenvCliPublic): InitCommand {
         'json',
       )
       .option('--with-local', 'include .local config variant')
-      .option('--dynamic', 'include dynamic examples (JS/TS configs)')
       .option('--cli-name <string>', 'CLI name for skeleton and tokens')
       .option('--force', 'overwrite all existing files')
       .option('--yes', 'skip all collisions (no overwrite)')

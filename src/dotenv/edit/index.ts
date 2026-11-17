@@ -12,7 +12,9 @@ export { parseDotenvDocument } from './parseDotenvDocument';
 export { renderDotenvDocument } from './renderDotenvDocument';
 export {
   buildDotenvTargetFilename,
+  type BuildDotenvTargetFilenameOptions,
   resolveDotenvTarget,
+  type ResolveDotenvTargetOptions,
   type ResolveDotenvTargetResult,
 } from './resolveDotenvTarget';
 export type {
@@ -25,6 +27,7 @@ export type {
   DotenvEolMode,
   DotenvFs,
   DotenvPathSearchOrder,
+  DotenvQuote,
   DotenvSegment,
   DotenvTargetPrivacy,
   DotenvTargetScope,

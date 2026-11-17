@@ -14,13 +14,13 @@ This is a compact, self-contained guide for STAN assistants to use `@karmanivero
 
 ## What this library does (mental model)
 
-`get-dotenv` composes an environment (`ProcessEnv`) from multiple sources deterministically, expands references recursively, optionally applies dynamic variables, and then lets you (a) use the final map programmatically, (b) run commands under it via a cross-platform CLI, or (c) build your own plugin-based CLI host that resolves env once per invocation.
+`get-dotenv` composes an environment (`ProcessEnv`) from multiple sources deterministically, expands references (with defaults), optionally applies dynamic variables, and then lets you (a) use the final map programmatically, (b) run commands under it via a cross-platform CLI, or (c) build your own plugin-based CLI host that resolves env once per invocation.
 
 Key idea: treat the “resolved dotenv context” (`ctx.dotenv`) as the source of truth, and do not rely on `process.env` being mutated unless you explicitly enable it.
 
 ## Install + import rules
 
-- Node: >= 20
+- Node: >= 22.12.0
 - Package is ESM-only (CommonJS must use dynamic `import()`).
 - Recommended imports (public API):
   - Programmatic core: `import { getDotenv } from '@karmaniverous/get-dotenv'`
@@ -48,11 +48,11 @@ Use this section when you need a “what do I import?” answer quickly.
   - Env composition: `getDotenv`, `defineDynamic`, `defineGetDotenvConfig`
   - Defaults: `baseRootOptionDefaults`
   - Expansion: `dotenvExpand`, `dotenvExpandAll`, `dotenvExpandFromProcessEnv`
-  - Dotenv editing: `editDotenvText`, `editDotenvFile` (format-preserving)
+  - Dotenv editing: `editDotenvText`, `editDotenvFile` (format-preserving), `resolveDotenvTarget`, `buildDotenvTargetFilename`
   - Diagnostics: `traceChildEnv`, `redactDisplay`, `redactObject`, `maybeWarnEntropy`
   - Utilities: `interpolateDeep`, `writeDotenvFile`, `defaultsDeep`, `tokenize`, `applyIncludeExclude`, `requireString`, `assertByteLimit`, `silentLogger`, `assertLogger`, `toNumber`, `parseFiniteNumber`, `parsePositiveInt`, `parseNonNegativeInt`
 - CLI factory (`@karmaniverous/get-dotenv/cli`):
-  - `createCli({ alias, branding?, compose?, rootOptionDefaults?, rootOptionVisibility? }) -> (argv?) => Promise<void>`
+  - `createCli({ importMetaUrl, alias?, version?, description?, branding?, compose?, rootOptionDefaults?, rootOptionVisibility? }) -> (argv?, { from }?) => Promise<void>` (an explicit argv is user arguments only; `{ from: 'node' }` takes a full process argv)
 - CLI host (`@karmaniverous/get-dotenv/cliHost`):
   - Host class: `GetDotenvCli`
   - Plugin authoring: `definePlugin` (returns a plugin with `readConfig` and `createPluginDynamicOption`)
@@ -60,6 +60,7 @@ Use this section when you need a “what do I import?” answer quickly.
   - Option bag: `readMergedOptions`
   - Shell/scripting: `resolveCommand`, `resolveShell`, `defineScripts`
   - Helpers: `getRootCommand`, `composeNestedEnv`, `maybePreserveNodeEvalArgv`
+  - Qualified options: `normalizeArgv`, `NormalizeArgvError`, `terminatorName`
 - Config (`@karmaniverous/get-dotenv/config`):
   - `resolveGetDotenvConfigSources(...)` and validation helpers
 
@@ -73,13 +74,13 @@ This is a compact, self-contained guide for STAN assistants to use `@karmanivero
 
 ## What this library does (mental model)
 
-`get-dotenv` composes an environment (`ProcessEnv`) from multiple sources deterministically, expands references recursively, optionally applies dynamic variables, and then lets you (a) use the final map programmatically, (b) run commands under it via a cross-platform CLI, or (c) build your own plugin-based CLI host that resolves env once per invocation.
+`get-dotenv` composes an environment (`ProcessEnv`) from multiple sources deterministically, expands references (with defaults), optionally applies dynamic variables, and then lets you (a) use the final map programmatically, (b) run commands under it via a cross-platform CLI, or (c) build your own plugin-based CLI host that resolves env once per invocation.
 
 Key idea: treat the “resolved dotenv context” (`ctx.dotenv`) as the source of truth, and do not rely on `process.env` being mutated unless you explicitly enable it.
 
 ## Install + import rules
 
-- Node: >= 20
+- Node: >= 22.12.0
 - Package is ESM-only (CommonJS must use dynamic `import()`).
 - Recommended imports (public API):
   - Programmatic core: `import { getDotenv } from '@karmaniverous/get-dotenv'`
@@ -109,14 +110,18 @@ For each path, up to four files are merged in this order (later wins):
 
 Missing files are silently ignored.
 
-## Expansion syntax (recursive, with defaults)
+## Expansion syntax (with defaults)
 
-Expansion happens recursively in strings:
+Expansion happens in strings:
 
 - `$VAR[:default]`
 - `${VAR[:default]}`
 
-Unknown vars become empty string unless a default is provided. Escaped dollar signs (`\$`) remain literal.
+- Unknown variables expand to an empty string unless a default is provided; a value that is empty after expansion is `undefined`.
+- `\$` is a literal `$`, and a `$` that starts no reference (`cost $`, `$!`) stays literal while the other references in the value still expand.
+- The unbraced default runs to the next whitespace, so `http://$HOST:8080` reads `8080` as `HOST`'s default: write `http://${HOST}:8080`. There is no `:-` form (`${A:-x}` has the default `-x`).
+- Each value is expanded once. A referenced value has already been composed, so it is substituted verbatim and never expanded again, whether it comes from a dotenv file, config `vars`/`envVars`, `-v` or `process.env`: with `P=\$5`, `Q=$P` and `R=${P}x` give `Q=$5` and `R=$5x`. A default is expanded by the same rules (`${A:${B}}`). Each substituted value is spliced in as-is: it is never re-scanned with the surrounding text, and `$&`/`$$` in it have no special meaning.
+- A value never sees itself. While a key is being expanded, a reference to it resolves to the value composed before it (`process.env` or an earlier layer); if there is none, it counts as unset and takes its default, else the empty string. So `P=${P:/usr/bin}:/x` appends to an ambient `P`, and gives `/usr/bin:/x` when nothing earlier sets `P`.
 
 Use helpers when you need the exact semantics:
 
@@ -162,14 +167,17 @@ Notes:
 - Dedicated guide: see [Dotenv editor (format-preserving)](../dotenv-editor.md) for the full contract, examples, and edge cases.
 - Update map semantics:
   - `null` deletes key assignment lines (default).
-  - `undefined` skips (default); in `mode: 'sync'` an own key with `undefined` counts as present (so it is not deleted).
+  - `undefined` skips (default); in `mode: 'sync'` an own key with `undefined` counts as present (so it is not deleted, and not added if missing).
+- Modes: `mode: 'merge'` (default) updates and appends; `mode: 'sync'` upserts, so the file ends up with exactly the given keys (updated in place, missing ones appended, others deleted; comments kept).
+- New keys always start on their own line, also after a last line with no final newline.
+- Values are quoted so dotenv reads them back exactly (one formatter, shared with `-o`); a value no quote style can hold throws, naming the key.
   - Objects/arrays are supported and are written via `JSON.stringify`.
 - Duplicate keys: `duplicateKeys: 'all' | 'first' | 'last'` (default: `'all'`).
 - EOL: `eol: 'preserve' | 'lf' | 'crlf'` (default: `'preserve'`), and trailing newline presence/absence is preserved.
 - Target selection (`editDotenvFile`) is deterministic and uses `paths` only (directories), matching get-dotenv’s precedence model by default:
   - `searchOrder: 'reverse'` (default): last path wins (highest precedence).
   - `searchOrder: 'forward'`: first path wins.
-- Template bootstrap: if the selected target is missing but `<target>.<templateExtension>` exists (default extension: `template`), the template is copied first and then edited in place.
+- Resolution order, in tiers, each checking every path in search order before the next: an existing target in any path; else the env-specific template `<target>.<templateExtension>` (default extension: `template`); else (`scope: 'env'` only) the shared env template, named with a fixed token in place of the env name (`sharedEnvTemplateToken`, default `'env'`), e.g. `.env.env.local.template` for `.env.<env>.local`. A template is copied to the target beside it, then edited in place. So an existing target in any path beats a template in any path, and an env-specific template in any path beats a shared one. See [Dotenv editor](../dotenv-editor.md#resolution-order) for the table.
 - Return shape: `editDotenvFile` returns `{ path, createdFromTemplate, changed }` where `path` is absolute.
 
 Selector mapping (filename construction):
@@ -184,8 +192,9 @@ If `scope: 'env'` and neither `env` nor `defaultEnv` can be resolved, `editDoten
 Low-level building blocks (advanced use):
 
 - `parseDotenvDocument(text)` → parse into a format-preserving segment model.
-- `applyDotenvEdits(doc, updates, opts?)` → apply merge/sync edits while preserving formatting.
+- `applyDotenvEdits(doc, updates, opts?)` → apply merge/sync (upsert) edits while preserving formatting.
 - `renderDotenvDocument(doc, eolMode?)` → render back to text with EOL policy.
+- `buildDotenvTargetFilename(opts)` / `resolveDotenvTarget(opts)` → the target selection `editDotenvFile` uses (existing target in any path, then env-specific template, then shared env template).
 
 ## Programmatic API: `getDotenv()`
 
@@ -206,7 +215,7 @@ console.log(env.APP_SETTING);
 All options are optional; important ones:
 
 - Selection:
-  - `env?: string` and/or `defaultEnv?: string` (used when `env` not provided)
+  - `env?: string` and/or `defaultEnv?: string` (used when `env` is not provided or is empty)
   - `paths?: string[]` (ordered)
   - `dotenvToken?: string` (default `.env`)
   - `privateToken?: string` (default `local`)
@@ -214,7 +223,7 @@ All options are optional; important ones:
   - `vars?: ProcessEnv` (explicit vars merged into the composed map)
   - `loadProcess?: boolean` (default false for programmatic use; when true merges into `process.env`)
 - Dynamic variables:
-  - `dynamic?: Record<string, string | ((vars, env) => string | undefined)>` (programmatic map; takes precedence over `dynamicPath`)
+  - `dynamic?: Record<string, string | ((vars, env) => string | undefined)>` (programmatic map; `dynamicPath` is applied after it and wins on a shared key)
   - `dynamicPath?: string` (path to JS/TS module default-exporting the same dynamic map)
   - `excludeDynamic?: boolean` (skip dynamic evaluation)
 - Exclusions:
@@ -223,8 +232,8 @@ All options are optional; important ones:
   - `outputPath?: string` (writes a consolidated dotenv file; multiline values are quoted)
   - `log?: boolean` and `logger?: console-like` (logs final map; can be combined with redaction/entropy options)
 - Diagnostics for log output (presentation-only):
-  - `redact?: boolean`, `redactPatterns?: Array<string | RegExp>`
-  - `warnEntropy?: boolean`, `entropyThreshold?: number`, `entropyMinLength?: number`, `entropyWhitelist?: Array<string | RegExp>`
+  - `redact?: boolean`, `redactPatterns?: Array<string | RegExp>` (custom patterns add to the built-in ones, which match `secret`, `token`, `pass`/`password`, `api_key` and `key` as a whole word or an `_`/`-` segment: `API_SECRET`, `DB_PASSWORD`, `GITHUB_TOKEN`)
+  - `warnEntropy?: boolean`, `entropyThreshold?: number`, `entropyMinLength?: number`, `entropyWhitelist?: Array<string | RegExp>` (your whitelist adds to the built-in `^GIT_`, `^npm_`, `^CI$`, `SHLVL`)
 
 ### Dynamic variables (programmatic) without casts
 
@@ -254,7 +263,7 @@ When using the shipped CLI host (or embedding it via `createCli`/`GetDotenvCli`)
 
 ### Files discovered (order)
 
-- Packaged (library) root: first matching public config:
+- Packaged root (the host package: nearest package.json above the host importMetaUrl; skipped when it is the project root): first matching public config:
   - `getdotenv.config.json|yaml|yml|js|mjs|cjs|ts|mts|cts`
 - Project root (your repo):
   - Public: first matching `getdotenv.config.*` (same extensions)
@@ -265,7 +274,7 @@ When using the shipped CLI host (or embedding it via `createCli`/`GetDotenvCli`)
 JSON/YAML configs are data-only. JS/TS configs may include dynamic + schema.
 
 - `rootOptionDefaults?: { ... }` (root CLI defaults; collapsed families; see below)
-- `rootOptionVisibility?: { [rootKey]: boolean }` (help-time only; false hides options)
+- `rootOptionVisibility?: { [rootKey]: boolean }` (help-time only; false hides options, true shows them again)
 - `scripts?: Record<string, string | { cmd: string; shell?: string | boolean }>`
 - `vars?: Record<string, string>` (global/public vars)
 - `envVars?: Record<string, Record<string, string>>` (per-env/public vars)
@@ -275,18 +284,21 @@ JSON/YAML configs are data-only. JS/TS configs may include dynamic + schema.
   - `dynamic?: Record<string, string | ((vars, env?) => string | undefined)>`
   - `schema?: unknown` (if it exposes `safeParse(finalEnv)`, host runs it once post-compose)
 
-Do not put operational root flags (like `shell`, `loadProcess`, `paths`) at top level; they belong under `rootOptionDefaults`.
+Do not put operational root flags (like `shell`, `loadProcess`, `paths`) at top level; they belong under `rootOptionDefaults` (the `defineGetDotenvConfig()` type has exactly these keys). `rootOptionDefaults` rejects `dynamic` and `logger` in every format (the config is invalid); use the top-level JS/TS `dynamic` instead.
 
 ### Root defaults precedence (runtime + help labels)
 
 Higher wins:
 
 - CLI flags
+- the parent options bag (`process.env.getDotenvCliOptions`, nested runs)
 - project local `rootOptionDefaults`
 - project public `rootOptionDefaults`
 - packaged public `rootOptionDefaults`
 - `createCli({ rootOptionDefaults })`
 - `baseRootOptionDefaults`
+
+ON/OFF families (`-p`/`-P`, `-l`/`-L`, `--debug[-off]`, `--redact[-off]`, `--entropy-warn[-off]`, the exclusions): an explicit ON flag gives on, an explicit OFF flag gives off (even over a true default), otherwise the stacked default. For the exclusions, an individual flag beats `-a`/`-A`, which beat the defaults; a default `excludeAll: true` turns on all five exclusions unless an individual default says otherwise.
 
 Visibility precedence is similar (but no CLI flags for visibility):
 
@@ -328,8 +340,8 @@ Key root flags (behavioral intent):
 - `-s, --shell [string]` (default OS shell when enabled), `-S, --shell-off`
 - `--capture` or `GETDOTENV_STDIO=pipe` for deterministic CI output
 - `--trace [keys...]` print child env diagnostics to stderr before spawning
-- `--redact` / `--redact-off`, plus `--redact-pattern <pattern...>`
-- `--entropy-warn` / `--entropy-warn-off` + threshold/min-length/whitelist
+- `--redact` / `--redact-off`, plus `--redact-pattern <pattern...>` (adds to the built-in patterns)
+- `--entropy-warn` / `--entropy-warn-off` + `--entropy-threshold <number>`, `--entropy-min-length <number>` and `--entropy-whitelist <pattern...>` (adds to the built-in whitelist)
 
 Important: the root “-c” behavior is owned by the `cmd` plugin (parent alias), not a root “--command” flag.
 
@@ -341,7 +353,7 @@ Use `createCli` to embed a ready-to-run CLI host and optionally customize compos
 #!/usr/bin/env node
 import { createCli } from '@karmaniverous/get-dotenv/cli';
 
-await createCli({ alias: 'toolbox' })();
+await createCli({ alias: 'toolbox', importMetaUrl: import.meta.url })();
 ```
 
 Customize installed plugins:
@@ -352,6 +364,7 @@ import { cmdPlugin, batchPlugin } from '@karmaniverous/get-dotenv/plugins';
 
 const run = createCli({
   alias: 'toolbox',
+  importMetaUrl: import.meta.url,
   compose: (p) =>
     p
       .use(
@@ -362,6 +375,14 @@ const run = createCli({
 
 await run();
 ```
+
+Host identity (`importMetaUrl` is required; `createCli()` without it throws):
+
+- The host root is the nearest `package.json` above `importMetaUrl`. It supplies the packaged config layer (`<hostRoot>/getdotenv.config.*`, replacing get-dotenv's own; no third layer), the `--version` (`package.json` `version`, or the `version` option) and the root description (`package.json` `description`, or the `description` option).
+- When the host root is the project root (a CLI that lives in the repo it runs in), the packaged layer is skipped, so the config (and its `dynamic`) applies once.
+- A direct host sets its root with `new GetDotenvCli(alias, { importMetaUrl })` or `brand({ importMetaUrl })` (last one wins); with neither it keeps get-dotenv's root.
+- `init` always copies templates from get-dotenv's own package.
+- A runner may be called more than once; `-V, --version` is registered once, and a later `brand()` only updates the version.
 
 ## Building your own host + plugins: `GetDotenvCli` and `definePlugin()`
 
@@ -424,8 +445,9 @@ export const helloPlugin = () =>
 
 - Every plugin declares `ns` (command name).
 - Mounts are created by the host; plugin `setup(cli)` receives the mount and returns void.
-- You can override a child namespace at composition time: `.use(child, { ns: 'whoami2' })`.
-- Config keys follow the realized mount path (rename changes config key intentionally).
+- You can override a namespace at composition time, at the root or under a parent: `program.use(plugin, { ns: 'deploy-api' })`, `.use(child, { ns: 'whoami2' })`. The host mounts the plugin at the override.
+- Config keys and `afterResolve` scoping follow the realized mount path, built from these effective namespaces (rename changes config key intentionally). Two instances of one plugin can be mounted side by side (`deploy-api`, `deploy-web`), each with its own slice.
+- Sibling namespaces must be unique at every level; a collision throws `Duplicate namespace '<ns>' under '<parent>'. Override via .use(plugin, { ns: '...' }).`
 
 ### Plugin config + dynamic help (recommended)
 
@@ -468,7 +490,7 @@ Note: `runCommand()` re-emits buffered stdout when using `stdio: 'pipe'`; stderr
 
 Use shared helpers:
 
-- `resolveCommand(scripts, input)` resolves `scripts[input]` (string or `{ cmd }`) or returns `input`.
+- `resolveCommand(scripts, input)` resolves `scripts[input]` (string or `{ cmd }`) or returns `input`. Only the table's own keys count: an inherited property name such as `toString` returns `input`.
 - `resolveShell(scripts, input, rootShell)` uses `scripts[input].shell` if object form, else uses `rootShell` (or false when absent).
 
 ### Shell-off + `node -e` (avoid lossy tokenization)
@@ -500,14 +522,14 @@ This keeps behavior independent of `loadProcess`.
 From the root export:
 
 - `traceChildEnv({ parentEnv, dotenv, keys?, redact?, redactPatterns?, warnEntropy?, ... })` prints origin/value diagnostics for child env composition.
-- `redactDisplay(value, { redact?, redactPatterns? })` and `redactObject(record, opts)` mask values for logs/traces (presentation-only).
-- `maybeWarnEntropy(key, value, origin, opts, write)` warns about likely secrets by entropy (presentation-only).
+- `redactDisplay(key, value, { redact?, redactPatterns? })` and `redactObject(record, opts)` mask values for logs/traces (presentation-only); `redactPatterns` add to the built-in patterns (a RegExp is used without its `g` and `y` flags, so it matches every key).
+- `maybeWarnEntropy(key, value, origin, opts, write)` warns about likely secrets by entropy (presentation-only); it uses exactly the `entropyWhitelist` it is given, so pass the merged bag's (built-in plus user patterns).
 
 ## Shipped plugins: what to know as a plugin author
 
-- `cmd`: executes a command under ctx; provides parent alias `-c, --cmd <command...>`; detects conflict when both alias and explicit subcommand are used.
-- `batch`: discovers directories by globs and runs a command sequentially; honors `--list` and `--ignore-errors`.
-- `aws`: establishes a session when an `aws` command (or child) is invoked, writes AWS env vars to `process.env`; publishes minimal metadata under `ctx.plugins.aws`; supports `strategy: none` to disable credential export. Does not fire on sibling commands.
+- `cmd`: executes a command under ctx; provides parent alias `-c, --cmd <command...>`, which runs the cmd action itself (same bag, scripts, afterResolve scoping and exit codes); the alias plus positional `cmd` arguments is a usage error (exit 1).
+- `batch`: discovers directories by globs and runs a command sequentially (stopping at the first failure, whose exit code it exits with) or in parallel; honors `--list` and `--ignore-errors`.
+- `aws`: establishes a session when an `aws` command (or child) is invoked (once per invocation, with the `aws` flags applied; aws child commands keep it), writes AWS env vars to `process.env`; publishes minimal metadata under `ctx.plugins.aws`; supports `strategy: none` to disable credential export. Does not fire on sibling commands. A forward (`aws -- <args>`) passes the dotenv values and `getDotenvCliOptions`, with the session's `AWS_*` entries over them.
 - `init`: scaffolds config files and a CLI skeleton under `src/cli/<name>/...`; collision handling supports overwrite/example/skip plus CI heuristics.
 
 ## Shipped plugin interop contracts (composition + runtime state)
@@ -530,6 +552,7 @@ import { secretsPlugin } from '@acme/aws-secrets-plugin'; // example third-party
 
 await createCli({
   alias: 'toolbox',
+  importMetaUrl: import.meta.url,
   compose: (program) => program.use(awsPlugin().use(secretsPlugin())),
 })();
 ```
@@ -572,11 +595,11 @@ Use this section when you need a “what do I import?” answer quickly.
   - Env composition: `getDotenv`, `defineDynamic`, `defineGetDotenvConfig`
   - Defaults: `baseRootOptionDefaults`
   - Expansion: `dotenvExpand`, `dotenvExpandAll`, `dotenvExpandFromProcessEnv`
-  - Dotenv editing: `editDotenvText`, `editDotenvFile` (format-preserving)
+  - Dotenv editing: `editDotenvText`, `editDotenvFile` (format-preserving), `resolveDotenvTarget`, `buildDotenvTargetFilename`
   - Diagnostics: `traceChildEnv`, `redactDisplay`, `redactObject`, `maybeWarnEntropy`
   - Utilities: `interpolateDeep` (deep string-leaf interpolation), `writeDotenvFile`, `defaultsDeep`, `tokenize`, `assertLogger`, `silentLogger`
 - CLI factory (`@karmaniverous/get-dotenv/cli`):
-  - `createCli({ alias, branding?, compose?, rootOptionDefaults?, rootOptionVisibility? }) -> (argv?) => Promise<void>`
+  - `createCli({ importMetaUrl, alias?, version?, description?, branding?, compose?, rootOptionDefaults?, rootOptionVisibility? }) -> (argv?, { from }?) => Promise<void>` (an explicit argv is user arguments only; `{ from: 'node' }` takes a full process argv)
 - CLI host (`@karmaniverous/get-dotenv/cliHost`):
   - Host class: `GetDotenvCli`
   - Plugin authoring: `definePlugin` (returns a plugin with `readConfig` and `createPluginDynamicOption`)
@@ -584,6 +607,7 @@ Use this section when you need a “what do I import?” answer quickly.
   - Option bag: `readMergedOptions`
   - Shell/scripting: `resolveCommand`, `resolveShell`, `defineScripts`
   - Helpers: `getRootCommand`, `composeNestedEnv`, `maybePreserveNodeEvalArgv`
+  - Qualified options: `normalizeArgv`, `NormalizeArgvError`, `terminatorName`
 - Plugins (`@karmaniverous/get-dotenv/plugins`):
   - `cmdPlugin`, `batchPlugin`, `awsPlugin`, `awsWhoamiPlugin`, `initPlugin`
 - Config (`@karmaniverous/get-dotenv/config`):

@@ -4,7 +4,7 @@ import { createCli } from '@/src/cli';
 
 describe('GetDotenvCli root dynamic help', () => {
   it('prints dynamic labels for root toggles (shell/log/load-process)', async () => {
-    const run = createCli({ alias: 'test' });
+    const run = createCli({ importMetaUrl: import.meta.url, alias: 'test' });
 
     const writes: string[] = [];
     const spy = vi

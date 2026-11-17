@@ -30,7 +30,7 @@ export const processEnvSchema = z.record(z.string(), z.string().optional());
  * @public
  */
 export const getDotenvOptionsSchemaRaw = z.object({
-  /** Default environment name when `env` is not provided. */
+  /** Default environment name when `env` is not provided (or is empty). */
   defaultEnv: z.string().optional(),
   /** Env var name in global dotenv files that specifies the default environment. */
   defaultEnvKey: z.string().optional(),
@@ -52,7 +52,11 @@ export const getDotenvOptionsSchemaRaw = z.object({
   excludePrivate: z.boolean().optional(),
   /** When true, skip public dotenv files. */
   excludePublic: z.boolean().optional(),
-  /** When true, merge the final composed environment into `process.env`. */
+  /**
+   * When true, copy the final composed environment into `process.env`
+   * (`undefined` values delete the key). Off by default for `getDotenv()`;
+   * the CLI turns it on by default.
+   */
   loadProcess: z.boolean().optional(),
   /** When true, log the final environment map via `logger`. */
   log: z.boolean().optional(),
@@ -66,6 +70,28 @@ export const getDotenvOptionsSchemaRaw = z.object({
   privateToken: z.string().optional(),
   /** Explicit variables to overlay onto the composed dotenv map. */
   vars: processEnvSchema.optional(),
+  /** Mask secret-like values in `log` output. */
+  redact: z.boolean().optional(),
+  /**
+   * Additional key-match patterns for redaction (strings or RegExps); they
+   * add to the built-in patterns.
+   */
+  redactPatterns: z
+    .array(z.union([z.string(), z.instanceof(RegExp)]))
+    .optional(),
+  /** Warn once per key about high-entropy values in `log` output. */
+  warnEntropy: z.boolean().optional(),
+  /** Entropy threshold (bits/char) for warnings. */
+  entropyThreshold: z.number().optional(),
+  /** Minimum value length to consider for entropy warnings. */
+  entropyMinLength: z.number().optional(),
+  /**
+   * Key patterns (strings or RegExps) that suppress entropy warnings; they
+   * extend the built-in whitelist.
+   */
+  entropyWhitelist: z
+    .array(z.union([z.string(), z.instanceof(RegExp)]))
+    .optional(),
 });
 
 /**

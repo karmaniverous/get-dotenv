@@ -27,7 +27,10 @@ export interface BaseRootOptionDefaultsScript {
 export interface BaseRootOptionDefaults {
   /** Dotenv token indicating a dotenv file (default `.env`). */
   dotenvToken: string;
-  /** When true, load composed values into `process.env`. */
+  /**
+   * When true, load composed values into `process.env`. This default applies
+   * to the CLI only; library `getDotenv()` defaults to false.
+   */
   loadProcess: boolean;
   /** Logger used by the host and plugins (console-compatible). */
   logger: Pick<Console, 'debug' | 'info' | 'warn' | 'error'>;
@@ -59,9 +62,15 @@ export interface BaseRootOptionDefaults {
   varsDelimiter: string;
 }
 
+/**
+ * Built-in scripts. Each runs under every default shell (`shell: true` is
+ * powershell.exe on Windows, /bin/bash elsewhere), so a command uses no shell
+ * operators: PowerShell 5.1 has no `&&`.
+ */
 const baseScripts: Record<string, BaseRootOptionDefaultsScript> = {
+  // `-b` prints the `## <branch>` line, so one command does the job.
   'git-status': {
-    cmd: 'git branch --show-current && git status -s -u',
+    cmd: 'git status -s -u -b',
     shell: true,
   },
 };
@@ -97,3 +106,21 @@ export const baseRootOptionDefaults: BaseRootOptionDefaults = {
   // tri-state flags default to unset unless explicitly provided
   // (debug/log/exclude* resolved via flag utils)
 };
+
+/**
+ * The effective entropy whitelist: the built-in patterns
+ * (`baseRootOptionDefaults.entropyWhitelist`) followed by the given ones,
+ * without duplicates. A user whitelist (CLI, config, `createCli` or library
+ * options) extends the built-in one; it never replaces it.
+ *
+ * @param patterns - The user's whitelist patterns, if any.
+ * @returns The built-in patterns plus `patterns`.
+ */
+export const withBuiltInEntropyWhitelist = <T extends string | RegExp>(
+  patterns?: ReadonlyArray<T>,
+): Array<string | T> => [
+  ...new Set<string | T>([
+    ...baseRootOptionDefaults.entropyWhitelist,
+    ...(patterns ?? []),
+  ]),
+];

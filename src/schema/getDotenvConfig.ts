@@ -17,11 +17,40 @@ const visibilityMap = z.record(z.string(), z.boolean());
  *   - plugins, requiredKeys
  * - RESOLVED: mirrors RAW (no path normalization).
  * - For JSON/YAML configs, the loader rejects "dynamic" and "schema" (JS/TS only).
+ * - `rootOptionDefaults` rejects "dynamic" and "logger" in every format.
  */
 
 // String-only env value map
 const stringMap = z.record(z.string(), z.string());
 const envStringMap = z.record(z.string(), stringMap);
+
+/** A key `rootOptionDefaults` rejects in every config format. */
+const notInRootOptionDefaults = (key: string, instead: string) =>
+  z
+    .never({
+      error: `"${key}" is not allowed in rootOptionDefaults; ${instead}.`,
+    })
+    .optional();
+
+/**
+ * Config-side `rootOptionDefaults`: the CLI options without the programmatic
+ * `dynamic` and `logger`, which config files can't set here (use the
+ * top-level `dynamic` of a JS/TS config instead).
+ */
+const rootOptionDefaultsSchema = getDotenvCliOptionsSchemaRaw
+  .omit({ dynamic: true, logger: true })
+  .extend({
+    /** Rejected: use the top-level `dynamic` of a JS/TS config. */
+    dynamic: notInRootOptionDefaults(
+      'dynamic',
+      'use the top-level "dynamic" key of a JS/TS config',
+    ),
+    /** Rejected: a logger can only be passed programmatically. */
+    logger: notInRootOptionDefaults(
+      'logger',
+      'a logger can only be passed programmatically',
+    ),
+  });
 
 /**
  * Raw configuration schema for get‑dotenv config files (JSON/YAML/JS/TS).
@@ -36,8 +65,11 @@ const envStringMap = z.record(z.string(), stringMap);
  * @public
  */
 export const getDotenvConfigSchemaRaw = z.object({
-  /** Root option defaults applied by the host (CLI-like, collapsed families). */
-  rootOptionDefaults: getDotenvCliOptionsSchemaRaw.optional(),
+  /**
+   * Root option defaults applied by the host (CLI-like, collapsed families).
+   * `dynamic` and `logger` are rejected here.
+   */
+  rootOptionDefaults: rootOptionDefaultsSchema.optional(),
   /** Help-time visibility map for root flags (false hides). */
   rootOptionVisibility: visibilityMap.optional(),
   /** Scripts table used by cmd/batch resolution (validation intentionally permissive here). */

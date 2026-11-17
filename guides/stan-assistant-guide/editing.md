@@ -40,7 +40,8 @@ await editDotenvFile(
 - Target selection is deterministic and uses `paths` only (directories).
   - `searchOrder: 'reverse'` (default): last path wins.
   - `searchOrder: 'forward'`: first path wins.
-- Template bootstrap: if the target is missing but `<target>.<templateExtension>` exists (default `template`), it is copied first.
+- Resolution order, in tiers, each checking every path in search order before the next: an existing target in any path; else the env-specific template `<target>.<templateExtension>` (default `template`), copied to the target beside it first; else (env scope) the shared env template.
+- Shared env template fallback (`scope: 'env'` only): if neither the target nor its env-specific template exists, a shared template is tried next. It's named the same way as the env target, but with a fixed token (`sharedEnvTemplateToken`, default `'env'`) in place of the env name — e.g. `.env.env.local.template` for `.env.<env>.local`, or `.env.env.template` for `.env.<env>`. An env-specific template in any path beats a shared template in any path. Global scope never uses this fallback.
 - Return shape: `{ path, createdFromTemplate, changed }`.
 
 ### Selector mapping
@@ -57,6 +58,9 @@ If `scope: 'env'` and neither `env` nor `defaultEnv` can be resolved, `editDoten
 - `null` deletes key assignment lines (default).
 - `undefined` skips (default).
 - Objects/arrays are stringified.
+- `mode: 'merge'` (default) updates and appends; `mode: 'sync'` upserts: the file ends up with exactly the given keys (updated in place, missing ones appended, others deleted; comments kept).
+- New keys always start on their own line, also after a last line with no final newline.
+- Values are quoted so dotenv reads them back exactly (the same formatter as `-o`): bare when safe, else the line's quote style, double, single or backtick quotes; a value no form can hold throws, naming the key.
 
 ### Low-level building blocks
 
@@ -65,3 +69,5 @@ For advanced use:
 - `parseDotenvDocument(text)` → `DotenvDocument`
 - `applyDotenvEdits(doc, updates, opts?)` → `DotenvDocument`
 - `renderDotenvDocument(doc, eolMode?)` → string
+- `buildDotenvTargetFilename(opts)` → target filename
+- `resolveDotenvTarget(opts)` → `{ targetPath, templatePath?, filename }`

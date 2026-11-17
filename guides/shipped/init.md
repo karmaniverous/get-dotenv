@@ -30,7 +30,6 @@ Options:
 
 - `--config-format <json|yaml|js|ts>` Config format (default: `json`)
 - `--with-local` Include the `.local` variant (JSON/YAML)
-- `--dynamic` Include dynamic examples (JS/TS configs)
 - `--cli-name <string>` CLI name for skeleton and token replacement
 - `--force` Overwrite all existing files
 - `--yes` Skip all collisions (no overwrite)
@@ -41,7 +40,7 @@ Options:
 - Collision flow supports `[o/e/s]` and “all” variants `[O/E/S]`.
 - Non‑interactive detection (CI, no‑TTY) defaults to `--yes` unless `--force`.
 - Precedence: `--force` > `--yes` > auto‑detect.
-- Adds/updates `.gitignore` to include `getdotenv.config.local.*` and `*.local`.
+- Adds/updates `.gitignore` to include `getdotenv.config.local.*` and `*.local`. An existing `.gitignore` is never rewritten: only the missing lines are appended, in the file's own line ending; blank lines and comments stay as they are.
 
 ## Examples
 
@@ -79,6 +78,7 @@ import { awsPlugin } from '@karmaniverous/get-dotenv/plugins/aws';
 
 const run = createCli({
   alias: 'acme',
+  importMetaUrl: import.meta.url,
   compose: (p) =>
     p
       .use(batchPlugin())

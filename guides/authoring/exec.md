@@ -32,7 +32,7 @@ If you want this UX, you must expand the option value yourself, and you should d
 Recommended strategies:
 
 - Action-time expansion (ctx-aware; recommended): expand using `{ ...process.env, ...ctx.dotenv }` so the resolved dotenv context takes precedence, and so the behavior does not depend on `loadProcess` being enabled.
-- Parse-time expansion (process-only; niche): use `.argParser(dotenvExpandFromProcessEnv)` only when you explicitly want to expand against the parent process environment. This is the pattern used by the shipped cmd plugin alias expansion in [`src/plugins/cmd/parentInvoker.ts`](../../src/plugins/cmd/parentInvoker.ts), and it’s appropriate for “expand with whatever the current process already has” semantics.
+- Parse-time expansion (process-only; niche): use `.argParser(dotenvExpandFromProcessEnv)` only when you explicitly want to expand against the parent process environment. The shipped cmd plugin alias uses the same process-only expansion, applied in its action once the context is loaded ([`src/plugins/cmd/defaultAction.ts`](../../src/plugins/cmd/defaultAction.ts)), and it’s appropriate for “expand with whatever the current process already has” semantics.
 
 #### Action-time expansion (ctx-aware; recommended)
 
@@ -304,13 +304,15 @@ Honor the shared capture contract for CI‑friendly logs:
 
 - Use `stdio: 'pipe'` when `process.env.GETDOTENV_STDIO === 'pipe'` or the merged root options bag sets `capture: true`. Otherwise, inherit stdio for live interaction.
 - Optional, best practice: mirror the cmd plugin’s concise `--trace [keys...]` lines (origin: dotenv | parent | unset) with presentation‑time redaction for secret‑like keys and once‑per‑key entropy warnings. This is not a requirement but provides a consistent DX.
-  - Note: the current `runCommand()` helper re-emits buffered stdout only when `stdio: 'pipe'` is used. If you need to reliably print stderr in capture mode, prefer `runCommandResult()` and write `stderr` explicitly.
+  - Note: with `stdio: 'pipe'`, `runCommand()` re-emits the child's buffered stdout to stdout and its stderr to stderr after the child exits. Use `runCommandResult()` when you need the buffers themselves.
+- A child that never runs (missing command or cwd, timeout kill) is not an exception: `runCommand()` writes `Error: <message>` to stderr and returns 127 for ENOENT, 1 otherwise; `runCommandResult()` returns the same code with the message in `stderr`.
 
 ## Quoting and argv vs string
 
 - Shell‑off (plain exec): prefer argv arrays (especially for `node -e/--eval` payloads) to avoid lossy re‑tokenization and keep code payloads intact.
 - Shell‑on: pass a single string to the selected shell and document quoting rules:
-  - POSIX and PowerShell both treat single quotes as literal and double quotes as interpolating. Recommend single quotes when users want to prevent outer‑shell expansion.
+  - POSIX and PowerShell both treat single quotes as literal and double quotes as interpolating. Recommend single quotes when users want to prevent outer-shell expansion.
+  - When you hand `runCommand`/`runCommandResult` an argv array with a shell, each token is quoted by the target shell's rules (POSIX, `cmd.exe`, PowerShell), and `shell: true` means the OS default shell. Every token arrives byte for byte, empty tokens included; see [Quoting tips](../shell.md#quoting-tips) for the PowerShell and `cmd.exe` details and limits.
 
 ### Preserve Node `-e/--eval` argv under shell‑off
 

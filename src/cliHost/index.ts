@@ -36,6 +36,7 @@ export {
   stripOne,
 } from './invoke';
 export type { PluginFlattenedEntry } from './paths';
+export { normalizeArgv, NormalizeArgvError, terminatorName } from './qualified';
 export { readMergedOptions } from './readMergedOptions';
 export { resolveCommand, resolveShell } from './resolve';
 export {
@@ -48,8 +49,7 @@ export {
   type BrandOptions,
   defineScripts,
   type GetDotenvCliCtx,
+  type GetDotenvCliHostOptions,
   type RootOptionsShape,
   type ScriptDef,
 } from './types';
-/** @deprecated Import \{ z \} from 'zod' directly. Will be removed in v7. */
-export { z } from 'zod';

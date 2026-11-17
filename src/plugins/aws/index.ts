@@ -9,7 +9,7 @@ import { definePlugin } from '@/src/cliHost';
 
 import { attachAwsAfterResolveHook } from './afterResolveHook';
 import { attachAwsDefaultAction } from './defaultAction';
-import { attachAwsOptions } from './options';
+import { attachAwsOptions, type AwsCommand } from './options';
 import { attachAwsPreSubcommandHook } from './preSubcommandHook';
 import { awsPluginConfigSchema } from './types';
 
@@ -19,6 +19,8 @@ import { awsPluginConfigSchema } from './types';
  * Can be used as a parent command to wrap `aws` CLI invocations.
  */
 export const awsPlugin = () => {
+  // The `aws` mount, for its parsed flags in afterResolve (#56).
+  let awsCmd: AwsCommand | undefined;
   const plugin = definePlugin({
     ns: 'aws',
     configSchema: awsPluginConfigSchema,
@@ -26,14 +28,18 @@ export const awsPlugin = () => {
       cli.description(
         'Establish an AWS session and optionally forward to the AWS CLI',
       );
-      const awsCmd = attachAwsOptions(cli, plugin);
+      awsCmd = attachAwsOptions(cli, plugin);
       attachAwsPreSubcommandHook(cli, plugin);
       attachAwsDefaultAction(cli, plugin, awsCmd);
       return undefined;
     },
   });
 
-  plugin.afterResolve = attachAwsAfterResolveHook(plugin);
+  plugin.afterResolve = attachAwsAfterResolveHook(
+    plugin,
+    // Undefined before setup mounts aws: no flags (the overrides read {}).
+    () => awsCmd?.opts(),
+  );
   return plugin;
 };
 

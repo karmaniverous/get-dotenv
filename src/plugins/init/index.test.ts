@@ -14,13 +14,12 @@ describe('plugins/init', () => {
     await fs.remove(dir);
 
     const run = createCli({
+      importMetaUrl: import.meta.url,
       alias: 'test',
       compose: (p) => p.use(initPlugin()),
     });
 
     await run([
-      'node',
-      'test',
       'init',
       dir,
       '--config-format',
@@ -104,32 +103,21 @@ describe('plugins/init', () => {
     await fs.remove(dir);
 
     const run = createCli({
+      importMetaUrl: import.meta.url,
       alias: 'test',
       compose: (p) => p.use(initPlugin()),
     });
 
-    await run([
-      'node',
-      'test',
-      'init',
-      dir,
-      '--config-format',
-      'json',
-      '--force',
-    ]);
+    await run(['init', dir, '--config-format', 'json', '--force']);
 
     const cfg = path.posix.join(dir, 'getdotenv.config.json');
     await fs.writeFile(cfg, 'CHANGED', 'utf-8');
 
-    await createCli({ alias: 'test', compose: (p) => p.use(initPlugin()) })([
-      'node',
-      'test',
-      'init',
-      dir,
-      '--config-format',
-      'json',
-      '--yes',
-    ]);
+    await createCli({
+      importMetaUrl: import.meta.url,
+      alias: 'test',
+      compose: (p) => p.use(initPlugin()),
+    })(['init', dir, '--config-format', 'json', '--yes']);
 
     const after = await fs.readFile(cfg, 'utf-8');
     expect(after).toBe('CHANGED');
@@ -140,19 +128,12 @@ describe('plugins/init', () => {
     await fs.remove(dir);
 
     const run = createCli({
+      importMetaUrl: import.meta.url,
       alias: 'test',
       compose: (p) => p.use(initPlugin()),
     });
 
-    await run([
-      'node',
-      'test',
-      'init',
-      dir,
-      '--config-format',
-      'ts',
-      '--force',
-    ]);
+    await run(['init', dir, '--config-format', 'ts', '--force']);
 
     const cfg = path.posix.join(dir, 'getdotenv.config.ts');
     expect(await fs.pathExists(cfg)).toBe(true);
@@ -183,6 +164,22 @@ describe('plugins/init', () => {
     );
   });
 
+  it('an unknown --config-format falls back to json', async () => {
+    const dir = path.posix.join(TROOT, 'case6');
+    await fs.remove(dir);
+
+    await createCli({
+      importMetaUrl: import.meta.url,
+      alias: 'test',
+      compose: (p) => p.use(initPlugin()),
+    })(['init', dir, '--config-format', 'toml', '--force']);
+
+    const written = (await fs.readdir(dir)).filter((f) =>
+      f.startsWith('getdotenv.config.'),
+    );
+    expect(written).toEqual(['getdotenv.config.json']);
+  });
+
   it('forces overwrite in non-interactive/CI scenarios (force precedence)', async () => {
     const dir = path.posix.join(TROOT, 'case4');
     await fs.remove(dir);
@@ -192,19 +189,12 @@ describe('plugins/init', () => {
     await fs.writeFile(cfg, 'OLD', 'utf-8');
 
     const run = createCli({
+      importMetaUrl: import.meta.url,
       alias: 'test',
       compose: (p) => p.use(initPlugin()),
     });
 
-    await run([
-      'node',
-      'test',
-      'init',
-      dir,
-      '--config-format',
-      'json',
-      '--force',
-    ]);
+    await run(['init', dir, '--config-format', 'json', '--force']);
 
     const after = await fs.readFile(cfg, 'utf-8');
     expect(after).not.toBe('OLD'); // overwritten
@@ -223,11 +213,12 @@ describe('plugins/init', () => {
     process.env.CI = 'true';
     try {
       const run = createCli({
+        importMetaUrl: import.meta.url,
         alias: 'test',
         compose: (p) => p.use(initPlugin()),
       });
 
-      await run(['node', 'test', 'init', dir, '--config-format', 'json']);
+      await run(['init', dir, '--config-format', 'json']);
 
       const after = await fs.readFile(cfg, 'utf-8');
       expect(after).toBe('OLD'); // skipped

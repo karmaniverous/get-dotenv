@@ -3,10 +3,10 @@
  * header injection, and a lazy preSubcommand context resolver.
  * Also installs tests-only exitOverride to suppress process.exit on help/version.
  */
-import type { Command, Option } from '@commander-js/extra-typings';
-
 import type { GetDotenvCli } from './GetDotenvCli';
-import { GROUP_TAG } from './groups';
+import { configureHostHelp } from './hostHelp';
+import { hasRootHooks } from './rootHooksState';
+import { underTestRunner } from './underTestRunner';
 
 /**
  * Initialize a {@link GetDotenvCli} instance with help configuration and safe defaults.
@@ -22,32 +22,10 @@ export function initializeInstance(
   cli: GetDotenvCli,
   headerGetter: () => string | undefined,
 ): void {
-  // Configure grouped help: show only base options in default "Options";
-  // subcommands show all of their own options.
-  cli.configureHelp({
-    visibleOptions: (cmd: Command): Option[] => {
-      const all = cmd.options;
-      const isRoot = cmd.parent === null;
-      const list = isRoot
-        ? all.filter((opt) => {
-            const group = GROUP_TAG.get(opt);
-            return group === 'base';
-          })
-        : all.slice();
-      // Sort: short-aliased options first, then long-only; stable by flags.
-      const hasShort = (opt: Option) => {
-        const flags = opt.flags;
-        return /(^|\s|,)-[A-Za-z]/.test(flags);
-      };
-      const byFlags = (opt: Option) => opt.flags;
-      list.sort((a, b) => {
-        const aS = hasShort(a) ? 1 : 0;
-        const bS = hasShort(b) ? 1 : 0;
-        return bS - aS || byFlags(a).localeCompare(byFlags(b));
-      });
-      return list;
-    },
-  });
+  // Host help (spec 4.6): grouped sections, qualified names, inherited
+  // sections, hidden options skipped. parseAsync gives every command in the
+  // tree the same settings, plain new Command() mounts included.
+  configureHostHelp(cli);
 
   // Optional branded header before help text (kept minimal and deterministic).
   cli.addHelpText('beforeAll', () => {
@@ -58,10 +36,7 @@ export function initializeInstance(
   // Tests-only: suppress process.exit during help/version flows under Vitest.
   // Unit tests often construct GetDotenvCli directly (bypassing createCli),
   // so install a local exitOverride when a test environment is detected.
-  const underTests =
-    process.env.GETDOTENV_TEST === '1' ||
-    typeof process.env.VITEST_WORKER_ID === 'string';
-  if (underTests) {
+  if (underTestRunner()) {
     cli.exitOverride((err: unknown) => {
       const code = (err as { code?: string } | undefined)?.code;
       if (
@@ -81,9 +56,10 @@ export function initializeInstance(
     /* no-op */
   });
   // PreSubcommand hook: compute a context if absent, without mutating process.env.
-  // The passOptions() helper, when installed, resolves the final context.
+  // Bare hosts only: when the root hooks are installed they compose the
+  // run's one context, so this resolver stands down.
   cli.hook('preSubcommand', async () => {
-    if (cli.hasCtx()) return;
+    if (hasRootHooks(cli) || cli.hasCtx()) return;
     await cli.resolveAndLoad(
       { loadProcess: false },
       { runAfterResolve: false },
