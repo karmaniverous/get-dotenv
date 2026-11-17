@@ -228,6 +228,7 @@
   "version": "8.0.0-0",
   "allowScripts": {
     "esbuild": true,
-    "lefthook": true
+    "lefthook": true,
+    "fsevents": true
   }
 }
