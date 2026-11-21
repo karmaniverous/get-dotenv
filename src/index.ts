@@ -23,19 +23,26 @@ export {
   shouldCapture,
 } from './cliHost';
 export {
+  type AsProcessEnv,
   assertLogger,
   defineDynamic,
   defineGetDotenvConfig,
   type DynamicFn,
   type DynamicMap,
+  extendGetDotenvConfig,
   getDotenv,
   getDotenvCliOptions2Options,
   type GetDotenvConfig,
+  type GetDotenvConfigWithSchema,
   type GetDotenvDynamic,
   type GetDotenvOptions,
+  type InferConfigSchema,
   type InferGetDotenvVarsFromConfig,
   type Logger,
+  type MergedGetDotenvSchema,
+  type MergedGetDotenvVars,
   type ProcessEnv,
+  type ProcessEnvZodSchema,
 } from './core';
 export { baseRootOptionDefaults } from './defaults';
 export {

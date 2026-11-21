@@ -197,11 +197,71 @@ export interface GetDotenvConfig<
 }
 
 /**
+ * Constrains a Zod schema type `S` to one whose *input* type (the shape Zod
+ * expects before parsing/coercion) is `ProcessEnv`-compatible: every property
+ * is `string | undefined` (optional allowed). Resolves to `never` otherwise,
+ * which {@link defineGetDotenvConfig}'s schema-driven overload uses to reject
+ * non-string-input schemas at compile time (e.g. a bare `z.coerce.number()`
+ * leaf whose *input* is `unknown`, or a schema with a non-string property).
+ *
+ * @typeParam S - The candidate Zod schema type.
+ */
+export type ProcessEnvZodSchema<S extends z.ZodType> =
+  z.input<S> extends ProcessEnv ? S : never;
+
+/**
+ * Clamp an arbitrary type to {@link ProcessEnv}, falling back to the empty
+ * `ProcessEnv` shape when it doesn't already conform. Used to keep
+ * `GetDotenvConfig<Vars, Env>`'s `Vars extends ProcessEnv` constraint
+ * satisfied while a schema-driven `Vars` is still being checked for
+ * string-valued input (see {@link ProcessEnvZodSchema}); the real
+ * constraint enforcement happens via the overload's parameter type, not here.
+ *
+ * @typeParam V - The candidate `Vars` shape.
+ */
+export type AsProcessEnv<V> = V extends ProcessEnv ? V : ProcessEnv;
+
+/**
  * Define a strongly‑typed get‑dotenv configuration document for JS/TS authoring.
  *
  * This helper is compile‑time only: it returns the input unchanged at runtime,
  * but enables rich TypeScript inference for `vars`, `envVars`, and `dynamic`,
  * and validates property names and value shapes as you author the config.
+ *
+ * **Schema-driven overload (preferred):** when `cfg.schema` is a Zod schema,
+ * `Vars` is inferred from the schema's *input* type (`z.input<S>`) instead of
+ * an explicit type parameter, so `dynamic` function parameters need no `Vars`
+ * annotation. The schema's input must be string-valued (`ProcessEnv`-
+ * compatible, optional allowed); a schema that coerces from a non-string
+ * input is a type error. See {@link ProcessEnvZodSchema}.
+ *
+ * **Legacy overload:** `defineGetDotenvConfig<Vars, Env>()` keeps compiling
+ * unchanged for configs that declare `Vars` explicitly (with or without a
+ * `schema`, including a non-Zod validator that merely exposes `safeParse`).
+ *
+ * @typeParam S - The config's Zod schema type (schema-driven overload only).
+ *   Inferred from `cfg.schema`; do not supply explicitly.
+ * @typeParam Env - Allowed environment names used for `envVars` (defaults to `string`).
+ * @param cfg - The configuration object literal.
+ * @returns The same `cfg` value, with its type preserved for inference.
+ */
+export function defineGetDotenvConfig<
+  S extends z.ZodType,
+  Env extends string = string,
+>(
+  cfg: Omit<GetDotenvConfig<AsProcessEnv<z.input<S>>, Env>, 'schema'> & {
+    /** The config's Zod object schema; `Vars` is inferred from its input type. */
+    schema: S;
+    /** Dynamic variable definitions, typed from `schema`'s input (no `Vars` param). */
+    dynamic?: DynamicMap<AsProcessEnv<z.input<S>>>;
+  } & (z.input<S> extends ProcessEnv ? unknown : { schema: never }),
+): Omit<GetDotenvConfig<AsProcessEnv<z.input<S>>, Env>, 'schema'> & {
+  /** The config's Zod object schema, unchanged. */
+  schema: S;
+};
+
+/**
+ * Legacy overload: see {@link defineGetDotenvConfig}'s main documentation.
  *
  * @typeParam Vars - The string‑valued env map your project uses (for example,
  *   `{ APP_SETTING?: string }`). Keys propagate to `dynamic` function arguments.
@@ -215,7 +275,13 @@ export function defineGetDotenvConfig<
   Vars extends ProcessEnv,
   Env extends string = string,
   T extends GetDotenvConfig<Vars, Env> = GetDotenvConfig<Vars, Env>,
->(cfg: T): T {
+>(
+  cfg: T &
+    (T extends { schema: infer TS extends z.ZodType }
+      ? { schema: ProcessEnvZodSchema<TS> }
+      : unknown),
+): T;
+export function defineGetDotenvConfig(cfg: unknown): unknown {
   return cfg;
 }
 

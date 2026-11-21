@@ -5,6 +5,7 @@
  * focused types and functions.
  */
 
+export * from './extendGetDotenvConfig';
 export * from './getDotenv';
 export * from './GetDotenvOptions';
 export * from './readDotenv';
