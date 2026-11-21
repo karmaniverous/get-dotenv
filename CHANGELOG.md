@@ -2,7 +2,19 @@
 
 All notable changes to this project will be documented in this file.
 
+## [8.1.0](https://github.com/karmaniverous/get-dotenv/compare/v8.0.0...v8.1.0) - 2026-11-21
+
+### Miscellaneous Tasks
+
+- *(deps)* Approve macOS file watcher install ([0e1f14a](https://github.com/karmaniverous/get-dotenv/commit/0e1f14a936ec489a7bb691c574f3827c9b599753))
+- Run installs with npm 11.19.1 ([b307d23](https://github.com/karmaniverous/get-dotenv/commit/b307d232eabb89efc2e908741e095713fac94eae))
+- *(deps)* Approve dependency install scripts ([e08828b](https://github.com/karmaniverous/get-dotenv/commit/e08828bcb14afae0783d65c95e08111e9fbccec4))
+
 ## [8.0.0](https://github.com/karmaniverous/get-dotenv/compare/v8.0.0-0...v8.0.0) - 2026-11-17
+
+### Miscellaneous Tasks
+
+- Release v8.0.0 ([4ab2238](https://github.com/karmaniverous/get-dotenv/commit/4ab2238c35d0aab4e6d4cafdc9d9c0e9b095fa71))
 
 ## [8.0.0-0](https://github.com/karmaniverous/get-dotenv/compare/v7.0.11...v8.0.0-0) - 2026-11-16
 
