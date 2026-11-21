@@ -103,7 +103,7 @@ Overlays apply by kind/env/privacy/source with clear precedence. Details and exa
 
 ### Typed config: schema-driven `Vars` and `extendGetDotenvConfig`
 
-`defineGetDotenvConfig` infers the `Vars` bag seen by `dynamic` functions directly from a Zod object `schema`'s *input* type, so you don't hand-maintain a matching `Vars` type alongside your schema. The schema's input must be string-valued (`ProcessEnv`-compatible; `z.coerce.number<string>()` validates a number while its *input* stays a string; a bare `z.coerce.number()` has `unknown` input and is rejected) — a schema that doesn't satisfy this is a type error. The legacy `defineGetDotenvConfig<Vars, Env>()` form (an explicit `Vars` type parameter, with or without a schema) keeps compiling unchanged.
+`defineGetDotenvConfig` infers the `Vars` bag seen by `dynamic` functions directly from a Zod object `schema`'s _input_ type, so you don't hand-maintain a matching `Vars` type alongside your schema. The schema's input must be string-valued (`ProcessEnv`-compatible; `z.coerce.number<string>()` validates a number while its _input_ stays a string; a bare `z.coerce.number()` has `unknown` input and is rejected) — a schema that doesn't satisfy this is a type error. The legacy `defineGetDotenvConfig<Vars, Env>()` form (an explicit `Vars` type parameter, with or without a schema) keeps compiling unchanged.
 
 `extendGetDotenvConfig(base, overrides?)`, exported from the package root, composes a typed config from a base and an optional override slice — useful when one org-wide base config (for example, exported by a shared internal package) is extended per-project:
 
@@ -137,7 +137,7 @@ export default extendGetDotenvConfig(baseConfig, {
 
 Neither argument is mutated. Merge semantics per key (`schema`, `dynamic`, `requiredKeys`, plain objects like `vars`/`envVars`/`plugins`/`rootOptionDefaults`, other arrays/scalars) are documented on `extendGetDotenvConfig` in the [Config guide](./guides/config.md#typed-config-schema-driven-and).
 
-> **Behaviour change:** `validateEnvAgainstSources` now validates the final env against *every* layer's `schema` (packaged, project public, project local) instead of only the first one found, and unions `requiredKeys` across layers. A config set that uses a single layer is unaffected; a project `schema` no longer silently shadows a packaged layer's `schema`.
+> **Behaviour change:** `validateEnvAgainstSources` now validates the final env against _every_ layer's `schema` (packaged, project public, project local) instead of only the first one found, and unions `requiredKeys` across layers. A config set that uses a single layer is unaffected; a project `schema` no longer silently shadows a packaged layer's `schema`.
 
 ## Dynamic variables (JS/TS)
 

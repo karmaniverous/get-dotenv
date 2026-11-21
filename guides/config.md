@@ -175,7 +175,7 @@ export default {
 
 - **Schema-driven (preferred):** when `cfg.schema` is a Zod object schema, the
   `Vars` bag seen by `dynamic` functions is inferred from the schema's
-  *input* type (`z.input<typeof schema>`) — no `Vars` type parameter needed.
+  _input_ type (`z.input<typeof schema>`) — no `Vars` type parameter needed.
   The schema's input must be string-valued (`ProcessEnv`-compatible: every
   property `string | undefined`); a schema that coerces from a non-string
   input (for example, a bare `z.coerce.number()` leaf, whose input is
@@ -243,13 +243,13 @@ export default extendGetDotenvConfig(baseConfig, {
 
 Merge semantics, by key:
 
-| Key | Merge |
-| --- | --- |
-| `schema` | The base Zod object schema extended with the override's fields; the override wins on a clashing key (`z.input<Merged>` has the override's type for that field). Requires Zod object schemas (`z.object(...)`) when **both** sides declare a schema — the call throws at runtime otherwise. Either side alone (or neither) passes through unchanged. |
-| `dynamic` | Object spread: an overridden key keeps the base key's position, so values that depend on it are still computed after it (dynamic evaluation runs in key-insertion order); new keys come after all base keys. |
-| `requiredKeys` | Union, base order first, de-duplicated. |
-| `plugins`, `rootOptionDefaults`, `rootOptionVisibility`, `scripts`, `vars`, `envVars` (plain objects) | Deep merge, override wins (the same semantics as the library's internal `defaultsDeep`). |
-| Other arrays and scalars | Override replaces (for example, `rootOptionDefaults.redactPatterns` is replaced wholesale, not concatenated). |
+| Key                                                                                                   | Merge                                                                                                                                                                                                                                                                                                                                               |
+| ----------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `schema`                                                                                              | The base Zod object schema extended with the override's fields; the override wins on a clashing key (`z.input<Merged>` has the override's type for that field). Requires Zod object schemas (`z.object(...)`) when **both** sides declare a schema — the call throws at runtime otherwise. Either side alone (or neither) passes through unchanged. |
+| `dynamic`                                                                                             | Object spread: an overridden key keeps the base key's position, so values that depend on it are still computed after it (dynamic evaluation runs in key-insertion order); new keys come after all base keys.                                                                                                                                        |
+| `requiredKeys`                                                                                        | Union, base order first, de-duplicated.                                                                                                                                                                                                                                                                                                             |
+| `plugins`, `rootOptionDefaults`, `rootOptionVisibility`, `scripts`, `vars`, `envVars` (plain objects) | Deep merge, override wins (the same semantics as the library's internal `defaultsDeep`).                                                                                                                                                                                                                                                            |
+| Other arrays and scalars                                                                              | Override replaces (for example, `rootOptionDefaults.redactPatterns` is replaced wholesale, not concatenated).                                                                                                                                                                                                                                       |
 
 `extendGetDotenvConfig(base)` with no `overrides` returns a new, structurally
 equivalent config.
