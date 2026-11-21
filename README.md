@@ -101,6 +101,44 @@ Set the target environment dynamically: `defaultEnvKey` names a variable in your
 
 Overlays apply by kind/env/privacy/source with clear precedence. Details and examples in the [Config guide](./guides/config.md).
 
+### Typed config: schema-driven `Vars` and `extendGetDotenvConfig`
+
+`defineGetDotenvConfig` infers the `Vars` bag seen by `dynamic` functions directly from a Zod object `schema`'s *input* type, so you don't hand-maintain a matching `Vars` type alongside your schema. The schema's input must be string-valued (`ProcessEnv`-compatible; `z.coerce.number()` still validates while its *input* stays a string) — a schema that doesn't satisfy this is a type error. The legacy `defineGetDotenvConfig<Vars, Env>()` form (an explicit `Vars` type parameter, with or without a schema) keeps compiling unchanged.
+
+`extendGetDotenvConfig(base, overrides?)`, exported from the package root, composes a typed config from a base and an optional override slice — useful when one org-wide base config (for example, exported by a shared internal package) is extended per-project:
+
+```ts
+// shared-base/getdotenv.config.ts
+import { z } from 'zod';
+import { defineGetDotenvConfig } from '@karmaniverous/get-dotenv';
+
+export const baseConfig = defineGetDotenvConfig({
+  schema: z.object({ SERVICE_NAME: z.string() }),
+  vars: { SERVICE_NAME: 'unnamed' },
+});
+```
+
+```ts
+// getdotenv.config.ts
+import { z } from 'zod';
+import { extendGetDotenvConfig } from '@karmaniverous/get-dotenv';
+
+import { baseConfig } from 'shared-base/getdotenv.config';
+
+export default extendGetDotenvConfig(baseConfig, {
+  schema: z.object({ REGION: z.string() }),
+  dynamic: {
+    // Sees both SERVICE_NAME (base) and REGION (this override) — no Vars
+    // annotation needed.
+    TAG: (vars) => `${vars.SERVICE_NAME}-${vars.REGION}`,
+  },
+});
+```
+
+Neither argument is mutated. Merge semantics per key (`schema`, `dynamic`, `requiredKeys`, plain objects like `vars`/`envVars`/`plugins`/`rootOptionDefaults`, other arrays/scalars) are documented on `extendGetDotenvConfig` in the [Config guide](./guides/config.md#typed-config-schema-driven-and).
+
+> **Behaviour change:** `validateEnvAgainstSources` now validates the final env against *every* layer's `schema` (packaged, project public, project local) instead of only the first one found, and unions `requiredKeys` across layers. A config set that uses a single layer is unaffected; a project `schema` no longer silently shadows a packaged layer's `schema`.
+
 ## Dynamic variables (JS/TS)
 
 Add dynamic keys that compute from the composed env. Programmatic or file‑based (JS/TS). For TypeScript, install `esbuild` for auto‑compile.

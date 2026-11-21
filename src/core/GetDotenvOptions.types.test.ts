@@ -6,6 +6,7 @@
  * compile. The runtime expectations are incidental.
  */
 import { describe, expect, expectTypeOf, it } from 'vitest';
+import { z } from 'zod';
 
 import type { GetDotenvConfigRaw } from '@/src/schema';
 import { runFixtureCli } from '@/test/support/fixtureCli';
@@ -114,5 +115,67 @@ describe('#71 GetDotenvConfig has exactly the loader keys', () => {
       // @ts-expect-error top-level loadProcess is not a config key
       loadProcess: true,
     });
+  });
+});
+
+describe('#96 schema-driven typing', () => {
+  it('infers dynamic function params from schema.input, with no Vars param', () => {
+    const schema = z.object({
+      APP_SETTING: z.string(),
+      ENV_SETTING: z.string().optional(),
+    });
+
+    const cfg = defineGetDotenvConfig({
+      schema,
+      dynamic: {
+        // No `DynamicFn<Vars>` annotation: `vars` is inferred from `schema`.
+        DERIVED: (vars) => {
+          expectTypeOf(vars.APP_SETTING).toEqualTypeOf<string>();
+          expectTypeOf(vars.ENV_SETTING).toEqualTypeOf<string | undefined>();
+          return vars.APP_SETTING;
+        },
+      },
+    });
+
+    expectTypeOf(cfg.schema).toEqualTypeOf<typeof schema>();
+    expect(cfg.schema).toBe(schema);
+  });
+
+  it('rejects a schema whose input is not string-valued (ProcessEnv-compatible)', () => {
+    // z.coerce.number()'s *input* is `unknown`, not `string | undefined`.
+    const badSchema = z.object({ PORT: z.coerce.number() });
+
+    // @ts-expect-error schema input must be string-valued (ProcessEnv-compatible)
+    defineGetDotenvConfig({ schema: badSchema });
+    expect(badSchema).toBeInstanceOf(z.ZodObject);
+  });
+
+  it('the legacy defineGetDotenvConfig<Vars, Env>() form still compiles', () => {
+    type LegacyVars = { LEGACY_KEY?: string };
+    type LegacyEnv = 'dev' | 'prod';
+
+    const cfg = defineGetDotenvConfig<LegacyVars, LegacyEnv>({
+      vars: { LEGACY_KEY: 'x' },
+      envVars: { dev: {}, prod: { LEGACY_KEY: 'y' } },
+      dynamic: {
+        FROM_VARS: (vars) => {
+          expectTypeOf(vars).toEqualTypeOf<LegacyVars>();
+          return vars.LEGACY_KEY;
+        },
+      },
+    });
+
+    expect(cfg.vars).toEqual({ LEGACY_KEY: 'x' });
+  });
+
+  it('the legacy form still accepts a non-Zod validator (duck-typed safeParse)', () => {
+    const legacyValidator = {
+      safeParse: (v: unknown) => ({ success: true as const, data: v }),
+    };
+    const cfg = defineGetDotenvConfig<ProcessEnv>({
+      schema: legacyValidator,
+      vars: { ANY: 'x' },
+    });
+    expect(cfg.schema).toBe(legacyValidator);
   });
 });

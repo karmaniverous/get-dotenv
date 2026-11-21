@@ -167,6 +167,102 @@ export default {
 };
 ```
 
+## Typed config: schema-driven `Vars` and `extendGetDotenvConfig`
+
+### Schema-driven typing
+
+`defineGetDotenvConfig` has two overloads:
+
+- **Schema-driven (preferred):** when `cfg.schema` is a Zod object schema, the
+  `Vars` bag seen by `dynamic` functions is inferred from the schema's
+  *input* type (`z.input<typeof schema>`) — no `Vars` type parameter needed.
+  The schema's input must be string-valued (`ProcessEnv`-compatible: every
+  property `string | undefined`); a schema that coerces from a non-string
+  input (for example, a bare `z.coerce.number()` leaf, whose input is
+  `unknown`) is a type error.
+- **Legacy:** `defineGetDotenvConfig<Vars, Env>()`, an explicit `Vars` type
+  parameter (with or without a `schema`, including a non-Zod validator that
+  merely exposes `safeParse`), keeps compiling unchanged.
+
+```ts
+// getdotenv.config.ts
+import { z } from 'zod';
+import { defineGetDotenvConfig } from '@karmaniverous/get-dotenv';
+
+export default defineGetDotenvConfig({
+  schema: z.object({
+    APP_SETTING: z.string(),
+    ENV_SETTING: z.string().optional(),
+  }),
+  dynamic: {
+    // `vars` is typed from `schema` above: { APP_SETTING: string; ENV_SETTING?: string }
+    GREETING: (vars) => `Hello ${vars.APP_SETTING}`,
+  },
+});
+```
+
+### `extendGetDotenvConfig(base, overrides?)`
+
+Exported from the package root. Composes a new typed config from a `base`
+and an optional `overrides` slice; **neither argument is mutated**. Useful
+for a shared base config (for example, exported by an internal package for
+every service in an org) extended per-project.
+
+```ts
+// shared-base/getdotenv.config.ts
+import { z } from 'zod';
+import { defineGetDotenvConfig } from '@karmaniverous/get-dotenv';
+
+export const baseConfig = defineGetDotenvConfig({
+  schema: z.object({ SERVICE_NAME: z.string() }),
+  vars: { SERVICE_NAME: 'unnamed' },
+  dynamic: {
+    GREETING: (vars) => `Hello from ${vars.SERVICE_NAME}`,
+  },
+});
+```
+
+```ts
+// getdotenv.config.ts
+import { z } from 'zod';
+import { extendGetDotenvConfig } from '@karmaniverous/get-dotenv';
+
+import { baseConfig } from 'shared-base/getdotenv.config';
+
+export default extendGetDotenvConfig(baseConfig, {
+  schema: z.object({ REGION: z.string() }),
+  requiredKeys: ['REGION'],
+  dynamic: {
+    // Sees both SERVICE_NAME (base) and REGION (this override), with no
+    // `Vars` annotation: `Vars` is the merged schema's input.
+    TAG: (vars) => `${vars.SERVICE_NAME}-${vars.REGION}`,
+  },
+});
+```
+
+Merge semantics, by key:
+
+| Key | Merge |
+| --- | --- |
+| `schema` | The base Zod object schema extended with the override's fields; the override wins on a clashing key (`z.input<Merged>` has the override's type for that field). Requires Zod object schemas (`z.object(...)`) when **both** sides declare a schema — the call throws at runtime otherwise. Either side alone (or neither) passes through unchanged. |
+| `dynamic` | Object spread: an overridden key keeps the base key's position, so values that depend on it are still computed after it (dynamic evaluation runs in key-insertion order); new keys come after all base keys. |
+| `requiredKeys` | Union, base order first, de-duplicated. |
+| `plugins`, `rootOptionDefaults`, `rootOptionVisibility`, `scripts`, `vars`, `envVars` (plain objects) | Deep merge, override wins (the same semantics as the library's internal `defaultsDeep`). |
+| Other arrays and scalars | Override replaces (for example, `rootOptionDefaults.redactPatterns` is replaced wholesale, not concatenated). |
+
+`extendGetDotenvConfig(base)` with no `overrides` returns a new, structurally
+equivalent config.
+
+### Layered schema validation (behaviour change)
+
+`validateEnvAgainstSources` now validates the final composed env against the
+`schema` of **every** config layer that has one (packaged, project public,
+project local) instead of stopping at the first one found, and `requiredKeys`
+are unioned across the layers that use them. A config set that uses a single
+layer is unaffected. Previously, a project `schema` silently shadowed a
+packaged layer's `schema`; if your packaged layer's schema relied on that
+shadowing, review it before upgrading.
+
 ## Plugin config
 
 Plugin configuration is discovered under `plugins.<mount-path>` in the same packaged/project public/local files. The mount path is the chain of effective namespaces from the root (a `.use(plugin, { ns })` override replaces the plugin's own `ns`), e.g. `aws/whoami` or `deploy-api`. The host merges slices by precedence (packaged → project/public → project/local) and deep‑interpolates string leaves once against `{ ...ctx.dotenv, ...process.env }` (process.env wins for plugin slices). Plugins read their own validated slice via the instance‑bound helper `plugin.readConfig(cli)`.
