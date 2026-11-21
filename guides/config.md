@@ -179,7 +179,8 @@ export default {
   The schema's input must be string-valued (`ProcessEnv`-compatible: every
   property `string | undefined`); a schema that coerces from a non-string
   input (for example, a bare `z.coerce.number()` leaf, whose input is
-  `unknown`) is a type error.
+  `unknown`) is a type error. Use `z.coerce.number<string>()` to
+  validate a numeric value with string input.
 - **Legacy:** `defineGetDotenvConfig<Vars, Env>()`, an explicit `Vars` type
   parameter (with or without a `schema`, including a non-Zod validator that
   merely exposes `safeParse`), keeps compiling unchanged.

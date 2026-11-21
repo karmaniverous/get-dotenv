@@ -103,7 +103,7 @@ Overlays apply by kind/env/privacy/source with clear precedence. Details and exa
 
 ### Typed config: schema-driven `Vars` and `extendGetDotenvConfig`
 
-`defineGetDotenvConfig` infers the `Vars` bag seen by `dynamic` functions directly from a Zod object `schema`'s *input* type, so you don't hand-maintain a matching `Vars` type alongside your schema. The schema's input must be string-valued (`ProcessEnv`-compatible; `z.coerce.number()` still validates while its *input* stays a string) — a schema that doesn't satisfy this is a type error. The legacy `defineGetDotenvConfig<Vars, Env>()` form (an explicit `Vars` type parameter, with or without a schema) keeps compiling unchanged.
+`defineGetDotenvConfig` infers the `Vars` bag seen by `dynamic` functions directly from a Zod object `schema`'s *input* type, so you don't hand-maintain a matching `Vars` type alongside your schema. The schema's input must be string-valued (`ProcessEnv`-compatible; `z.coerce.number<string>()` validates a number while its *input* stays a string; a bare `z.coerce.number()` has `unknown` input and is rejected) — a schema that doesn't satisfy this is a type error. The legacy `defineGetDotenvConfig<Vars, Env>()` form (an explicit `Vars` type parameter, with or without a schema) keeps compiling unchanged.
 
 `extendGetDotenvConfig(base, overrides?)`, exported from the package root, composes a typed config from a base and an optional override slice — useful when one org-wide base config (for example, exported by a shared internal package) is extended per-project:
 
