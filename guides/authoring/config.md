@@ -99,6 +99,21 @@ export const myPlugin = () => {
 
 For CLI‑driven, arbitrary‑command plugins (like cmd/batch), you may offer `plugins.<mount-path>.scripts`. Prefer plugin‑scoped scripts over root scripts for clarity, and optionally fall back to root scripts when it improves UX. Use the object form to allow rare per‑script shell overrides; otherwise rely on the root shell. Inside your plugin code, prefer `plugin.readConfig(cli)` to access your validated slice.
 
+## Options that take vars-style pairs
+
+If your command takes `KEY=VALUE` pairs of its own, parse them the way the root `--vars` option does, so users can rely on the same syntax and on any separators they set at the root (`--vars-delimiter`, `--vars-delimiter-pattern`, `--vars-assignor`, `--vars-assignor-pattern`). Read those settings from the merged options bag and pass them to `parseVarsPairs`:
+
+```ts
+import { parseVarsPairs } from '@karmaniverous/get-dotenv';
+import { readMergedOptions } from '@karmaniverous/get-dotenv/cliHost';
+
+const bag = readMergedOptions(thisCommand);
+const pairs = parseVarsPairs(rawPairs, bag);
+// [['VAR', 'a'], ['VAR', 'b'], ['OTHER', 'c']]
+```
+
+`parseVarsPairs` returns the pairs in order and keeps repeated keys, so a command can collect several values under one key. The root `--vars` keeps only the last value for a repeated key.
+
 ## Runtime contract (validation & defaults)
 
 - With a schema, the host materializes defaults by validating `{}` when no slice is present. Missing required fields without defaults fail early with a consolidated error.
