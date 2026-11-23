@@ -328,11 +328,23 @@ const splitBy = (
   return value.split(' ');
 };
 
-/** How a `--vars` string is split into pairs and each pair into a key and value. */
-interface VarsSyntax {
+/**
+ * How a `--vars`-style string is split into pairs and each pair into a key
+ * and value.
+ *
+ * This governs the root `--vars` option (see {@link getDotenvCliOptions2Options})
+ * and is exported so any other CLI option that parses vars identically
+ * (for example a plugin's own `--vars VAR=keyName` option) can honor the
+ * same separators, typically read from the root via `readMergedOptions`.
+ */
+export interface VarsSyntax {
+  /** Literal string marking the split between a pair's key and value (default: `'='`). */
   varsAssignor?: string | undefined;
+  /** Regex pattern marking the split between a pair's key and value; takes precedence over {@link varsAssignor}. */
   varsAssignorPattern?: string | undefined;
+  /** Literal string delimiting pairs within the `vars` string (default: a single space). */
   varsDelimiter?: string | undefined;
+  /** Regex pattern delimiting pairs within the `vars` string; takes precedence over {@link varsDelimiter}. */
   varsDelimiterPattern?: string | undefined;
 }
 
@@ -359,6 +371,36 @@ const splitPair = (
 };
 
 /**
+ * Split a `--vars`-style string into ordered `[key, value]` pairs, keeping
+ * every occurrence of a repeated key.
+ *
+ * The string is first split into pairs with {@link VarsSyntax.varsDelimiter}
+ * / {@link VarsSyntax.varsDelimiterPattern} (default: a single space), then
+ * each pair is split at its first assignor with
+ * {@link VarsSyntax.varsAssignor} / {@link VarsSyntax.varsAssignorPattern}
+ * (default: `'='`), so the value may itself contain the assignor. A pair
+ * with no assignor yields `undefined` for its value, and a pair with an
+ * empty key is dropped.
+ *
+ * Unlike {@link getDotenvCliOptions2Options}'s `vars` normalization (which
+ * de-duplicates pairs into an object), this keeps the full ordered list,
+ * including duplicates, so a caller that needs to collect several values for
+ * one key (e.g. a plugin's `--vars VAR=keyName` option collecting several
+ * key names under `VAR`) can do so.
+ *
+ * @param vars - The raw `--vars`-style string, e.g. `"A=1 B=2"`.
+ * @param syntax - Delimiter/assignor overrides; defaults match the root `--vars` option.
+ * @returns Ordered `[key, value]` pairs, duplicates included, empty keys dropped.
+ */
+export const parseVarsPairs = (
+  vars: string,
+  syntax: VarsSyntax = {},
+): [string, string | undefined][] =>
+  splitBy(vars, syntax.varsDelimiter, syntax.varsDelimiterPattern)
+    .map((pair) => splitPair(pair, syntax))
+    .filter(([k]) => k.length > 0);
+
+/**
  * Vars as either a CLI string (`A=1 B=2`) or an object map, with
  * undefined-valued entries dropped.
  */
@@ -368,14 +410,7 @@ const parseVars = (
 ): ProcessEnv | undefined => {
   let parsed: ProcessEnv | undefined;
   if (typeof vars === 'string') {
-    const kvPairs = splitBy(
-      vars,
-      syntax.varsDelimiter,
-      syntax.varsDelimiterPattern,
-    )
-      .map((pair) => splitPair(pair, syntax))
-      .filter(([k]) => k.length > 0);
-    parsed = Object.fromEntries(kvPairs);
+    parsed = Object.fromEntries(parseVarsPairs(vars, syntax));
   } else if (vars && typeof vars === 'object' && !Array.isArray(vars)) {
     parsed = Object.fromEntries(Object.entries(vars));
   }

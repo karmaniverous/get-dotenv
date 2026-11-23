@@ -41,8 +41,10 @@ export {
   type Logger,
   type MergedGetDotenvSchema,
   type MergedGetDotenvVars,
+  parseVarsPairs,
   type ProcessEnv,
   type ProcessEnvZodSchema,
+  type VarsSyntax,
 } from './core';
 export { baseRootOptionDefaults } from './defaults';
 export {
