@@ -2,10 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
+## [8.2.0](https://github.com/karmaniverous/get-dotenv/compare/v8.1.0...v8.2.0) - 2026-11-23
+
+### Features
+
+- *(core)* Export the --vars pair parser ([15a9278](https://github.com/karmaniverous/get-dotenv/commit/15a927858589e0046297227ac52b8b918cb368fe))
+
 ## [8.1.0](https://github.com/karmaniverous/get-dotenv/compare/v8.0.0...v8.1.0) - 2026-11-21
 
 ### Miscellaneous Tasks
 
+- Release v8.1.0 ([26ca6aa](https://github.com/karmaniverous/get-dotenv/commit/26ca6aada9bbbc863e408898f52b462ede4f82f7))
 - *(deps)* Approve macOS file watcher install ([0e1f14a](https://github.com/karmaniverous/get-dotenv/commit/0e1f14a936ec489a7bb691c574f3827c9b599753))
 - Run installs with npm 11.19.1 ([b307d23](https://github.com/karmaniverous/get-dotenv/commit/b307d232eabb89efc2e908741e095713fac94eae))
 - *(deps)* Approve dependency install scripts ([e08828b](https://github.com/karmaniverous/get-dotenv/commit/e08828bcb14afae0783d65c95e08111e9fbccec4))
