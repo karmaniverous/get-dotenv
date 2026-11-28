@@ -41,7 +41,7 @@ const runHost = (
   });
 
 describe('error boundary (#62)', () => {
-  it('top-level -h with an invalid config prints one line and exits 1 (the issue repro)', async () => {
+  it('top-level -h with an invalid config prints one error line and exits 1 (the issue repro)', async () => {
     const r = await runHost(['-h'], { 'getdotenv.config.json': '{ nope' });
     expect(r.rejected).toBeUndefined();
     expect(r.exitCode).toBe(1);

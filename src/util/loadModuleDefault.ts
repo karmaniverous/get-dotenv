@@ -180,7 +180,7 @@ export const loadModuleDefault = async <T>(
     {
       cause: new AggregateError(
         [esbuildError, tsError],
-        'esbuild, then the TypeScript transpile fallback, failed',
+        'Both attempts failed: the esbuild compile, then the TypeScript transpile fallback (each compiles, then imports)',
       ),
     },
   );
