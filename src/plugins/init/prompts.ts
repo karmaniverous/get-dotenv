@@ -1,6 +1,5 @@
 import { stdin as input, stdout as output } from 'node:process';
-
-import type { createInterface } from 'readline/promises';
+import type { createInterface } from 'node:readline/promises';
 
 import type { Logger } from '@/src/core';
 
