@@ -90,6 +90,22 @@ describe('externalizeInstalledPackages', () => {
     expect(importsOf(out)).toEqual([]);
   });
 
+  it("resolves a package's main field as Node does, never its module field", () => {
+    expect(importsOf(output)).toContainEqual(
+      expect.stringMatching(/\/node_modules\/mainfield-pkg\/index\.js$/),
+    );
+  });
+
+  it('defines require for bundled CommonJS, keeping any caller banner', async () => {
+    expect(output).toContain('const require = __getdotenvCreateRequire(');
+    const out = await compile({
+      stdin: { contents: 'export {};', resolveDir: fx.root },
+      banner: { js: '// caller banner' },
+    });
+    expect(out).toContain('// caller banner');
+    expect(out).toContain('__getdotenvCreateRequire');
+  });
+
   it('keeps a built-in as a node: import', () => {
     expect(importsOf(output)).toContain('node:fs');
   });
@@ -100,6 +116,7 @@ describe('externalizeInstalledPackages', () => {
       'alias-value',
       'js-alias-value',
       'rel-value',
+      'ts-src-value',
       'json-value',
       'cjs-value',
       'cjs-default',
@@ -107,7 +124,7 @@ describe('externalizeInstalledPackages', () => {
       expect(output).toContain(v);
     expect(importsOf(output).filter((s) => !s.startsWith('node:'))).toEqual(
       importsOf(output).filter((s) =>
-        /fake-pkg|linked|mjs-pkg|dual-pkg/.test(s),
+        /fake-pkg|linked|mjs-pkg|dual-pkg|mainfield-pkg/.test(s),
       ),
     );
   });

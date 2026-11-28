@@ -59,12 +59,20 @@ const readJson = (file: string): Record<string, unknown> | undefined => {
 
 /**
  * Walk up from a file: the nearest `package.json` sets the module type (as
- * Node decides it), the nearest one with a `name` names the package.
+ * Node decides it), the nearest one with a `name` names the package. Each
+ * `package.json` is read once per `cache` (one cache per build).
  */
-const scopeOf = (file: string): PackageScope => {
+const scopeOf = (
+  file: string,
+  cache: Map<string, Record<string, unknown> | undefined>,
+): PackageScope => {
+  const read = (p: string) => {
+    if (!cache.has(p)) cache.set(p, readJson(p));
+    return cache.get(p);
+  };
   let esm: boolean | undefined;
   for (let dir = path.dirname(file); ; dir = path.dirname(dir)) {
-    const pkg = readJson(path.join(dir, 'package.json'));
+    const pkg = read(path.join(dir, 'package.json'));
     if (pkg) {
       esm ??= pkg.type === 'module';
       if (typeof pkg.name === 'string') return { name: pkg.name, esm };
@@ -72,6 +80,15 @@ const scopeOf = (file: string): PackageScope => {
     if (path.dirname(dir) === dir) return { esm: esm ?? false };
   }
 };
+
+/**
+ * Prepended to the bundle: bundled CommonJS code calls `require()` (for Node
+ * built-ins, which stay external), and an ES module has no `require` of its
+ * own.
+ */
+const REQUIRE_BANNER =
+  "import { createRequire as __getdotenvCreateRequire } from 'node:module';\n" +
+  'const require = __getdotenvCreateRequire(import.meta.url);';
 
 /** Whether Node loads `file` as an ES module, given its package scope. */
 const isEsmFile = (file: string, scope: PackageScope): boolean => {
@@ -90,9 +107,15 @@ const nodeImportConditions = (): string[] =>
     : [];
 
 /**
- * Create the plugin. It sets the build's `conditions` itself, so `exports`
- * resolve as Node's `import` resolves them: `module-sync` where Node supports
- * it, never esbuild's own `module`.
+ * Create the plugin. It sets three build options itself:
+ *
+ * - `conditions`, so `exports` resolve as Node's `import` resolves them:
+ *   `module-sync` where Node supports it, never esbuild's own `module`;
+ * - `mainFields: ['main']`, as Node ignores a package's `module` field;
+ * - a `banner` defining `require` (via `createRequire`), so bundled CommonJS
+ *   code can `require()` Node built-ins.
+ *
+ * Node's own `--conditions` and `--preserve-symlinks` flags are not applied.
  *
  * - A Node built-in stays an import, with the `node:` prefix (so a subpath
  *   such as `readline/promises` is never handed to esbuild's resolver).
@@ -103,7 +126,9 @@ const nodeImportConditions = (): string[] =>
  *   `file:` URL, so Node loads the package itself (one instance, shared with
  *   the host), resolved from the importing file rather than from wherever the
  *   compiled output is written. Linked packages (`npm link`, workspaces)
- *   count: the name decides, not the path.
+ *   count: the name decides, not the path. A package installed under an
+ *   alias (`"zod3": "npm:zod@^3"`), or whose file sits under a nested
+ *   `package.json` with another name, is bundled instead (its own copy).
  * - Everything else is bundled, as before: the entry, relative imports (also
  *   inside a config shipped in `node_modules`), `tsconfig` path aliases,
  *   TypeScript and JSON files, CommonJS packages (bundling keeps esbuild's
@@ -115,7 +140,14 @@ const nodeImportConditions = (): string[] =>
 export const externalizeInstalledPackages = (): Plugin => ({
   name: 'getdotenv-externalize-installed-packages',
   setup(build) {
-    build.initialOptions.conditions = nodeImportConditions();
+    const opts = build.initialOptions;
+    opts.conditions = nodeImportConditions();
+    opts.mainFields = ['main'];
+    opts.banner = {
+      ...opts.banner,
+      js: [REQUIRE_BANNER, opts.banner?.js].filter(Boolean).join('\n'),
+    };
+    const packageJsons = new Map<string, Record<string, unknown> | undefined>();
     build.onResolve({ filter: /.*/ }, async (args) => {
       if (args.pluginData === NESTED) return;
       const spec = args.path;
@@ -136,9 +168,9 @@ export const externalizeInstalledPackages = (): Plugin => ({
         resolveDir: args.resolveDir,
         pluginData: NESTED,
       });
-      // An unresolved import has an empty path, which is no ES module file:
-      // it falls through to esbuild, which reports it.
-      const scope = scopeOf(resolved.path);
+      // Unresolved: esbuild reports it.
+      if (!resolved.path) return;
+      const scope = scopeOf(resolved.path, packageJsons);
       if (scope.name !== name || !isEsmFile(resolved.path, scope)) return;
       return { path: url.pathToFileURL(resolved.path).href, external: true };
     });

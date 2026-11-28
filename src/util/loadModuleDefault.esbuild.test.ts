@@ -70,6 +70,10 @@ describe('loadModuleDefault: esbuild compile of a module importing packages', ()
       local: 'local-value',
       rel: 'rel-value',
       cjs: 'cjs-value',
+      cjsFs: 'function',
+      field: 'main',
+      tsSrc: 'ts-src-value',
+      kind: 'compiled',
       fs: 'function',
     });
     expect(r.probe.marker.from).not.toBe('module');

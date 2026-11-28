@@ -2,8 +2,9 @@
  * Run `loadModuleDefault` in a plain Node child process.
  *
  * Vitest loads TypeScript itself, so in-process the loader's direct import
- * always succeeds and its compile path never runs. A plain Node child has no
- * TS loader, so the compile path does run there. The loader is bundled to
+ * always succeeds and its compile path never runs. A plain Node child only
+ * strips types (Node 22.18+ and 24 do so by default), so a module it can't
+ * strip (an `enum`, an extensionless import) reaches the compile path there. The loader is bundled to
  * `.mjs` first (Node can't resolve its extensionless relative imports), with
  * packages left external so they resolve from this repo.
  */

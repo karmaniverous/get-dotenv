@@ -10,6 +10,8 @@
  *   (a directory junction / symlink, as `npm link` and workspaces make);
  * - `cjs-pkg` (loaded with `require()`) and `cjs-default-pkg` (a tsc-style
  *   `__esModule` default export), both CommonJS (bundled);
+ * - `mainfield-pkg` (a `module` field and no `main`; Node takes index.js) and
+ *   `ts-src-pkg` (ships TS source; bundled);
  * - `host-pkg`, an installed package that ships its own TS config with a
  *   relative TS import (a host's packaged config);
  * - `mjs-pkg` (`.mjs` in a CommonJS scope) and `dual-pkg` (a CommonJS
@@ -101,7 +103,26 @@ const files: Record<string, string> = {
     name: 'cjs-pkg',
     main: 'index.js',
   }),
-  'node_modules/cjs-pkg/index.js': "module.exports = { cjs: 'cjs-value' };",
+  'node_modules/cjs-pkg/index.js': [
+    "const fs = require('fs');",
+    "module.exports = { cjs: 'cjs-value', cjsFs: typeof fs.readFileSync };",
+  ].join('\n'),
+  // No `main`, only a bundler `module` field: Node loads index.js.
+  'node_modules/mainfield-pkg/package.json': json({
+    name: 'mainfield-pkg',
+    type: 'module',
+    module: 'module.js',
+  }),
+  'node_modules/mainfield-pkg/index.js': "export const field = 'main';",
+  'node_modules/mainfield-pkg/module.js': "export const field = 'module';",
+  // Ships TypeScript source: bundled, as Node won't strip types in node_modules.
+  'node_modules/ts-src-pkg/package.json': json({
+    name: 'ts-src-pkg',
+    type: 'module',
+    exports: './index.ts',
+  }),
+  'node_modules/ts-src-pkg/index.ts':
+    "export const tsSrc: string = 'ts-src-value';",
   'node_modules/cjs-default-pkg/package.json': json({
     name: 'cjs-default-pkg',
     main: 'index.js',
@@ -133,11 +154,16 @@ const files: Record<string, string> = {
     "import { dual } from 'dual-pkg';",
     "import { local } from './local';",
     "import { rel } from './esm-unnamed/rel.js';",
-    'declare const require: (id: string) => { cjs: string };',
-    "const { cjs } = require('cjs-pkg');",
+    "import { field } from 'mainfield-pkg';",
+    "import { tsSrc } from 'ts-src-pkg';",
+    // An enum can't be type-stripped: Node must compile this module.
+    "enum Kind { Compiled = 'compiled' }",
+    'declare const require: (id: string) => { cjs: string; cjsFs: string };',
+    "const { cjs, cjsFs } = require('cjs-pkg');",
     'export default {',
     '  marker, json: data.json, linked, cjsDefault: cjsDefault(),',
-    '  helper, jsAlias, mjs, dual, local, rel, cjs, fs: typeof readFileSync,',
+    '  helper, jsAlias, mjs, dual, local, rel, cjs, cjsFs, field, tsSrc,',
+    '  kind: Kind.Compiled, fs: typeof readFileSync,',
     '};',
   ].join('\n'),
   'probe.mjs': [
