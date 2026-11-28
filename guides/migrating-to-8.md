@@ -239,7 +239,7 @@ This is an addition. The next item is the change it brings.
 
 Normalization errors (unknown `--<alias>-` option, missing value, an option given in both forms, an option whose command isn't invoked) print one line and exit 1, like Commander's own usage errors. They honour `exitOverride`. The [error table](./qualified-options.md#errors) lists them.
 
-The runner's error boundary now covers plugin install and top-level help too ([#62]). An invalid config with `-h` prints one error line and exits 1. In 7.x `run()` rejected with an unhandled error.
+The runner's error boundary now covers plugin install and top-level help too ([#62]). An invalid config with `-h` prints one error line and exits 1. In 7.x `run()` rejected with an unhandled error. Since [#100], an indented `Caused by:` line follows the error line for each underlying cause (the JSON parser's message, or what esbuild and the TypeScript fallback each reported for a TS config); `--debug` prints each cause's stack trace.
 
 ## Option resolution and defaults
 
@@ -577,3 +577,4 @@ No shipped command has this shape: the root, `cmd`, `batch`, `batch cmd` and `aw
 [#90]: https://github.com/karmaniverous/get-dotenv/issues/90
 [#91]: https://github.com/karmaniverous/get-dotenv/issues/91
 [#94]: https://github.com/karmaniverous/get-dotenv/issues/94
+[#100]: https://github.com/karmaniverous/get-dotenv/issues/100

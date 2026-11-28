@@ -484,7 +484,12 @@ export const departures: Departure[] = [
   {
     case: '#62 invalid config -h',
     issueOrDecision: '#62',
-    note: 'The error boundary covers top-level help: the config error prints one line on stderr with exit code 1; run() no longer rejects.',
+    note: 'The error boundary covers top-level help: the config error prints one error line on stderr (since #100 followed by a Caused by line per cause) with exit code 1; run() no longer rejects.',
+  },
+  {
+    case: '#62 invalid config cmd',
+    issueOrDecision: '#100',
+    note: "The error boundary prints each underlying cause under the error: the config error is followed by '  Caused by: ' and the JSON parser's message.",
   },
   {
     case: '#53 args-only argv',

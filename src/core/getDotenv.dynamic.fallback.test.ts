@@ -53,15 +53,25 @@ describe('getDotenv dynamic.ts fallback/error paths', () => {
       'utf-8',
     );
 
-    await expect(
-      getDotenv({
-        dotenvToken: '.testenv',
-        env: 'test',
-        paths: ['./test/full'],
-        dynamicPath: dynTs,
-      }),
-    ).rejects.toThrow(/Unable to load dynamic TypeScript file/i);
-
+    const err: unknown = await getDotenv({
+      dotenvToken: '.testenv',
+      env: 'test',
+      paths: ['./test/full'],
+      dynamicPath: dynTs,
+    }).catch((e: unknown) => e);
     await fs.remove(dynTs);
+
+    expect(err).toBeInstanceOf(Error);
+    const dynErr = err as Error;
+    expect(dynErr.message).toMatch(/Unable to load dynamic TypeScript file/i);
+    // The loader's error, and under it what each compiler reported, in order.
+    const loaderErr = dynErr.cause as Error;
+    expect(loaderErr.message).toMatch(/Unable to load JS\/TS module/);
+    expect(loaderErr.cause).toBeInstanceOf(AggregateError);
+    const attempts = (loaderErr.cause as AggregateError).errors as Error[];
+    expect(attempts.map((e) => e.message)).toEqual([
+      'mock esbuild failure',
+      'module load failure',
+    ]);
   });
 });

@@ -1,6 +1,7 @@
 /**
  * #62: the runner's error boundary covers plugin install and top-level help,
- * not only the parse. Every error is one line on stderr and exit code 1.
+ * not only the parse. Every error is one line on stderr (plus one per
+ * underlying cause) and exit code 1.
  */
 import { afterEach, describe, expect, it } from 'vitest';
 
@@ -40,13 +41,23 @@ const runHost = (
   });
 
 describe('error boundary (#62)', () => {
-  it('top-level -h with an invalid config prints one line and exits 1 (the issue repro)', async () => {
+  it('top-level -h with an invalid config prints one error line and exits 1 (the issue repro)', async () => {
     const r = await runHost(['-h'], { 'getdotenv.config.json': '{ nope' });
     expect(r.rejected).toBeUndefined();
     expect(r.exitCode).toBe(1);
     const errors = r.output.filter((l) => l.startsWith('Error: '));
     expect(errors).toHaveLength(1);
     expect(errors[0]).toMatch(/config/i);
+    expect(r.output.some((l) => /^\s+at /.test(l))).toBe(false);
+  });
+
+  it('prints the causes under the message, without a stack', async () => {
+    const r = await runHost(['-h'], { 'getdotenv.config.json': '{ nope' });
+    const at = r.output.findIndex((l) =>
+      l.startsWith('Error: Failed to read/parse config'),
+    );
+    expect(at).toBeGreaterThanOrEqual(0);
+    expect(r.output[at + 1]).toMatch(/^ {2}Caused by: .*JSON/);
     expect(r.output.some((l) => /^\s+at /.test(l))).toBe(false);
   });
 
@@ -98,5 +109,19 @@ describe('error boundary (#62)', () => {
     expect(r.exitCode).toBe(1);
     expect(r.output).toContain('Error: setup failed');
     expect(r.output.some((l) => /^\s+at /.test(l))).toBe(true);
+  });
+
+  it('prints the causes with their stacks under --debug', async () => {
+    const broken = definePlugin({
+      ns: 'broken',
+      setup() {
+        throw new Error('setup failed', { cause: new Error('root cause') });
+      },
+    });
+    const r = await runHost(['--debug', 'broken'], {}, (p) => p.use(broken));
+    expect(r.exitCode).toBe(1);
+    const at = r.output.indexOf('  Caused by: Error: root cause');
+    expect(at).toBeGreaterThan(0);
+    expect(r.output[at + 1]).toMatch(/^\s+at /);
   });
 });

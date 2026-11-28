@@ -1,10 +1,10 @@
 import { stdin as input, stdout as output } from 'node:process';
+import { createInterface } from 'node:readline/promises';
 
 // NOTE: pay attention to non-interactive detection and precedence
 // (--force > --yes > auto-detect). See README for details.
 import fs from 'fs-extra';
 import path from 'path';
-import { createInterface } from 'readline/promises';
 
 import { readMergedOptions } from '@/src/cliHost';
 
