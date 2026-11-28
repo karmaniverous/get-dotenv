@@ -15,6 +15,8 @@ import {
 } from '@/src/plugins';
 import { readHostPackage } from '@/src/util/packageRoot';
 
+import { describeErrorCauses } from './describeErrorCauses';
+
 /**
  * Compose the shipped plugins (the `getdotenv` CLI's tree): `cmd` (the
  * default subcommand, with its `-c, --cmd` alias on the root), `batch`,
@@ -33,8 +35,10 @@ export const composeShippedPlugins = (program: GetDotenvCli): GetDotenvCli =>
 /**
  * Top-level error boundary for the CLI runner.
  *
- * Presents errors as clean one-line messages by default.
- * When GETDOTENV_DEBUG is set, prints the full stack trace.
+ * Presents errors as a clean message by default: one line, followed by one
+ * line per underlying cause (see {@link describeErrorCauses}), without stack
+ * traces. When GETDOTENV_DEBUG is set, prints the stack trace instead, and
+ * each cause's own.
  */
 function handleCliError(err: unknown, debugArgv: boolean): void {
   const isDebug =
@@ -45,9 +49,14 @@ function handleCliError(err: unknown, debugArgv: boolean): void {
   const message = err instanceof Error ? err.message : String(err);
 
   if (isDebug) {
-    console.error(err instanceof Error ? (err.stack ?? message) : message);
+    const top = err instanceof Error ? (err.stack ?? message) : message;
+    console.error(
+      [top, ...describeErrorCauses(err, { stacks: true })].join('\n'),
+    );
   } else {
-    console.error(`Error: ${message}`);
+    console.error(
+      [`Error: ${message}`, ...describeErrorCauses(err)].join('\n'),
+    );
   }
 
   process.exitCode = 1;

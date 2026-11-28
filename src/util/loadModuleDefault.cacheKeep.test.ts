@@ -7,7 +7,6 @@
  * issue's repro runs in a plain Node child, which strips types but can't
  * import a TS `enum`, so the module is compiled and cached.
  */
-import { spawnSync } from 'node:child_process';
 import {
   mkdirSync,
   mkdtempSync,
@@ -18,10 +17,10 @@ import {
 } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import url from 'node:url';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
+import { loadInChild } from '@/test/support/childLoader';
 import { withEnv } from '@/test/support/fixtureCli';
 
 import { cleanupOldCacheFiles } from './loadModuleDefault';
@@ -68,7 +67,7 @@ describe('#85 GETDOTENV_CACHE_KEEP', () => {
     expect(readdirSync(dir)).toContain('other.ts.x.mjs');
   });
 
-  it('the issue repro: a compiled module keeps its build with keep=abc', () => {
+  it('the issue repro: a compiled module keeps its build with keep=abc', async () => {
     const src = path.join(dir, 'src');
     mkdirSync(src);
     const mod = path.join(src, 'mod.ts');
@@ -78,26 +77,13 @@ describe('#85 GETDOTENV_CACHE_KEEP', () => {
       'enum Color { Red = "red" }\nexport default { color: Color.Red };\n',
     );
     const cache = path.join(dir, 'cache');
-    const loaderUrl = url
-      .pathToFileURL(path.resolve(import.meta.dirname, 'loadModuleDefault.ts'))
-      .toString();
-    const script = [
-      `const { loadModuleDefault } = await import(${JSON.stringify(loaderUrl)});`,
-      `const value = await loadModuleDefault(${JSON.stringify(mod)}, ${JSON.stringify(cache)});`,
-      'console.log(JSON.stringify(value));',
-    ].join('\n');
-    const env: NodeJS.ProcessEnv = {
-      ...process.env,
-      GETDOTENV_CACHE_KEEP: 'abc',
-    };
-    delete env.NODE_OPTIONS;
-    const run = spawnSync(
-      process.execPath,
-      ['--input-type=module', '--no-warnings', '-e', script],
-      { encoding: 'utf8', env },
-    );
+    const run = await loadInChild({
+      modulePath: mod,
+      cacheDirName: cache,
+      env: { GETDOTENV_CACHE_KEEP: 'abc' },
+    });
     expect(run.stderr).toBe('');
-    expect(run.stdout.trim()).toBe('{"color":"red"}');
+    expect(run.stdout).toBe('{"color":"red"}');
     expect(
       readdirSync(cache).filter((f) => f.startsWith('mod.ts.')),
     ).toHaveLength(1);

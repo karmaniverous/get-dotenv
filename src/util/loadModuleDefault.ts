@@ -3,6 +3,8 @@ import fs from 'fs-extra';
 import path from 'path';
 import url from 'url';
 
+import { externalizeInstalledPackages } from './externalizeInstalledPackages';
+
 const importDefault = async <T>(fileUrl: string): Promise<T | undefined> => {
   const mod = (await import(fileUrl)) as { default?: T };
   return mod.default;
@@ -72,8 +74,13 @@ export const cleanupOldCacheFiles = async (
  * - `.js`/`.mjs`/`.cjs`: direct dynamic import.
  * - `.ts`/`.mts`/`.cts`/`.tsx`:
  *   - try direct dynamic import (when a TS loader is active),
- *   - else compile via `esbuild` to a cached `.mjs` file and import,
+ *   - else compile via `esbuild` to a cached `.mjs` file and import (the
+ *     module's own files are bundled; Node built-ins and installed packages
+ *     stay imports, which Node resolves from the source file),
  *   - else fallback to `typescript.transpileModule` for simple modules.
+ *
+ * When every attempt fails, the thrown error's `cause` is an `AggregateError`
+ * holding the esbuild and TypeScript failures, in that order.
  *
  * Compiled builds are cached under `.tsbuild/<cacheDirName>/`, keeping the
  * newest `GETDOTENV_CACHE_KEEP` builds per file name (default 2, minimum 1; a
@@ -113,6 +120,7 @@ export const loadModuleDefault = async <T>(
   );
 
   // Try esbuild
+  let esbuildError: unknown;
   try {
     const esbuild = (await import('esbuild')) as unknown as {
       build: (opts: Record<string, unknown>) => Promise<unknown>;
@@ -126,6 +134,8 @@ export const loadModuleDefault = async <T>(
       outfile: cacheFile,
       sourcemap: false,
       logLevel: 'silent',
+      conditions: [],
+      plugins: [externalizeInstalledPackages()],
     });
     const result = await importDefault<T>(
       url.pathToFileURL(cacheFile).toString(),
@@ -133,11 +143,12 @@ export const loadModuleDefault = async <T>(
     // Best-effort: trim older cache files for this source.
     await cleanupOldCacheFiles(cacheDir, path.basename(absPath));
     return result;
-  } catch {
-    /* fall through to TS transpile */
+  } catch (err) {
+    esbuildError = err; // fall through to TS transpile
   }
 
   // TypeScript transpile fallback
+  let tsError: unknown;
   try {
     const ts = (await import('typescript')) as unknown as {
       transpileModule: (
@@ -160,10 +171,18 @@ export const loadModuleDefault = async <T>(
     // Best-effort: trim older cache files for this source.
     await cleanupOldCacheFiles(cacheDir, path.basename(absPath));
     return result;
-  } catch {
-    // Caller decides final error wording; rethrow for upstream mapping.
-    throw new Error(
-      `Unable to load JS/TS module: ${absPath}. Install 'esbuild' or ensure a TS loader.`,
-    );
+  } catch (err) {
+    tsError = err;
   }
+
+  // Caller decides final error wording; keep what each loader reported.
+  throw new Error(
+    `Unable to load JS/TS module: ${absPath}. Install 'esbuild' or ensure a TS loader.`,
+    {
+      cause: new AggregateError(
+        [esbuildError, tsError],
+        'esbuild, then the TypeScript transpile fallback, failed',
+      ),
+    },
+  );
 };

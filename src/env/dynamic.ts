@@ -54,6 +54,8 @@ export function applyDynamicMap(
  * Error behavior:
  * - On failure to load/compile/evaluate the module, throws a unified message:
  *   "Unable to load dynamic TypeScript file: <absPath>. Install 'esbuild'..."
+ *   with the loader's error (holding what each compiler reported) as its
+ *   `cause`.
  *
  * @param absPath - Absolute path to the dynamic module file.
  * @param cacheDirName - Cache subdirectory under `.tsbuild/` for compiled artifacts.
@@ -68,10 +70,11 @@ export async function loadDynamicModuleDefault(
   if (!(await fs.exists(absPath))) return undefined;
   try {
     return await loadModuleDefault<GetDotenvDynamic>(absPath, cacheDirName);
-  } catch {
+  } catch (err) {
     throw new Error(
       `Unable to load dynamic TypeScript file: ${absPath}. ` +
         `Install 'esbuild' (devDependency) to enable TypeScript dynamic modules.`,
+      { cause: err },
     );
   }
 }

@@ -68,6 +68,8 @@ TS support:
 
 - Direct import works if a TS loader is present.
 - Otherwise, the loader auto-bundles via esbuild when available; if esbuild is not present, it falls back to a simple TypeScript transpile for single-file modules without imports.
+- The esbuild bundle holds only the config's own files: relative imports, `tsconfig` path aliases and workspace packages (anything resolving outside `node_modules`). Node built-ins and installed packages stay imports, resolved from the config file's directory, so a config shares the package instances the rest of the project uses.
+- When a config fails to load, the CLI prints each underlying cause beneath the error, including what esbuild and the TypeScript fallback each reported. Add `--debug` (or set `GETDOTENV_DEBUG=1`) for the full stack traces.
 
 ### Top‑level restrictions (clean contract; JSON/YAML)
 
