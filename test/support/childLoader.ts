@@ -8,18 +8,26 @@
  * packages left external so they resolve from this repo.
  */
 import { spawnSync } from 'node:child_process';
+import { randomUUID } from 'node:crypto';
+import { rmSync } from 'node:fs';
 import path from 'node:path';
 import url from 'node:url';
 
 import { build } from 'esbuild';
 
 const repoRoot = path.resolve(import.meta.dirname, '..', '..');
-const outfile = path.join(
+// One directory per test worker: workers bundle concurrently. It stays inside
+// the repo so the bundle's package imports resolve from its node_modules.
+const outDir = path.join(
   repoRoot,
   '.tsbuild',
   'test-child-loader',
-  'loadModuleDefault.mjs',
+  `${String(process.pid)}-${randomUUID()}`,
 );
+const outfile = path.join(outDir, 'loadModuleDefault.mjs');
+process.once('exit', () => {
+  rmSync(outDir, { recursive: true, force: true });
+});
 
 let bundled: Promise<string> | undefined;
 
