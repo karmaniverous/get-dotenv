@@ -75,8 +75,8 @@ export const cleanupOldCacheFiles = async (
  * - `.ts`/`.mts`/`.cts`/`.tsx`:
  *   - try direct dynamic import (when a TS loader is active),
  *   - else compile via `esbuild` to a cached `.mjs` file and import (the
- *     module's own files are bundled; Node built-ins and installed packages
- *     stay imports, which Node resolves from the source file),
+ *     module's own code is bundled; Node built-ins and installed ES module
+ *     packages stay imports, which Node resolves from the source file),
  *   - else fallback to `typescript.transpileModule` for simple modules.
  *
  * When every attempt fails, the thrown error's `cause` is an `AggregateError`
@@ -134,7 +134,6 @@ export const loadModuleDefault = async <T>(
       outfile: cacheFile,
       sourcemap: false,
       logLevel: 'silent',
-      conditions: [],
       plugins: [externalizeInstalledPackages()],
     });
     const result = await importDefault<T>(
